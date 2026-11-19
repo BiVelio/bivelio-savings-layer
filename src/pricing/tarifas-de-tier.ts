@@ -145,6 +145,8 @@ export interface TarifaDeTier extends TarifaPlana {
 /** Cuándo se leyeron por última vez las páginas de las que sale esta tabla. */
 // (2026-09-29: solo se releyó la página de Anthropic, para la fila de Sonnet
 // 5.5; su tabla «Batch processing» coincide con todas las filas `an` de abajo.
+// Su lectura de caché bajó a 0,05× el 2026-10-07: la fila de lote de Sonnet
+// 5.5 se corrigió el 2026-11-19, A2-6.
 // OpenAI y Google siguen con la lectura del 2026-09-27, la de su `consultado`.)
 // (2026-11-19: se leyeron la de Anthropic y la de Google SOLO para las dos filas
 // nuevas, claude-fable-5-2 en lote y gemini-2.5-flash-lite en Flex, que llevan
@@ -399,7 +401,7 @@ export const TARIFAS_DE_TIER: Readonly<
   anthropic: {
     // «Batch processing», USD/1M → /1000: entrada y salida de la tabla; lectura
     // de caché = multiplicador de lectura del modelo × entrada de lote (0,1×;
-    // 0,05× en Opus 5.5; 0,025× en Fable 5.1, Mythos 5.1 y Fable 5.2); escritura de caché =
+    // 0,05× en Opus 5.5 y Sonnet 5.5; 0,025× en Fable 5.1, Mythos 5.1 y Fable 5.2); escritura de caché =
     // 1,25× la entrada de lote (la de 5 minutos: la de 1 hora, 2×, se tarifa a
     // 1,25× en los DOS lados y la diferencia sale corta, nunca larga). El valor
     // de `usage.service_tier` que pone la respuesta de un lote es "batch".
@@ -427,8 +429,10 @@ export const TARIFAS_DE_TIER: Readonly<
       // Claude Sonnet 5: $1 / $5; caché $0.10; escritura $1.25.
       "claude-sonnet-5": an({ inputPer1k: 0.001, cachedInputPer1k: 0.0001, cacheWritePer1k: 0.00125, outputPer1k: 0.005 }),
       // Claude Sonnet 5.5: $1 / $5 (la misma fila de la tabla «Batch processing»
-      // que Sonnet 5); caché $0.10; escritura $1.25. Leída el 2026-09-29.
-      "claude-sonnet-5-5": { ...an({ inputPer1k: 0.001, cachedInputPer1k: 0.0001, cacheWritePer1k: 0.00125, outputPer1k: 0.005 }), consultado: "2026-09-29" },
+      // que Sonnet 5); caché 0,05× → $0.05 (nota 2 de la tabla de modelos, desde
+      // el 2026-10-07; antes 0,1× → $0.10); escritura $1.25. Releída el
+      // 2026-11-19 (A2-6).
+      "claude-sonnet-5-5": { ...an({ inputPer1k: 0.001, cachedInputPer1k: 0.00005, cacheWritePer1k: 0.00125, outputPer1k: 0.005 }), consultado: "2026-11-19" },
       // Claude Sonnet 4.6 / 4.5 / 4: $1.50 / $7.50; caché $0.15; escritura $1.875.
       "claude-sonnet-4-6": an({ inputPer1k: 0.0015, cachedInputPer1k: 0.00015, cacheWritePer1k: 0.001875, outputPer1k: 0.0075 }),
       "claude-sonnet-4-5": an({ inputPer1k: 0.0015, cachedInputPer1k: 0.00015, cacheWritePer1k: 0.001875, outputPer1k: 0.0075 }),

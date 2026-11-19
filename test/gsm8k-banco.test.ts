@@ -310,10 +310,13 @@ describe("GSM8K gama alta (2026-09-29): topes, precios, Gemini y origen del ahor
     expect(googleDesdeSonda({ googleBaseUrl: "https://x.example/v1" }, { BVSALA_SONDA_BASE_URL: "https://generativelanguage.googleapis.com/v1beta/openai" })).toEqual({});
   });
 
-  it("con fila, manda el catálogo (claude-sonnet-5-5 la tiene desde #399, con el mismo precio que se citó); sin fila y sin cita, desconocido", () => {
+  it("con fila, manda el catálogo (claude-sonnet-5-5 la tiene desde #399); sin fila y sin cita, desconocido", () => {
     const s55 = precioDelBanco("anthropic/claude-sonnet-5-5");
     expect(s55.conocido).toBe(true);
-    expect(s55.precio).toMatchObject({ inputPer1k: 0.002, outputPer1k: 0.01, cachedInputPer1k: 0.0002 });
+    // Entrada y salida, las que se citaron el 2026-09-29. La lectura de caché ya
+    // no: Anthropic la bajó de $0.20 a $0.10 por 1M el 2026-10-07 (A2-6), y manda
+    // el catálogo, no la cita.
+    expect(s55.precio).toMatchObject({ inputPer1k: 0.002, outputPer1k: 0.01, cachedInputPer1k: 0.0001 });
     expect(s55.fueraDeCatalogo).toBeUndefined();
     const o55 = precioDelBanco("anthropic/claude-opus-5-5");
     expect(o55.fueraDeCatalogo).toBeUndefined();

@@ -1,6 +1,7 @@
 import { describe, it, expect } from "vitest";
 
 import { CATALOGO, claveDeCatalogo, precioDeLista, PRECIOS_AL_DIA } from "../src/pricing/catalogo.js";
+import { TARIFAS_DE_TIER } from "../src/pricing/tarifas-de-tier.js";
 
 /**
  * EL CATÁLOGO DE PRECIOS DE LISTA.
@@ -155,11 +156,23 @@ describe("la forma del catálogo", () => {
     expect(CATALOGO["gemini-3-flash-preview"]).toEqual({ inputPer1k: 0.0005, outputPer1k: 0.003, cachedInputPer1k: 0.00005 });
   });
 
-  it("Sonnet 5.5 (2026-09-29), con las cifras de la página OFICIAL: $2 / $0.20 / $10, la lista de Sonnet 5", () => {
-    // platform.claude.com/docs/en/about-claude/pricing: «Claude Sonnet 5.5 |
-    // $2 / MTok | $2.50 / MTok | $4 / MTok | $0.20 / MTok | $10 / MTok».
-    expect(CATALOGO["claude-sonnet-5-5"]).toEqual({ inputPer1k: 0.002, outputPer1k: 0.01, cachedInputPer1k: 0.0002 });
-    expect(CATALOGO["claude-sonnet-5-5"]!.cachedInputPer1k! / CATALOGO["claude-sonnet-5-5"]!.inputPer1k).toBeCloseTo(0.1, 12);
+  it("Sonnet 5.5, con las cifras de la página OFICIAL: $2 / $0.10 / $10, la lectura a 0,05× desde el 2026-10-07 (A2-6)", () => {
+    // platform.claude.com/docs/en/about-claude/pricing (2026-11-19): «Claude
+    // Sonnet 5.5 | $2 / MTok | $2.50 / MTok | $4 / MTok | $0.10 / MTok² | $10 /
+    // MTok» y la nota 2: «Cache hits and refreshes on Claude Opus 5.5 and Claude
+    // Sonnet 5.5 are priced at 0.05x the base input price». Hasta el 2026-10-06
+    // era $0.20 (0,1×), y esta prueba fijaba esa cifra: con ella el gasto
+    // `measured` de una petición con la caché caliente salía un 18 % por encima
+    // de la factura.
+    expect(CATALOGO["claude-sonnet-5-5"]).toEqual({ inputPer1k: 0.002, outputPer1k: 0.01, cachedInputPer1k: 0.0001 });
+    expect(CATALOGO["claude-sonnet-5-5"]!.cachedInputPer1k! / CATALOGO["claude-sonnet-5-5"]!.inputPer1k).toBeCloseTo(0.05, 12);
+    // Igual que Opus 5.5, y en lote también: 0,05× de la entrada de lote ($1) → $0.05.
+    const lote = TARIFAS_DE_TIER.anthropic.batch!["claude-sonnet-5-5"]!;
+    expect(lote.inputPer1k).toBe(0.001);
+    expect(lote.cachedInputPer1k).toBe(0.00005);
+    expect(lote.cachedInputPer1k! / lote.inputPer1k).toBeCloseTo(0.05, 12);
+    // Sonnet 5 sigue al 10 % de la casa: la excepción es de 5.5.
+    expect(CATALOGO["claude-sonnet-5"]!.cachedInputPer1k).toBe(0.0002);
     // Su propia clave, no la de Sonnet 5 por herencia (hoy cuestan lo mismo;
     // el día que no, la herencia mentiría en silencio).
     expect(claveDeCatalogo("claude-sonnet-5-5")).toBe("claude-sonnet-5-5");

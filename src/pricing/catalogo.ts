@@ -52,7 +52,9 @@ import type { CostModel } from "../tokenizer/accounting.js";
 //     Google en TARIFAS_DE_TIER y su clasificación de razonamiento. Sin haber
 //     salido aún, la misma versión recoge también (A2-22) el fin del precio
 //     promocional de gpt-5.6-sol: sus filas Flex y Batch rigen hasta el
-//     2026-11-30 (antes, el 2026-11-21) y la estándar hasta el 1-dic.
+//     2026-11-30 (antes, el 2026-11-21) y la estándar hasta el 1-dic. Y (A2-6)
+//     la lectura de caché de claude-sonnet-5-5, a 0,05× desde el 2026-10-07:
+//     $0.10/MTok en estándar y $0.05 en lote, no $0.20 y $0.10.
 
 /**
  * Version of this price catalogue: the UTC day its content last changed (rows,
@@ -71,7 +73,7 @@ export const PRECIOS_AL_DIA = "2026-11-19";
 export const HUELLAS_DEL_CATALOGO: Readonly<Record<string, string>> = {
   "2026-09-29": "bfbf91f324c7a3c7319db6c816cb7cce545f4a285e1ff0ad4ac9f1b706634a2e",
   "2026-11-03": "e14ffe5559e35c21f2bbb5d4e42639dc2b80cb262cdb2bd6fd27efdc475ee6d8",
-  "2026-11-19": "133d449bdd05450159465b4c9f25e63bc92b4dc659697524772f0cc251a8b4c8",
+  "2026-11-19": "79ebd22508ab53af391a1674e36af130baca30d07b5afea54965afb6ab3e5a27",
 };
 
 /**
@@ -239,19 +241,28 @@ export const CATALOGO: Readonly<Record<string, CostModel>> = {
   "claude-sonnet-4-6": { inputPer1k: 0.003,  outputPer1k: 0.015, cachedInputPer1k: 0.0003  },
   "claude-sonnet-5":   { inputPer1k: 0.002,  outputPer1k: 0.01,  cachedInputPer1k: 0.0002  },
   // Sonnet 5.5 (lanzado el 2026-09-28, id `claude-sonnet-5-5`, sin fecha: su
-  // alias es el mismo id) comparte lista con Sonnet 5 y lee la caché al 10% de
-  // la casa. Verificado el 2026-09-29 contra la página OFICIAL de precios de
-  // Anthropic (https://platform.claude.com/docs/en/about-claude/pricing:
-  // «Claude Sonnet 5.5 | $2 / MTok | $2.50 / MTok | $4 / MTok | $0.20 / MTok |
-  // $10 / MTok», sin nota al pie ni tramo de contexto largo; las escrituras de
-  // 5 min y 1 h son 1,25× y 2×, las de `primas.ts`) y contra la del modelo
-  // (https://platform.claude.com/docs/en/models/sonnet-5-5/overview y
-  // …/whats-new-sonnet-5-5: «the same prices as Claude Sonnet 5, including
-  // prompt caching and batch processing rates»). Sin esta fila su tráfico caía
-  // al respaldo ilustrativo (la herencia por versión menor corta
-  // `claude-sonnet-5-5` → `claude-sonnet-5` a propósito) y su repetición nunca
-  // podía ser `reference`.
-  "claude-sonnet-5-5": { inputPer1k: 0.002,  outputPer1k: 0.01,  cachedInputPer1k: 0.0002  },
+  // alias es el mismo id) comparte entrada y salida con Sonnet 5 ($2 / $10) y
+  // lee la caché a 0,05× de la entrada ($0.10/MTok), como Opus 5.5. El
+  // 2026-09-29 la página oficial decía $0.20 (0,1×, la lista de Sonnet 5); el
+  // 2026-10-07 Anthropic la bajó (release notes: «We've lowered the price of
+  // prompt cache reads on Claude Sonnet 5.5 from $0.20 USD to $0.10 USD per
+  // million tokens: 0.05x the base input price instead of 0.1x. Cache writes
+  // and all other prices are unchanged»). Verificado el 2026-11-19 contra la
+  // página OFICIAL de precios de Anthropic
+  // (https://platform.claude.com/docs/en/about-claude/pricing: «Claude Sonnet
+  // 5.5 | $2 / MTok | $2.50 / MTok | $4 / MTok | $0.10 / MTok² | $10 / MTok»,
+  // nota 2: «Cache hits and refreshes on Claude Opus 5.5 and Claude Sonnet 5.5
+  // are priced at 0.05x the base input price»; sin tramo de contexto largo; las
+  // escrituras de 5 min y 1 h son 1,25× y 2×, las de `primas.ts`). Con la
+  // lectura al doble, el gasto `measured` de una petición con 9.000 de sus
+  // 10.000 tokens de entrada leídos de la caché salía un 18 % por encima de la
+  // factura (A2-6). Lo que no se puede escribir aquí: entre el 2026-09-28 y el
+  // 2026-10-06 la lectura costó $0.20, y la vigencia solo admite tramos FUTUROS
+  // detrás de la fila; una petición de esos nueve días valorada hoy con su fecha
+  // sale con la lectura a $0.10. Sin esta fila su tráfico caía al respaldo
+  // ilustrativo (la herencia por versión menor corta `claude-sonnet-5-5` →
+  // `claude-sonnet-5` a propósito) y su repetición nunca podía ser `reference`.
+  "claude-sonnet-5-5": { inputPer1k: 0.002,  outputPer1k: 0.01,  cachedInputPer1k: 0.0001  },
   "claude-fable-5":    { inputPer1k: 0.01,  outputPer1k: 0.05,  cachedInputPer1k: 0.001   },
   // La generación 5.1 de Fable/Mythos factura la LECTURA de caché a 0.025x de
   // la entrada, no al 10% de la casa ($0.25/MTok con entrada a $10) — verificado
