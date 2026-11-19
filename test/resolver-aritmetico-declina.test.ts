@@ -34,6 +34,10 @@ describe("lo que sigue resolviéndose sin llamar al modelo", () => {
     ["What is 0.1 + 0.2?", "0.3"],
     ["What is 10 - 2 - 3?", "5"],
     ["What is 2.5 * 4?", "10"],
+    ["What is 1 - 0.9?", "0.1"], // ruido de coma flotante, no pérdida
+    ["What is 1.15 * 100?", "115"],
+    ["what is 2 / 3 * 3", "2"],
+    ["What is 1 / 8?", "0.125"],
   ])("«%s» → %s", (texto, esperado) => {
     expect(resolver(texto)).toBe(esperado);
   });
@@ -71,6 +75,9 @@ describe("⛔ lo que NO es una cuenta se le deja al modelo", () => {
     ["What is 2(2+2)?", "multiplicación implícita"],
     ["What is -3 - -2?", "operador unario"],
     ["What is 1/0?", "división por cero"],
+    ["What is 10 / 3?", "división sin fin: «3.333333333» sería un truncado"],
+    ["What is 0.000000001 / 3?", "se redondearía a 0"],
+    ["What is 0.0000000001 + 0.0000000001?", "más de nueve decimales"],
     ["2 + 2 =", "signo igual"],
     ["2+2", "expresión suelta: nunca se contestó, y no se abre un atajo nuevo"],
     ["cuánto es 1;2;3", "lista, no cuenta"],
