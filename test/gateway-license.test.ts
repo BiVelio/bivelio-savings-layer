@@ -689,9 +689,12 @@ describe("la copia que viaja en npm (README y guías de terminales)", () => {
     expect(terminales).toMatch(/TTL\s+de\s+escritura\s+de\s+caché/);
   });
 
-  it("⛔ la guía de Codex ya no dice que la suscripción «no se monetiza» cuando la licencia se paga igual", () => {
+  it("⛔ la guía de Codex ya no dice que la suscripción «no se monetiza», ni que haga falta una licencia por asiento", () => {
     const codex = leer("../docs/terminales/codex.md");
     expect(codex).not.toMatch(/NO monetizado|no se monetiza\*\*/);
-    expect(codex).toMatch(/sin\s+comisión/);
+    // A2-23 · la comisión es un plan cerrado y el gateway no pide licencia: la
+    // suscripción se mide a precio de lista equivalente y no se le acredita ahorro.
+    expect(codex).toMatch(/sin\s+ahorro\s+acreditado/);
+    expect(codex).not.toMatch(/licencia por asiento|el caso que se monetiza/);
   });
 });
