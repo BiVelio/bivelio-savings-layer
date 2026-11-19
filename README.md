@@ -23,11 +23,14 @@ versioned list prices.
 
 ```shell
 npm i @bivelio/savings-layer         # the SDK, in your TypeScript/JavaScript app
-npx @bivelio/savings-layer claude    # or Claude Code through the local gateway (also codex, gemini, qwen, aider)
+npx @bivelio/savings-layer claude    # or meter Claude Code through the local gateway (also codex, gemini, qwen, aider)
 ```
 
-- **Free, with no key.** The open core is the whole savings layer, Apache-2.0: install
-  it and it saves. No key, no signup, no telemetry, and nothing is sent to BiVelio.
+- **Free, with no key.** The open core is the whole savings layer, Apache-2.0. The SDK:
+  install it and it saves. With a coding agent, the local gateway measures your spend on
+  your machine, request by request; its cache-write TTL lever saves only when your client
+  pays per token and asks for the one-hour cache. No key, no signup, no telemetry, and
+  nothing is sent to BiVelio.
 - **The cloud is the paid, optional part.** A BiVelio key adds the team dashboard,
   shared semantic caches across seats, org entitlements and license management, for
   a fixed fee per seat, and never a commission on what you save. Prices below.
@@ -232,8 +235,11 @@ telemetry); `BIVELIO_SERVICE_KEY` adds the cloud dashboard and org entitlements.
 Once running it never interrupts a request in flight: with a live license that
 lapses, only new requests are refused (HTTP 402) until it is renewed. The
 cache-write TTL lever (1h→5m, the saving that changes the rate, never the
-content the model reads) is armed by default; the other levers (sibling model,
-per-turn effort) switch on with their flags. On a Claude or ChatGPT subscription
+content the model reads) is armed by default, but it only has something to lower
+when the client pays per token and asks for the one-hour cache: Claude Code on an
+API key asks for five minutes unless you set `promptCacheTtl` to `1h`, so out of the
+box the gateway measures it and that lever saves nothing. The other levers (sibling
+model, per-turn effort) switch on with their flags. On a Claude or ChatGPT subscription
 there is no per-token invoice, so that traffic is metered at list-price
 equivalent and never carries commission, and the TTL lever leaves Claude Max/Pro
 traffic untouched: there is no write premium to save, and a 5-minute entry would
