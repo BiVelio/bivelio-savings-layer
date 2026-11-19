@@ -9,6 +9,7 @@ on:
   push:
     paths:
       - "docs/paper/**"
+      - ".github/workflows/compilar-paper.yml"
   workflow_dispatch:
 
 permissions:
@@ -24,6 +25,26 @@ jobs:
         with:
           working_directory: docs/paper
           root_file: main.tex
+      # Ninguna línea del PDF se sale del margen. Un \texttt{} con una ruta no
+      # se puede partir: en «Data and code availability» una ruta pasaba 257 pt
+      # del borde y el PDF solo mostraba «docs/benchmarks/2». LaTeX lo deja en
+      # el log como «Overfull \hbox (X pt too wide)»; por encima de 10 pt se
+      # ve a simple vista, y entonces el paso falla. test/paper-sin-desbordes
+      # ejecuta este mismo script contra logs de ejemplo.
+      - name: Ninguna línea se sale del margen (Overfull de más de 10 pt)
+        working-directory: docs/paper
+        run: |
+          if [ ! -f main.log ]; then
+            echo "::error::No hay docs/paper/main.log: la compilación no dejó su log."
+            exit 1
+          fi
+          DESBORDES="$({ grep -E '^Overfull \\hbox \([0-9.]+pt too wide\)' main.log || true; } | awk '{ v = $3; gsub(/[(pt]/, "", v); if (v + 0 > 10) print }')"
+          if [ -n "$DESBORDES" ]; then
+            echo "::error::El PDF tiene líneas que se salen del margen más de 10 pt (usa \\path{} para las rutas):"
+            echo "$DESBORDES"
+            exit 1
+          fi
+          echo "ninguna línea se sale del margen más de 10 pt"
       - name: Subir el PDF
         uses: actions/upload-artifact@v4
         with:

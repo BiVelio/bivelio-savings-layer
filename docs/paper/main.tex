@@ -24,6 +24,11 @@
 \usepackage{microtype}
 \usepackage{hyperref}
 \hypersetup{colorlinks=true,linkcolor=black,citecolor=black,urlcolor=blue}
+% File paths go in \path{} (from url, loaded by hyperref), which may break after
+% "/" and "."; \texttt{} cannot break, and in Section 11 a path ran 257 pt past
+% the margin. \emergencystretch only acts on paragraphs that would otherwise be
+% set with an overfull line (e.g. the one ending in \texttt{usageMetadata}).
+\emergencystretch=1.5em
 
 \newtheorem{proposition}{Proposition}
 \newtheorem{definition}{Definition}
@@ -559,7 +564,7 @@ Following this review, a corrected exploratory re-run (15 November 2026) replace
 with an exact normalized match against per-question declared acceptance sets and published the
 individual answers of both arms. It records 24/24 accepted answers in each arm, 23/24 normalized
 agreement, costs \$0.064568 and \$0.020718 ($-67.91\,\%$), and zero escalations (artifact:
-\texttt{benchmarks/evidencia/cascada-piloto-corregido-2026-11-15.json}). This is a regradeable
+\path{benchmarks/evidencia/cascada-piloto-corregido-2026-11-15.json}). This is a regradeable
 exploratory pilot, not a non-inferiority test; the caveats above remain in force.
 
 \section{Economic scope and deployment implications}\label{sec:economia}
@@ -623,11 +628,11 @@ itself evidence of a fully specified preregistration.
 Public repository: \url{https://github.com/BiVelio/bivelio-savings-layer}. Review snapshot:
 \texttt{239c84b99fe8320f7efaa9da9e63def08d62aed6}.
 
-Historical primary artifacts are \texttt{docs/benchmarks/2026-09-28/gsm8k-0431.json} and
-\texttt{docs/benchmarks/2026-09-28/gsm8k-0431-claude.json}, with the corresponding CSVs. The
-estimator is implemented in \texttt{benchmarks/stats.ts} and called by
-\texttt{benchmarks/publicados/gsm8k/medir.ts}. November summaries are in
-\texttt{benchmarks/evidencia/}; harnesses are in \texttt{benchmarks/experimentos/}. The public
+Historical primary artifacts are \path{docs/benchmarks/2026-09-28/gsm8k-0431.json} and
+\path{docs/benchmarks/2026-09-28/gsm8k-0431-claude.json}, with the corresponding CSVs. The
+estimator is implemented in \path{benchmarks/stats.ts} and called by
+\path{benchmarks/publicados/gsm8k/medir.ts}. November summaries are in
+\path{benchmarks/evidencia/}; harnesses are in \path{benchmarks/experimentos/}. The public
 benchmark index is \url{https://savings.bivelio.com/benchmarks}.
 
 The companion review package contains an offline recomputation script, selected public fixtures,
