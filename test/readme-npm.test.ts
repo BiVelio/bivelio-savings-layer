@@ -4,6 +4,7 @@ import { fileURLToPath } from "node:url";
 import { describe, it, expect } from "vitest";
 
 import { APARTADOS_MOVIDOS, GUIAS_DEL_README } from "./helpers/guias-del-readme.js";
+import { precioDeLista, precioDeListaPropio } from "../src/pricing/catalogo.js";
 
 /**
  * EL README ES LA PÁGINA DE NPM, Y NPM LO CORTA A 64 KiB (auditoría P7).
@@ -199,5 +200,42 @@ describe("el README cuenta los arreglos de la 1.2.3", () => {
     // Sin clave, el gateway mide en local: línea de log, resumen y rutas locales.
     expect(terminales).not.toContain("el metering se queda en las rutas locales");
     expect(terminales).toContain("una línea de log por petición, el resumen al salir y las rutas locales");
+  });
+});
+
+/**
+ * EL CHANGELOG TAMBIÉN VIAJA EN EL TARBALL, Y SOLO CUENTA LO QUE EL CÓDIGO HACE.
+ *
+ * La entrada de la 1.2.3 llegó a anunciar filas de precio de `claude-fable-5-2` y
+ * `gemini-2.5-flash-lite` que no estaban en el catálogo de main (vivían en otra
+ * rama), y a poner `gemini-2.5-flash-lite` como ejemplo de id SIN precio, que
+ * deja de serlo en cuanto esa rama entra. Las dos frases dependían de qué se
+ * fusionara antes; estas pruebas las atan al catálogo que se publica.
+ */
+describe("la entrada 1.2.3 del CHANGELOG dice lo que hace el catálogo", () => {
+  const changelog = leer("CHANGELOG.md");
+  const desde = changelog.indexOf("## 1.2.3");
+  const hasta = changelog.indexOf("\n## ", desde + 1);
+  const entrada = changelog.slice(desde, hasta < 0 ? undefined : hasta);
+  const plana = entrada.replace(/\s+/g, " ");
+
+  it("no anuncia filas de precio que el catálogo no tiene", () => {
+    expect(desde, "falta la entrada «## 1.2.3» del CHANGELOG").toBeGreaterThanOrEqual(0);
+    const anunciados = [...plana.matchAll(/List-price rows? for ((?:`[^`]+`(?:,? and |, )?)+)/g)].flatMap((m) =>
+      [...m[1]!.matchAll(/`([^`]+)`/g)].map((id) => id[1]!),
+    );
+    const sinFila = anunciados.filter((id) => precioDeListaPropio(id) === undefined);
+    expect(sinFila, `el CHANGELOG anuncia fila propia para ${sinFila.join(", ")}`).toEqual([]);
+  });
+
+  it("los ejemplos de id sin precio de lista no lo tienen, y el pariente que ya no heredan sí", () => {
+    const m = /Ids with `:` \(`([^`]+)`\) and relatives whose suffix is not an alias of the same model \(`([^`]+)` no longer takes `([^`]+)`'s row\) have no list price/.exec(
+      plana,
+    );
+    expect(m, "cambió la frase de los ids sin precio: actualiza esta prueba").not.toBeNull();
+    const [, conVariante = "", pariente = "", modelo = ""] = m!;
+    expect(precioDeLista(conVariante), conVariante).toBeUndefined();
+    expect(precioDeLista(pariente), pariente).toBeUndefined();
+    expect(precioDeLista(modelo), modelo).toBeDefined();
   });
 });

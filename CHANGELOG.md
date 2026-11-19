@@ -20,8 +20,8 @@
   none in `costModels` or `defaultCostModel` is still priced at the illustrative
   rate, but `cost.basis` is `"estimated"`, not `"measured"`, and a `price` trace
   carries `priceSource: "illustrative"`. Ids with `:` (`gpt-4o-mini:free`) and
-  relatives whose suffix is not an alias of the same model (`gemini-2.5-flash-lite`
-  no longer takes `gemini-2.5-flash`'s row) have no list price; dated,
+  relatives whose suffix is not an alias of the same model (`gpt-4o-mini-tts`
+  no longer takes `gpt-4o-mini`'s row) have no list price; dated,
   `-latest`, `-preview` and `-exp` ids keep their model's.
 - **Random output and the current time are not served from cache.** A request
   whose user turns ask for random or freshly generated output (a random pick, a new
@@ -75,11 +75,6 @@
 - `pyproject.toml` links the public repository, and the README's LICENSE link is an
   absolute GitHub URL (it was a 404 on pypi.org). From the extracted sdist, the
   parity tests are skipped with their reason instead of failing.
-
-### Catalog
-
-- List-price rows for `claude-fable-5-2` and `gemini-2.5-flash-lite` (list prices
-  checked on 2026-11-19).
 
 ### Docs
 
