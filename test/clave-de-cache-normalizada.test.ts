@@ -1,6 +1,8 @@
 import { describe, it, expect } from "vitest";
 import {
   createDefaultResolvers,
+  createSavingsLayer,
+  OpenAICompatibleProvider,
   ToolSelector,
 } from "../src/index.js";
 import { canonicalize, buildExactKey, buildInflightKey, normalizeText } from "../src/canonicalization/index.js";
@@ -304,5 +306,103 @@ describe("el coste que esta normalización acepta, escrito para que nadie lo des
 
   it("«la força» y «la forca» también", () => {
     expect(clave("quina és la força")).toBe(clave("quina es la forca"));
+  });
+});
+
+describe("⛔ N1 · la caché no contesta OTRA pregunta de código", () => {
+  /**
+   * Auditoría del 2026-11-19. La normalización de prosa, aplicada a código,
+   * unía preguntas distintas: borraba `!`, `?.` y el `.` de un identificador o
+   * de una regex, y bajaba a minúsculas lo entrecomillado. Quien preguntaba por
+   * `if (ok)` recibía la respuesta de `if (!ok)`, apuntada como llamada evitada.
+   * Todos los textos son inventados.
+   */
+  const PARES_DE_CODIGO: ReadonlyArray<readonly [string, string, string]> = [
+    ["What does `if (!ok) return;` do in JavaScript?", "What does `if (ok) return;` do in JavaScript?", "negación entre backticks"],
+    ["Is the expression a != b true when a is 1 and b is 2?", "Is the expression a = b true when a is 1 and b is 2?", "!= frente a ="],
+    ["should I write if (!listo) here", "should I write if (listo) here", "negación sin backticks"],
+    ["Explain the regex ^a.b$ briefly", "Explain the regex ^ab$ briefly", "el punto de una regex"],
+    ["What does obj?.name return when obj is null?", "What does obj.name return when obj is null?", "encadenamiento opcional"],
+    ["what is user.id here", "what is userid here", "el punto de un identificador"],
+    ["Is the string 'ABC' equal to the string 'abc' in Python?", "Is the string 'abc' equal to the string 'abc' in Python?", "caja entre comillas simples"],
+    ['does grep "Error" match the same lines as grep "error"', 'does grep "error" match the same lines as grep "error"', "caja entre comillas dobles"],
+    ["what does `SELECT Nombre FROM t` return", "what does `select nombre from t` return", "caja entre backticks"],
+    ["explain `a.b`", "explain `ab`", "punto entre backticks"],
+    ["what prints print('abc')", "what prints print(abc)", "cadena frente a variable"],
+    ["call f(a,b) or not", "call f(ab) or not", "la coma de una lista de argumentos"],
+    ["explica:\n```py\nif x:\n    y = 1\n```", "explica:\n```py\nif x:\ny = 1\n```", "la sangría dentro de un bloque"],
+    ["explica:\n```js\nif (!A) b()\n```", "explica:\n```js\nif (a) b()\n```", "un bloque de código"],
+    ["what is !!x in js", "what is x in js", "doble negación"],
+  ];
+
+  it.each(PARES_DE_CODIGO)("«%s» ≠ «%s»  (%s)", (a, b) => {
+    expect(normalizeText(a)).not.toBe(normalizeText(b));
+    expect(clave(a)).not.toBe(clave(b));
+  });
+
+  // La otra mitad: lo que es prosa sigue colisionando aunque lleve los mismos signos.
+  const PROSA_QUE_SIGUE_JUNTA: ReadonlyArray<readonly [string, string]> = [
+    ["¿Cuál es el total?", "cual es el total"],
+    ["Wait, what?! Really...", "wait what really"],
+    ["Hello, World. Bye;", "hello world bye"],
+    ["¿Qué hace `ls -la`?", "que hace `ls -la`"],
+    ["Nota: revisa el pedido (¿seguro?).", "nota revisa el pedido (seguro)"],
+    ["l`import de la factura", "l'import de la factura"],
+  ];
+
+  it.each(PROSA_QUE_SIGUE_JUNTA)("«%s» ≡ «%s»", (a, b) => {
+    expect(clave(a)).toBe(clave(b));
+  });
+
+  it("lo que va entre backticks o en un bloque sale tal cual", () => {
+    expect(normalizeText("¿Qué hace `If (!Ok) Return;`?")).toBe("que hace `If (!Ok) Return;`");
+    expect(normalizeText("Mira:\n```js\nconst A = 1;\n```\n¡Gracias!")).toBe("mira ```js\nconst A = 1;\n``` gracias");
+    // Un bloque sin cerrar protege hasta el final.
+    expect(normalizeText("Mira:\n```js\nconst A = !B;")).toBe("mira ```js\nconst A = !B;");
+  });
+
+  it("los guardarraíles de política siguen viendo el texto entrecomillado", () => {
+    // La caja se conserva dentro de las comillas; los marcadores no distinguen caja.
+    expect(evaluatePolicy(canonicalize(peticion('¿Qué significa "HOY" aquí?'))).requiresFreshData).toBe(
+      evaluatePolicy(canonicalize(peticion('¿Qué significa "hoy" aquí?'))).requiresFreshData,
+    );
+  });
+
+  it("de capa: la pregunta sin la negación vuelve al proveedor", async () => {
+    let llamadas = 0;
+    const fetchImpl = (async (_url: unknown, init?: { body?: unknown }) => {
+      llamadas += 1;
+      const cuerpo = JSON.parse(String(init?.body)) as { model: string; messages: { content: string }[] };
+      return new Response(
+        JSON.stringify({
+          model: cuerpo.model,
+          choices: [
+            { index: 0, message: { role: "assistant", content: `respuesta a: ${cuerpo.messages.at(-1)!.content}` }, finish_reason: "stop" },
+          ],
+          usage: { prompt_tokens: 40, completion_tokens: 12, total_tokens: 52 },
+        }),
+        { status: 200, headers: { "content-type": "application/json" } },
+      );
+    }) as unknown as typeof fetch;
+    const capa = createSavingsLayer({
+      provider: new OpenAICompatibleProvider({ baseUrl: "https://api.openai.test/v1", apiKey: "k-inventada", fetchImpl }),
+      silenceWarnings: true,
+    });
+    const pregunta = (texto: string) => capa.generate({ model: MODELO, messages: [{ role: "user", content: texto }] });
+
+    const conNegacion = await pregunta("What does `if (!ok) return;` do in JavaScript?");
+    const sinNegacion = await pregunta("What does `if (ok) return;` do in JavaScript?");
+    expect(sinNegacion.report.cache.result).toBe("miss");
+    expect(llamadas).toBe(2);
+    expect(sinNegacion.text).not.toBe(conNegacion.text);
+
+    // Y la repetición EXACTA sigue acertando: no se ha apagado la caché.
+    const repetida = await pregunta("What does `if (ok) return;` do in JavaScript?");
+    expect(repetida.report.cache.result).toBe("exact");
+    expect(llamadas).toBe(2);
+  });
+
+  it("la generación de la clave sube a n3: las entradas viejas no se vuelven a leer", () => {
+    expect(clave("hola")).toMatch(/^bvsala:exact:n3:/);
   });
 });
