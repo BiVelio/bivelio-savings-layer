@@ -5,6 +5,13 @@ name: publish-pypi
 # por `py-v` (p. ej. `py-v0.1.0`). Las Release `v*` son del paquete de npm y
 # las publica publish.yml, que salta las `py-v*`: las dos cadenas no se pisan.
 #
+# CREAR LA RELEASE CON `--latest=false`. «Latest» en GitHub tiene que seguir
+# siendo la última Release `v*` (npm), y este workflow no lo puede imponer:
+# haría falta `contents: write` en un trabajo que editara otra Release. Así que
+# va en el comando (docs/PUBLICAR-PYPI.md):
+#   gh release create py-vX.Y.Z --target main --latest=false --title "Python X.Y.Z" --notes "…"
+# Si ya quedó como Latest: `gh release edit v<última de npm> --latest`.
+#
 # AUTENTICACIÓN: PyPI TRUSTED PUBLISHING (OIDC), sin token guardado. GitHub
 # emite un token OIDC de vida corta para ESTE workflow y PyPI lo canjea por un
 # permiso de subida de pocos minutos. PyPI lo ata a cuatro valores exactos:

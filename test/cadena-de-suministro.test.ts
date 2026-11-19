@@ -285,6 +285,109 @@ describe("publish.yml conserva las verjas de antes de publicar", () => {
   });
 });
 
+/**
+ * CADA RELEASE DISPARA SOLO LA CADENA DE SU PAQUETE. Los tres workflows de
+ * publicación escuchan TODAS las Release (`on: release: published`) y cada uno
+ * salta las que no son suyas con un `if` por prefijo de etiqueta. Un trabajo
+ * raíz sin ese `if` corre en cada Release: el `banco-semanal` de publish.yml
+ * no lo tenía y `verificar` no saltaba las `paper-v*`, así que paper-v2.2,
+ * paper-v2.3 y las py-v* salían en rojo aunque no fueran de npm.
+ *
+ * Se evalúa lo que GitHub haría con cada etiqueta, no el texto exacto del `if`.
+ */
+describe("cada Release dispara solo la cadena de su paquete", () => {
+  interface Trabajo { si: string | undefined; necesita: string[] }
+
+  function trabajosDe(texto: string): Map<string, Trabajo> {
+    const lineas = sinComentarios(texto).split("\n");
+    const desde = lineas.indexOf("jobs:");
+    const trabajos = new Map<string, Trabajo>();
+    let actual: Trabajo | undefined;
+    for (const l of lineas.slice(desde + 1)) {
+      const cabecera = /^ {2}([A-Za-z0-9_-]+):\s*$/.exec(l);
+      if (cabecera) {
+        actual = { si: undefined, necesita: [] };
+        trabajos.set(cabecera[1]!, actual);
+        continue;
+      }
+      const si = /^ {4}if: (.+)$/.exec(l);
+      if (si && actual) actual.si = si[1]!.replace(/^\$\{\{\s*/, "").replace(/\s*\}\}$/, "");
+      const necesita = /^ {4}needs: (.+)$/.exec(l);
+      if (necesita && actual) actual.necesita = necesita[1]!.replace(/[[\]]/g, "").split(",").map((n) => n.trim());
+    }
+    return trabajos;
+  }
+
+  /** `!?startsWith(github.event.release.tag_name, '<prefijo>')` unidos por `&&`; otra forma no se adivina. */
+  function evaluarEtiqueta(si: string, etiqueta: string): boolean {
+    return si.split(/\s+&&\s+/).every((termino) => {
+      const m = /^(!?)startsWith\(github\.event\.release\.tag_name, '([^']+)'\)$/.exec(termino.trim());
+      if (!m) throw new Error(`condición que este test no sabe evaluar: ${termino}`);
+      return etiqueta.startsWith(m[2]!) !== (m[1] === "!");
+    });
+  }
+
+  /**
+   * ¿Corre el trabajo con esa etiqueta? Un trabajo sin `needs` corre si su `if`
+   * de etiqueta lo deja (sin `if`, siempre). Con `needs`, solo si corren todos
+   * aquellos de los que depende; con `always()`, solo si corren los trabajos
+   * cuyas salidas lee (sin ellas, siempre: este modelo no lo da por saltado).
+   */
+  function corre(trabajos: Map<string, Trabajo>, nombre: string, etiqueta: string): boolean {
+    const t = trabajos.get(nombre);
+    if (!t) throw new Error(`no hay un trabajo '${nombre}'`);
+    if (t.si?.includes("always()")) {
+      const leidos = [...t.si.matchAll(/needs\.([A-Za-z0-9_-]+)\.outputs/g)].map((m) => m[1]!);
+      return leidos.every((n) => corre(trabajos, n, etiqueta));
+    }
+    if (!t.necesita.every((n) => corre(trabajos, n, etiqueta))) return false;
+    return t.si === undefined || t.necesita.length > 0 || evaluarEtiqueta(t.si, etiqueta);
+  }
+
+  const ETIQUETAS = ["v1.2.2", "v1.3.0-rc.1", "py-v1.2.2", "pg-v0.2.0", "paper-v2.4"] as const;
+  const DUENO: Record<string, (etiqueta: string) => boolean> = {
+    "publish.yml": (e) => /^v\d/.test(e),
+    "publish-pypi.yml": (e) => e.startsWith("py-v"),
+    "publish-postgres.yml": (e) => e.startsWith("pg-v"),
+  };
+
+  for (const [fichero, esSuya] of Object.entries(DUENO)) {
+    const trabajos = trabajosDe(leer(`../.github/workflows/${fichero}`));
+
+    it.each(ETIQUETAS)(`${fichero} con la Release %s: corre entera si es suya y nada si no`, (etiqueta) => {
+      const corren = [...trabajos.keys()].filter((n) => corre(trabajos, n, etiqueta));
+      expect(corren).toEqual(esSuya(etiqueta) ? [...trabajos.keys()] : []);
+    });
+  }
+
+  it("el modelo no se engaña: un trabajo raíz sin `if` corre con cualquier etiqueta", () => {
+    const sinSalto = trabajosDe("jobs:\n  puerta:\n    runs-on: ubuntu-latest\n  publicar:\n    needs: [puerta]\n");
+    expect(corre(sinSalto, "puerta", "paper-v2.4")).toBe(true);
+    expect(corre(sinSalto, "publicar", "py-v1.2.2")).toBe(true);
+  });
+
+  it("los comandos documentados para crear Release py-v*, pg-v* y paper-v* llevan `--latest=false`", () => {
+    // «Latest» en GitHub tiene que seguir siendo la última Release de npm. El
+    // YAML no lo impone (haría falta `contents: write` sobre otra Release), así
+    // que lo impone el comando: un `gh release create py-v…` sin el flag dejó
+    // «Python client 1.2.1» como la Release destacada del repositorio.
+    const ficheros = [
+      ...readdirSync(join(RAIZ, "docs"), { recursive: true })
+        .map(String)
+        .filter((f) => f.endsWith(".md"))
+        .map((f) => join("docs", f)),
+      ...readdirSync(join(RAIZ, ".github/workflows")).map((f) => join(".github/workflows", f)),
+    ];
+    const comandos: string[] = [];
+    for (const f of ficheros) {
+      const texto = readFileSync(join(RAIZ, f), "utf8").replace(/\\\n\s*(?:#\s*)?/g, " ");
+      for (const m of texto.matchAll(/gh release create (?:py|pg|paper)-v[^\n`]*/g)) comandos.push(`${f}: ${m[0]}`);
+    }
+    expect(comandos.length).toBeGreaterThan(0);
+    expect(comandos.filter((c) => !c.includes("--latest=false"))).toEqual([]);
+  });
+});
+
 describe("package.json cumple lo que el trusted publishing exige", () => {
   it("repository.url apunta EXACTAMENTE a este repositorio (npm lo compara, con mayúsculas)", () => {
     const pkg = JSON.parse(leer("../package.json")) as { repository?: { type?: string; url?: string } };
