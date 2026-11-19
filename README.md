@@ -33,7 +33,8 @@ npx @bivelio/savings-layer claude    # or Claude Code through the local gateway 
   a fixed fee per seat, and never a commission on what you save. Prices below.
 - **The evidence is public.** [The paper](https://savings.bivelio.com/paper) (v2.3-r1,
   revised after an external pre-publication review) gives the method, the results and
-  every limitation; the artifacts are in [`benchmarks/evidencia`](./benchmarks/evidencia).
+  every limitation; the artifacts are in
+  [`benchmarks/evidencia`](https://github.com/BiVelio/bivelio-savings-layer/tree/main/benchmarks/evidencia).
 
 ### How it saves
 
