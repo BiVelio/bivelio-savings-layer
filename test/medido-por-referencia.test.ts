@@ -321,11 +321,11 @@ describe("5 · L6: sin tarifa cacheada documentada no hay referencia", () => {
   });
 
   it("un id que HEREDA la fila de otro modelo no vale: gemini-2.5-flash-lite no es gemini-2.5-flash", async () => {
-    // `precioDeLista` le da a `-lite` la fila de su pariente (sufijo de letra),
-    // tres veces su entrada cacheada real. Para tarifar un informe puede pasar;
-    // para un suelo que entra en la comisión, no.
+    // `precioDeLista` le daba a `-lite` la fila de su pariente (sufijo de
+    // letra), tres veces su entrada cacheada real. Desde el 2026-11-19 (N4) ya
+    // no hereda ni para tarifar: un sufijo que no es un alias es otro modelo.
     const LITE = "google/gemini-2.5-flash-lite";
-    expect(precioDeLista(LITE)).toBe(precioDeLista("gemini-2.5-flash"));
+    expect(precioDeLista(LITE)).toBeUndefined();
     const { layer } = montar(new ProveedorFijo(400, 60));
     await layer.generate(peticion({ model: LITE, temperature: 0 }));
     const hit = await layer.generate(peticion({ model: LITE, temperature: 0 }));

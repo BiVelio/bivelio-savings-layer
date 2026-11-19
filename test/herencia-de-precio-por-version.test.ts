@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 
-import { CATALOGO, buscarPorModelo, clavesPorLongitud } from "../src/pricing/catalogo.js";
+import { CATALOGO, buscarPorModelo, claveDeCatalogo, clavesPorLongitud, precioDeLista } from "../src/pricing/catalogo.js";
 
 const CLAVES = clavesPorLongitud(CATALOGO);
 const precio = (m: string) => buscarPorModelo(CATALOGO, CLAVES, m);
@@ -53,5 +53,86 @@ describe("herencia de precio por prefijo", () => {
     for (const clave of Object.keys(CATALOGO)) {
       expect(precio(clave)).toBe(CATALOGO[clave]);
     }
+  });
+});
+
+/**
+ * N4 (auditoría del 2026-11-19) · UN ID CON VARIANTE O CON OTRO APELLIDO NO
+ * HEREDA EL PRECIO DE UN MODELO MAYOR.
+ *
+ * `gpt-4o-mini:free` no pasaba el separador de `gpt-4o-mini`, el bucle seguía y
+ * casaba `gpt-4o` (16 veces su precio, sin aviso). `gemini-2.5-flash-lite`
+ * heredaba la fila de `gemini-2.5-flash`. Un id sin precio se declara; uno con
+ * el precio de otro modelo, no.
+ */
+describe("⛔ N4 · ni las variantes «:x» ni los parientes heredan", () => {
+  it("para TODA clave K, K:variante da la fila de K o nada — nunca la de otra clave", () => {
+    for (const k of Object.keys(CATALOGO)) {
+      for (const variante of ["free", "flex", "extended", "thinking", "nitro", "online", "x"]) {
+        for (const id of [`${k}:${variante}`, `openrouter/${k}:${variante}`, `${k}-latest:${variante}`]) {
+          const fila = precio(id);
+          expect(fila === undefined || fila === CATALOGO[k], id).toBe(true);
+          // Y hoy, en concreto, nada: la variante tiene otro precio.
+          expect(claveDeCatalogo(id), id).toBeUndefined();
+          expect(precioDeLista(id), id).toBeUndefined();
+        }
+      }
+    }
+  });
+
+  it.each([
+    "gpt-4o-mini:free",
+    "openai/gpt-4o-mini:free",
+    "gpt-4.1-nano:extended",
+    "gpt-5-mini:flex",
+    "claude-sonnet-4-5:thinking",
+    "llama3.2:latest",
+  ])("«%s» no tiene precio de lista", (id) => {
+    expect(precioDeLista(id)).toBeUndefined();
+  });
+
+  it.each([
+    ["gemini-2.5-flash-lite", "gemini-2.5-flash"],
+    ["gemini-2.5-flash-image", "gemini-2.5-flash"],
+    ["gpt-4o-mini-tts", "gpt-4o-mini"],
+    ["gpt-4o-mini-transcribe", "gpt-4o-mini"],
+    ["gpt-4o-mini-realtime-preview", "gpt-4o-mini"],
+    ["gpt-4o-realtime-preview", "gpt-4o"],
+    ["gpt-4o-audio-preview", "gpt-4o"],
+    ["gpt-4o-minimal", "gpt-4o"],
+  ])("«%s» no hereda la fila de «%s»", (id, pariente) => {
+    expect(CATALOGO[id]).toBeUndefined();
+    expect(CATALOGO[pariente]).toBeDefined();
+    expect(precio(id)).toBeUndefined();
+    expect(precioDeLista(`vendor/${id}`)).toBeUndefined();
+  });
+
+  it("ningún id «clave-palabra» hereda de una clave distinta de la más larga que lo prefija", () => {
+    const palabras = ["lite", "mini", "nano", "pro", "turbo", "flash", "image", "tts", "audio", "search", "codex", "max", "high"];
+    for (const k of Object.keys(CATALOGO)) {
+      for (const palabra of palabras) {
+        const id = `${k}-${palabra}`;
+        if (id in CATALOGO) continue;
+        expect(precio(id), id).toBeUndefined();
+      }
+    }
+  });
+
+  it("los alias del MISMO modelo siguen heredando", () => {
+    expect(precio("gpt-4o-mini-2024-07-18")).toBe(CATALOGO["gpt-4o-mini"]);
+    expect(precio("openai/gpt-4o-2024-08-06")).toBe(CATALOGO["gpt-4o"]);
+    expect(precio("claude-sonnet-4-5-20250929")).toBe(CATALOGO["claude-sonnet-4-5"]);
+    expect(precio("claude-3-5-sonnet-latest")).toBe(CATALOGO["claude-3-5-sonnet"]);
+    expect(precio("gpt-5-chat-latest")).toBe(CATALOGO["gpt-5"]);
+    expect(precio("gemini-2.5-flash-preview-05-20")).toBe(CATALOGO["gemini-2.5-flash"]);
+    expect(precio("gemini-2.5-pro-preview")).toBe(CATALOGO["gemini-2.5-pro"]);
+    expect(precio("gemini-2.5-pro-exp-0827")).toBe(CATALOGO["gemini-2.5-pro"]);
+  });
+
+  it("con fila exacta declarada, un id con «:» sí tiene precio (el del cliente manda)", () => {
+    const propio = { "modelo-inventado:free": { inputPer1k: 0, outputPer1k: 0 } };
+    expect(buscarPorModelo(propio, clavesPorLongitud(propio), "vendor/modelo-inventado:free")).toBe(
+      propio["modelo-inventado:free"],
+    );
   });
 });

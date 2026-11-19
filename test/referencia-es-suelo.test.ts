@@ -211,9 +211,13 @@ describe("el precio de la referencia es la fila PROPIA del modelo, nunca la de u
         expect(ev, id).toEqual({ ok: false, reason: "no-cached-price" });
       }
     }
-    // El bloque tiene que ejercitar la herencia peligrosa, no solo ids sin precio.
+    // El bloque tiene que ejercitar la herencia, no solo ids sin precio: los
+    // alias (`-latest`, `-preview`, `-exp`) siguen heredando para tarifar.
     expect(heredados).toBeGreaterThan(0);
-    expect(precioDeLista("gemini-2.5-flash-lite")).toBe(CATALOGO["gemini-2.5-flash"]);
+    expect(precioDeLista("gemini-2.5-flash-latest")).toBe(CATALOGO["gemini-2.5-flash"]);
+    expect(precioDeListaPropio("gemini-2.5-flash-latest")).toBeUndefined();
+    // Y lo que no es un alias ya no hereda ni para tarifar (N4, 2026-11-19).
+    expect(precioDeLista("gemini-2.5-flash-lite")).toBeUndefined();
     expect(precioDeListaPropio("gemini-2.5-flash-lite")).toBeUndefined();
   });
 
