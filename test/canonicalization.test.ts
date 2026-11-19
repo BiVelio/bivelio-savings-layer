@@ -13,10 +13,19 @@ function req(overrides: Partial<SavingsRequest> = {}): SavingsRequest {
 }
 
 describe("canonicalization + exact key", () => {
-  it("normalizes whitespace and case so equivalent text collides", () => {
-    const a = buildExactKey(canonicalize(req({ messages: [{ role: "user", content: "Hello   World" }] })));
+  // A2-3 (2026-11-19): the key folds whitespace and the capital that opens the
+  // turn, and nothing else. It used to fold every capital ("Hello World" with
+  // "hello world"), which also merged `curl -O` with `curl -o`.
+  it("normalizes whitespace and the leading capital so equivalent text collides", () => {
+    const a = buildExactKey(canonicalize(req({ messages: [{ role: "user", content: "Hello   world" }] })));
     const b = buildExactKey(canonicalize(req({ messages: [{ role: "user", content: "hello world" }] })));
     expect(a).toBe(b);
+  });
+
+  it("keeps a capital inside the turn: it can be the whole question", () => {
+    const a = buildExactKey(canonicalize(req({ messages: [{ role: "user", content: "hello World" }] })));
+    const b = buildExactKey(canonicalize(req({ messages: [{ role: "user", content: "hello world" }] })));
+    expect(a).not.toBe(b);
   });
 
   it("isolates tenants — same text, different tenant, different key", () => {

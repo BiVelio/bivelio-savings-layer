@@ -52,8 +52,13 @@ function clave(texto: string, extra: Partial<SavingsRequest> = {}): string {
 // cambia lo que se pregunta.
 const CASI_DUPLICADOS: ReadonlyArray<readonly [string, string, string]> = [
   ["¿Cuál es el total de la factura?", "cual es el total de la factura", "es: tilde + ¿?"],
-  ["  El   IVA   está   incluido.  ", "el iva esta incluido", "es: espacios, caja, punto final"],
-  ["¡Traduce esto, por favor!", "traduce esto por favor", "es: ¡! y coma"],
+  // A2-3 (2026-11-19): la CLAVE ya solo pliega la inicial del turno. Estas dos
+  // filas decían «IVA ≡ iva» y «¡Traduce esto…! ≡ traduce esto…»; la primera
+  // unía siglas con palabras («5 MW» con «5 mW» por la misma regla) y la segunda
+  // es una petición de traducción, que ahora va tal cual (A2-31). Lo que se
+  // pierde está escrito más abajo, en «el coste que la clave acepta».
+  ["  El   IVA   está   incluido.  ", "el IVA esta incluido", "es: espacios, inicial, punto final"],
+  ["¡Dime el total, por favor!", "dime el total por favor", "es: ¡! y coma"],
   ["¿Cómo estás?", "como estas", "es: solo tildes y signos"],
   ["Quin és l'import d'aquest mes?", "quin es l'import d'aquest mes", "ca: accents"],
   ["Com s'escriu «col·legi»?", 'com s\'escriu "col.legi"', "ca: ela geminada i cometes baixes"],
@@ -343,8 +348,10 @@ describe("⛔ N1 · la caché no contesta OTRA pregunta de código", () => {
   // La otra mitad: lo que es prosa sigue colisionando aunque lleve los mismos signos.
   const PROSA_QUE_SIGUE_JUNTA: ReadonlyArray<readonly [string, string]> = [
     ["¿Cuál es el total?", "cual es el total"],
-    ["Wait, what?! Really...", "wait what really"],
-    ["Hello, World. Bye;", "hello world bye"],
+    // A2-3: la mayúscula que no abre el turno ya no se pliega en la clave
+    // («Really», «World», «Bye» antes sí): estas filas la llevan igual a los dos lados.
+    ["Wait, what?! Really...", "wait what Really"],
+    ["Hello, World. Bye;", "hello World Bye"],
     ["¿Qué hace `ls -la`?", "que hace `ls -la`"],
     ["Nota: revisa el pedido (¿seguro?).", "nota revisa el pedido (seguro)"],
     ["l`import de la factura", "l'import de la factura"],
@@ -407,6 +414,187 @@ describe("⛔ N1 · la caché no contesta OTRA pregunta de código", () => {
   });
 });
 
+describe("⛔ A2-3 · una mayúscula que cambia la pregunta cambia la clave", () => {
+  /**
+   * Segunda auditoría del 2026-11-19. N1 conservó la caja dentro de comillas y
+   * backticks; fuera, todo se pasaba a minúsculas y «What does curl -O do?»
+   * servía su respuesta a «What does curl -o do?» durante 24 h, apuntada como
+   * llamada evitada. La clave ya solo pliega la inicial del turno. Todos los
+   * textos son inventados.
+   */
+  const PARES: ReadonlyArray<readonly [string, string, string]> = [
+    ["What does curl -O do?", "What does curl -o do?", "opción de CLI"],
+    ["what does curl -O do", "what does curl -o do", "opción de CLI, sin adornos"],
+    ["What does git branch -D do?", "What does git branch -d do?", "opción de CLI: borrado forzado"],
+    ["what does tar --Exclude do", "what does tar --exclude do", "opción larga"],
+    ["Convert 5 MW to watts", "Convert 5 mW to watts", "unidad: mega frente a mili"],
+    ["how many watts are 5 MW", "how many watts are 5 mW", "unidad, sin verbo de conversión"],
+    ["How many bytes are 3 Mb?", "How many bytes are 3 MB?", "unidad: bits frente a bytes"],
+    ["how long does 5MW take", "how long does 5mW take", "unidad pegada a la cifra"],
+    ["Write a regex that matches [A-Z]+ only", "Write a regex that matches [a-z]+ only", "corchetes"],
+    ["In Go, is the field Name exported?", "In Go, is the field name exported?", "identificador"],
+    ["is NULL the same as null here", "is null the same as null here", "identificador en mayúsculas"],
+    ["what is the type of userId", "what is the type of userid", "camelCase"],
+    ["what does this do\nName = name.upper()", "what does this do\nname = name.upper()", "código pegado en otra línea"],
+    ["I love Polish food", "I love polish food", "nombre propio frente a adjetivo"],
+    ["what does `ls` do with -A", "what does `ls` do with -a", "prosa después de un backtick"],
+    ["explain `ls` Name", "explain `ls` name", "la palabra tras un backtick no abre el turno"],
+  ];
+
+  it.each(PARES)("«%s» ≠ «%s»  (%s)", (a, b) => {
+    expect(clave(a)).not.toBe(clave(b));
+    expect(buildInflightKey(canonicalize(peticion(a)))).not.toBe(buildInflightKey(canonicalize(peticion(b))));
+  });
+
+  it("en una conversación, la mayúscula de un turno anterior también cuenta", () => {
+    const con = (texto: string) =>
+      buildExactKey(
+        canonicalize({
+          model: MODELO,
+          context: { ...CONTEXTO },
+          messages: [
+            { role: "user", content: texto },
+            { role: "assistant", content: "De acuerdo." },
+            { role: "user", content: "y eso qué hace" },
+          ],
+        }),
+      );
+    expect(con("hablemos de curl -O")).not.toBe(con("hablemos de curl -o"));
+  });
+
+  // Lo que SÍ sigue junto: la inicial del turno, las tildes, los signos de
+  // frase y los espacios. Es el acierto que se quería conservar.
+  const SIGUEN_JUNTAS: ReadonlyArray<readonly [string, string]> = [
+    ["¿Cuál es el total?", "cual es el total"],
+    ["What does curl -O do?", "what does curl -O do"],
+    ["How many watts are 5 MW?", "how many   watts are 5 MW"],
+    ["¡Hola! ¿qué tal?", "hola que tal"],
+    ["Él no viene", "el no viene"],
+    ["  Dime el total  ", "dime el total"],
+  ];
+
+  it.each(SIGUEN_JUNTAS)("«%s» ≡ «%s»", (a, b) => {
+    expect(clave(a)).toBe(clave(b));
+  });
+
+  it("`normalizedText` no cambia: política, router y selector siguen leyendo minúsculas", () => {
+    const c = canonicalize(peticion("What does curl -O do with MW?"));
+    expect(c.normalizedText).toBe("user:what does curl -o do with mw");
+    expect(c.exactText).toBe("user:what does curl -O do with MW");
+  });
+
+  it("una petición canónica hecha a mano, sin `exactText`, sigue teniendo clave", () => {
+    const { exactText: _fuera, ...sin } = canonicalize(peticion("hola"));
+    expect(buildExactKey(sin)).toBe(clave("hola"));
+  });
+
+  it("de capa: «curl -o» no recibe la respuesta de «curl -O», y la repetición exacta acierta", async () => {
+    let llamadas = 0;
+    const fetchImpl = (async (_url: unknown, init?: { body?: unknown }) => {
+      llamadas += 1;
+      const cuerpo = JSON.parse(String(init?.body)) as { model: string };
+      return new Response(
+        JSON.stringify({
+          model: cuerpo.model,
+          choices: [{ index: 0, message: { role: "assistant", content: `respuesta #${llamadas}` }, finish_reason: "stop" }],
+          usage: { prompt_tokens: 40, completion_tokens: 12, total_tokens: 52 },
+        }),
+        { status: 200, headers: { "content-type": "application/json" } },
+      );
+    }) as unknown as typeof fetch;
+    const capa = createSavingsLayer({
+      provider: new OpenAICompatibleProvider({ baseUrl: "https://api.openai.test/v1", apiKey: "k-inventada", fetchImpl }),
+      silenceWarnings: true,
+    });
+    const pregunta = (texto: string) =>
+      capa.generate({ model: MODELO, temperature: 0, messages: [{ role: "user", content: texto }] });
+
+    for (const [a, b] of [
+      ["What does curl -O do?", "What does curl -o do?"],
+      ["Convert 5 MW to watts", "Convert 5 mW to watts"],
+      ["Translate to French: I love Polish food", "Translate to French: I love polish food"],
+      ["Rewrite formally: Can you help me?", "Rewrite formally: Can you help me!"],
+    ] as const) {
+      const antes = llamadas;
+      const primera = await pregunta(a);
+      const segunda = await pregunta(b);
+      expect(segunda.report.cache.result, b).toBe("miss");
+      expect(segunda.text, b).not.toBe(primera.text);
+      expect(llamadas - antes, b).toBe(2);
+      const repetida = await pregunta(b);
+      expect(repetida.report.cache.result, b).toBe("exact");
+      expect(repetida.text, b).toBe(segunda.text);
+      expect(llamadas - antes, b).toBe(2);
+    }
+  });
+});
+
+describe("⛔ A2-31 · cuando el texto es el encargo, la clave lo lleva tal cual", () => {
+  /**
+   * En una traducción o una reescritura la forma del texto es lo que se pide
+   * transformar: no hay adorno que plegar. Todos los textos son inventados.
+   */
+  const PARES: ReadonlyArray<readonly [string, string, string]> = [
+    ["Translate to French: I love Polish food", "Translate to French: I love polish food", "traducir: caja"],
+    ["Translate to French: Polish food is great", "Translate to French: polish food is great", "traducir: la inicial"],
+    ["Rewrite formally: Can you help me?", "Rewrite formally: Can you help me!", "reescribir: el signo final"],
+    ["Summarize: The meeting is NOT cancelled", "Summarize: The meeting is not cancelled", "resumir: énfasis"],
+    ["Fix the punctuation: hello, world", "Fix the punctuation: hello world", "corregir: la coma"],
+    ["Corrige las tildes: el camion esta aqui", "Corrige las tildes: el camión está aquí", "corregir: las tildes"],
+    ["Tradúcelo al inglés: ¿Qué tal?", "Tradúcelo al inglés: Qué tal", "traducir en español"],
+    ["Fix this python:\nif a:\n  b()\nc()", "Fix this python:\nif a:\n  b()\n  c()", "la sangría sin backticks"],
+  ];
+
+  it.each(PARES)("«%s» ≠ «%s»  (%s)", (a, b) => {
+    expect(clave(a)).not.toBe(clave(b));
+    expect(buildInflightKey(canonicalize(peticion(a)))).not.toBe(buildInflightKey(canonicalize(peticion(b))));
+  });
+
+  it("también cuando el encargo está en el system o en un turno anterior", () => {
+    const conSystem = (texto: string) =>
+      clave(texto, {
+        messages: [
+          { role: "system", content: "You translate the user's message into French." },
+          { role: "user", content: texto },
+        ],
+      });
+    expect(conSystem("Can you help me?")).not.toBe(conSystem("Can you help me!"));
+    expect(conSystem("Polish food is great")).not.toBe(conSystem("polish food is great"));
+
+    const conHistorial = (texto: string) =>
+      clave(texto, {
+        messages: [
+          { role: "user", content: "Rewrite formally whatever I send next." },
+          { role: "assistant", content: "Understood." },
+          { role: "user", content: texto },
+        ],
+      });
+    expect(conHistorial("Can you help me?")).not.toBe(conHistorial("Can you help me!"));
+  });
+
+  it("la repetición exacta comparte clave, con los espacios de alrededor recortados", () => {
+    expect(clave("Translate to French: I love Polish food")).toBe(clave("  Translate to French: I love Polish food\n"));
+  });
+});
+
+describe("el coste que la clave acepta desde A2-3 y A2-31, escrito para que nadie lo descubra en producción", () => {
+  /**
+   * Plegar menos pierde aciertos de casi-duplicado. Se acepta: un acierto
+   * perdido cuesta una llamada; un acierto de más contesta otra pregunta. Si
+   * algún día se decide volver a juntar alguno de estos, este test cae y obliga
+   * a decirlo en voz alta.
+   */
+  it.each([
+    ["el IVA esta incluido", "el iva esta incluido", "siglas"],
+    ["HOLA QUE TAL", "hola que tal", "todo en mayúsculas"],
+    ["la capital de Francia", "la capital de francia", "nombre propio en minúsculas"],
+    ["¡Traduce esto, por favor!", "traduce esto por favor", "una traducción ya no pliega signos"],
+    ["Convert 10 km to miles", "Convert 10 km to miles.", "una conversión ya no pliega el punto final"],
+  ])("«%s» y «%s» ya no comparten clave (%s)", (a, b) => {
+    expect(clave(a)).not.toBe(clave(b));
+  });
+});
+
 describe("⛔ N1 · normalizar no para el hilo con un texto raro", () => {
   /**
    * Revisión del arreglo N1 (2026-11-19). Buscar las citas con una sola regex
@@ -432,6 +620,19 @@ describe("⛔ N1 · normalizar no para el hilo con un texto raro", () => {
   it.each(TEXTOS_RAROS)("%s: 200.000 caracteres en tiempo lineal", (_nombre, texto) => {
     const t0 = performance.now();
     normalizeText(texto);
+    expect(performance.now() - t0).toBeLessThan(TOPE_MS);
+  });
+
+  // A2-3 y A2-31: el texto de la CLAVE (la inicial del turno y la detección de
+  // «transforma su texto») corre en cada petición por el mismo camino.
+  it.each([
+    ...TEXTOS_RAROS,
+    ["espacios y saltos antes de la primera palabra", `${" \n¿¡".repeat(50_000)}Hola`],
+    ["una palabra larguísima en mayúscula inicial", `A${"a".repeat(200_000)}`],
+    ["casi-verbos de transformación repetidos", "translat_ fix_ resum_ ".repeat(10_000)],
+  ] as ReadonlyArray<readonly [string, string]>)("la clave entera · %s", (_nombre, texto) => {
+    const t0 = performance.now();
+    buildExactKey(canonicalize(peticion(texto)));
     expect(performance.now() - t0).toBeLessThan(TOPE_MS);
   });
 

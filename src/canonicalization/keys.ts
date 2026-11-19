@@ -32,6 +32,12 @@ import { modelFamilyOf, sha256, stableStringify } from "./canonicalize.js";
 // (`!ok`/`ok`, `!=`/`=`, `?.`/`.`, 'ABC'/'abc', lo que va entre backticks). Aquí
 // SÍ sube: las entradas `n2` pueden guardar bajo una clave la respuesta de otra
 // pregunta, y con la marca nueva ninguna vuelve a leerse.
+//
+// Y EN `n3` SIGUE (A2-3 y A2-31, mismo día): el texto de la clave pasa a ser
+// `exactText`, que conserva la caja salvo en la inicial del turno y deja tal
+// cual las peticiones que transforman su propio texto. Cambia la clave de casi
+// todo, pero `n3` no ha salido en ninguna versión publicada (sale en la
+// 1.2.3), así que no hay entradas `n3` viejas que apartar.
 const GENERACION = "n3";
 
 /**
@@ -82,7 +88,7 @@ export function buildExactKey(
     tenant: c.tenantId,
     scope: c.authorizationScope,
     principal: c.principal,
-    text: c.normalizedText,
+    text: c.exactText ?? c.normalizedText,
     modelFamily: model === c.model ? c.modelFamily : modelFamilyOf(model),
     model,
     system: c.systemPromptHash,
@@ -175,7 +181,7 @@ export function buildInflightKey(
     tenant: c.tenantId,
     scope: c.authorizationScope,
     principal: c.principal,
-    text: c.normalizedText,
+    text: c.exactText ?? c.normalizedText,
     model: opciones.servedModel ?? c.model,
     system: c.systemPromptHash,
     contract: c.contractId,

@@ -17,6 +17,15 @@ export interface CanonicalRequest {
    * punctuation. Numbers, dates, quantities and negations are preserved exactly.
    */
   normalizedText: string;
+  /**
+   * Text of the same turns as it enters the exact and in-flight keys. It folds
+   * LESS than `normalizedText`: case is kept everywhere except on the first
+   * word of a turn, and a request that asks to transform its own text
+   * (translate, rewrite, fix...) is kept verbatim. `-O` and `-o`, `MW` and `mW`,
+   * `Name` and `name` never share a cached answer. Absent on a hand-built
+   * request: the keys then fall back to `normalizedText`.
+   */
+  exactText?: string;
   systemPromptHash: string;
   toolsetHash: string;
   /**
@@ -241,6 +250,30 @@ function minusculasFueraDeCitas(texto: string): string {
   return out + texto.slice(desde).toLowerCase();
 }
 
+// ─── La caja en la CLAVE (auditoría del 2026-11-19, A2-3) ────────────────────
+//
+// `normalizedText` lo pasa todo a minúsculas fuera de comillas y backticks, y
+// así tiene que seguir: lo leen los marcadores de política, el router y el
+// selector de herramientas, que no distinguen caja. Pero en la CLAVE de caché
+// eso unía preguntas distintas: `curl -O` y `curl -o`, `git branch -D` y `-d`,
+// «5 MW» y «5 mW», «3 Mb» y «3 MB», `[A-Z]+` y `[a-z]+`, el campo `Name` y el
+// campo `name`. La segunda recibía la respuesta de la primera.
+//
+// No hay forma segura de saber qué mayúscula es adorno y cuál es dato, así que
+// en la clave solo se pliega la ÚNICA que casi siempre pone el teclado y no el
+// autor: la inicial de la primera palabra del turno, y solo si la palabra es
+// «Así» (inicial mayúscula, resto minúsculas). Ni siglas, ni `camelCase`, ni
+// lo que sigue a un guion o a un paréntesis, ni el principio de las demás
+// líneas (ahí empieza el código pegado sin backticks). Se pierden aciertos
+// («HOLA» y «hola» ya no se juntan); no se sirve otra pregunta.
+const PRIMERA_PALABRA = /^([\s¿¡]*)(\p{Lu}\p{Ll}*)(?![\p{L}\p{N}_])/u;
+
+function minusculaSoloLaInicial(texto: string): string {
+  // `[\s¿¡]*` va anclado al principio y lo que sigue no puede empezar por
+  // ninguno de ellos: no hay retroceso que crezca con el texto.
+  return texto.replace(PRIMERA_PALABRA, (_todo, antes: string, palabra: string) => antes + palabra.toLowerCase());
+}
+
 /** Las posiciones de las comillas que delimitan una cadena de código. */
 function comillasDeCodigo(texto: string): Set<number> {
   const fijas = new Set<number>();
@@ -256,13 +289,13 @@ function comillasDeCodigo(texto: string): Set<number> {
 }
 
 /** La normalización de un tramo de PROSA (todo lo que no es código marcado). */
-function normalizarProsa(text: string): string {
+function normalizarProsa(text: string, caja: "minusculas" | "inicial" | "intacta" = "minusculas"): string {
   // NFKC primero, y la tabla tipográfica DESPUÉS: parte del trabajo lo destapa
   // la propia NFKC («½» sale como «1⁄2», con barra de fracción, y hay que
   // convertirla o «½ de 10» y «1/2 de 10» siguen siendo dos claves).
   let out = text.normalize("NFKC");
   for (const [signo, ascii] of TIPOGRAFICAS) out = out.replace(signo, ascii);
-  out = minusculasFueraDeCitas(out)
+  out = (caja === "minusculas" ? minusculasFueraDeCitas(out) : caja === "inicial" ? minusculaSoloLaInicial(out) : out)
     .normalize("NFD")
     .replace(DIACRITICO_LATINO, "$1")
     .replace(MARCA_HUERFANA, "$1")
@@ -360,6 +393,60 @@ export function normalizeText(text: string): string {
     desde = m.index + m[0].length;
   }
   return (out + normalizarProsa(text.slice(desde))).trim();
+}
+
+/**
+ * La misma normalización, con la caja de la CLAVE: solo baja la inicial de la
+ * primera palabra del turno (ver `minusculaSoloLaInicial`).
+ */
+function normalizarParaClave(text: string): string {
+  let out = "";
+  let desde = 0;
+  for (const m of text.matchAll(CODIGO)) {
+    // Solo el primer tramo de prosa empieza el turno.
+    out += normalizarProsa(text.slice(desde, m.index), desde === 0 ? "inicial" : "intacta") + m[0];
+    desde = m.index + m[0].length;
+  }
+  return (out + normalizarProsa(text.slice(desde), desde === 0 ? "inicial" : "intacta")).trim();
+}
+
+// ─── Cuando el texto ES el encargo (auditoría del 2026-11-19, A2-31) ─────────
+//
+// En «Translate to French: I love Polish food» o «Rewrite formally: Can you
+// help me?» la forma del texto es lo que se pide transformar: «Polish» y
+// «polish» se traducen distinto, y «help me?» y «help me!» se reescriben
+// distinto. Ahí no hay adorno que plegar. Si CUALQUIER turno de la petición
+// (también el system: «You are a translator…») pide transformar texto, la
+// clave lleva cada turno TAL CUAL, sin tocar caja, signos, tildes ni espacios
+// interiores (la sangría de un Python pegado sin backticks también es dato).
+//
+// La lista es ancha a propósito y falla hacia el lado barato: una palabra de
+// más aquí cuesta un acierto de casi-duplicado; la repetición exacta de la
+// petición sigue acertando siempre.
+const TRANSFORMA_TEXTO = new RegExp(
+  "(?<![\\p{L}\\p{N}_])(?:" +
+    [
+      // en
+      "translat\\p{L}*", "rewrit\\p{L}*", "rewrote", "reword\\p{L}*", "rephras\\p{L}*", "paraphras\\p{L}*",
+      "summari[sz]\\p{L}*", "proofread\\p{L}*", "correct\\p{L}*", "fix\\p{L}*", "edit\\p{L}*", "polish\\p{L}*",
+      "reformat\\p{L}*", "format\\p{L}*", "convert\\p{L}*", "classif\\p{L}*", "extract\\p{L}*", "transcri\\p{L}*",
+      "capitali[sz]\\p{L}*", "uppercase", "lowercase", "punctuat\\p{L}*", "grammar", "spelling", "typos?",
+      "the following", "this text", "below", "above",
+      // es · ca · fr · pt · it · de
+      "tradu\\p{L}*", "reescri\\p{L}*", "reformul\\p{L}*", "parafras\\p{L}*", "resum\\p{L}*", "corr[ie]g\\p{L}*",
+      "correc\\p{L}*", "clasific\\p{L}*", "classific\\p{L}*", "extrae\\p{L}*", "extreu\\p{L}*", "conv[ie]rt\\p{L}*",
+      "formate\\p{L}*", "ortograf\\p{L}*", "gramatic\\p{L}*", "siguiente", "seguent",
+      "ubersetz\\p{L}*", "korrigier\\p{L}*", "zusammenfass\\p{L}*",
+    ].join("|") +
+    ")(?![\\p{L}\\p{N}_])",
+  "iu",
+);
+
+function pideTransformarTexto(messages: readonly ChatMessage[]): boolean {
+  // Sin tildes ni formas de compatibilidad: «tradúcelo», «ｔｒａｎｓｌａｔｅ».
+  return messages.some(
+    (m) => typeof m.content === "string" && TRANSFORMA_TEXTO.test(m.content.normalize("NFKD").replace(/\p{M}+/gu, "")),
+  );
 }
 
 export function sha256(input: string): string {
@@ -508,6 +595,13 @@ export function canonicalize(request: SavingsRequest): CanonicalRequest {
     .map((m) => `${m.role}:${normalizeText(m.content)}`)
     .join("\n");
 
+  // El texto de la CLAVE pliega menos que el de arriba (A2-3, A2-31).
+  const literal = pideTransformarTexto(request.messages);
+  const paraLaClave = request.messages
+    .filter((m) => m.role !== "system")
+    .map((m) => `${m.role}:${literal ? String(m.content).trim() : normalizarParaClave(m.content)}`)
+    .join("\n");
+
   const tools = (request.tools ?? [])
     .map((t) => ({ id: t.id, risk: t.risk, parameters: t.parameters ?? null }))
     .sort((a, b) => a.id.localeCompare(b.id));
@@ -517,6 +611,7 @@ export function canonicalize(request: SavingsRequest): CanonicalRequest {
     modelFamily: modelFamilyOf(request.model),
     messages: request.messages,
     normalizedText: conversational,
+    exactText: paraLaClave,
     systemPromptHash: sha256(systemMessages),
     toolsetHash: sha256(stableStringify(tools)),
     ...(toolTurnsHash !== undefined ? { toolTurnsHash } : {}),

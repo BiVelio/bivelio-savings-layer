@@ -787,11 +787,14 @@ describe("11-12 · L0/L1: forma y testigo", () => {
 });
 
 describe("13-14 · L4/L5: identidad byte a byte y calidad", () => {
+  // A2-3 (2026-11-19): la clave ya no pliega «France» con «france»; el par de
+  // 13 y de 17 difiere ahora solo en lo que la clave SÍ pliega (la inicial y el
+  // signo final), que es lo que estas dos pruebas necesitan: misma clave, otros bytes.
   it("13 · misma clave normalizada, otros bytes: different-request", async () => {
     const { layer } = montar(new ProveedorFijo(1736, 282));
     await layer.generate(peticion({ messages: [{ role: "user", content: "What is the capital of France?" }] }));
     const hit = await layer.generate(
-      peticion({ messages: [{ role: "user", content: "what is the capital of france" }] }),
+      peticion({ messages: [{ role: "user", content: "what is the capital of France" }] }),
     );
     expect(hit.report.cache.result).toBe("exact");
     expect(hit.report.cost.basis).toBe("estimated");
@@ -891,7 +894,7 @@ describe("16-17 · el seguidor de singleflight", () => {
     const proveedor = new ProveedorContado();
     const { layer } = montar(proveedor);
     const a = layer.generate(peticion({ messages: [{ role: "user", content: "What is the capital of France?" }] }));
-    const b = layer.generate(peticion({ messages: [{ role: "user", content: "what is the capital of france" }] }));
+    const b = layer.generate(peticion({ messages: [{ role: "user", content: "what is the capital of France" }] }));
     await asentar();
     expect(proveedor.recibidas).toHaveLength(1);
     proveedor.responder("Paris");
