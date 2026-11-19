@@ -51,6 +51,11 @@ export default defineConfig({
     // The published-package contract (community mode, invalid keys still
     // fail-closed) is exercised for real by `test/sala-limpia-del-tarball.test.ts`.
     env: { BVSALA_DEV_OPEN: "1" },
+    // next-intl importa `next/server` sin extensión, que Node (ESM) no resuelve
+    // fuera del empaquetador de Next. Pasándolo por vite se puede ejercitar el
+    // middleware DE VERDAD desde un test (apps/web/idioma-de-respaldo.test.ts:
+    // a qué idioma se manda a quien no habla ninguno de los nuestros).
+    server: { deps: { inline: [/next-intl/] } },
     include: [
       "test/**/*.test.ts",
       // apps/web NO estaba en ningún glob: el dashboard entero llegó a

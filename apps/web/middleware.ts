@@ -4,7 +4,7 @@ import type { NextRequest } from "next/server";
 import { routing } from "./i18n/routing";
 import { conDestino } from "./lib/auth/destino";
 
-// next-intl locale negotiation + bare→/es redirects. This middleware imports NO
+// next-intl locale negotiation + bare→/<idioma> redirects (respaldo: /en). This middleware imports NO
 // Supabase code, so it stays Edge-safe (the reason the app previously shipped
 // without middleware was @supabase/ssr pulling realtime-js/ws into the Edge
 // bundle — not a problem here).
