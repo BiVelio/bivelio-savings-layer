@@ -267,6 +267,124 @@ export function impedimentoDeEnvoltorio(
   return null;
 }
 
+/**
+ * EL BASE URL QUE EL USUARIO YA TENÍA. El envoltorio pone el del gateway en la
+ * variable del terminal (`ANTHROPIC_BASE_URL`…) y el gateway habla por defecto
+ * con api.anthropic.com. Si el usuario ya apuntaba su terminal a OTRO endpoint
+ * (un proxy de empresa, LiteLLM, z.ai, Moonshot…), pisarlo mandaba su sesión
+ * —y el token de ESE proxy— a Anthropic: un 401 sin explicación y una
+ * credencial en el host equivocado.
+ *
+ * La regla, por orden, y siempre del lado seguro (la credencial solo viaja al
+ * host que el usuario ya había elegido):
+ *   · sin variable previa, o apuntando al API oficial → nada cambia;
+ *   · con `BVSALA_GATEWAY_UPSTREAM` puesto: si coincide con el origen previo,
+ *     nada que hacer; si NO coincide, no se arranca (dos destinos distintos
+ *     para una credencial: decide el usuario, no el envoltorio);
+ *   · un origen pelado (sin ruta) → ESE es el upstream del gateway, con una
+ *     línea que lo dice. Se mide igual; al no ser el API oficial, no se
+ *     acredita ahorro (precio de lista solo en el proveedor);
+ *   · con prefijo de ruta (`https://host/api/anthropic`) → no se arranca: el
+ *     gateway reenvía a un ORIGEN y perdería el prefijo. La excepción es
+ *     DeepSeek, cuyo `/anthropic` ya reescribe el gateway.
+ * Pura: solo LEE el entorno, y el mensaje enseña como mucho el ORIGEN (nunca
+ * usuario:contraseña ni la ruta, que pueden llevar una credencial).
+ */
+export type UpstreamHeredado =
+  | { tipo: "ninguno" }
+  | { tipo: "usar"; upstream: string; variable: string; aviso: string }
+  | { tipo: "impedimento"; variable: string; error: string };
+
+/** La variable de base URL de cada terminal, y el origen oficial al que apunta por defecto. */
+function variablesDeBaseUrl(
+  comando: TerminalConEnvoltorio,
+  upstreamElegido: string | undefined,
+): { variables: readonly string[]; oficial: string } | null {
+  switch (comando) {
+    case "claude":
+    case "qwen":
+      return { variables: ["ANTHROPIC_BASE_URL"], oficial: ORIGEN_ANTHROPIC };
+    case "goose":
+      return { variables: ["ANTHROPIC_HOST"], oficial: ORIGEN_ANTHROPIC };
+    case "aider":
+      // El mismo orden en que las lee litellm.
+      return upstreamElegido === ORIGEN_OPENAI
+        ? { variables: ["OPENAI_BASE_URL", "OPENAI_API_BASE"], oficial: ORIGEN_OPENAI }
+        : { variables: ["ANTHROPIC_API_BASE", "ANTHROPIC_BASE_URL"], oficial: ORIGEN_ANTHROPIC };
+    default:
+      // codex va por `-c` y su destino lo fija el modo de auth; opencode, Kilo
+      // y Copilot ya tratan su base URL en su propia rama; gemini no tiene proxy.
+      return null;
+  }
+}
+
+export function upstreamHeredado(
+  comando: TerminalConEnvoltorio,
+  entorno: Record<string, string | undefined> = process.env,
+  /** `BVSALA_GATEWAY_UPSTREAM` ya resuelto a origen, si el usuario lo puso. */
+  upstreamElegido?: string,
+): UpstreamHeredado {
+  const tabla = variablesDeBaseUrl(comando, upstreamElegido);
+  if (tabla === null) return { tipo: "ninguno" };
+  const variable = tabla.variables.find((v) => (entorno[v] ?? "").trim() !== "");
+  if (variable === undefined) return { tipo: "ninguno" };
+  const comoSeguir =
+    `Run \`${comando}\` directly to keep using that endpoint (not metered), or unset ${variable} to go ` +
+    `through the gateway to ${tabla.oficial}.`;
+  let url: URL;
+  try {
+    url = new URL(entorno[variable]!.trim());
+    if (url.protocol !== "http:" && url.protocol !== "https:") throw new Error("esquema");
+  } catch {
+    return {
+      tipo: "impedimento",
+      variable,
+      error:
+        `${variable} is already set but is not an http(s) URL, so the wrapper cannot tell where your terminal was ` +
+        `pointing and will not replace it (its value is not shown). ${comoSeguir}`,
+    };
+  }
+  if (url.origin === tabla.oficial) return { tipo: "ninguno" };
+  if (upstreamElegido !== undefined) {
+    let elegido = upstreamElegido;
+    try {
+      elegido = new URL(upstreamElegido).origin;
+    } catch {
+      /* se compara tal cual */
+    }
+    if (elegido === url.origin) return { tipo: "ninguno" };
+    return {
+      tipo: "impedimento",
+      variable,
+      error:
+        `${variable} points your terminal at ${url.origin} but BVSALA_GATEWAY_UPSTREAM sends this session to ` +
+        `${elegido}: the credentials meant for one would be sent to the other, so the wrapper does not start. ` +
+        "Unset one of the two so there is a single destination.",
+    };
+  }
+  const ruta = url.pathname.replace(/\/+$/, "");
+  const deepseekAnthropic = url.origin === "https://api.deepseek.com" && ruta === "/anthropic";
+  if ((ruta !== "" && !deepseekAnthropic) || url.search !== "") {
+    return {
+      tipo: "impedimento",
+      variable,
+      error:
+        `${variable} is already set to an endpoint with a path prefix at ${url.origin}. The gateway forwards to an ` +
+        "origin and would drop that prefix, so the wrapper does not start and does not replace your variable " +
+        `(your credentials for that endpoint are never sent to ${tabla.oficial}). ${comoSeguir}`,
+    };
+  }
+  return {
+    tipo: "usar",
+    upstream: url.origin,
+    variable,
+    aviso:
+      `${variable} was already set to ${url.origin}: the gateway forwards this session THERE instead of ` +
+      `${tabla.oficial}, so your credentials only reach the endpoint you chose. Requests are metered; no saving is ` +
+      `credited behind an endpoint that is not the provider's own API. To use ${tabla.oficial} instead, unset ${variable}.`,
+  };
+}
+
 export function envoltorioDe(
   comando: TerminalConEnvoltorio,
   puerto: number,
