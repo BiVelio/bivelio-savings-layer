@@ -77,7 +77,7 @@ import {
   type TurnoTtl,
 } from "./fallos-ttl.js";
 import { Coalescedor, claveDePeticion, esOperacionCoalescible, materialDeCabeceras, MAX_CAPTURA_BYTES, type HuellaDeLaPrimaria } from "./coalescencia.js";
-import { esUpstreamOficial, rutaReescrita } from "./upstream.js";
+import { esUpstreamOficial, rutaReescrita, urlHaciaElUpstream } from "./upstream.js";
 import { RecuentoDeMedicion, type EstadoDeMedicion } from "./recuento.js";
 import {
   BuzonDeInformes,
@@ -1128,7 +1128,19 @@ export async function arrancarGateway(opts: OpcionesGateway): Promise<GatewayArr
     });
 
     let captura: ReturnType<Coalescedor["registrar"]> = null;
-    let url = new URL(req.url ?? "/", upstreamBase);
+    // EL HOST DEL UPSTREAM ES FIJO: la ruta del cliente jamás lo cambia. Una
+    // ruta `//host/…` (o con `\\`, o en forma absoluta) se resolvía como URL
+    // relativa al esquema y la petición salía, con la credencial, hacia `host`.
+    const destino = urlHaciaElUpstream(req.url, upstreamBase);
+    if (destino === null) {
+      req.resume();
+      res.writeHead(400, conId({ "content-type": "application/json" }));
+      res.end(JSON.stringify({ error: "bvsala gateway: the request target is not a path this gateway can forward" }));
+      if (conInforme) buzon.noMedido(requestId, "the request target is not a path the gateway can forward");
+      log(`[gateway] ${req.method} → 400 (request target is not a forwardable path; nothing was sent upstream)`);
+      return;
+    }
+    let url = destino;
     // DeepSeek sirve el protocolo Anthropic bajo /anthropic: el cliente (Claude
     // Code) manda /v1/messages y el gateway lo reescribe sin que él lo sepa.
     url.pathname = rutaReescrita(upstreamBase, url.pathname);
@@ -1197,8 +1209,6 @@ export async function arrancarGateway(opts: OpcionesGateway): Promise<GatewayArr
       for await (const c of req) chunks.push(c as Buffer);
       const cuerpo = Buffer.concat(chunks);
       cuerpoPeticion = cuerpo;
-      url = new URL(req.url ?? "/", upstreamBase);
-      url.pathname = rutaReescrita(upstreamBase, url.pathname);
       // Lo que cuenta el resumen de salida como «pasó por el gateway»: una
       // petición de inferencia (ruta con dialecto), acabe como acabe.
       if (req.method === "POST" && tieneDialecto(url.pathname)) recuento.recibida();
