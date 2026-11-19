@@ -62,11 +62,11 @@ cloud key sends are in [LICENSE-CLOUD.md](./LICENSE-CLOUD.md) §5).
   equal-family means (22.88 % / 70.71 %) are reported separately, as they should be.
 
 📄 **The paper:** [Verifiable Measurement of Cost Savings in LLM Applications
-(open-core edition, v2.3-r1)](./docs/PAPER.md) — revised after an external
+(open-core edition, v2.3-r1)](https://github.com/BiVelio/bivelio-savings-layer/blob/main/docs/PAPER.md) — revised after an external
 pre-publication review: pooled reductions of **31.50 %** and **75.08 %** with
 percentile cluster-bootstrap intervals, four ledgers, and every limitation stated.
 Also at **[savings.bivelio.com/paper](https://savings.bivelio.com/paper)**, with the
-arXiv-ready LaTeX in [`docs/paper/main.tex`](./docs/paper/main.tex).
+arXiv-ready LaTeX in [`docs/paper/main.tex`](https://github.com/BiVelio/bivelio-savings-layer/blob/main/docs/paper/main.tex).
 
 ### Install anywhere, in 60 seconds
 
@@ -252,7 +252,7 @@ requests that come out worse than your client asked for: cache markers the
 provider ignored, a 1-hour TTL written at 5 minutes upstream, and tool search off
 (Claude Code turns it off by default behind any proxy, this one included;
 `bvsala claude` turns it back on). What it checks, and its limits:
-[docs/terminales/README.md](./docs/terminales/README.md#what-the-gateway-guarantees-it-forwards-what-your-client-sends).
+[docs/terminales/README.md](https://github.com/BiVelio/bivelio-savings-layer/blob/main/docs/terminales/README.md#what-the-gateway-guarantees-it-forwards-what-your-client-sends).
 
 </details>
 
@@ -312,7 +312,7 @@ cost at list price and `cost.basis`), or `not_metered` with the reason from the
 log line. `?response_id=<the provider's response id>` finds it too, and
 `wait_ms` waits for a request still in flight. The header never reaches your
 provider, and a request without it is not changed at all:
-[the details](./docs/terminales/README.md#what-the-gateway-guarantees-it-forwards-what-your-client-sends).
+[the details](https://github.com/BiVelio/bivelio-savings-layer/blob/main/docs/terminales/README.md#what-the-gateway-guarantees-it-forwards-what-your-client-sends).
 
 </details>
 
