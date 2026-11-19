@@ -1,0 +1,86 @@
+name: etiquetas-npm
+
+# Quita una etiqueta (dist-tag) de @bivelio/savings-layer en npm, sin token.
+#
+# POR QUÉ ASÍ: `npm dist-tag rm` desde una máquina pide un código de un solo
+# uso (--otp), y la cuenta dueña usa llave de seguridad/passkey, que la CLI no
+# ofrece para esta operación (EOTP, 2026-11-19). El NPM_TOKEN del repositorio
+# tampoco sirve: ya fallaba con EOTP (BITACORA-2026-08-11). Desde el
+# 2026-09-30 npm deja gestionar etiquetas con trusted publishing (OIDC), si en
+# npmjs.com se activa «Allow npm dist-tag» en una configuración de trusted
+# publisher que apunte a ESTE fichero. Pasos en docs/PUBLISHING.md;
+# https://docs.npmjs.com/trusted-publishers (consultado 2026-11-19).
+#
+# Caso que lo motivó (2026-11-19): `next` seguía en 0.5.0-rc.1, de octubre, que
+# pide licencia: quien instalaba con @next recibía lo contrario de lo que
+# anunciamos.
+#
+# Solo QUITA etiquetas, y nunca `latest`: sin ella, `npm i` a secas deja de
+# funcionar. No publica nada.
+on:
+  workflow_dispatch:
+    inputs:
+      etiqueta:
+        description: "Etiqueta a quitar (por ejemplo next). Nunca latest."
+        required: true
+        type: string
+        default: next
+
+permissions: {}
+
+jobs:
+  quitar:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+    steps:
+      # Las etiquetas por OIDC exigen npm >= 11.21.0 (o >= 12.2.0). Versión
+      # exacta, publicada el 2026-10-15, para no traer la última sin mirar.
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          registry-url: https://registry.npmjs.org
+
+      - name: npm que admite etiquetas por OIDC
+        run: |
+          npm install -g npm@11.21.1
+          echo "npm $(npm --version)"
+
+      # La entrada es texto libre: se valida antes de usarla y solo viaja por
+      # variables de entorno, nunca interpolada en el script.
+      - name: La etiqueta es válida y existe
+        env:
+          ETIQUETA: ${{ inputs.etiqueta }}
+          NPM_CONFIG_USERCONFIG: /dev/null
+        run: |
+          if [ "$ETIQUETA" = "latest" ]; then
+            echo "::error::latest no se quita: sin ella, npm i deja de funcionar."; exit 1
+          fi
+          if ! printf '%s' "$ETIQUETA" | grep -Eq '^[a-z0-9][a-z0-9._-]{0,63}$'; then
+            echo "::error::Nombre de etiqueta no válido: $ETIQUETA"; exit 1
+          fi
+          ETIQUETAS="$(npm view @bivelio/savings-layer dist-tags --json)"
+          echo "etiquetas ahora: $ETIQUETAS"
+          printf '%s' "$ETIQUETAS" | node -e 'const t=JSON.parse(require("fs").readFileSync(0,"utf8")); if(!t[process.argv[1]]){console.log("::error::La etiqueta "+process.argv[1]+" no existe.");process.exit(1)}' "$ETIQUETA"
+
+      - name: Quitar la etiqueta
+        env:
+          ETIQUETA: ${{ inputs.etiqueta }}
+        run: npm dist-tag rm @bivelio/savings-layer "$ETIQUETA"
+
+      # Se lee como ANÓNIMO, lo que ve un cliente. El registro tarda un poco en
+      # reflejar el cambio: hasta 2 minutos.
+      - name: La etiqueta ya no está
+        env:
+          ETIQUETA: ${{ inputs.etiqueta }}
+          NPM_CONFIG_USERCONFIG: /dev/null
+        run: |
+          for i in $(seq 1 12); do
+            ETIQUETAS="$(npm view @bivelio/savings-layer dist-tags --json --prefer-online)"
+            if printf '%s' "$ETIQUETAS" | node -e 'const t=JSON.parse(require("fs").readFileSync(0,"utf8")); process.exit(t[process.argv[1]]?1:0)' "$ETIQUETA"; then
+              echo "quitada; quedan: $ETIQUETAS"; exit 0
+            fi
+            sleep 10
+          done
+          echo "::error::npm dist-tag rm terminó, pero el registro sigue sirviendo $ETIQUETA: $ETIQUETAS"
+          exit 1

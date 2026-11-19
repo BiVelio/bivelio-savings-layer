@@ -99,6 +99,32 @@ optionally, GitHub → Settings → Environments → `npm` → *Deployment branc
 *Selected branches and tags* → add the tag rule `v*`, so that only a run on a `v*` tag
 can enter the environment npm trusts.
 
+### Removing a dist-tag (`etiquetas-npm.yml`)
+
+`npm dist-tag rm` from a maintainer machine asks for a one-time password, which a
+passkey/security-key-only account cannot give for this operation (EOTP, 2026-11-19).
+Since 2026-09-30 npm lets trusted publishing manage dist-tags
+(https://docs.npmjs.com/trusted-publishers, checked 2026-11-19), so tags are removed
+from CI instead:
+
+1. One-time, on npmjs.com (owner): package `@bivelio/savings-layer` → **Settings** →
+   **Trusted Publisher** → add a second **GitHub Actions** configuration:
+
+   | Field | Value |
+   |---|---|
+   | Organization or user | `BiVelio` |
+   | Repository | `bivelio-savings-layer` |
+   | Workflow filename | `etiquetas-npm.yml` |
+   | Environment name | *(empty)* |
+
+   and tick **Allow npm dist-tag** on it (off by default). If the form also offers
+   publish permission for this configuration, leave it off: this workflow never
+   publishes.
+2. Run it: `gh workflow run etiquetas-npm.yml -f etiqueta=next`. It refuses `latest`,
+   checks the tag exists, removes it, and fails unless the registry stops serving it.
+
+It needs npm >= 11.21.0 (or >= 12.2.0); the workflow installs 11.21.1.
+
 ### Versions npm 11 refuses without `--tag`
 
 The workflow publishes with npm 11, which (unlike npm 10) refuses, without `--tag`, a
