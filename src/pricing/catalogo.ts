@@ -52,7 +52,7 @@ import type { CostModel } from "../tokenizer/accounting.js";
 //     Google en TARIFAS_DE_TIER y su clasificación de razonamiento. Sin haber
 //     salido aún, la misma versión recoge también (A2-22) el fin del precio
 //     promocional de gpt-5.6-sol: sus filas Flex y Batch rigen hasta el
-//     2026-11-30 (antes, el 2026-11-21) y la estándar hasta el 1-dic. Y (A2-6)
+//     2026-11-30 (antes, el 2026-11-21). Y (A2-6)
 //     la lectura de caché de claude-sonnet-5-5, a 0,05× desde el 2026-10-07:
 //     $0.10/MTok en estándar y $0.05 en lote, no $0.20 y $0.10. Y (A2-5) filas
 //     propias de gpt-5.1, gpt-6.1-sol, gpt-6.1-terra, gpt-6.2-sol,
@@ -76,7 +76,7 @@ export const PRECIOS_AL_DIA = "2026-11-19";
 export const HUELLAS_DEL_CATALOGO: Readonly<Record<string, string>> = {
   "2026-09-29": "bfbf91f324c7a3c7319db6c816cb7cce545f4a285e1ff0ad4ac9f1b706634a2e",
   "2026-11-03": "e14ffe5559e35c21f2bbb5d4e42639dc2b80cb262cdb2bd6fd27efdc475ee6d8",
-  "2026-11-19": "1c07e0e37f3bbd37cbbbc65bd90b6b3a743436237e4323917cbe6b2d89605ebf",
+  "2026-11-19": "60e7d0dfbc851948a585c78ab47556f0e848d7ce97ddb07bacd9cfa00d2fab8f",
 };
 
 /**
@@ -155,9 +155,13 @@ export const CATALOGO: Readonly<Record<string, CostModel>> = {
   // $20. El precio de 5.6-sol es PROMOCIONAL. El 2026-09-27 la página decía
   // «at least through November 21, 2026»; releída el 2026-11-19 dice «GPT-5.6
   // Sol's promotional pricing is available until November 30, 2026», sin
-  // anunciar el siguiente. Su vigencia acaba ahí (VIGENCIA_DE_FILA): desde el
-  // 1-dic cae al respaldo ilustrativo, que avisa, hasta que se publique el
-  // precio nuevo y se añada su tramo.)
+  // anunciar el siguiente. Sus filas Flex y Batch caducan ahí (TARIFAS_DE_TIER).
+  // Esta fila estándar NO lleva fin todavía, a propósito: ponérselo arma para el
+  // 1-dic la alarma ⏰ de test/modelos-que-servimos.test.ts y otras cinco
+  // pruebas que la tarifan con el reloj real. ANTES del 1-dic hay que releer la
+  // página y poner aquí el tramo nuevo o el fin (VIGENCIA_DE_FILA). Si OpenAI
+  // sube el precio y nadie lo hace, el gasto sale por debajo de la factura y el
+  // ahorro en dólares también: el lado corto.)
 
   // La familia gpt-6. Verificada el 2026-09-27 contra la página OFICIAL de
   // precios de OpenAI (https://developers.openai.com/api/docs/pricing, tabla
@@ -470,10 +474,6 @@ export interface TramoDePrecio {
 
 /** Vigencia de las filas de CATALOGO que tienen fecha de fin anunciada. */
 const VIGENCIA_DE_FILA: Readonly<Record<string, { readonly vigenteDesde?: string; readonly vigenteHasta?: string }>> = {
-  // https://developers.openai.com/api/docs/pricing (consultada el 2026-11-19):
-  // «GPT-5.6 Sol's promotional pricing is available until November 30, 2026».
-  // Sin precio anunciado detrás: no hay tramo, y el 1-dic deja de tener precio.
-  "gpt-5.6-sol": { vigenteHasta: "2026-12-01" },
   // https://ai.google.dev/gemini-api/docs/pricing (consultada el 2026-11-19):
   // «$2.00 through November 30, 2026. $4.00 starting December 1, 2026».
   "gemini-4-carbon": { vigenteHasta: "2026-12-01" },
