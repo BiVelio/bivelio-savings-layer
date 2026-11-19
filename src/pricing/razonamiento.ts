@@ -69,6 +69,7 @@ export const RAZONA_POR_FILA: Readonly<Record<string, boolean>> = {
   "gpt-5-codex": true,
   "gpt-5-mini": true,
   "gpt-5-nano": true,
+  "gpt-5.1": true,
   "gpt-5.1-codex": true,
   "gpt-5.1-codex-max": true,
   "gpt-5.1-codex-mini": true,
@@ -86,6 +87,12 @@ export const RAZONA_POR_FILA: Readonly<Record<string, boolean>> = {
   "gpt-6-astra": true,
   "gpt-6-sol": true,
   "gpt-6-luna": true,
+  // gpt-6.1 y gpt-6.2 (A2-5): la familia gpt-6, que va entera en `true` (y su
+  // nombre ya lo dice: NOMBRE_DE_RAZONAMIENTO). Ante la duda, no se acredita.
+  "gpt-6.2-astra": true,
+  "gpt-6.2-sol": true,
+  "gpt-6.1-sol": true,
+  "gpt-6.1-terra": true,
   // La serie o (filas del catálogo desde la Parte G del gateway): razonan
   // siempre y solo aceptan el `temperature` por defecto. Su salida no se
   // acredita nunca por referencia.
@@ -140,6 +147,12 @@ export const RAZONA_POR_FILA: Readonly<Record<string, boolean>> = {
   // el razonamiento sin que la capa lo vea. Ante la duda su salida no se
   // acredita por referencia: el lado corto, nunca el largo.
   "gemini-2.5-flash-lite": true,
+  // Gemini 4 (A2-5): la página de precios cobra su salida «including thinking
+  // tokens»; Gemini va entero en `true`.
+  "gemini-4-carbon": true,
+  "gemini-4-argon": true,
+  "gemini-4-neon": true,
+  "gemini-4-hydrogen": true,
   // ── Proveedores chinos ──
   // DeepSeek Flash (V4.1-Flash) no razona por defecto y honra temperature: su
   // salida bajo `temperature: 0` se puede repetir y acreditar por referencia.

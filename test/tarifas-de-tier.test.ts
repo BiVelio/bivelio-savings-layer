@@ -79,7 +79,14 @@ describe("la tabla de tarifas por tier", () => {
     expect(tarifaDeTier("openai", "flex", "openai/gpt-5-mini")).toBeDefined();
     expect(tarifaDeTier("openai", "flex", "gpt-5-mini-2025-08-07")).toBeDefined();
     expect(tarifaDeTier("openai", "flex", "gpt-5-mini-latest")).toBeUndefined();
-    expect(tarifaDeTier("openai", "flex", "gpt-5.1")).toBeUndefined();
+    // gpt-5.3 no tiene fila propia (sí gpt-5.3-codex): la versión menor no
+    // hereda la de gpt-5. (Aquí estaba gpt-5.1, que desde el 2026-11-19 tiene
+    // fila propia en CATALOGO y por eso también en Flex y Batch, A2-5.)
+    expect(tarifaDeTier("openai", "flex", "gpt-5.3")).toBeUndefined();
+    expect(tarifaDeTier("openai", "flex", "gpt-5.1")).toBe(TARIFAS_DE_TIER.openai.flex!["gpt-5.1"]);
+    // gpt-6.2 no tiene fila Flex publicada: solo de lote.
+    expect(tarifaDeTier("openai", "flex", "gpt-6.2-sol")).toBeUndefined();
+    expect(tarifaDeTier("openai", "batch", "gpt-6.2-sol")).toBe(TARIFAS_DE_TIER.openai.batch!["gpt-6.2-sol"]);
     expect(tarifaDeTier("google", "flex", "gemini-3.8-flash-lite")).toBeUndefined();
     expect(tarifaDeTier("google", "flex", "gemini-2.5-flash-image")).toBeUndefined();
     // gemini-2.5-flash-lite entró con fila propia (N5, 2026-11-19): la suya, no
@@ -105,6 +112,43 @@ describe("la tabla de tarifas por tier", () => {
       expect(f.outputPer1k, modelo).toBeCloseTo(mitad(s.outputPer1k), 12);
       expect(f.cachedInputPer1k, modelo).toBeCloseTo(mitad(s.cachedInputPer1k!), 12);
       expect(f.cacheWritePer1k, modelo).toBeCloseTo(mitad(s.inputPer1k * 1.25), 12);
+    }
+  });
+
+  it("las filas de A2-5 (2026-11-19): Flex y Batch a la mitad exacta de la estándar en cada componente, como dicen las tablas oficiales", () => {
+    // OpenAI: «Flex pricing data» y «Batch pricing data»; gpt-6.2 solo en Batch.
+    // Google: pestaña «Flex» de cada Gemini 4, caché incluida.
+    const casos: [OrigenDeTarifa, "flex" | "batch", string][] = [
+      ["openai", "flex", "gpt-5.1"],
+      ["openai", "batch", "gpt-5.1"],
+      ["openai", "flex", "gpt-6.1-sol"],
+      ["openai", "batch", "gpt-6.1-sol"],
+      ["openai", "flex", "gpt-6.1-terra"],
+      ["openai", "batch", "gpt-6.1-terra"],
+      ["openai", "batch", "gpt-6.2-sol"],
+      ["openai", "batch", "gpt-6.2-astra"],
+      ["google", "flex", "gemini-4-carbon"],
+      ["google", "flex", "gemini-4-argon"],
+      ["google", "flex", "gemini-4-neon"],
+      ["google", "flex", "gemini-4-hydrogen"],
+    ];
+    for (const [origen, tier, m] of casos) {
+      const f = TARIFAS_DE_TIER[origen][tier]![m]!;
+      const s = CATALOGO[m]!;
+      const ctx = `${origen}/${tier}/${m}`;
+      expect(f.consultado, ctx).toBe("2026-11-19");
+      expect(f.inputPer1k, ctx).toBeCloseTo(s.inputPer1k / 2, 12);
+      expect(f.outputPer1k, ctx).toBeCloseTo(s.outputPer1k / 2, 12);
+      expect(f.cachedInputPer1k, ctx).toBeCloseTo(s.cachedInputPer1k! / 2, 12);
+      // Escritura: 1,25× la entrada del tier en gpt-6.x; gpt-5.1 y Gemini no la publican.
+      if (m.startsWith("gpt-6")) expect(f.cacheWritePer1k, ctx).toBeCloseTo(f.inputPer1k * 1.25, 12);
+      else expect(f.cacheWritePer1k, ctx).toBeUndefined();
+    }
+    // Carbon y Argon doblan el 1-dic: su fila Flex, que es la de hoy, caduca el 30-nov.
+    for (const m of ["gemini-4-carbon", "gemini-4-argon"]) {
+      expect(TARIFAS_DE_TIER.google.flex![m]!.vigenteHasta, m).toBe("2026-11-30");
+      expect(tarifaDeTier("google", "flex", m, Date.parse("2026-11-30T23:00:00Z")), m).toBeDefined();
+      expect(tarifaDeTier("google", "flex", m, Date.parse("2026-12-01T00:00:01Z")), m).toBeUndefined();
     }
   });
 
