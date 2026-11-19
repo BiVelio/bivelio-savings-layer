@@ -20,8 +20,9 @@ import { ESTADOS_CON_PLAN } from "@/lib/billing/plan-de-la-org";
  *    eventos del equipo (`org_member_removed`, …).
  *
  *  · POR USUARIO, en memoria (lib/rate-limit.ts). Frena la ráfaga de una sesión
- *    y acota con su tope global lo que esta ruta puede gastar de la cuota de
- *    correo pase lo que pase. Es el cinturón; el de la base es el airbag.
+ *    (10 por hora) y acota con su tope global (1.000 por hora y por instancia)
+ *    lo que esta ruta puede gastar de la cuota de correo pase lo que pase. Es el
+ *    cinturón; el de la base es el airbag.
  */
 
 /** El `kind` con el que queda apuntado cada correo de invitación que se intenta. */
@@ -37,7 +38,15 @@ export const TOPE_ORG_GRATIS = 5;
 /** Ventana y topes del limitador en memoria (por usuario / total de la ruta). */
 export const VENTANA_USUARIO_MS = 60 * 60_000;
 export const TOPE_USUARIO = 10;
-export const TOPE_GLOBAL = 100;
+/**
+ * Total de la ruta por hora y por instancia. Era 100; el dueño lo subió a 1.000
+ * (2026-11-19) porque en el pico del lanzamiento 100 por hora dejaba fuera a
+ * equipos legítimos dándose de alta a la vez. No es el freno del abuso —ese es
+ * el tope por organización en la base y el de cada usuario—: es el techo de lo
+ * que esta ruta puede gastar de la cuota de correo en una hora si todo lo demás
+ * falla.
+ */
+export const TOPE_GLOBAL = 1_000;
 
 export const limitePorUsuario = new RateLimiter(VENTANA_USUARIO_MS, TOPE_USUARIO, TOPE_GLOBAL);
 
