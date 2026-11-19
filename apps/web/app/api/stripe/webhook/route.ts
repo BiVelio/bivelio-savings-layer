@@ -3,12 +3,13 @@ import type Stripe from "stripe";
 
 import { selloDeImpago } from "@/lib/billing/dunning";
 import { esFacturaDeComision, decisionDeComision } from "@/lib/billing/facturacion";
+import { ASIENTOS_INCLUIDOS_EQUIPO, planDelPrecio } from "@/lib/billing/planes";
 import { motivoDeReemision } from "@/lib/billing/reemision";
 import { alertar } from "@/lib/observabilidad/alerta";
 import { atribuirPorPrecio, type Atribucion } from "@/lib/stripe/atribucion";
 import { createAdminClient, type AdminClient } from "@/lib/supabase/admin";
 import { getStripe } from "@/lib/stripe/client";
-import { STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET } from "@/lib/stripe/env";
+import { STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET, preciosSinComision } from "@/lib/stripe/env";
 import { esStale, condicionEscritura, puedeAplicarImpago, fallbackVencimientoUnix } from "@/lib/stripe/guardia-orden";
 import {
   issueLicense,
@@ -51,10 +52,20 @@ function subFacts(sub: Stripe.Subscription) {
   // la licencia salía con el vencimiento de respaldo de 31 días aunque el cliente
   // tuviera un año pagado. Lo mismo que `invoiceSubId` hace con la factura.
   const raiz = sub as unknown as { current_period_start?: number | null; current_period_end?: number | null };
+  // LOS ASIENTOS QUE SE PAGAN, no la cantidad a secas (A2-20). Team cobra una
+  // cuota fija con ASIENTOS_INCLUIDOS_EQUIPO incluidos «aunque uses menos». El
+  // checkout no deja comprar menos, pero el portal de Stripe sí deja bajar la
+  // cantidad (su mínimo es por producto, compartido con Pro): con 4, Stripe sigue
+  // cobrando los 10 y la licencia y `subscriptions.seats` decían 4. Pro y el plan
+  // cerrado no tienen incluidos: la cantidad tal cual.
+  const cantidad = item?.quantity ?? 1;
+  const priceId = item?.price?.id ?? null;
+  const asientos =
+    planDelPrecio(priceId, preciosSinComision()) === "equipo" ? Math.max(cantidad, ASIENTOS_INCLUIDOS_EQUIPO) : cantidad;
   return {
     itemId: item?.id ?? null,
-    priceId: item?.price?.id ?? null,
-    quantity: item?.quantity ?? 1,
+    priceId,
+    quantity: asientos,
     periodStart: item?.current_period_start ?? raiz.current_period_start ?? null,
     periodEnd: item?.current_period_end ?? raiz.current_period_end ?? null,
     customerId: typeof cust === "string" ? cust : (cust?.id ?? null),
