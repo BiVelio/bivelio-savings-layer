@@ -222,7 +222,9 @@ story, in plain words:
 `copilot` with your own Anthropic key, `aider`) launches the agent through it and
 your real spend is metered locally, token by token — nothing to configure,
 nothing persisted. On exit it tells you how many requests it metered and which
-ones it could not, and why. For Crush, Droid, Cline, Continue, Cursor or Copilot
+ones it could not, and why. With `bvsala claude`, an `ANTHROPIC_BASE_URL` you had
+already set (a company proxy, LiteLLM…) is never replaced behind your back: the
+gateway forwards there, or the wrapper stops and says why. For Crush, Droid, Cline, Continue, Cursor or Copilot
 in VS Code, `bvsala doctor` prints the exact config block. The gateway starts
 with **no keys at all** (COMMUNITY mode: every local saving lever armed, zero
 telemetry); `BIVELIO_SERVICE_KEY` adds the cloud dashboard and org entitlements.
@@ -232,7 +234,9 @@ cache-write TTL lever (1h→5m, the saving that changes the rate, never the
 content the model reads) is armed by default; the other levers (sibling model,
 per-turn effort) switch on with their flags. On a Claude or ChatGPT subscription
 there is no per-token invoice, so that traffic is metered at list-price
-equivalent and never carries commission.
+equivalent and never carries commission, and the TTL lever leaves Claude Max/Pro
+traffic untouched: there is no write premium to save, and a 5-minute entry would
+be rewritten after any pause.
 
 **The gateway forwards what your terminal sends.** With no lever armed, your
 provider receives the request body byte for byte and every header your client
@@ -421,7 +425,16 @@ had no reasoning block), and then at 95 % of its counter, a margin for the small
 with the model's tokenizer, or with a calibrated estimate where no exact tokenizer
 exists, as for Anthropic models), and `"unmeasured"` when the provider returned no
 usage. Only `measured` and `reference` figures reach your invoice; estimated ones
-never do.
+never do. A model with no list price in the catalog and none in your `costModels`
+(or `defaultCostModel`) is priced at an illustrative rate: its token counts are still
+the provider's, but its dollar figures are `"estimated"`, never `"measured"`, and a
+`price` trace says `priceSource: "illustrative"`.
+
+**The arithmetic in the example** is answered on your machine only when the whole
+request is that one question: a single user message, with no system prompt, no
+earlier turns, no tools and no structured data. Anything else goes to your model,
+the only one that sees what format was asked for, and so do questions the layer
+cannot answer exactly or without guessing: `10 / 3`, percentages, dates and `2.500`.
 
 A repeat is valued by reference only when the call that ran reached the provider's
 own API (`https://api.openai.com`, `https://api.anthropic.com` or
@@ -435,6 +448,11 @@ went (a provider of your own, the AI SDK and Mastra adapters, a LangChain model 
 does not expose its base URL), the rule applies as it always has. The layer reads the
 configured base URL, not the wire: a custom `fetch` that sends the request elsewhere
 is not seen.
+
+**Empty answers and errors inside a 200.** An empty answer, or a call whose usage
+counter did not arrive complete, is served as usual but never written to a cache, so
+a repeat goes back to your provider. An HTTP 200 whose body is an error, or that
+carries no answer at all, makes `generate()` throw instead of returning empty text.
 
 **Provider refusals.** A refusal is measured like any other call and is never cached,
 repaired or replayed by reference. One kind is priced at 0: an Anthropic
@@ -489,6 +507,14 @@ and personalization checks, with shorter lists outside English, Spanish, Catalan
 French, German, Italian and Portuguese. In the gateway, the coalesced twin of such a
 request is `estimated` (`sensitive-topic`). A false positive costs one cache hit.
 
+**Answers that must change.** A request whose user turns ask for random or freshly
+generated output (a random pick, a new UUID or password, a dice roll, a coin toss)
+or for the current time or date is never read from or written to the exact or
+semantic cache. It is measured and served as usual, and the `policy` trace says why.
+With a `seed`, a random request is cacheable again: fixing the seed asks for the same
+output. A question about the current time is not. The check is lexical, with short
+lists of phrases in English and Spanish; a false positive costs one cache hit.
+
 **Streaming.** `generateStream()` takes the same request and hands you the answer as
 the provider writes it, then the same `SavingsReport`:
 
@@ -525,7 +551,7 @@ Already on an agent framework? The layer plugs in at that framework's own extens
 point, from a subpath of this same package. The four adapters behave alike:
 
 - **They answer without calling the model when they can** — a computed answer (the
-  arithmetic above), an exact repeat of a request that already ran, an identical
+  arithmetic above, when the request is that bare question), an exact repeat of a request that already ran, an identical
   request already in flight — and otherwise let your framework make exactly the call
   it was going to make. They never rewrite what your framework sends.
 - **Tools are treated as having side effects** unless you list them in
@@ -590,7 +616,7 @@ const agent = new Agent({
   model: "openai/gpt-4o-mini",
   inputProcessors: [bivelio], // last in the list
 });
-console.log((await agent.generate("What is 2 + 2 * 3?")).text); // "8"
+console.log((await agent.generate("What is 2 + 2 * 3?")).text); // the model answers: with instructions, the layer does not compute it
 ```
 
 It covers `generate()` and `stream()`, not `generateLegacy()`/`streamLegacy()` or a

@@ -148,3 +148,56 @@ describe("los apartados que salieron del README siguen a un clic", () => {
     expect(culpables).toEqual([]);
   });
 });
+
+/**
+ * LO QUE EL README CUENTA DE LOS ARREGLOS DE LA 1.2.3 (notas del #599).
+ *
+ * Cada frase se comprobó contra el código antes de escribirla; estas pruebas
+ * impiden que se pierda al reordenar el README otra vez. El comportamiento lo
+ * fijan sus propias pruebas: resolver-aritmetico-declina, adaptadores/mastra,
+ * salida-que-debe-variar, respuesta-vacia-no-se-cachea,
+ * precio-ilustrativo-no-es-medido y gateway-no-empeora.
+ */
+describe("el README cuenta los arreglos de la 1.2.3", () => {
+  const plano = readme.replace(/\s+/g, " ");
+
+  it("el ejemplo de Mastra no promete «8» si su agente lleva instrucciones (con ellas la cuenta va al modelo)", () => {
+    const bloque = [...readme.matchAll(/```ts\n([\s\S]*?)```/g)]
+      .map((m) => m[1]!)
+      .find((b) => b.includes("savingsProcessor(") && b.includes("new Agent("));
+    expect(bloque, "falta el ejemplo de Mastra en el README").toBeDefined();
+    const instrucciones = /instructions:\s*"([^"]*)"/.exec(bloque!)?.[1] ?? "";
+    const llamada = bloque!.split("\n").find((l) => l.includes("agent.generate(")) ?? "";
+    if (instrucciones !== "") expect(llamada).not.toMatch(/\/\/\s*"8"/);
+  });
+
+  it("dice cuándo contesta la cuenta en la máquina y qué va al modelo", () => {
+    expect(plano).toContain("a single user message, with no system prompt, no earlier turns, no tools and no structured data");
+    expect(plano).toContain("`10 / 3`, percentages, dates and `2.500`");
+  });
+
+  it("dice que lo que pide azar o la hora no sale de caché, y que con `seed` el azar sí", () => {
+    expect(plano).toContain("ask for random or freshly generated output");
+    expect(plano).toContain("or for the current time or date is never read from or written to the exact or semantic cache");
+    expect(plano).toContain("With a `seed`, a random request is cacheable again");
+  });
+
+  it("dice que lo vacío no se cachea y que un 200 con error hace fallar generate()", () => {
+    expect(plano).toContain("never written to a cache");
+    expect(plano).toContain("makes `generate()` throw instead of returning empty text");
+  });
+
+  it("dice que sin precio de lista el dinero sale «estimated» con priceSource illustrative", () => {
+    expect(plano).toContain('its dollar figures are `"estimated"`, never `"measured"`');
+    expect(plano).toContain('`priceSource: "illustrative"`');
+  });
+
+  it("dice que la rebaja de TTL no toca la suscripción (Claude Max/Pro), en el README y en la guía de terminales", () => {
+    expect(plano).toContain("the TTL lever leaves Claude Max/Pro traffic untouched");
+    const terminales = leer("docs/terminales/README.md").replace(/\s+/g, " ");
+    expect(terminales).toContain("la rebaja de TTL no lo toca");
+    // Sin clave, el gateway mide en local: línea de log, resumen y rutas locales.
+    expect(terminales).not.toContain("el metering se queda en las rutas locales");
+    expect(terminales).toContain("una línea de log por petición, el resumen al salir y las rutas locales");
+  });
+});

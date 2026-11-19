@@ -135,9 +135,9 @@ archivo, ni borrando la versión): se corrige con la siguiente, `0.1.1`.
 **Por qué el README de `packages/python` ya dice `pip install
 bivelio-savings-layer` y la web todavía no:** el README es la descripción que PyPI
 muestra, y la congela al subir cada versión; si la 0.1.0 saliera con «aún no está
-en PyPI», la página de PyPI lo diría hasta la 0.1.1. El README vive en un
-repositorio privado, así que antes de publicar no lo lee ningún cliente. La web sí
-es pública: esa nota cambia en su propio PR, que se fusiona solo con el paquete ya
+en PyPI», la página de PyPI lo diría hasta la 0.1.1. El README vivía entonces en
+un repositorio privado (hoy es público), así que antes de publicar no lo leía ningún
+cliente. La web sí era pública: esa nota cambia en su propio PR, que se fusiona solo con el paquete ya
 servido por PyPI.
 
 ## Versiones siguientes

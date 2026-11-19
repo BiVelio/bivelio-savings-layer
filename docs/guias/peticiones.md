@@ -27,7 +27,8 @@ console.log(data.answer); // 8
 ```
 
 A question the layer can answer on its own (the arithmetic of the first
-example) is only served without the model when that answer meets your schema.
+example, when the request is that bare question) is only served without the model
+when that answer meets your schema.
 The arithmetic resolver returns `{ value: 8 }`: with a `{ answer: number }`
 contract it steps aside and the request goes to the model, which answers in
 your contract's shape.
