@@ -6,6 +6,7 @@ import { describe, it, expect } from "vitest";
 
 import { PRECIOS_AL_DIA, precioDeListaPropio } from "../src/pricing/catalogo.js";
 import { salidaNoRepetible } from "../src/pricing/razonamiento.js";
+import { GUIAS_DEL_README } from "./helpers/guias-del-readme.js";
 
 /**
  * LOS MODELOS QUE SERVIMOS TIENEN FILA VIGENTE. Si no, esto se pone rojo.
@@ -94,9 +95,12 @@ const MENCIONADOS_NO_SERVIDOS: Readonly<Record<string, string>> = {
 
 const RAIZ = fileURLToPath(new URL("../", import.meta.url));
 
-/** Los sitios que «nombran» modelos: README, doctor, init, ayuda del gateway, ejemplos y banco. */
+/**
+ * Los sitios que «nombran» modelos: README (y las guías que salieron de él en la
+ * 1.2.3), doctor, init, ayuda del gateway, ejemplos y banco.
+ */
 function sitios(): string[] {
-  const out = ["README.md", "gateway/doctor.ts", "gateway/bin.ts", "gateway/init-fragmentos.ts"];
+  const out = ["README.md", ...GUIAS_DEL_README, "gateway/doctor.ts", "gateway/bin.ts", "gateway/init-fragmentos.ts"];
   const recorrer = (dir: string): void => {
     for (const e of readdirSync(join(RAIZ, dir), { withFileTypes: true })) {
       const rel = `${dir}/${e.name}`;
