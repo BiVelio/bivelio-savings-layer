@@ -58,11 +58,23 @@ permissions: {}
 
 jobs:
   verificar:
-    # Las Release `py-v*` son del cliente de Python y las publica
-    # publish-pypi.yml. Sin este salto, cortar `py-v0.1.0` lanzaría también
-    # esta cadena, que caería en «La etiqueta coincide con package.json». Con
-    # `verificar` saltado, `publicar` y `sbom` no corren.
-    if: ${{ !startsWith(github.event.release.tag_name, 'py-v') && !startsWith(github.event.release.tag_name, 'pg-v') }}
+    # Las Release `py-v*` son del cliente de Python (publish-pypi.yml), las
+    # `pg-v*` del paquete de Postgres (publish-postgres.yml) y las `paper-v*`
+    # del paper (no publican nada en un registro). Sin este salto, cortar
+    # `py-v0.1.0` o `paper-v2.3` lanzaría también esta cadena, que caería en
+    # «La etiqueta coincide con package.json» (así salieron en rojo paper-v2.2
+    # y paper-v2.3). `banco-semanal` lleva el MISMO salto: con los dos
+    # saltados, `publicar` y `sbom` no corren y la ejecución sale saltada, no
+    # en rojo. test/cadena-de-suministro.test.ts lo comprueba por etiqueta.
+    #
+    # «Latest» en GitHub: debe seguir siendo la última Release `v*` (la de npm).
+    # El YAML no lo puede imponer sin dar `contents: write` a un trabajo que
+    # edite OTRA Release, así que se decide al crearla: las `py-v*`, `pg-v*` y
+    # `paper-v*` se crean SIEMPRE con `--latest=false`, p. ej.
+    #   gh release create py-v1.2.2 --target main --latest=false --title "…" --notes "…"
+    # Si una ya quedó como Latest, se devuelve a la de npm con
+    #   gh release edit v1.2.2 --latest
+    if: ${{ !startsWith(github.event.release.tag_name, 'py-v') && !startsWith(github.event.release.tag_name, 'pg-v') && !startsWith(github.event.release.tag_name, 'paper-v') }}
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -249,7 +261,11 @@ jobs:
   # Si la lista no se puede leer (p. ej. el workflow aún no existe en main), la
   # puerta NO pasa. Para saltarla en una emergencia, la variable de repositorio
   # BANCO_SEMANAL_EMERGENCIA con el motivo (la pone y la quita el dueño).
+  # El mismo salto que `verificar`: sin él, esta puerta corría en CADA Release
+  # (también py-v*, pg-v* y paper-v*) y, cortada sobre un commit sin banco,
+  # dejaba la ejecución en rojo aunque PyPI publicara bien.
   banco-semanal:
+    if: ${{ !startsWith(github.event.release.tag_name, 'py-v') && !startsWith(github.event.release.tag_name, 'pg-v') && !startsWith(github.event.release.tag_name, 'paper-v') }}
     runs-on: ubuntu-latest
     permissions:
       contents: read
