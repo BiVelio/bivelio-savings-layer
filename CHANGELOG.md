@@ -4,6 +4,15 @@
 
 ### Changed: what you will notice after upgrading
 
+- **`layer.generate({ tools })` sends every tool you declare,** write and
+  destructive tools included, as the framework adapters and untyped catalogues
+  already did. Until now a catalogue that declared `risk` lost its write tools on
+  any request that did not contain one of 11 verbs ("Refund order 4411" was sent
+  without `refund_order`). The gate is now opt-in:
+  `new ToolSelector({ withholdWriteTools: true })`. A write or destructive tool left
+  out by the selector is never credited as a saving: it does not count in
+  `tokens.eliminatedInput` or in `cost.*`, and the `tool-selector` trace lists it
+  under `withheldWritesNotCredited`.
 - **The exact cache starts cold.** Its key generation moves from `n2` to `n3` (see
   the key fix below), so no entry written by an earlier version is read again:
   expect fewer exact hits for the first days. Old entries in Redis, KV or
