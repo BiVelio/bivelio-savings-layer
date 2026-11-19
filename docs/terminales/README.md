@@ -16,8 +16,9 @@ tu proveedor salen de tu máquina hacia BiVelio: solo viaja el uso de cada
 petición —cuentas de tokens, coste, el id del modelo, un id de petición y los ids
 opacos de asiento y de sesión—, y la lista exacta de campos está en la
 LICENSE-CLOUD.md §5. **Open core**: arranca sin ninguna clave, en modo Community —todas
-las palancas locales armadas, cero telemetría, y el metering se queda en las
-rutas locales `/_bvsala`—. `BIVELIO_SERVICE_KEY` (opcional) añade el panel, los
+las palancas locales armadas, cero telemetría, y la medición se queda en esta
+máquina: una línea de log por petición, el resumen al salir y las rutas locales
+`/_bvsala`—. `BIVELIO_SERVICE_KEY` (opcional) añade el panel, los
 entitlements de la org y la recogida de licencia; una licencia PRESENTE pero
 caducada o revocada solo corta las peticiones NUEVAS con un HTTP 402 hasta
 renovarla, jamás una en curso. La medición es best-effort: con la ingesta caída,
@@ -31,8 +32,9 @@ que el terminal enruta por el base URL — no «todo el tráfico»: cada guía d
 lo que su terminal manda por fuera.
 
 En suscripción (login de claude.ai en Claude Code, cuenta ChatGPT en Codex) no
-hay factura por tokens: ese tráfico se mide a precio de lista equivalente y
-nunca se le acredita ahorro ni comisión.
+hay factura por tokens: ese tráfico se mide a precio de lista equivalente,
+nunca se le acredita ahorro ni comisión, y la rebaja de TTL no lo toca (Claude
+Max/Pro: no hay prima de escritura que ahorrar).
 
 ## Índice
 
