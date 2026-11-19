@@ -8,6 +8,7 @@ import { InMemorySemanticCache, type SemanticCacheOptions } from "../src/cache/s
 import { InMemoryCacheBreakpointStore } from "../src/cache/breakpoint-store.js";
 import { reiniciarAvisos } from "../src/util/warn-once.js";
 import { CALIBRACION_DE_PRUEBA, certificarRespuestaSemantica } from "./helpers/semantic-cache.js";
+import { APARTADOS_MOVIDOS } from "./helpers/guias-del-readme.js";
 import type { Provider, ProviderRequest, ProviderResponse } from "../src/providers/types.js";
 import type { ChatMessage, SavingsRequest, SavingsToggles } from "../src/contracts/types.js";
 
@@ -27,6 +28,7 @@ import type { ChatMessage, SavingsRequest, SavingsToggles } from "../src/contrac
  */
 
 const RAIZ = new URL("..", import.meta.url).pathname;
+const GUIA_SERVERLESS = APARTADOS_MOVIDOS.find((a) => a.titulo.startsWith("Serverless:"))!.guia;
 const PRECIOS = { "openai/gpt-4o-mini": { inputPer1k: 0.00015, outputPer1k: 0.0006 } };
 
 class ProveedorFijo implements Provider {
@@ -71,20 +73,23 @@ const sinPedir = () => avisos.filter((a) => a.includes("does not ask for it"));
 
 /**
  * El bloque «Serverless» del README, sin sus `import` (se inyectan), compilado
- * a JS y evaluado. Lo que se ejecuta es el TEXTO del README: si alguien quita la
+ * a JS y evaluado. Lo que se ejecuta es el TEXTO publicado: si alguien quita la
  * línea que enciende la caché, este test lo ve. El tipado de ese mismo bloque lo
  * compila `fragmento-instalacion.test.ts` contra los tipos reales.
+ *
+ * Desde la 1.2.3 el apartado vive en docs/guias/persistencia.md (el README de
+ * npm se cortaba a 64 KiB); el README lo enlaza por su título.
  */
 function ejemploServerless(inyectado: {
   createSavingsLayer: unknown;
   InMemorySemanticCache: unknown;
   provider: Provider;
 }): (kv: unknown) => Promise<{ layer: ReturnType<typeof createSavingsLayer>; save: () => Promise<void> }> {
-  const readme = readFileSync(join(RAIZ, "README.md"), "utf8");
-  const bloque = [...readme.matchAll(/```ts\n([\s\S]*?)```/g)]
+  const guia = readFileSync(join(RAIZ, GUIA_SERVERLESS), "utf8");
+  const bloque = [...guia.matchAll(/```ts\n([\s\S]*?)```/g)]
     .map((m) => m[1] ?? "")
     .find((b) => b.includes("async function serverlessLayer"));
-  if (!bloque) throw new Error("no está el ejemplo Serverless en el README");
+  if (!bloque) throw new Error(`no está el ejemplo Serverless en ${GUIA_SERVERLESS}`);
   const sinImports = bloque
     .split("\n")
     .filter((l) => !/^\s*import\s/.test(l))

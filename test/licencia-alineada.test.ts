@@ -427,11 +427,19 @@ describe("⛔ nada de lo que viaja en el tarball vuelve a «solo cuentas y coste
 
   it("el barrido encuentra lo que tiene que barrer", () => {
     expect(fuentes("src").length).toBeGreaterThan(20);
+    expect(fuentes("docs/guias").length).toBeGreaterThan(0);
     expect(fuentes("gateway").some((f) => f.endsWith("bin.ts"))).toBe(true);
   });
 
   it("ningún fuente, guía ni skill publicado lleva una frase retirada", () => {
-    const ficheros = [...fuentes("src"), ...fuentes("gateway"), ...fuentes("docs/terminales"), ...fuentes("skills")];
+    const ficheros = [
+      ...fuentes("src"),
+      ...fuentes("gateway"),
+      ...fuentes("docs/terminales"),
+      ...fuentes("skills"),
+      // Los apartados que salieron del README en la 1.2.3: siguen siendo su texto.
+      ...fuentes("docs/guias"),
+    ];
     const culpables: string[] = [];
     for (const f of ficheros) {
       const texto = plano(readFileSync(f, "utf8").replace(/^\s*(\/\/|\*)\s?/gm, ""));

@@ -2,6 +2,7 @@ import { execFileSync } from "node:child_process";
 import { mkdtempSync, readFileSync, rmSync, writeFileSync, mkdirSync } from "node:fs";
 import { join } from "node:path";
 import { describe, it, expect } from "vitest";
+import { GUIAS_DEL_README } from "./helpers/guias-del-readme.js";
 
 /**
  * Los fragmentos que le damos al cliente TIENEN que compilar pegados tal cual.
@@ -45,9 +46,13 @@ function fragmentoDelPanel(): string {
  * y uno de ellos, justo el de las llamadas a herramienta, tenía exactamente el
  * mismo defecto que se estaba arreglando (`{ model, messages, tools }`, tres
  * identificadores inexistentes). Lo cazó una mutación de este mismo test.
+ *
+ * Desde la 1.2.3 los catorce apartados opcionales viven en docs/guias (npm corta
+ * el README a 64 KiB): sus bloques siguen el quickstart del README y se compilan
+ * aquí detrás de los suyos, como si el lector los pegara a continuación.
  */
 function programaDelReadme(): string {
-  const src = readFileSync(join(RAIZ, "README.md"), "utf8");
+  const src = [readFileSync(join(RAIZ, "README.md"), "utf8"), ...GUIAS_DEL_README.map((g) => readFileSync(join(RAIZ, g), "utf8"))].join("\n");
   const bloques = [...src.matchAll(/```ts\n([\s\S]*?)```/g)]
     .map((m) => m[1])
     .filter((b): b is string => typeof b === "string");

@@ -1,6 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { readFileSync, existsSync } from "node:fs";
 import { fileURLToPath } from "node:url";
+import { GUIAS_DEL_README } from "./helpers/guias-del-readme.js";
 
 /**
  * LO QUE SE PUBLICA EN NPM ES UNA SUPERFICIE PÚBLICA, Y HAY QUE TRATARLA COMO TAL.
@@ -109,7 +110,9 @@ describe("la superficie pública del paquete", () => {
    */
   it("⛔ ni el README ni las keywords nombran las técnicas internas", () => {
     const raiz = fileURLToPath(new URL("../", import.meta.url));
-    const readme = readFileSync(`${raiz}README.md`, "utf8");
+    // El README y las guías que salieron de él en la 1.2.3: lo que se movió sigue
+    // siendo la documentación pública del paquete.
+    const readme = ["README.md", ...GUIAS_DEL_README].map((f) => readFileSync(`${raiz}${f}`, "utf8")).join("\n");
     const pkg = readFileSync(`${raiz}package.json`, "utf8");
     // Nombres de técnica y de dependencias evaluadas. No son secretos de estado,
     // pero juntos son la lista de la compra de quien quiera reproducirlo.
@@ -153,7 +156,9 @@ describe("la superficie pública del paquete", () => {
 
   it("⛔ tampoco umbrales ni cifras medidas de comparación", () => {
     // Un umbral publicado es un parámetro que un competidor no tiene que buscar.
-    const readme = readFileSync(fileURLToPath(new URL("../README.md", import.meta.url)), "utf8");
+    const readme = ["README.md", ...GUIAS_DEL_README]
+      .map((f) => readFileSync(fileURLToPath(new URL(`../${f}`, import.meta.url)), "utf8"))
+      .join("\n");
     expect(readme).not.toMatch(/≥\s*\d+%|≥\s*\d+\s*tokens/);
     expect(readme).not.toMatch(/json\s+\d{3,}/i);
   });
