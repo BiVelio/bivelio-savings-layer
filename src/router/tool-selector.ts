@@ -344,14 +344,22 @@ function defaultScore(text: string, tool: ToolDescriptor): number {
   // a ver la capacidad, el modelo contesta «claro, lo envío» y no se envía nada
   // —el mismo fallo que ya se cerró en el router para `retrieval:"off"`— y el
   // libro lo apunta como ahorro (`actualTools: 0`).
-  const haystack = normalizeText(text);
+  //
+  // Y SIN LA EXACTITUD QUE LA CLAVE DE CACHÉ RESERVA AL CÓDIGO (2026-11-19).
+  // `normalizeText` copia tal cual lo que va entre backticks y conserva la caja
+  // de lo entrecomillado, porque en la clave `Invoice` e `invoice` pueden ser dos
+  // preguntas. Aquí solo se pregunta de qué habla el texto: «Look up the
+  // `Invoice` for Bob» habla de facturas, y con el intent `invoice` la
+  // herramienta se quedaba fuera. `plegar` trata el backtick como el apóstrofo
+  // que era y baja la caja al final.
+  const haystack = plegar(text);
   let score = 0;
   // Un catálogo sin tipar no debería llegar aquí (lo ataja `catalogoSinTipar`),
   // pero una herramienta suelta sin `intents` dentro de un catálogo tipado sí:
   // antes reventaba con `TypeError: tool.intents is not iterable` y tumbaba la
   // petición entera. Sin intents no puntúa; no rompe.
   for (const intent of Array.isArray(tool.intents) ? tool.intents : []) {
-    const needle = normalizeText(intent);
+    const needle = plegar(intent);
     // Un intent que se queda vacío al normalizar (solo puntuación) casaría con
     // TODO, porque `includes("")` es siempre cierto: sería la herramienta de
     // escritura de un cliente descuidado adjuntada a cualquier petición.
@@ -362,4 +370,9 @@ function defaultScore(text: string, tool: ToolDescriptor): number {
     }
   }
   return score;
+}
+
+/** El texto como lo compara la relevancia: normalizado, sin código protegido y sin caja. */
+function plegar(texto: string): string {
+  return normalizeText(texto.replace(/`/g, "'")).toLowerCase();
 }
