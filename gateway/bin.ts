@@ -591,8 +591,9 @@ console.log(`[bvsala gateway] v${BV_SALA_VERSION} listening on http://127.0.0.1:
 for (const w of licencia.warnings) console.error(`[bvsala gateway] ${w}`);
 console.log(
   serviceAccountKey
-    ? "[bvsala gateway] metering: ON (service key present)"
-    : "[bvsala gateway] metering: OFF (community mode — no BiVelio service key; local reports stay available with x-bvsala-report)",
+    ? "[bvsala gateway] metering: ON (service key present: usage also goes to your dashboard)"
+    : "[bvsala gateway] metering: LOCAL ONLY (community mode, no BiVelio service key): every request is measured on " +
+        "this machine with the provider's usage and nothing is sent to BiVelio · per-request reports with x-bvsala-report",
 );
 if (process.env.BVSALA_METERING_URL) {
   console.error(

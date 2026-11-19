@@ -710,7 +710,7 @@ describe("arrancarGateway — los defectos de la 0.4.20 (verificación del 2026-
     expect(r.status).toBe(200);
   });
 
-  it("⛔ con licencia y sin clave (en proceso), una petición en streaming que termina en 200 deja SU línea en el log (la que `bvsala doctor` manda buscar)", async () => {
+  it("⛔ con licencia y sin clave (en proceso), una petición en streaming que termina en 200 deja SU línea en el log (la que `bvsala doctor` manda buscar), y es la de una petición MEDIDA", async () => {
     // Claude Code, Codex, Goose y Qwen van SIEMPRE en streaming. Hasta 0.4.20
     // la rama de streaming solo logueaba desde medir(), y medir() sin emisor
     // vuelve en silencio: un probador sin clave (o con la clave mal exportada)
@@ -731,9 +731,12 @@ describe("arrancarGateway — los defectos de la 0.4.20 (verificación del 2026-
 
     const linea = lineas.find((l) => l.startsWith("[gateway] POST /v1/messages"));
     expect(linea).toBeDefined();
-    expect(linea).toContain("→ 200");
-    expect(linea).toContain("(stream)");
-    expect(linea).toContain("not metered: no BIVELIO_SERVICE_KEY");
+    // Desde la auditoría del lanzamiento (2026-11) sin clave se mide en local
+    // igual que con ella (solo el envío al panel es opcional): la línea es la
+    // de medir(), con el modelo y el coste, no un «not metered».
+    expect(linea).toContain("claude-haiku-4-5");
+    expect(linea).toContain("$");
+    expect(linea).not.toContain("not metered");
     // Una línea por petición, ni cero ni dos.
     expect(lineas.filter((l) => l.startsWith("[gateway] POST /v1/messages"))).toHaveLength(1);
   });
