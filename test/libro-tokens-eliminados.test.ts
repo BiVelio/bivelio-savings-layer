@@ -2,6 +2,7 @@ import { beforeEach, describe, it, expect } from "vitest";
 
 import { createSavingsLayer } from "../src/pipeline/create.js";
 import { ToolSelector } from "../src/router/tool-selector.js";
+import { ResolverRegistry } from "../src/resolvers/index.js";
 import type { Provider, ProviderRequest, ProviderResponse } from "../src/providers/types.js";
 import type { SavingsRequest } from "../src/contracts/types.js";
 
@@ -148,7 +149,15 @@ describe("libro 2 — tokens eliminados", () => {
   });
 
   it("una llamada EVITADA no toca el libro 2: los libros son disjuntos", async () => {
-    const capa = createSavingsLayer({ provider: new Mudo() });
+    // Un resolver propio: el aritmético de serie declina en cuanto la petición
+    // declara herramientas (N2, 2026-11-19), y aquí hacen falta las dos cosas.
+    const capa = createSavingsLayer({
+      provider: new Mudo(),
+      resolvers: new ResolverRegistry().register({
+        name: "de-prueba",
+        try: () => ({ text: "42", resolver: "de-prueba" }),
+      }),
+    });
     const req: SavingsRequest = {
       model: "openai/gpt-4o-mini",
       messages: [{ role: "user", content: "¿Cuánto es 7 * 6?" }],
