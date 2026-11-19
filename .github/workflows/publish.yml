@@ -1,9 +1,10 @@
 name: publish
 
 # Publish @bivelio/savings-layer to the PUBLIC npm registry on a published GitHub
-# Release. The package is "public-inert": the code is readable, but it is fail-closed
-# — it refuses to run without a valid signed license, so the LICENSE (not the
-# registry) is the gate. Install is a friction-free `pnpm add @bivelio/savings-layer`.
+# Release. The package is open core (Apache-2.0): with no key it runs every local
+# saving lever (COMMUNITY mode, zero telemetry). A BiVelio key is optional and only
+# governs Savings Cloud; a key that is configured but invalid fails closed. Install
+# is a friction-free `pnpm add @bivelio/savings-layer`.
 #
 # AUTENTICACIÓN: npm TRUSTED PUBLISHING (OIDC), sin token guardado. GitHub emite
 # un token OIDC de vida corta para ESTE workflow y npm lo canjea por un permiso
@@ -20,13 +21,12 @@ name: publish
 #
 # PROVENANCE: `--provenance` SOLO si el repositorio es público. npm no admite
 # provenance desde repositorios privados, ni siquiera para paquetes públicos
-# (misma página, consultada 2026-09-27), así que pedirla no es una opción
-# mientras lo sea. El flag depende de `github.event.repository.private`, y
-# mientras el repo sea privado la Release publica sin provenance y lo dice con
-# un ::warning::.
-# Hacer público el repo es decisión del dueño; el día que lo sea, la provenance
-# entra sola. test/cadena-de-suministro.test.ts rompe si alguien quita el flag
-# o el `id-token: write`.
+# (misma página, consultada 2026-09-27). El repositorio ES público, y desde la
+# 1.0.0 cada versión sale con provenance. El flag sigue dependiendo de
+# `github.event.repository.private`: si el repo volviera a ser privado, la
+# Release publicaría sin provenance y lo diría con un ::warning::.
+# test/cadena-de-suministro.test.ts rompe si alguien quita el flag o el
+# `id-token: write`.
 #
 # TRES TRABAJOS, cada uno con el mínimo permiso:
 #   verificar (contents: read)   instala, construye, prueba, empaqueta y genera

@@ -1,13 +1,15 @@
 # Publishing `@bivelio/savings-layer`
 
-**Decision (2026-07-20): PUBLIC npm, "public-inert".** `pnpm add @bivelio/savings-layer`
-works for anyone with zero auth — the friction-free path. The code is readable, but the
-package is **fail-closed**: it refuses to run without a valid signed license, so the
-**license is the gate, not the registry**. Chosen over a private registry because the SDK
-runs client-side (the bundle ships to every paying customer anyway), so gating *install*
-buys little while adding real onboarding friction.
+**PUBLIC npm, open core.** `pnpm add @bivelio/savings-layer` works for anyone with zero
+auth — the friction-free path — and the package runs with **no key**: every local saving
+lever is on (COMMUNITY mode), with zero telemetry. The package is Apache-2.0 and its code
+is readable; the repository is public. A BiVelio key is optional and only governs
+**Savings Cloud** (dashboard, team metering, org entitlements, license management). The
+public registry was chosen over a private one (2026-07-20) because the SDK runs
+client-side, so gating *install* buys nothing while adding real onboarding friction.
 
-- **Runtime gate:** `createSavingsLayer` throws `LicenseError` without an active license.
+- **Runtime:** `createSavingsLayer({ provider })` runs with no key. A key that is
+  configured but invalid, expired or revoked fails closed: `LicenseError`.
 - **Nothing secret ships:** the tarball is what `files` in `package.json` lists: `dist/`,
   `docs/terminales/`, `skills/`, `README.md` and `LICENSE`. It embeds the Ed25519
   **public** key (for offline verification). The **private** key is never part of the
@@ -89,12 +91,12 @@ Without this step, the next Release fails at "Publish to npm".
    token is gone, deprecate from a maintainer machine:
    `npm deprecate @bivelio/savings-layer@X.Y.Z "<message>" --otp=<code>`.
 
-The `npm` environment is created by the first run, with no rules. **Required reviewers
-are not available here:** on GitHub Free, Pro and Team they only exist for public
-repositories, and this organization is on Team with a private repository
+The `npm` environment is created by the first run, with no rules. On GitHub Free, Pro
+and Team, **required reviewers** only exist for public repositories
 (https://docs.github.com/en/actions/reference/workflows-and-actions/deployments-and-environments,
-checked 2026-09-27). On the current plan, the human gate is who can cut a Release.
-What Team does offer for private repositories is **deployment branches and tags**:
+checked 2026-09-27). The repository is public now, so they are available; whether to add
+the owner as a required reviewer of `npm` is the owner's decision. Without them, the
+human gate is who can cut a Release. **Deployment branches and tags** are available too:
 optionally, GitHub → Settings → Environments → `npm` → *Deployment branches and tags* →
 *Selected branches and tags* → add the tag rule `v*`, so that only a run on a `v*` tag
 can enter the environment npm trusts.
@@ -168,18 +170,19 @@ an incident. The SBOM is still attached to the Release in both cases.
 ### Provenance needs a public repository
 
 npm only generates provenance when the source repository is public, even for public
-packages (https://docs.npmjs.com/trusted-publishers, checked 2026-09-27). While
-`BiVelio/bivelio-savings-layer` is private, the workflow publishes **without**
-provenance and says so with a warning in the run. If the repository is made public, the
-next release gets `--provenance` with no change to the workflow. Whether to make it
-public is the owner's decision.
+packages (https://docs.npmjs.com/trusted-publishers, checked 2026-09-27).
+`BiVelio/bivelio-savings-layer` is public, and every version since 1.0.0 carries a
+provenance attestation (0.4.33 to 0.5.2 went out through this workflow without one,
+because the repository was not public yet; SECURITY.md lists how each version was
+published). The workflow still decides with `github.event.repository.private`: if the
+repository ever went private again, it would publish **without** provenance and say so
+with a warning in the run.
 
 Trusted publishing also requires `repository.url` in `package.json` to match this
 repository exactly; it is set to `git+https://github.com/BiVelio/bivelio-savings-layer.git`.
 This undoes the removal of `repository` in #279 (5ff2718), which was made because npm
-showed it as a link to a repository that does not exist. It still does, in effect: while
-the repository is private, the "Repository" link on npmjs.com is a 404 for the public.
-That is the cost of trusted publishing from a private repository.
+showed it as a link to a repository the public could not open. With the repository
+public, the "Repository" link on npmjs.com works.
 
 ### Manual fallback
 
@@ -201,8 +204,9 @@ published by hand.
 ```
 pnpm add @bivelio/savings-layer
 ```
-No `.npmrc`, no token. The only credential is the **license key** (runtime), minted in the
-dashboard and passed to `createSavingsLayer({ licenseKey })`.
+No `.npmrc`, no token, no key: open core runs with none. Keys are only for Savings Cloud
+and are optional: the service key (`serviceAccountKey`, `BIVELIO_SERVICE_KEY`) and the
+license key (`licenseKey`), both minted in the dashboard.
 
 ## If you ever need to hide the code (revisit)
 
