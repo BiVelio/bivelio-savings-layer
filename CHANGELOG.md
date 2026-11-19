@@ -1,5 +1,96 @@
 # Changelog
 
+## 1.2.3 — 2026-11-21 — fixes from the pre-launch audit
+
+### Changed: what you will notice after upgrading
+
+- **The exact cache starts cold.** Its key generation moves from `n2` to `n3` (see
+  the key fix below), so no entry written by an earlier version is read again:
+  expect fewer exact hits for the first days. Old entries in Redis, KV or
+  PostgreSQL stay until their TTL runs out.
+- **Empty answers and calls without a full usage counter are not cached.** They are
+  served as before, but not written to the exact or semantic cache, so a repeat goes
+  back to the provider. An endpoint that never reports usage therefore stops using
+  the cache.
+- **An HTTP 200 without an answer is an error.** A 2xx body that carries an error
+  (`{"error": …}`, Anthropic's `{"type": "error"}`) or no completion (no
+  `choices[0].message`, no `content`, no `finishReason`) makes `generate()` throw
+  instead of returning empty text. Batch results are unchanged.
+- **Models without a list price are `estimated`.** A model with no catalog row and
+  none in `costModels` or `defaultCostModel` is still priced at the illustrative
+  rate, but `cost.basis` is `"estimated"`, not `"measured"`, and a `price` trace
+  carries `priceSource: "illustrative"`. Ids with `:` (`gpt-4o-mini:free`) and
+  relatives whose suffix is not an alias of the same model (`gemini-2.5-flash-lite`
+  no longer takes `gemini-2.5-flash`'s row) have no list price; dated,
+  `-latest`, `-preview` and `-exp` ids keep their model's.
+- **Random output and the current time are not served from cache.** A request
+  whose user turns ask for random or freshly generated output (a random pick, a new
+  UUID or password, a dice roll, a coin toss) or for the current time or date skips
+  the exact and semantic cache. With `seed`, a random request is cacheable again; a
+  time question never is. The phrases are in English and Spanish; a false positive
+  costs one cache hit.
+- **The arithmetic resolver answers only a bare question:** one user message, with
+  no system prompt, no earlier turns, no tools and no structured data, phrased as a
+  question with an operator. It declines dates, phone numbers, percentages, `2.500`,
+  leading zeros, numbers a double cannot hold exactly, and results it cannot write
+  exactly in nine decimals (`10 / 3`). A Mastra agent with `instructions` sends the
+  question to the model. The quickstart (`What is 2 + 2 * 3?` → `"8"`) is unchanged.
+
+### Fixed
+
+- **Exact-cache key.** Normalization no longer merges different code questions: text
+  in backticks or code blocks is kept as written, a sign attached to what follows is
+  an operator (`if (ok)` and `if (!ok)` are two questions), and quoted text keeps its
+  case. It runs in linear time on adversarial input, and the tool selector's
+  relevance folds backticks and case again.
+
+### Gateway and `bvsala` CLI
+
+- **Without a key the gateway meters locally.** In community mode every request is
+  measured on this machine with the provider's usage: log line, exit summary and the
+  local `/_bvsala` report routes. Only sending it to BiVelio needs
+  `BIVELIO_SERVICE_KEY`. The exit summary counts the inference requests that went
+  through, and `metering` in `/_bvsala/v1/status` is now always `true`. With
+  `BVSALA_GATEWAY_USAGE_INJECT=1`, `include_usage` is injected without a key too.
+- **Subscription traffic keeps its TTL.** The cache-write TTL lever (1h→5m) no
+  longer touches Claude Max/Pro traffic: there is no write premium to save. Traffic
+  billed per token is unchanged.
+- **`bvsala claude` (and `qwen`, `goose`, `aider`) keeps the base URL you already
+  had.** A pre-set `ANTHROPIC_BASE_URL` (`ANTHROPIC_HOST` for Goose,
+  `OPENAI_BASE_URL` or `ANTHROPIC_API_BASE` for Aider) becomes the gateway's
+  upstream, with a line that says so. One with a path prefix, or one that disagrees
+  with `BVSALA_GATEWAY_UPSTREAM`, stops the wrapper with exit 1 and says why.
+- **A provider cut mid-response reaches the client as a cut**, not as a complete
+  body, and the request is counted as not metered with its reason.
+- **The request path never changes the upstream host.** Repeated leading slashes
+  are collapsed (a base URL ending in `/` works), an absolute-form target keeps only
+  its path, and a target that would resolve to another origin, or is not a path
+  (`OPTIONS *`), gets a 400 and is not forwarded.
+- `--port=N` works like `--port N`; any other `--port…` form is an error.
+- `bvsala doctor` and the README no longer tie the levers to a PRO license: they run
+  free, with no key.
+
+### Python client
+
+- `pyproject.toml` links the public repository, and the README's LICENSE link is an
+  absolute GitHub URL (it was a 404 on pypi.org). From the extracted sdist, the
+  parity tests are skipped with their reason instead of failing.
+
+### Catalog
+
+- List-price rows for `claude-fable-5-2` and `gemini-2.5-flash-lite` (list prices
+  checked on 2026-11-19).
+
+### Docs
+
+- The npm README fits under the registry's 64 KiB limit, so the package page no
+  longer ends mid-sentence: the 14 optional sections moved word for word to
+  `docs/guias/` and the README links each one; "Licensing & privacy" now follows the
+  prices. The first screen says what the package is, how to install it, what is free
+  and what the paid cloud adds.
+- `docs/terminales` (in the tarball): the "not metered" reasons, the TTL lever's
+  scope and what community mode meters are up to date.
+
 ## 1.2.2 — los tres READMEs cuentan la misma historia
 
 ### Changed
