@@ -148,12 +148,15 @@ describe("la copia del gateway lleva sus salvedades en los 12 idiomas", () => {
         expect(nota).toContain("stream_options.include_usage");
       });
 
-      it("s1Note: SDK oficial de OpenAI o Anthropic, precio de lista y palancas del gateway con licencia PRO", () => {
+      // 2026-11-19 · las palancas del gateway son gratis y sin clave (CanalComunitario,
+      // gateway/entitlements.ts, las concede todas): solo se cobra la nube. La nota no
+      // puede volver a pedir una licencia PRO.
+      it("s1Note: SDK oficial de OpenAI o Anthropic, precio de lista y palancas del gateway sin licencia PRO", () => {
         const nota = m.howItWorks.s1Note;
         expect(nota).toMatch(s.medida);
         expect(nota).toContain("OpenAI");
         expect(nota).toContain("Anthropic");
-        expect(nota).toMatch(/\bPRO\b/);
+        expect(nota).not.toMatch(/\bPRO\b/);
       });
 
       // El pie de los logos de sistemas (Salesforce, Zapier, n8n…) decía «si llama

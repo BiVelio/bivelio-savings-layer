@@ -1337,7 +1337,7 @@
       "eyebrow": "Gateway · terminales de código",
       "title": "¿Claude Code con API key? Mira su gasto real, token a token.",
       "body": "Un solo comando pone un medidor local delante de tu terminal, sin tocar tu código: exportas tu clave de servicio y arrancas tu agente con bvsala. Tus prompts no pasan por los servidores de BiVelio: van al proveedor que configures, y a tu panel solo llegan conteos y coste.",
-      "note": "El gateway mide, con el contador de tu proveedor, cada petición de la que este informa el uso (en los modelos de nuestro catálogo de precios) y, como el SDK, arranca sin ninguna clave (modo Community): una clave de servicio opcional añade el panel y los entitlements de la org. Con licencia PRO, en modelos de Anthropic, aplica además una palanca por defecto: pasa las escrituras de caché del TTL de una hora al de cinco minutos solo en los turnos en que una parte grande del prompt es nueva —como el primero de una sesión o una compactación— y deja como están los turnos encadenados. Eso cambia el precio, nunca el contenido que lee el modelo. Las demás palancas van apagadas hasta que las enciendes. El skill savings-mode está disponible para tus topes, con su efecto pendiente de medir. El gateway funciona también con Codex CLI, Goose, Qwen Code, opencode, Kilo, Aider y, con tu propia clave de Anthropic, GitHub Copilot CLI; para otros, como Cline o Continue, bvsala doctor imprime la configuración exacta. Cursor funciona con su override de base URL y tu propia clave, y la Gemini CLI se envuelve con bvsala gemini.",
+      "note": "El gateway mide, con el contador de tu proveedor, cada petición de la que este informa el uso (en los modelos de nuestro catálogo de precios) y, como el SDK, arranca sin ninguna clave (modo Community): una clave de servicio opcional añade el panel y los entitlements de la org. En modelos de Anthropic aplica además una palanca por defecto, sin licencia ni cuenta: pasa las escrituras de caché del TTL de una hora al de cinco minutos solo en los turnos en que una parte grande del prompt es nueva —como el primero de una sesión o una compactación— y deja como están los turnos encadenados. Eso cambia el precio, nunca el contenido que lee el modelo. Las demás palancas van apagadas hasta que las enciendes. El skill savings-mode está disponible para tus topes, con su efecto pendiente de medir. El gateway funciona también con Codex CLI, Goose, Qwen Code, opencode, Kilo, Aider y, con tu propia clave de Anthropic, GitHub Copilot CLI; para otros, como Cline o Continue, bvsala doctor imprime la configuración exacta. Cursor funciona con su override de base URL y tu propia clave, y la Gemini CLI se envuelve con bvsala gemini.",
       "pythonNote": "¿Python o cualquier otro lenguaje? Apunta el SDK oficial de OpenAI o de Anthropic al gateway y cada petición cuyo uso informe el proveedor, de un modelo con precio de lista, queda registrada en este panel a ese precio; el log del gateway avisa cuando una no se mide. bvsala doctor imprime el base URL de cada SDK. En streaming con OpenAI, pide el uso en la petición (stream_options.include_usage).",
       "cta": "Ver cómo funciona →"
     },
@@ -1506,8 +1506,8 @@
         "who": "Para quien trabaja con Claude Code, Codex CLI u otro agente de código con API key.",
         "what": "Un comando pone un medidor local delante de tu terminal, sin tocar código. Cuenta cada petición de la que tu proveedor informa el uso, con su propio contador —en los modelos de nuestro catálogo de precios—, y lo suma en tu panel, por día y por modelo.",
         "figureLabel": "La cifra que publicamos",
-        "figureQue": "de reducción neta estimada del coste a precios de lista con el cambio de TTL de caché de PRO, restados los fallos de caché inducidos (intervalo del {confianza}: de {bajo} a {alto}). Reproducción contrafactual con línea base parcialmente reconstruida sobre {sesiones} sesiones de Claude Code de una organización; no es un A/B en vivo ni una conciliación de facturas.",
-        "figureNote": "No es una previsión para tu equipo: es una sola organización, un solo proveedor y precios de lista, y es un ahorro pequeño que se nota donde el gasto en Anthropic es alto. Con PRO, en modelos de Anthropic, pasa las escrituras de caché del TTL de una hora al de cinco minutos solo en los turnos en que una parte grande del prompt es nueva —como el primero de una sesión o una compactación— y deja como están los turnos encadenados de una sesión en marcha. Eso cambia el precio, nunca lo que lee el modelo, y solo lo que confirma el contador de tu proveedor cuenta en tu informe de ahorro.",
+        "figureQue": "de reducción neta estimada del coste a precios de lista con el cambio de TTL de caché del gateway, restados los fallos de caché inducidos (intervalo del {confianza}: de {bajo} a {alto}). Reproducción contrafactual con línea base parcialmente reconstruida sobre {sesiones} sesiones de Claude Code de una organización; no es un A/B en vivo ni una conciliación de facturas.",
+        "figureNote": "No es una previsión para tu equipo: es una sola organización, un solo proveedor y precios de lista, y es un ahorro pequeño que se nota donde el gasto en Anthropic es alto. En modelos de Anthropic, sin licencia, pasa las escrituras de caché del TTL de una hora al de cinco minutos solo en los turnos en que una parte grande del prompt es nueva —como el primero de una sesión o una compactación— y deja como están los turnos encadenados de una sesión en marcha. Eso cambia el precio, nunca lo que lee el modelo, y solo lo que confirma el contador de tu proveedor cuenta en tu informe de ahorro.",
         "benchLink": "El informe del banco de TTL: qué se simuló, el desglose por modelo y sus límites →",
         "cta": "Instalar el gateway",
         "requires": "Node.js con npm y un agente de código que use su propia API key."
@@ -1857,7 +1857,7 @@
     },
     "gatewayTtl": {
       "title": "La rebaja de caché del gateway: una simulación, no un A/B",
-      "kind": "Esta es una <b>reproducción contrafactual</b> con una <b>línea base parcialmente reconstruida</b>, no una de las baterías A/B en vivo de esta página. Tomamos el uso reportado por el proveedor en sesiones reales de Claude Code de <b>una sola organización, la nuestra</b>, con un solo proveedor (Anthropic), y estimamos los costes a <b>precios de lista versionados</b> con el cambio de TTL de caché de PRO y sin él. No es una doble ejecución en vivo ni una conciliación de facturas.",
+      "kind": "Esta es una <b>reproducción contrafactual</b> con una <b>línea base parcialmente reconstruida</b>, no una de las baterías A/B en vivo de esta página. Tomamos el uso reportado por el proveedor en sesiones reales de Claude Code de <b>una sola organización, la nuestra</b>, con un solo proveedor (Anthropic), y estimamos los costes a <b>precios de lista versionados</b> con el cambio de TTL de caché del gateway y sin él. No es una doble ejecución en vivo ni una conciliación de facturas.",
       "verdict": "El veredicto del informe del {fecha}: la rebaja deja un <b>neto de {neto} de la factura</b> ({netoUsd} sobre {factura}), después de restar los fallos de caché que ella misma provoca.",
       "stat": {
         "sessions": "Sesiones",
@@ -2119,7 +2119,7 @@
     "nodeApiSubAfter": "recibe menos tokens",
     "billMonth": "factura / mes",
     "billReport": "+ SavingsReport",
-    "s1Note": "Ese recuadro verde es un paquete npm dentro del código de la aplicación. Por eso la pregunta clave nunca es «¿qué instalo?» sino <b>«¿quién escribió el código que llama a la API?»</b> — esa persona es quien puede instalarlo. Las excepciones son un terminal de codificación como Claude Code y una app en cualquier lenguaje que use el SDK oficial de OpenAI o de Anthropic y deje fijar su base URL: ahí el gateway de bvsala se pone delante sin tocar ni una línea de código. Ese tráfico se mide para los modelos con precio de lista; las palancas de ahorro del paquete npm no corren ahí, y las del propio gateway solo se aplican al tráfico de Anthropic, con licencia PRO.",
+    "s1Note": "Ese recuadro verde es un paquete npm dentro del código de la aplicación. Por eso la pregunta clave nunca es «¿qué instalo?» sino <b>«¿quién escribió el código que llama a la API?»</b> — esa persona es quien puede instalarlo. Las excepciones son un terminal de codificación como Claude Code y una app en cualquier lenguaje que use el SDK oficial de OpenAI o de Anthropic y deje fijar su base URL: ahí el gateway de bvsala se pone delante sin tocar ni una línea de código. Ese tráfico se mide para los modelos con precio de lista; las palancas de ahorro del paquete npm no corren ahí, y las del propio gateway solo se aplican al tráfico de Anthropic, gratis y sin clave.",
     "s2Title": "Tu caso, en 10 segundos",
     "s2Sub": "Cuatro maneras de usar IA, y qué puede hacer BV‑SALA en cada una.",
     "caseChatSub": "app o web, gratis o de pago",
@@ -2127,7 +2127,7 @@
     "caseClaudeSub": "claude.ai, gratis o de pago",
     "caseClaudeBody": "Suscripción fija: sin factura de tokens que medir — pero con topes (la ventana de cinco horas y el semanal). Justo para eso está el skill savings-mode: gratis, se sube a claude.ai en un minuto y ataca las dos masas que queman tope. Su efecto se publicará cuando esté medido — nunca antes.",
     "caseCodeSub": "terminal, con clave de API",
-    "caseCodeBody": "Con suscripción hay cuota fija — y topes: el mismo skill se instala con un solo comando y estira el mismo tope semanal. Con clave de API hay una factura por tokens real — y el medidor ya está en marcha: sin ninguna clave, «bvsala claude» lanza Claude Code a través del gateway local y tu gasto aparece en el panel, token a token, sin tocar una línea de código. Con PRO, en modelos de Anthropic, pasa además las escrituras de caché del TTL de una hora al de cinco minutos solo en los turnos en que una parte grande del prompt es nueva (el primero de una sesión, una compactación): un ahorro calculado sobre el conteo de tokens de tu propio proveedor, nunca sobre una estimación.",
+    "caseCodeBody": "Con suscripción hay cuota fija — y topes: el mismo skill se instala con un solo comando y estira el mismo tope semanal. Con clave de API hay una factura por tokens real — y el medidor ya está en marcha: sin ninguna clave, «bvsala claude» lanza Claude Code a través del gateway local y tu gasto aparece en el panel, token a token, sin tocar una línea de código. En modelos de Anthropic pasa además las escrituras de caché del TTL de una hora al de cinco minutos solo en los turnos en que una parte grande del prompt es nueva (el primero de una sesión, una compactación): un ahorro calculado sobre el conteo de tokens de tu propio proveedor, nunca sobre una estimación.",
     "caseAppName": "Tu aplicación",
     "caseAppSub": "tu código + tu clave de API",
     "caseAppBody": "El caso para el que existe BV‑SALA. Tu app llama a la API con tu clave, el proveedor factura cada token, y la capa se instala en dos pasos: el paquete y envolver la llamada. Desde la primera petición devuelve un <b>SavingsReport</b> con el ahorro, separado en medido y estimado.",
@@ -2204,7 +2204,7 @@
         "body": "bvsala arranca un proxy en tu propia máquina. Apuntas a él la base URL del SDK oficial de OpenAI o de Anthropic, o lanzas Claude Code a través de él, sin tocar tu código.",
         "p1": "Para un terminal de codificación o una aplicación en cualquier lenguaje que deje fijar su base URL.",
         "p2": "Mide el tráfico de los modelos con precio de lista.",
-        "p3": "Las palancas del paquete npm no corren aquí; las del gateway solo se aplican al tráfico de Anthropic, con licencia PRO.",
+        "p3": "Las palancas del paquete npm no corren aquí; las del gateway solo se aplican al tráfico de Anthropic, gratis y sin clave.",
         "cta": "Ver el gateway"
       }
     },
@@ -2232,7 +2232,7 @@
         "hint": "proxy",
         "what": "Reenvía las peticiones al proveedor y registra su uso.",
         "where": "En tu máquina o en tu servidor, como proxy local.",
-        "account": "No para usarlo en local. Ver el gasto en el panel y la rebaja con licencia PRO requieren Cloud."
+        "account": "No para usarlo en local. Todas las palancas de ahorro funcionan sin cuenta. Solo ver el gasto en el panel requiere Cloud."
       },
       "measure": {
         "name": "Medición",

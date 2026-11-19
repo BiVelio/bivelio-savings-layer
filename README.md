@@ -1570,7 +1570,8 @@ requests a day: the layer runs in **shadow mode**. Every request goes to your pr
 exactly as you built it, nothing is served from any cache, no lever is applied, and
 `report.measure.wouldHaveSaved` (with `basis: "shadow"`) says what the exact cache and
 in‑flight coalescing would have saved on that request, valued with your provider's own
-counter — a lower bound, never part of any commission. The levers need a paid plan: once
+counter — a lower bound, never part of any commission. Inside the cloud, the levers need a
+paid plan (without the cloud, the open core runs every local lever with no key at all): once
 you upgrade, a layer with `serviceAccountKey` and `licenseServerUrl` picks up the paid
 license by itself and turns them on without a restart.
 

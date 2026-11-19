@@ -243,12 +243,13 @@ describe("la rebaja de TTL, fuera de la tarjeta: tampoco «mientras la sesión s
   });
 
   for (const loc of LOCALES) {
-    it(`${loc}: landing.gateway.note y howItWorks.caseCodeBody sin sesión «caliente», con «TTL» y «PRO»`, () => {
+    it(`${loc}: landing.gateway.note y howItWorks.caseCodeBody sin sesión «caliente», con «TTL» y sin «PRO»`, () => {
       const d = cargar(loc);
       for (const k of OTRAS_NOTAS_TTL) {
         expect(d[k], `${loc} ${k}`).not.toMatch(CALIENTE[loc]);
         expect(d[k], `${loc} ${k}`).toContain("TTL");
-        expect(d[k], `${loc} ${k}`).toMatch(/\bPRO\b/);
+        // 2026-11-19 · la rebaja de TTL es gratis y sin clave: solo se cobra la nube.
+        expect(d[k], `${loc} ${k}`).not.toMatch(/\bPRO\b/);
       }
     });
   }

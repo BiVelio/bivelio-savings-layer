@@ -1337,7 +1337,7 @@
       "eyebrow": "Gateway · terminale programistyczne",
       "title": "Claude Code z kluczem API? Zobacz realny wydatek, token po tokenie.",
       "body": "Jedno polecenie stawia lokalny licznik przed Twoim terminalem, bez zmian w Twoim kodzie: eksportujesz swój klucz serwisowy i uruchamiasz agenta przez bvsala. Twoje prompty nie przechodzą przez serwery BiVelio: trafiają do dostawcy, którego skonfigurujesz, a do Twojego panelu docierają tylko liczby i koszt.",
-      "note": "Gateway mierzy licznikiem Twojego dostawcy każde żądanie, dla którego ten raportuje zużycie (dla modeli z naszego cennika), i, tak jak SDK, uruchamia się bez żadnych kluczy (tryb Community): opcjonalny klucz serwisowy dodaje panel i uprawnienia organizacji. Z licencją PRO, na modelach Anthropic, stosuje też domyślnie jedną dźwignię: przestawia zapisy do pamięci podręcznej z godzinnego TTL na pięciominutowy tylko w turach, w których duża część promptu jest nowa — jak pierwsza tura sesji albo kompaktowanie — a kolejne tury zostawia bez zmian. Zmienia to cenę, nigdy treść, którą czyta model. Pozostałe dźwignie są wyłączone, dopóki ich nie włączysz. Skill savings-mode jest dostępny dla Twoich limitów, a jego efekt czeka na pomiar. Gateway działa też z Codex CLI, Goose, Qwen Code, opencode, Kilo, Aiderem oraz — z Twoim własnym kluczem Anthropic — GitHub Copilot CLI; dla innych, takich jak Cline czy Continue, bvsala doctor wypisuje dokładną konfigurację. Cursor dziala przez nadpisanie adresu URL bazy OpenAI z Twoim kluczem, a Gemini CLI uruchamia sie przez bvsala gemini.",
+      "note": "Gateway mierzy licznikiem Twojego dostawcy każde żądanie, dla którego ten raportuje zużycie (dla modeli z naszego cennika), i, tak jak SDK, uruchamia się bez żadnych kluczy (tryb Community): opcjonalny klucz serwisowy dodaje panel i uprawnienia organizacji. Na modelach Anthropic stosuje też domyślnie jedną dźwignię, bez licencji i bez konta: przestawia zapisy do pamięci podręcznej z godzinnego TTL na pięciominutowy tylko w turach, w których duża część promptu jest nowa — jak pierwsza tura sesji albo kompaktowanie — a kolejne tury zostawia bez zmian. Zmienia to cenę, nigdy treść, którą czyta model. Pozostałe dźwignie są wyłączone, dopóki ich nie włączysz. Skill savings-mode jest dostępny dla Twoich limitów, a jego efekt czeka na pomiar. Gateway działa też z Codex CLI, Goose, Qwen Code, opencode, Kilo, Aiderem oraz — z Twoim własnym kluczem Anthropic — GitHub Copilot CLI; dla innych, takich jak Cline czy Continue, bvsala doctor wypisuje dokładną konfigurację. Cursor dziala przez nadpisanie adresu URL bazy OpenAI z Twoim kluczem, a Gemini CLI uruchamia sie przez bvsala gemini.",
       "pythonNote": "Python albo inny język? Skieruj oficjalne SDK OpenAI lub Anthropic na gateway, a każde żądanie, którego zużycie raportuje dostawca, dla modelu z ceną katalogową, zostanie zapisane w tym panelu po tej cenie; gateway odnotowuje w logu, gdy któreś nie jest mierzone. bvsala doctor wypisuje base URL dla każdego SDK. Przy streamingu z OpenAI poproś o zużycie w żądaniu (stream_options.include_usage).",
       "cta": "Zobacz, jak to działa →"
     },
@@ -1506,8 +1506,8 @@
         "who": "Dla osób, które pracują z Claude Code, Codex CLI lub innym agentem programistycznym na kluczu API.",
         "what": "Jedno polecenie stawia lokalny licznik przed Twoim terminalem, bez zmian w kodzie. Gateway liczy każde zapytanie, dla którego Twój dostawca raportuje zużycie, jego własnym licznikiem — dla modeli z naszego cennika — i sumuje je w Twoim panelu, według dnia i modelu.",
         "figureLabel": "Liczba, którą publikujemy",
-        "figureQue": "szacowanej netto redukcji kosztu według cen katalogowych dzięki zmianie TTL pamięci podręcznej w PRO, po odjęciu wywołanych chybień (przedział {confianza}: od {bajo} do {alto}). Kontrfaktyczne odtworzenie z częściowo zrekonstruowaną bazą odniesienia na {sesiones} sesjach Claude Code jednej organizacji; nie jest to A/B na żywo ani uzgodnienie faktur.",
-        "figureNote": "To nie jest prognoza dla twojego zespołu: to jedna organizacja, jeden dostawca i ceny katalogowe, a oszczędność jest niewielka i widać ją tam, gdzie wydatki w Anthropic są wysokie. Z PRO, na modelach Anthropic, gateway przestawia zapisy do pamięci podręcznej z godzinnego TTL na pięciominutowy tylko w turach, w których duża część promptu jest nowa — jak pierwsza tura sesji albo kompaktowanie — a kolejne tury trwającej sesji zostawia bez zmian. Zmienia to cenę, nigdy to, co czyta model, a w Twoim raporcie oszczędności liczy się tylko to, co potwierdzi licznik Twojego dostawcy.",
+        "figureQue": "szacowanej netto redukcji kosztu według cen katalogowych dzięki zmianie TTL pamięci podręcznej w gatewayu, po odjęciu wywołanych chybień (przedział {confianza}: od {bajo} do {alto}). Kontrfaktyczne odtworzenie z częściowo zrekonstruowaną bazą odniesienia na {sesiones} sesjach Claude Code jednej organizacji; nie jest to A/B na żywo ani uzgodnienie faktur.",
+        "figureNote": "To nie jest prognoza dla twojego zespołu: to jedna organizacja, jeden dostawca i ceny katalogowe, a oszczędność jest niewielka i widać ją tam, gdzie wydatki w Anthropic są wysokie. Bez licencji, na modelach Anthropic, gateway przestawia zapisy do pamięci podręcznej z godzinnego TTL na pięciominutowy tylko w turach, w których duża część promptu jest nowa — jak pierwsza tura sesji albo kompaktowanie — a kolejne tury trwającej sesji zostawia bez zmian. Zmienia to cenę, nigdy to, co czyta model, a w Twoim raporcie oszczędności liczy się tylko to, co potwierdzi licznik Twojego dostawcy.",
         "benchLink": "Raport z pomiaru TTL: co symulowano, podział na modele i jego ograniczenia →",
         "cta": "Skonfiguruj gateway",
         "requires": "Node.js z npm oraz agent kodujący korzystający z własnego klucza API."
@@ -1857,7 +1857,7 @@
     },
     "gatewayTtl": {
       "title": "Obniżenie pamięci podręcznej w gatewayu: symulacja, nie A/B",
-      "kind": "To <b>kontrfaktyczne odtworzenie</b> z <b>częściowo zrekonstruowaną bazą odniesienia</b>, a nie jedna z baterii A/B na żywo na tej stronie. Użyliśmy użycia raportowanego przez dostawcę z prawdziwych sesji Claude Code <b>jednej organizacji, naszej</b>, u jednego dostawcy (Anthropic) i oszacowaliśmy koszty według <b>wersjonowanych cen katalogowych</b> ze zmianą TTL pamięci podręcznej w PRO i bez niej. Nie jest to podwójne wykonanie na żywo ani uzgodnienie faktur.",
+      "kind": "To <b>kontrfaktyczne odtworzenie</b> z <b>częściowo zrekonstruowaną bazą odniesienia</b>, a nie jedna z baterii A/B na żywo na tej stronie. Użyliśmy użycia raportowanego przez dostawcę z prawdziwych sesji Claude Code <b>jednej organizacji, naszej</b>, u jednego dostawcy (Anthropic) i oszacowaliśmy koszty według <b>wersjonowanych cen katalogowych</b> ze zmianą TTL pamięci podręcznej w gatewayu i bez niej. Nie jest to podwójne wykonanie na żywo ani uzgodnienie faktur.",
       "verdict": "Werdykt raportu z dnia {fecha}: obniżenie zostawia <b>netto {neto} rachunku</b> ({netoUsd} z {factura}), po odjęciu chybień pamięci podręcznej, które samo powoduje.",
       "stat": {
         "sessions": "Sesje",
@@ -2119,7 +2119,7 @@
     "nodeApiSubAfter": "otrzymuje mniej tokenów",
     "billMonth": "rachunek / mies.",
     "billReport": "+ SavingsReport",
-    "s1Note": "Ta zielona ramka to pakiet npm w kodzie aplikacji. Dlatego kluczowe pytanie nigdy nie brzmi „co mam zainstalować?”, lecz <b>„kto napisał kod, który wywołuje API?”</b> — ta osoba może go zainstalować. Wyjątkami są terminal programistyczny taki jak Claude Code oraz aplikacja w dowolnym języku, która używa oficjalnego SDK OpenAI lub Anthropic i pozwala ustawić jego base URL: tam brama bvsala staje z przodu, nie dotykając ani linijki kodu. Ten ruch jest mierzony dla modeli z ceną katalogową; dźwignie oszczędności pakietu npm tam nie działają, a dźwignie samej bramy dotyczą tylko ruchu do Anthropic, z licencją PRO.",
+    "s1Note": "Ta zielona ramka to pakiet npm w kodzie aplikacji. Dlatego kluczowe pytanie nigdy nie brzmi „co mam zainstalować?”, lecz <b>„kto napisał kod, który wywołuje API?”</b> — ta osoba może go zainstalować. Wyjątkami są terminal programistyczny taki jak Claude Code oraz aplikacja w dowolnym języku, która używa oficjalnego SDK OpenAI lub Anthropic i pozwala ustawić jego base URL: tam brama bvsala staje z przodu, nie dotykając ani linijki kodu. Ten ruch jest mierzony dla modeli z ceną katalogową; dźwignie oszczędności pakietu npm tam nie działają, a dźwignie samej bramy dotyczą tylko ruchu do Anthropic, za darmo i bez klucza.",
     "s2Title": "Twój przypadek, w 10 sekund",
     "s2Sub": "Cztery sposoby używania AI i co BV‑SALA może zrobić w każdym z nich.",
     "caseChatSub": "aplikacja lub web, za darmo lub płatnie",
@@ -2127,7 +2127,7 @@
     "caseClaudeSub": "claude.ai, za darmo lub płatnie",
     "caseClaudeBody": "Stała subskrypcja: brak faktury za tokeny do zmierzenia — ale są limity (pięciogodzinne okno i tygodniowy). Właśnie po to jest skill savings-mode: darmowy, wgrywany na claude.ai w minutę, atakuje dwie masy spalające limit. Jego efekt zostanie opublikowany po zmierzeniu — nigdy wcześniej.",
     "caseCodeSub": "terminal, z kluczem API",
-    "caseCodeBody": "Przy subskrypcji opłata jest stała — ale z limitami: ten sam skill instaluje się jednym poleceniem i rozciąga ten sam tygodniowy limit. Z kluczem API jest prawdziwa faktura za tokeny — a miernik już działa: bez żadnych kluczy „bvsala claude” uruchamia Claude Code przez lokalną bramkę i Twoje wydatki pojawiają się w panelu, token po tokenie, bez dotykania linijki kodu. Z PRO, na modelach Anthropic, przestawia też zapisy do pamięci podręcznej z godzinnego TTL na pięciominutowy tylko w turach, w których duża część promptu jest nowa (pierwsza tura sesji, kompaktowanie): oszczędność wyliczona z liczby tokenów podanej przez Twojego własnego dostawcę, nigdy z szacunków.",
+    "caseCodeBody": "Przy subskrypcji opłata jest stała — ale z limitami: ten sam skill instaluje się jednym poleceniem i rozciąga ten sam tygodniowy limit. Z kluczem API jest prawdziwa faktura za tokeny — a miernik już działa: bez żadnych kluczy „bvsala claude” uruchamia Claude Code przez lokalną bramkę i Twoje wydatki pojawiają się w panelu, token po tokenie, bez dotykania linijki kodu. Na modelach Anthropic przestawia też zapisy do pamięci podręcznej z godzinnego TTL na pięciominutowy tylko w turach, w których duża część promptu jest nowa (pierwsza tura sesji, kompaktowanie): oszczędność wyliczona z liczby tokenów podanej przez Twojego własnego dostawcę, nigdy z szacunków.",
     "caseAppName": "Twoja aplikacja",
     "caseAppSub": "Twój kod + Twój klucz API",
     "caseAppBody": "Przypadek, dla którego istnieje BV‑SALA. Twoja aplikacja wywołuje API Twoim kluczem, dostawca nalicza każdy token, a warstwa instaluje się w dwóch krokach: pakiet i opakowanie wywołania. Od pierwszej prośby zwraca <b>SavingsReport</b> z oszczędnością, rozdzieloną na zmierzone i oszacowane.",
@@ -2204,7 +2204,7 @@
         "body": "bvsala uruchamia proxy na Twojej własnej maszynie. Kierujesz na nie base URL oficjalnego SDK OpenAI lub Anthropic albo uruchamiasz przez nie Claude Code, bez zmian w kodzie.",
         "p1": "Dla terminala do kodowania albo aplikacji w dowolnym języku, która pozwala ustawić base URL.",
         "p2": "Mierzy ruch modeli, które mają cenę katalogową.",
-        "p3": "Dźwignie pakietu npm tu nie działają; dźwignie gatewaya dotyczą tylko ruchu Anthropic, z licencją PRO.",
+        "p3": "Dźwignie pakietu npm tu nie działają; dźwignie gatewaya dotyczą tylko ruchu Anthropic, za darmo i bez klucza.",
         "cta": "Zobacz gateway"
       }
     },
@@ -2232,7 +2232,7 @@
         "hint": "proxy",
         "what": "Przekazuje żądania do dostawcy i rejestruje ich użycie.",
         "where": "Na Twojej maszynie lub serwerze, jako lokalne proxy.",
-        "account": "Do użytku lokalnego nie. Podgląd wydatków w panelu i obniżka z licencją PRO wymagają Cloud."
+        "account": "Do użytku lokalnego nie. Wszystkie dźwignie oszczędności działają bez konta. Tylko podgląd wydatków w panelu wymaga Cloud."
       },
       "measure": {
         "name": "Pomiar",

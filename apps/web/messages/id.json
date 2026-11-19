@@ -1337,7 +1337,7 @@
       "eyebrow": "Gateway · terminal pemrograman",
       "title": "Claude Code dengan kunci API? Lihat pengeluaran nyata, token demi token.",
       "body": "Satu perintah menempatkan pengukur lokal di depan terminal Anda, tanpa menyentuh kode Anda: ekspor kunci layanan Anda dan jalankan agen Anda melalui bvsala. Prompt Anda tidak melewati server BiVelio: prompt dikirim ke penyedia yang Anda konfigurasikan, dan yang sampai ke dasbor Anda hanya hitungan dan biaya.",
-      "note": "Gateway mengukur, dengan penghitung penyedia Anda, setiap permintaan yang penggunaannya dilaporkan penyedia tersebut (untuk model dalam katalog harga kami) dan, seperti SDK, berjalan tanpa kunci apa pun (mode Community): kunci layanan opsional menambahkan dasbor dan hak organisasi. Dengan lisensi PRO, pada model Anthropic, gateway juga menerapkan satu tuas secara default: memindahkan penulisan cache dari TTL satu jam ke TTL lima menit hanya pada giliran ketika porsi besar dari prompt masih baru — seperti giliran pertama sebuah sesi atau setelah pemadatan — dan membiarkan giliran berantai apa adanya. Ini mengubah harga, bukan konten yang dibaca model. Tuas lainnya tetap mati sampai Anda mengaktifkannya. Skill savings-mode tersedia untuk batas kuota Anda, dengan efek yang masih harus diukur. Gateway juga bekerja dengan Codex CLI, Goose, Qwen Code, opencode, Kilo, Aider, serta GitHub Copilot CLI dengan kunci Anthropic Anda sendiri; untuk yang lain, seperti Cline atau Continue, bvsala doctor mencetak konfigurasi persisnya. Cursor bekerja lewat penggantian URL dasar OpenAI dengan kunci Anda sendiri, dan Gemini CLI dijalankan dengan bvsala gemini.",
+      "note": "Gateway mengukur, dengan penghitung penyedia Anda, setiap permintaan yang penggunaannya dilaporkan penyedia tersebut (untuk model dalam katalog harga kami) dan, seperti SDK, berjalan tanpa kunci apa pun (mode Community): kunci layanan opsional menambahkan dasbor dan hak organisasi. Pada model Anthropic, gateway juga menerapkan satu tuas secara default, tanpa lisensi atau akun: memindahkan penulisan cache dari TTL satu jam ke TTL lima menit hanya pada giliran ketika porsi besar dari prompt masih baru — seperti giliran pertama sebuah sesi atau setelah pemadatan — dan membiarkan giliran berantai apa adanya. Ini mengubah harga, bukan konten yang dibaca model. Tuas lainnya tetap mati sampai Anda mengaktifkannya. Skill savings-mode tersedia untuk batas kuota Anda, dengan efek yang masih harus diukur. Gateway juga bekerja dengan Codex CLI, Goose, Qwen Code, opencode, Kilo, Aider, serta GitHub Copilot CLI dengan kunci Anthropic Anda sendiri; untuk yang lain, seperti Cline atau Continue, bvsala doctor mencetak konfigurasi persisnya. Cursor bekerja lewat penggantian URL dasar OpenAI dengan kunci Anda sendiri, dan Gemini CLI dijalankan dengan bvsala gemini.",
       "pythonNote": "Python atau bahasa lain? Arahkan SDK resmi OpenAI atau Anthropic ke gateway, dan setiap permintaan yang penggunaannya dilaporkan penyedia, untuk model yang memiliki harga daftar, tercatat di panel ini dengan harga tersebut; log gateway memberi tahu bila ada yang tidak diukur. bvsala doctor mencetak base URL untuk setiap SDK. Untuk streaming OpenAI, minta penggunaan di dalam permintaan (stream_options.include_usage).",
       "cta": "Lihat cara kerjanya →"
     },
@@ -1506,8 +1506,8 @@
         "who": "Untuk Anda yang memakai Claude Code, Codex CLI, atau agen pemrograman lain dengan kunci API.",
         "what": "Satu perintah menempatkan pengukur lokal di depan terminal Anda, tanpa mengubah kode. Gateway menghitung setiap permintaan yang penggunaannya dilaporkan penyedia Anda, dengan penghitung milik penyedia itu sendiri — untuk model dalam katalog harga kami — lalu menjumlahkannya di dasbor Anda, per hari dan per model.",
         "figureLabel": "Angka yang kami publikasikan",
-        "figureQue": "estimasi penurunan bersih biaya harga daftar dengan perubahan TTL cache PRO, setelah dikurangi kegagalan cache yang ditimbulkan (interval {confianza}: {bajo} hingga {alto}). Pemutaran ulang kontrafaktual dengan baseline yang direkonstruksi sebagian pada {sesiones} sesi Claude Code dari satu organisasi; bukan A/B langsung atau rekonsiliasi faktur.",
-        "figureNote": "Bukan prakiraan untuk tim Anda: ini satu organisasi, satu penyedia, dan harga daftar, dan ini penghematan kecil yang terasa ketika pengeluaran di Anthropic tinggi. Dengan PRO, pada model Anthropic, gateway memindahkan penulisan cache dari TTL satu jam ke TTL lima menit, hanya pada giliran ketika porsi besar dari prompt masih baru — seperti giliran pertama sebuah sesi atau setelah pemadatan — dan membiarkan giliran berantai dari sesi yang sedang berjalan apa adanya. Itu mengubah harga, tidak pernah apa yang dibaca model, dan hanya yang dikonfirmasi penghitung penyedia Anda yang dihitung dalam laporan penghematan Anda.",
+        "figureQue": "estimasi penurunan bersih biaya harga daftar dengan perubahan TTL cache gateway, setelah dikurangi kegagalan cache yang ditimbulkan (interval {confianza}: {bajo} hingga {alto}). Pemutaran ulang kontrafaktual dengan baseline yang direkonstruksi sebagian pada {sesiones} sesi Claude Code dari satu organisasi; bukan A/B langsung atau rekonsiliasi faktur.",
+        "figureNote": "Bukan prakiraan untuk tim Anda: ini satu organisasi, satu penyedia, dan harga daftar, dan ini penghematan kecil yang terasa ketika pengeluaran di Anthropic tinggi. Tanpa lisensi, pada model Anthropic, gateway memindahkan penulisan cache dari TTL satu jam ke TTL lima menit, hanya pada giliran ketika porsi besar dari prompt masih baru — seperti giliran pertama sebuah sesi atau setelah pemadatan — dan membiarkan giliran berantai dari sesi yang sedang berjalan apa adanya. Itu mengubah harga, tidak pernah apa yang dibaca model, dan hanya yang dikonfirmasi penghitung penyedia Anda yang dihitung dalam laporan penghematan Anda.",
         "benchLink": "Laporan uji TTL: apa yang disimulasikan, rincian per model, dan batasannya →",
         "cta": "Pasang gateway",
         "requires": "Node.js dengan npm dan agen koding yang memakai kunci API-nya sendiri."
@@ -1857,7 +1857,7 @@
     },
     "gatewayTtl": {
       "title": "Penurunan cache gateway: sebuah simulasi, bukan A/B",
-      "kind": "Ini adalah <b>pemutaran ulang kontrafaktual</b> dengan <b>baseline yang direkonstruksi sebagian</b>, bukan salah satu baterai A/B langsung di halaman ini. Kami memakai penggunaan yang dilaporkan penyedia dari sesi Claude Code nyata di <b>satu organisasi saja, yaitu kami sendiri</b>, dengan satu penyedia (Anthropic), lalu memperkirakan biaya pada <b>harga daftar berversi</b> dengan dan tanpa perubahan TTL cache PRO. Ini bukan eksekusi ganda langsung atau rekonsiliasi faktur.",
+      "kind": "Ini adalah <b>pemutaran ulang kontrafaktual</b> dengan <b>baseline yang direkonstruksi sebagian</b>, bukan salah satu baterai A/B langsung di halaman ini. Kami memakai penggunaan yang dilaporkan penyedia dari sesi Claude Code nyata di <b>satu organisasi saja, yaitu kami sendiri</b>, dengan satu penyedia (Anthropic), lalu memperkirakan biaya pada <b>harga daftar berversi</b> dengan dan tanpa perubahan TTL cache gateway. Ini bukan eksekusi ganda langsung atau rekonsiliasi faktur.",
       "verdict": "Putusan laporan {fecha}: penurunan ini menyisakan <b>neto {neto} dari tagihan</b> ({netoUsd} dari {factura}), setelah dikurangi kegagalan cache yang ditimbulkannya sendiri.",
       "stat": {
         "sessions": "Sesi",
@@ -2119,7 +2119,7 @@
     "nodeApiSubAfter": "menerima lebih sedikit token",
     "billMonth": "tagihan / bulan",
     "billReport": "+ SavingsReport",
-    "s1Note": "Kotak hijau itu adalah paket npm di dalam kode aplikasi. Karena itu pertanyaan kuncinya tidak pernah «apa yang saya pasang?» melainkan <b>«siapa yang menulis kode yang memanggil API?»</b> — orang itulah yang bisa memasangnya. Pengecualiannya adalah terminal pemrograman seperti Claude Code dan aplikasi dalam bahasa apa pun yang memakai SDK resmi OpenAI atau Anthropic dan memungkinkan Anda mengatur base URL-nya: di sana gateway bvsala berdiri di depan tanpa menyentuh satu baris kode pun. Lalu lintas itu diukur untuk model yang memiliki harga daftar; tuas penghematan paket npm tidak berjalan di sana, dan tuas milik gateway sendiri hanya berlaku untuk lalu lintas Anthropic, dengan lisensi PRO.",
+    "s1Note": "Kotak hijau itu adalah paket npm di dalam kode aplikasi. Karena itu pertanyaan kuncinya tidak pernah «apa yang saya pasang?» melainkan <b>«siapa yang menulis kode yang memanggil API?»</b> — orang itulah yang bisa memasangnya. Pengecualiannya adalah terminal pemrograman seperti Claude Code dan aplikasi dalam bahasa apa pun yang memakai SDK resmi OpenAI atau Anthropic dan memungkinkan Anda mengatur base URL-nya: di sana gateway bvsala berdiri di depan tanpa menyentuh satu baris kode pun. Lalu lintas itu diukur untuk model yang memiliki harga daftar; tuas penghematan paket npm tidak berjalan di sana, dan tuas milik gateway sendiri hanya berlaku untuk lalu lintas Anthropic, gratis dan tanpa kunci.",
     "s2Title": "Kasus kamu, dalam 10 detik",
     "s2Sub": "Empat cara memakai AI, dan apa yang bisa dilakukan BV‑SALA di masing-masing.",
     "caseChatSub": "aplikasi atau web, gratis atau berbayar",
@@ -2127,7 +2127,7 @@
     "caseClaudeSub": "claude.ai, gratis atau berbayar",
     "caseClaudeBody": "Langganan tetap: tidak ada tagihan token untuk diukur — tapi ada batas (jendela lima jam dan mingguan). Untuk itulah skill savings-mode: gratis, diunggah ke claude.ai dalam semenit, menyerang dua massa yang membakar batas. Efeknya akan dipublikasikan setelah diukur — tidak pernah sebelumnya.",
     "caseCodeSub": "terminal, dengan kunci API",
-    "caseCodeBody": "Dengan langganan, biayanya tetap — tapi berbatas: skill yang sama terpasang dengan satu perintah dan merenggangkan batas mingguan yang sama. Dengan API key ada tagihan token sungguhan — dan meterannya sudah berjalan: tanpa kunci apa pun Anda, “bvsala claude” meluncurkan Claude Code lewat gateway lokal dan pengeluaran Anda muncul di panel, token demi token, tanpa menyentuh satu baris kode. Dengan PRO, pada model Anthropic, gateway juga memindahkan penulisan cache dari TTL satu jam ke TTL lima menit hanya pada giliran ketika porsi besar dari prompt masih baru (giliran pertama sebuah sesi, pemadatan): penghematan yang dihitung dari hitungan token penyedia Anda sendiri, tidak pernah dari estimasi.",
+    "caseCodeBody": "Dengan langganan, biayanya tetap — tapi berbatas: skill yang sama terpasang dengan satu perintah dan merenggangkan batas mingguan yang sama. Dengan API key ada tagihan token sungguhan — dan meterannya sudah berjalan: tanpa kunci apa pun Anda, “bvsala claude” meluncurkan Claude Code lewat gateway lokal dan pengeluaran Anda muncul di panel, token demi token, tanpa menyentuh satu baris kode. Pada model Anthropic, gateway juga memindahkan penulisan cache dari TTL satu jam ke TTL lima menit hanya pada giliran ketika porsi besar dari prompt masih baru (giliran pertama sebuah sesi, pemadatan): penghematan yang dihitung dari hitungan token penyedia Anda sendiri, tidak pernah dari estimasi.",
     "caseAppName": "Aplikasi kamu",
     "caseAppSub": "kode kamu + kunci API kamu",
     "caseAppBody": "Kasus yang menjadi alasan BV‑SALA ada. Aplikasi Anda memanggil API dengan kunci Anda, penyedia menagih setiap token, dan lapisan terpasang dalam dua langkah: paket dan membungkus panggilan. Sejak permintaan pertama ia mengembalikan <b>SavingsReport</b> dengan penghematan, terpisah antara terukur dan terestimasi.",
@@ -2204,7 +2204,7 @@
         "body": "bvsala menjalankan proxy di mesin Anda sendiri. Anda mengarahkan base URL SDK resmi OpenAI atau Anthropic ke sana, atau menjalankan Claude Code melaluinya, tanpa menyentuh kode Anda.",
         "p1": "Untuk terminal koding atau aplikasi dalam bahasa apa pun yang base URL-nya bisa diatur.",
         "p2": "Mengukur lalu lintas model yang memiliki harga daftar.",
-        "p3": "Tuas paket npm tidak berjalan di sini; tuas gateway hanya berlaku untuk lalu lintas Anthropic, dengan lisensi PRO.",
+        "p3": "Tuas paket npm tidak berjalan di sini; tuas gateway hanya berlaku untuk lalu lintas Anthropic, gratis dan tanpa kunci.",
         "cta": "Lihat gateway"
       }
     },
@@ -2232,7 +2232,7 @@
         "hint": "proxy",
         "what": "Meneruskan permintaan ke penyedia dan mencatat penggunaannya.",
         "where": "Di mesin atau server Anda, sebagai proxy lokal.",
-        "account": "Tidak perlu untuk pemakaian lokal. Melihat pengeluaran di dasbor dan penurunan dengan lisensi PRO memerlukan Cloud."
+        "account": "Tidak perlu untuk pemakaian lokal. Semua tuas penghematan berjalan tanpa akun. Hanya melihat pengeluaran di dasbor yang memerlukan Cloud."
       },
       "measure": {
         "name": "Pengukuran",

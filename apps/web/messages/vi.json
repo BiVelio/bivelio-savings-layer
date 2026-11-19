@@ -1337,7 +1337,7 @@
       "eyebrow": "Gateway · terminal lập trình",
       "title": "Dùng Claude Code với khóa API? Xem chi tiêu thật, từng token một.",
       "body": "Một lệnh duy nhất đặt một bộ đo cục bộ trước terminal của bạn, không cần sửa mã: bạn xuất khóa dịch vụ và khởi chạy agent qua bvsala. Prompt của bạn không đi qua máy chủ của BiVelio: chúng được gửi tới nhà cung cấp mà bạn cấu hình, và bảng điều khiển của bạn chỉ nhận số đếm và chi phí.",
-      "note": "Gateway đo, bằng chính bộ đếm của nhà cung cấp, mọi yêu cầu mà nhà cung cấp của bạn có báo cáo mức sử dụng (với các mô hình trong danh mục giá của chúng tôi) và, giống như SDK, khởi động mà không cần khóa nào (chế độ Community): khóa dịch vụ tùy chọn thêm bảng điều khiển và quyền của tổ chức. Với giấy phép PRO, trên các mô hình Anthropic, nó còn áp dụng mặc định một đòn bẩy: chuyển các lần ghi bộ nhớ đệm từ TTL một giờ sang TTL năm phút, chỉ ở những lượt mà một phần lớn prompt là mới — như lượt đầu tiên của một phiên hoặc sau khi nén ngữ cảnh — và giữ nguyên các lượt nối tiếp. Điều này thay đổi giá, không bao giờ thay đổi nội dung mà mô hình đọc. Các đòn bẩy khác vẫn tắt cho đến khi bạn bật chúng. Skill savings-mode đã sẵn sàng cho các giới hạn của bạn, hiệu quả còn chờ đo. Gateway cũng hoạt động với Codex CLI, Goose, Qwen Code, opencode, Kilo, Aider và, với khóa Anthropic của riêng bạn, GitHub Copilot CLI; với các công cụ khác như Cline hoặc Continue, bvsala doctor in ra cấu hình chính xác. Cursor hoạt động thông qua tùy chọn ghi đè URL gốc OpenAI với khóa của riêng bạn, còn Gemini CLI được bọc bằng bvsala gemini.",
+      "note": "Gateway đo, bằng chính bộ đếm của nhà cung cấp, mọi yêu cầu mà nhà cung cấp của bạn có báo cáo mức sử dụng (với các mô hình trong danh mục giá của chúng tôi) và, giống như SDK, khởi động mà không cần khóa nào (chế độ Community): khóa dịch vụ tùy chọn thêm bảng điều khiển và quyền của tổ chức. Trên các mô hình Anthropic, nó còn áp dụng mặc định một đòn bẩy, không cần giấy phép hay tài khoản: chuyển các lần ghi bộ nhớ đệm từ TTL một giờ sang TTL năm phút, chỉ ở những lượt mà một phần lớn prompt là mới — như lượt đầu tiên của một phiên hoặc sau khi nén ngữ cảnh — và giữ nguyên các lượt nối tiếp. Điều này thay đổi giá, không bao giờ thay đổi nội dung mà mô hình đọc. Các đòn bẩy khác vẫn tắt cho đến khi bạn bật chúng. Skill savings-mode đã sẵn sàng cho các giới hạn của bạn, hiệu quả còn chờ đo. Gateway cũng hoạt động với Codex CLI, Goose, Qwen Code, opencode, Kilo, Aider và, với khóa Anthropic của riêng bạn, GitHub Copilot CLI; với các công cụ khác như Cline hoặc Continue, bvsala doctor in ra cấu hình chính xác. Cursor hoạt động thông qua tùy chọn ghi đè URL gốc OpenAI với khóa của riêng bạn, còn Gemini CLI được bọc bằng bvsala gemini.",
       "pythonNote": "Python hay bất kỳ ngôn ngữ nào khác? Trỏ SDK chính thức của OpenAI hoặc Anthropic tới gateway và mọi yêu cầu mà nhà cung cấp báo cáo mức sử dụng, với mô hình có giá niêm yết, đều được ghi vào bảng điều khiển này theo giá đó; log của gateway sẽ báo khi có yêu cầu không được đo. bvsala doctor in ra base URL cho từng SDK. Với streaming của OpenAI, hãy yêu cầu mức sử dụng ngay trong yêu cầu (stream_options.include_usage).",
       "cta": "Xem cách hoạt động →"
     },
@@ -1506,8 +1506,8 @@
         "who": "Cho những ai dùng Claude Code, Codex CLI hoặc agent lập trình khác với khóa API.",
         "what": "Một lệnh đặt một bộ đo cục bộ trước terminal của bạn, không cần sửa mã. Gateway đếm từng lượt gọi mà nhà cung cấp có báo cáo mức sử dụng, bằng chính bộ đếm của nhà cung cấp — với các mô hình trong danh mục giá của chúng tôi — và cộng dồn chúng trong bảng điều khiển của bạn, theo ngày và theo mô hình.",
         "figureLabel": "Con số chúng tôi công bố",
-        "figureQue": "mức giảm ròng ước tính của chi phí theo giá niêm yết nhờ thay đổi TTL bộ nhớ đệm của PRO, sau khi trừ các lần trượt bộ nhớ đệm gây ra (khoảng {confianza}: từ {bajo} đến {alto}). Phát lại theo kịch bản giả định với đường cơ sở được tái dựng một phần trên {sesiones} phiên Claude Code của một tổ chức; không phải A/B chạy thật hay đối chiếu hóa đơn.",
-        "figureNote": "Đây không phải là dự báo cho nhóm của bạn: đó là một tổ chức, một nhà cung cấp và giá niêm yết, và là khoản tiết kiệm nhỏ, thấy rõ ở nơi chi tiêu cho Anthropic cao. Với PRO, trên các mô hình Anthropic, gateway chuyển các lần ghi bộ nhớ đệm từ TTL một giờ sang TTL năm phút, chỉ ở những lượt mà một phần lớn prompt là mới — như lượt đầu tiên của một phiên hoặc sau khi nén ngữ cảnh — và giữ nguyên các lượt nối tiếp của một phiên đang chạy. Điều đó thay đổi giá, không bao giờ thay đổi những gì mô hình đọc, và chỉ phần được bộ đếm của nhà cung cấp xác nhận mới được tính trong báo cáo tiết kiệm của bạn.",
+        "figureQue": "mức giảm ròng ước tính của chi phí theo giá niêm yết nhờ thay đổi TTL bộ nhớ đệm của gateway, sau khi trừ các lần trượt bộ nhớ đệm gây ra (khoảng {confianza}: từ {bajo} đến {alto}). Phát lại theo kịch bản giả định với đường cơ sở được tái dựng một phần trên {sesiones} phiên Claude Code của một tổ chức; không phải A/B chạy thật hay đối chiếu hóa đơn.",
+        "figureNote": "Đây không phải là dự báo cho nhóm của bạn: đó là một tổ chức, một nhà cung cấp và giá niêm yết, và là khoản tiết kiệm nhỏ, thấy rõ ở nơi chi tiêu cho Anthropic cao. Không cần giấy phép, trên các mô hình Anthropic, gateway chuyển các lần ghi bộ nhớ đệm từ TTL một giờ sang TTL năm phút, chỉ ở những lượt mà một phần lớn prompt là mới — như lượt đầu tiên của một phiên hoặc sau khi nén ngữ cảnh — và giữ nguyên các lượt nối tiếp của một phiên đang chạy. Điều đó thay đổi giá, không bao giờ thay đổi những gì mô hình đọc, và chỉ phần được bộ đếm của nhà cung cấp xác nhận mới được tính trong báo cáo tiết kiệm của bạn.",
         "benchLink": "Báo cáo của phép đo TTL: đã mô phỏng những gì, phân tích theo mô hình và các giới hạn →",
         "cta": "Cài đặt gateway",
         "requires": "Node.js kèm npm và một agent lập trình dùng khóa API riêng."
@@ -1857,7 +1857,7 @@
     },
     "gatewayTtl": {
       "title": "Việc hạ bộ nhớ đệm của gateway: một phép mô phỏng, không phải A/B",
-      "kind": "Đây là <b>lượt phát lại theo kịch bản giả định</b> với <b>đường cơ sở được tái dựng một phần</b>, không phải một trong các bộ thử A/B chạy thật của trang. Chúng tôi dùng mức sử dụng do nhà cung cấp báo cáo từ các phiên Claude Code thật của <b>một tổ chức duy nhất, chính chúng tôi</b>, với một nhà cung cấp (Anthropic), rồi ước tính chi phí theo <b>giá niêm yết có phiên bản</b> khi có và không có thay đổi TTL bộ nhớ đệm của PRO. Đây không phải lần chạy kép trực tiếp hay đối chiếu hóa đơn.",
+      "kind": "Đây là <b>lượt phát lại theo kịch bản giả định</b> với <b>đường cơ sở được tái dựng một phần</b>, không phải một trong các bộ thử A/B chạy thật của trang. Chúng tôi dùng mức sử dụng do nhà cung cấp báo cáo từ các phiên Claude Code thật của <b>một tổ chức duy nhất, chính chúng tôi</b>, với một nhà cung cấp (Anthropic), rồi ước tính chi phí theo <b>giá niêm yết có phiên bản</b> khi có và không có thay đổi TTL bộ nhớ đệm của gateway. Đây không phải lần chạy kép trực tiếp hay đối chiếu hóa đơn.",
       "verdict": "Kết luận của báo cáo ngày {fecha}: việc hạ để lại <b>phần ròng {neto} hóa đơn</b> ({netoUsd} trên {factura}), sau khi trừ các lần trượt bộ nhớ đệm do chính nó gây ra.",
       "stat": {
         "sessions": "Phiên",
@@ -2119,7 +2119,7 @@
     "nodeApiSubAfter": "nhận ít token hơn",
     "billMonth": "hóa đơn / tháng",
     "billReport": "+ SavingsReport",
-    "s1Note": "Ô màu xanh lá đó là một gói npm bên trong mã của ứng dụng. Vì vậy câu hỏi then chốt không bao giờ là «tôi cài gì?» mà là <b>«ai đã viết đoạn mã gọi API?»</b> — người đó chính là người có thể cài nó. Các ngoại lệ là một terminal lập trình như Claude Code và một ứng dụng viết bằng bất kỳ ngôn ngữ nào dùng SDK chính thức của OpenAI hoặc Anthropic và cho phép đặt base URL của nó: ở đó gateway bvsala đứng chắn phía trước mà không chạm vào một dòng mã nào. Lưu lượng đó được đo với các mô hình có giá niêm yết; các đòn bẩy tiết kiệm của gói npm không chạy ở đó, và đòn bẩy của chính gateway chỉ áp dụng cho lưu lượng Anthropic, với giấy phép PRO.",
+    "s1Note": "Ô màu xanh lá đó là một gói npm bên trong mã của ứng dụng. Vì vậy câu hỏi then chốt không bao giờ là «tôi cài gì?» mà là <b>«ai đã viết đoạn mã gọi API?»</b> — người đó chính là người có thể cài nó. Các ngoại lệ là một terminal lập trình như Claude Code và một ứng dụng viết bằng bất kỳ ngôn ngữ nào dùng SDK chính thức của OpenAI hoặc Anthropic và cho phép đặt base URL của nó: ở đó gateway bvsala đứng chắn phía trước mà không chạm vào một dòng mã nào. Lưu lượng đó được đo với các mô hình có giá niêm yết; các đòn bẩy tiết kiệm của gói npm không chạy ở đó, và đòn bẩy của chính gateway chỉ áp dụng cho lưu lượng Anthropic, miễn phí và không cần khóa.",
     "s2Title": "Trường hợp của bạn, trong 10 giây",
     "s2Sub": "Bốn cách dùng AI, và BV‑SALA có thể làm gì trong từng trường hợp.",
     "caseChatSub": "ứng dụng hoặc web, miễn phí hoặc trả phí",
@@ -2127,7 +2127,7 @@
     "caseClaudeSub": "claude.ai, miễn phí hoặc trả phí",
     "caseClaudeBody": "Thuê bao cố định: không có hóa đơn token để đo — nhưng có giới hạn (cửa sổ năm giờ và giới hạn tuần). Skill savings-mode sinh ra đúng cho việc đó: miễn phí, tải lên claude.ai trong một phút, tấn công hai khối đốt giới hạn. Hiệu quả của nó sẽ được công bố khi đo xong — không bao giờ trước đó.",
     "caseCodeSub": "terminal, với khóa API",
-    "caseCodeBody": "Với thuê bao, phí cố định — nhưng có giới hạn: cùng skill đó cài bằng một lệnh duy nhất và kéo giãn chính giới hạn tuần ấy. Với API key có hóa đơn token thật — và bộ đo đã chạy: không cần khóa nào của bạn, «bvsala claude» khởi chạy Claude Code qua gateway cục bộ và chi tiêu của bạn hiện trong bảng điều khiển, từng token một, không đụng một dòng mã. Với PRO, trên các mô hình Anthropic, nó còn chuyển các lần ghi bộ nhớ đệm từ TTL một giờ sang TTL năm phút, chỉ ở những lượt mà một phần lớn prompt là mới (lượt đầu tiên của một phiên, sau khi nén ngữ cảnh): khoản tiết kiệm được tính trên chính số token do nhà cung cấp của bạn đếm, không bao giờ dựa trên ước tính.",
+    "caseCodeBody": "Với thuê bao, phí cố định — nhưng có giới hạn: cùng skill đó cài bằng một lệnh duy nhất và kéo giãn chính giới hạn tuần ấy. Với API key có hóa đơn token thật — và bộ đo đã chạy: không cần khóa nào của bạn, «bvsala claude» khởi chạy Claude Code qua gateway cục bộ và chi tiêu của bạn hiện trong bảng điều khiển, từng token một, không đụng một dòng mã. Trên các mô hình Anthropic, nó còn chuyển các lần ghi bộ nhớ đệm từ TTL một giờ sang TTL năm phút, chỉ ở những lượt mà một phần lớn prompt là mới (lượt đầu tiên của một phiên, sau khi nén ngữ cảnh): khoản tiết kiệm được tính trên chính số token do nhà cung cấp của bạn đếm, không bao giờ dựa trên ước tính.",
     "caseAppName": "Ứng dụng của bạn",
     "caseAppSub": "mã của bạn + khóa API của bạn",
     "caseAppBody": "Trường hợp BV‑SALA tồn tại. Ứng dụng của bạn gọi API bằng khóa của bạn, nhà cung cấp tính phí từng token, và tầng cài đặt trong hai bước: gói và bọc lời gọi. Từ yêu cầu đầu tiên nó trả về <b>SavingsReport</b> với khoản tiết kiệm, tách giữa đo được và ước tính.",
@@ -2204,7 +2204,7 @@
         "body": "bvsala khởi chạy một proxy trên chính máy của bạn. Bạn trỏ base URL của SDK chính thức của OpenAI hoặc Anthropic vào đó, hoặc chạy Claude Code thông qua nó, mà không cần sửa mã.",
         "p1": "Dành cho terminal lập trình hoặc ứng dụng viết bằng bất kỳ ngôn ngữ nào cho phép đặt base URL.",
         "p2": "Đo lưu lượng của các mô hình có giá niêm yết.",
-        "p3": "Các đòn bẩy của gói npm không chạy ở đây; đòn bẩy của gateway chỉ áp dụng cho lưu lượng Anthropic, với giấy phép PRO.",
+        "p3": "Các đòn bẩy của gói npm không chạy ở đây; đòn bẩy của gateway chỉ áp dụng cho lưu lượng Anthropic, miễn phí và không cần khóa.",
         "cta": "Xem gateway"
       }
     },
@@ -2232,7 +2232,7 @@
         "hint": "proxy",
         "what": "Chuyển tiếp yêu cầu đến nhà cung cấp và ghi lại mức sử dụng.",
         "where": "Trên máy hoặc máy chủ của bạn, dưới dạng proxy cục bộ.",
-        "account": "Không cần khi dùng cục bộ. Xem chi tiêu trên bảng điều khiển và mức giảm với giấy phép PRO cần có Cloud."
+        "account": "Không cần khi dùng cục bộ. Mọi đòn bẩy tiết kiệm đều chạy mà không cần tài khoản. Chỉ việc xem chi tiêu trên bảng điều khiển mới cần Cloud."
       },
       "measure": {
         "name": "Đo lường",

@@ -442,7 +442,7 @@ export async function doctor(puerto: number, opts: OpcionesDoctor = {}): Promise
     "list-price equivalent, with no commission (there is no per-token invoice); the per-seat license applies.",
     "Any language through the gateway: it measures every request whose usage it can read (Anthropic Messages, OpenAI Chat",
     "Completions and Responses) for models with a list price, and its log line says when one is not metered. The saving",
-    "levers of the SDK (npm) are TypeScript; the gateway's own levers apply to Anthropic /v1/messages with a PRO license.",
+    "levers of the SDK (npm) are TypeScript; the gateway's own levers apply to Anthropic /v1/messages, free and with no key.",
     "Per-terminal detail: docs/terminales/<terminal>.md",
   );
 
