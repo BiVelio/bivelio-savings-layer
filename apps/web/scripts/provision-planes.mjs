@@ -86,7 +86,7 @@ async function main() {
   if (salida.length) {
     console.log("\nPega en Vercel (Production y Preview):\n");
     for (const l of salida) console.log(l);
-    console.log("\nY añade los cuatro ids a la configuración del portal (scripts/provision-portal.mjs) para que se pueda cambiar de asientos.");
+    console.log("\nDespués ejecuta scripts/provision-portal.mjs con estas cuatro variables: el portal ofrecerá Pro y Team para cambiar de asientos.");
   }
 }
 
