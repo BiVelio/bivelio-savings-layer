@@ -44,7 +44,9 @@ let e: Estado;
 /** Lo que se le manda a Stripe. Es el contrato con el webhook. */
 let sesion: Record<string, unknown> | null = null;
 
+const ES_UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const consulta = (tabla: string) => {
+  let uuidInvalido = false;
   let filas: unknown[] =
     tabla === "org_members" ? e.pertenencias
     : tabla === "subscriptions" ? e.subs
@@ -55,6 +57,9 @@ const consulta = (tabla: string) => {
     order: () => q,
     limit: () => q,
     eq: (col: string, val: unknown) => {
+      // Como Postgres: `organizations.id` es uuid, y compararlo con un texto
+      // que no lo es no devuelve «ninguna fila», devuelve un ERROR (22P02).
+      if (tabla === "organizations" && col === "id" && !ES_UUID.test(String(val))) uuidInvalido = true;
       filas = (filas as Record<string, unknown>[]).filter((f) => f[col] === val);
       return q;
     },
@@ -62,7 +67,10 @@ const consulta = (tabla: string) => {
       filas = (filas as Record<string, unknown>[]).filter((f) => vals.includes(f[col]));
       return q;
     },
-    maybeSingle: async () => ({ data: (filas as unknown[])[0] ?? null, error: null }),
+    maybeSingle: async () =>
+      uuidInvalido
+        ? { data: null, error: { message: "invalid input syntax for type uuid" } }
+        : { data: (filas as unknown[])[0] ?? null, error: null },
     insert: (fila: Record<string, unknown>) => {
       if (e.fallar === tabla) {
         return Object.assign(Promise.resolve({ data: null, error: { message: "boom" } }), {
@@ -365,6 +373,20 @@ describe("la guardia contra el webhook muerto: se le pregunta también a Stripe"
   it("⛔ quien ya es cliente del OTRO producto (precio ajeno, CON su metadata.org_id) puede pagar: 200, sesión creada, sin alerta", async () => {
     e.stripeClientes = [CLIENTE];
     e.stripeSubs = [SUB_DEL_OTRO];
+    const { POST } = await import("./stripe/checkout/route");
+    const res = await POST(peticion());
+    expect(res.status).toBe(200);
+    expect(sesion).not.toBeNull();
+    expect(alertas).toHaveLength(0);
+  });
+
+  it("⛔ y también si su metadata.org_id no tiene forma de uuid: 200, no un 503 «inténtalo luego» para siempre", async () => {
+    // Revisión del arreglo W2. Nada obliga al otro producto a guardar un uuid
+    // en esa clave. Preguntarle a Postgres por una organización con un id que
+    // no es uuid no contesta «no existe»: falla, y ese fallo se leía como «no
+    // se pudo comprobar» (503) cada vez que ese cliente intentaba pagar.
+    e.stripeClientes = [CLIENTE];
+    e.stripeSubs = [{ ...SUB_DEL_OTRO, metadata: { org_id: "org_del_otro_producto_42" } }];
     const { POST } = await import("./stripe/checkout/route");
     const res = await POST(peticion());
     expect(res.status).toBe(200);
