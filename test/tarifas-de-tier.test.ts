@@ -75,7 +75,12 @@ describe("la tabla de tarifas por tier", () => {
     expect(tarifaDeTier("openai", "flex", "gpt-5-mini-2025-08-07")).toBeDefined();
     expect(tarifaDeTier("openai", "flex", "gpt-5-mini-latest")).toBeUndefined();
     expect(tarifaDeTier("openai", "flex", "gpt-5.1")).toBeUndefined();
-    expect(tarifaDeTier("google", "flex", "gemini-2.5-flash-lite")).toBeUndefined();
+    expect(tarifaDeTier("google", "flex", "gemini-3.8-flash-lite")).toBeUndefined();
+    expect(tarifaDeTier("google", "flex", "gemini-2.5-flash-image")).toBeUndefined();
+    // gemini-2.5-flash-lite entró con fila propia (N5, 2026-11-19): la suya, no
+    // la de gemini-2.5-flash.
+    expect(tarifaDeTier("google", "flex", "gemini-2.5-flash-lite")).toBe(TARIFAS_DE_TIER.google.flex!["gemini-2.5-flash-lite"]);
+    expect(tarifaDeTier("google", "flex", "gemini-2.5-flash-lite")).not.toBe(TARIFAS_DE_TIER.google.flex!["gemini-2.5-flash"]);
     // El origen es parte de la clave: un modelo de Google no tiene fila en OpenAI.
     expect(tarifaDeTier("openai", "flex", "gemini-2.5-pro")).toBeUndefined();
   });

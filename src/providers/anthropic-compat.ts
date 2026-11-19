@@ -39,7 +39,15 @@
 // en la misma fila. Un modelo que no esté aquí y resulte rechazarlo se aprende
 // por su 400 (ver `esToolChoiceForzadoNoSoportado` y `esMuestreoNoSoportado`).
 
+// Claude Fable 5.2 entró al releer la misma página el 2026-11-19 («Claude Fable
+// 5.2, Claude Mythos 5.2, Claude Opus 5.5, Claude Sonnet 5.5, Claude Fable 5.1,
+// and Claude Mythos 5.1 — `any` and `tool` return a 400 error») y la de su modelo
+// (https://platform.claude.com/docs/en/models/fable-5-2/overview: «Forced tool
+// use (`tool_choice` types `any` and `tool`) returns a 400 error»). Su muestreo
+// ya lo cubre `claude-fable-5` en SIN_MUESTREO («Omit `temperature`, `top_p`,
+// and `top_k`», misma página del modelo).
 const SIN_TOOL_CHOICE_FORZADO: readonly string[] = [
+  "claude-fable-5-2",
   "claude-opus-5-5",
   "claude-sonnet-5-5",
   "claude-fable-5-1",

@@ -75,6 +75,10 @@ export const ANTHROPIC_CACHE_TIER: CacheTier = {
 // modelo y `claude-fable-5-1` no caiga en la fila de `claude-fable-5` (la misma
 // trampa de herencia que el catálogo de precios ya paga en su propio test).
 const MINIMOS_ANTHROPIC: [prefijo: string, minimo: number][] = [
+  // Fable 5.2: 512 («512 tokens for Claude Fable 5.2, Claude Mythos 5.2, Claude
+  // Fable 5.1, …», misma página, releída el 2026-11-19). Ya caía en 512 por la
+  // fila de `claude-fable-5-`; va con fila propia, el mismo corte que el catálogo.
+  ["claude-fable-5-2", 512],
   ["claude-fable-5-1", 512],
   ["claude-mythos-5-1", 512],
   ["claude-fable-5", 512],
