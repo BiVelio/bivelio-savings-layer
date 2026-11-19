@@ -17,6 +17,8 @@ export interface LicenseRow {
   expires_at?: string;
   grace_days?: number;
   revoked?: boolean;
+  /** `measure` = la gratuita «Medir»; cualquier otro valor (o ninguno) es de pago. */
+  plan?: string | null;
 }
 
 /**
@@ -54,6 +56,40 @@ export function deriveLicenseStatus(row: LicenseRow | null, nowMs: number): Lice
  * que una caducidad.
  */
 export function elegirLicencia(
+  rows: LicenseRow[],
+  nowMs: number,
+  opts: { suscripcionViva?: boolean } = {},
+): { status: LicenseStatus; row: LicenseRow } | null {
+  // LA GRATUITA «MEDIR» NO PUEDE TAPAR A LA DE PAGO (auditoría del lanzamiento,
+  // 2026-11-19). Medir dura años y al pagar se CONSERVA (lib/license/issue.ts),
+  // así que con «la primera viva que salga» ganaba siempre ella: quien empezó
+  // gratis y luego pagó veía en su panel la licencia gratuita. Con el cobro
+  // fallido, «quedan 3.622 días»; con la de pago caducada o revocada, ni una
+  // palabra. Se eligen por separado y la de pago manda mientras tenga algo que
+  // decir.
+  const esMedir = (r: LicenseRow) => r.plan === "measure";
+  const dePago = elegirEntre(rows.filter((r) => !esMedir(r)), nowMs);
+  const medir = elegirEntre(rows.filter(esMedir), nowMs);
+  if (!dePago) return medir;
+  if (!medir) return dePago;
+
+  const viva = (x: { status: LicenseStatus }) => x.status === "active" || x.status === "grace";
+  if (viva(dePago) || !viva(medir)) return dePago;
+
+  // Ninguna de pago viva y Medir sí. Dos historias distintas:
+  //  · CADUCADA sin revocar: hay un cobro que no ha llegado. Se enseña la de
+  //    pago — es la que explica por qué ha dejado de funcionar lo pagado.
+  //  · REVOCADA: es lo que deja una CANCELACIÓN, que revoca lo pagado y devuelve
+  //    la organización a Medir (webhook, `conservarMedir`). Ese cliente está
+  //    sano y en Medir; decirle «licencia revocada» sería falso. Salvo que la
+  //    suscripción SIGA viva: entonces no canceló nadie, se le ha revocado, y
+  //    tiene que verlo.
+  if (dePago.status === "expired") return dePago;
+  return opts.suscripcionViva === true ? dePago : medir;
+}
+
+/** La regla dentro de un mismo tipo de licencia (ver `elegirLicencia`). */
+function elegirEntre(
   rows: LicenseRow[],
   nowMs: number,
 ): { status: LicenseStatus; row: LicenseRow } | null {
