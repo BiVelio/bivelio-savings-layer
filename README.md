@@ -567,6 +567,12 @@ Every model call gets the same `SavingsReport` as with the SDK — its `basis` s
 whether a figure comes from your provider's own counter — and `onReport` receives it
 too.
 
+Minimum versions: `ai` 6, `@mastra/core` 1.68, `langchain` and `@langchain/core` 1.1,
+and `@anthropic-ai/sdk` 0.103. Older ones (AI SDK 5, LangChain 0.3, `@mastra/core`
+below 1.68) are not supported by the adapter; in such a project npm needs
+`npm i @bivelio/savings-layer --legacy-peer-deps` (pnpm, yarn and bun only warn), and
+the SDK itself and the gateway still work there.
+
 ### Vercel AI SDK
 
 `pnpm add @bivelio/savings-layer ai @ai-sdk/openai` — a `LanguageModelMiddleware`
@@ -836,10 +842,10 @@ BVSALA_SEAT_ID=worker-03   # stable per replica; [A-Za-z0-9._:/-], max 128 chars
 - **Node ≥ 20.** The package is **ESM‑only** (`"type": "module"`); from CommonJS,
   `require()` works on Node ≥ 22.
 - Framework adapters: `ai` 6 or 7, `@mastra/core` ≥ 1.68 < 2, `langchain` ≥ 1.1 < 2
-  with `@langchain/core` ≥ 1.1 < 2, and `@anthropic-ai/sdk` ≥ 0.103 < 1 — optional
+  with `@langchain/core` ≥ 1.1 < 2, and `@anthropic-ai/sdk` ≥ 0.103 < 2 — optional
   peers, needed only for the adapter you import. `ai` 7 and `@mastra/core` declare
   Node ≥ 22 in their own `engines`.
-- Optional peer `gpt-tokenizer` for exact OpenAI token counts, loaded automatically
+- Optional peer `gpt-tokenizer` (3 or 4) for exact OpenAI token counts, loaded automatically
   when installed — without it a built‑in estimator is used. It improves the accuracy
   of estimated figures; what reaches your invoice is `measured` and `reference`, which
   come from the provider's own counter either way.

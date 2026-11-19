@@ -136,6 +136,7 @@
     "luz-verde": "bash scripts/luz-verde.sh",
     "sonda:sdk": "BVSALA_DEV_OPEN=1 tsx --env-file-if-exists=.env.bench benchmarks/sdk/sonda.ts",
     "sbom:tarball": "tsx scripts/sbom.ts",
+    "peers:npm": "tsx scripts/peers-npm.ts",
     "rc:verify": "pnpm run build:all && pnpm exec tsx scripts/release-candidate.ts",
     "cache-semantica": "BVSALA_DEV_OPEN=1 tsx benchmarks/cache-semantica/arnes.ts",
     "cache-semantica:publicar": "tsx benchmarks/cache-semantica/publicar.ts",
@@ -198,12 +199,12 @@
     }
   },
   "peerDependencies": {
-    "@anthropic-ai/sdk": ">=0.103.0 <1",
+    "@anthropic-ai/sdk": ">=0.103.0 <2",
     "@langchain/core": ">=1.1.0 <2",
     "@mastra/core": ">=1.68.0 <2",
     "@opentelemetry/api": "^1.9.0",
     "ai": "^6.0.0 || ^7.0.0",
-    "gpt-tokenizer": "^3",
+    "gpt-tokenizer": "^3 || ^4",
     "langchain": ">=1.1.0 <2"
   },
   "peerDependenciesMeta": {

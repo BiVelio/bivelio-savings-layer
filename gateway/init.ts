@@ -282,7 +282,7 @@ const SOPORTE: ReadonlyArray<{ paquete: string; capa: Capa; desde: string; hasta
   { paquete: "@mastra/core", capa: "mastra", desde: "1.68.0", hasta: "2.0.0", texto: "@mastra/core ≥ 1.68 < 2" },
   { paquete: "langchain", capa: "langchain", desde: "1.1.0", hasta: "2.0.0", texto: "langchain ≥ 1.1 < 2" },
   { paquete: "@langchain/core", capa: "langchain", desde: "1.1.0", hasta: "2.0.0", texto: "@langchain/core ≥ 1.1 < 2" },
-  { paquete: "@anthropic-ai/sdk", capa: "anthropic-sdk", desde: "0.103.0", hasta: "1.0.0", texto: "@anthropic-ai/sdk ≥ 0.103 < 1" },
+  { paquete: "@anthropic-ai/sdk", capa: "anthropic-sdk", desde: "0.103.0", hasta: "2.0.0", texto: "@anthropic-ai/sdk ≥ 0.103 < 2" },
 ];
 
 /** El paquete que delata cada capa, en orden de preferencia cuando hay varias. */

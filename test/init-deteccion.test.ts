@@ -171,6 +171,17 @@ describe("el plan", () => {
     expect(plan.avisos.join("\n")).toMatch(/ai 5\.0\.0 is outside what the adapter supports \(ai 6 or 7\): showing the SDK directly .*pnpm add ai@latest/);
   });
 
+  it("el SDK de Anthropic 1.x (la `latest` desde el 2026-10-21) usa su adaptador; el 2.x no (A2-1)", () => {
+    // El adaptador pasa sus pruebas con @anthropic-ai/sdk 1.10.0, y el peer
+    // admite ">=0.103.0 <2". Antes init lo mandaba al SDK a secas con un aviso.
+    const uno = planDe(sonda({ dependencies: { "@anthropic-ai/sdk": "^1.10.0" } }));
+    expect(uno).toMatchObject({ capa: "anthropic-sdk", proveedor: "anthropic" });
+    expect(uno.avisos.join("\n")).not.toMatch(/outside what the adapter supports/);
+    const dos = planDe(sonda({ dependencies: { "@anthropic-ai/sdk": "^2.0.0", openai: "^6.0.0" } }));
+    expect(dos.capa).not.toBe("anthropic-sdk");
+    expect(dos.avisos.join("\n")).toMatch(/@anthropic-ai\/sdk 2\.0\.0 is outside what the adapter supports \(@anthropic-ai\/sdk ≥ 0\.103 < 2\)/);
+  });
+
   it("--stack manda, aunque el framework no esté: entonces entra en la línea de instalación", () => {
     const plan = planDe(sonda({ dependencies: {} }, ["pnpm-lock.yaml"]), { capa: "langchain" });
     expect(plan.capa).toBe("langchain");
