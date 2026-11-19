@@ -406,3 +406,78 @@ describe("⛔ N1 · la caché no contesta OTRA pregunta de código", () => {
     expect(clave("hola")).toMatch(/^bvsala:exact:n3:/);
   });
 });
+
+describe("⛔ N1 · normalizar no para el hilo con un texto raro", () => {
+  /**
+   * Revisión del arreglo N1 (2026-11-19). Buscar las citas con una sola regex
+   * `abre…cierra` y medir cada racha de signos desde cada uno de sus signos era
+   * cuadrático: 20.000 comillas sin pareja en una línea tardaban 2,3 s, 50.000
+   * puntos seguidos 1,4 s, y 200.000 de cualquiera de los dos más de veinte
+   * segundos, con el hilo parado. El texto lo escribe el usuario final del
+   * cliente, y `normalizeText` corre en cada petición antes de mirar la caché.
+   *
+   * El tope es holgado a propósito (la versión lineal tarda milisegundos): no
+   * mide velocidad, distingue lineal de cuadrático.
+   */
+  const TOPE_MS = 3_000;
+  const TEXTOS_RAROS: ReadonlyArray<readonly [string, string]> = [
+    ["comillas dobles que abren y ninguna cierra", '"a '.repeat(70_000)],
+    ["comillas simples que abren y ninguna cierra", "'a ".repeat(70_000)],
+    ["backticks sueltos (el apóstrofo mal tecleado)", "`a ".repeat(70_000)],
+    ["una racha larga de puntos", `a${".".repeat(200_000)}b`],
+    ["una racha larga de exclamaciones", "!".repeat(200_000)],
+    ["una racha larga de dos puntos pegada a una letra", `${":".repeat(200_000)}x`],
+  ];
+
+  it.each(TEXTOS_RAROS)("%s: 200.000 caracteres en tiempo lineal", (_nombre, texto) => {
+    const t0 = performance.now();
+    normalizeText(texto);
+    expect(performance.now() - t0).toBeLessThan(TOPE_MS);
+  });
+
+  // Y las citas siguen siendo las mismas: qué abre, qué cierra y qué no cruza.
+  const CITAS: ReadonlyArray<readonly [string, string]> = [
+    ['say "Hola Mundo" twice', 'say Hola Mundo twice'],
+    ["say 'Hola Mundo' twice", "say Hola Mundo twice"],
+    ['"A" and "B"', "A and B"],
+    ['x="ABC"', 'x="ABC"'],
+    ["print('ABC')", "print('ABC')"],
+    ["Don't SHOUT 'Now'", "don't shout Now"],
+    ['"ABIERTA y sin cerrar', "abierta y sin cerrar"],
+    ['"NO CRUZA\nDE LINEA"', "no cruza de linea"],
+    ['"ACABA EN ESPACIO " aqui', "acaba en espacio aqui"],
+    ["'UNA' \"DOS\" 'tres", "UNA DOS tres"],
+    ["\"UNA 'DENTRO' de otra\"", "UNA DENTRO de otra"],
+    ['"" VACIA', "vacia"],
+  ];
+
+  it.each(CITAS)("«%s» → «%s»", (texto, esperado) => {
+    expect(normalizeText(texto)).toBe(esperado);
+  });
+});
+
+describe("⛔ N1 · el selector de herramientas no se queda mudo con código marcado", () => {
+  /**
+   * Revisión del arreglo N1 (2026-11-19). Desde que `normalizeText` copia tal
+   * cual lo que va entre backticks, «Look up the `Invoice` for Bob» conserva la
+   * mayúscula y un intent `invoice` dejaba de casar: con `maxTools`, la
+   * herramienta de lectura se podaba y el modelo no la veía. La clave de caché
+   * necesita esa exactitud; puntuar la relevancia de una herramienta, no.
+   */
+  const FACTURA: ToolDescriptor = { id: "factura", intents: ["Invoice"], risk: "read" };
+  const ENVIO: ToolDescriptor = { id: "envio", intents: ["envío"], risk: "read" };
+  const RELLENO: ToolDescriptor[] = [0, 1, 2].map((i) => ({ id: `otra-${i}`, intents: [`zzz${i}`], risk: "read" as const }));
+
+  it.each([
+    ["Look up the `Invoice` for Bob", FACTURA],
+    ['Look up the "INVOICE" for Bob', FACTURA],
+    ["Look up the invoice for Bob", FACTURA],
+    ["Busca el `Envío` de hoy", ENVIO],
+    ["Busca el `ENVIO` de hoy", ENVIO],
+  ] as const)("«%s» conserva su herramienta", (texto, herramienta) => {
+    for (const entrada of [texto, normalizeText(texto)]) {
+      const seleccion = new ToolSelector({ maxTools: 2 }).select(entrada, [herramienta, ...RELLENO], "SINGLE_RETRIEVAL");
+      expect(seleccion.tools.map((t) => t.id)).toEqual([herramienta.id]);
+    }
+  });
+});
