@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import { spawn } from "node:child_process";
+import { spawn, type ChildProcess } from "node:child_process";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { homedir } from "node:os";
 import { dirname, join } from "node:path";
@@ -708,6 +708,8 @@ function imprimirResumenes(): void {
   console.error(resumenDeMedicion(arranque.medicion(), comando));
 }
 
+/** El terminal envuelto, mientras viva: las señales se deciden con él (A2-11). */
+let hijoDelEnvoltorio: ChildProcess | null = null;
 if (envoltorio && esEnvoltorio) {
   // La tabla se calculó con puerto 0 (aún no había gateway): se recalcula con
   // el puerto REAL. Hereda la terminal entera (stdio inherit: el TUI funciona
@@ -736,6 +738,7 @@ if (envoltorio && esEnvoltorio) {
     }
   }
   const hijo = spawn(binAEjecutar, final.args, { stdio: "inherit", env: { ...process.env, ...final.env } });
+  hijoDelEnvoltorio = hijo;
   hijo.on("error", (err) => {
     console.error(`[bvsala ${comando}] could not launch \`${final.bin}\`: ${String(err)}. Is it installed and on the PATH?`);
     void arranque.cerrar().then(() => process.exit(127));
@@ -770,10 +773,33 @@ if (envoltorio && esEnvoltorio) {
   }
 }
 
-const parar = async (): Promise<void> => {
+let parando = false;
+const parar = async (senal: "SIGINT" | "SIGTERM"): Promise<void> => {
+  // A2-15 · la SEGUNDA señal sale ya, sin esperar a nada: con un stream
+  // atascado, el primer Ctrl-C dejaba de escuchar pero el proceso seguía vivo y
+  // un segundo Ctrl-C tampoco lo cerraba. (cerrar() además corta las conexiones
+  // que no terminan en unos segundos.)
+  if (parando) process.exit(senal === "SIGINT" ? 130 : 143);
+  parando = true;
   imprimirResumenes();
   await arranque.cerrar();
   process.exit(0);
 };
-process.on("SIGINT", () => void parar());
-process.on("SIGTERM", () => void parar());
+if (hijoDelEnvoltorio !== null) {
+  // A2-11 · en modo envoltorio el gateway vive lo que viva el terminal. Ctrl-C
+  // llega a TODO el grupo en primer plano: Aider y Goose lo usan para cortar la
+  // respuesta en curso y seguir trabajando, y apagar aquí el gateway dejaba al
+  // agente vivo con todas sus peticiones siguientes en ECONNREFUSED. El hijo ya
+  // recibe la señal de la terminal (reenviarla sería un segundo Ctrl-C, que en
+  // Aider es salir), así que aquí no se hace nada: el gateway se cierra en el
+  // `exit` del hijo, con su código. SIGTERM (un kill, un supervisor) no viene de
+  // la terminal: se reenvía al hijo y se espera su salida.
+  const hijo = hijoDelEnvoltorio;
+  process.on("SIGINT", () => {});
+  process.on("SIGTERM", () => {
+    hijo.kill("SIGTERM");
+  });
+} else {
+  process.on("SIGINT", () => void parar("SIGINT"));
+  process.on("SIGTERM", () => void parar("SIGTERM"));
+}
