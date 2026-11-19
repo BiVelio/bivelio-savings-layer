@@ -2697,14 +2697,27 @@ export class SavingsPipeline {
       // de otra forma reintroduciría por la puerta de atrás el sesgo que
       // `assemblePromptText` documenta: medir el envoltorio distinto en los dos
       // lados publicaba 785 tokens de baseline contra 262 reales.
+      //
+      // A2-28: UNA HERRAMIENTA DE ESCRITURA RETIRADA NUNCA ES AHORRO. Solo se
+      // acredita la que declara `risk: "read"`. Retirar una de escritura (la
+      // verja `withholdWriteTools`, o `maxTools` con más escrituras que hueco)
+      // le quita al modelo la capacidad de actuar: eso no se cobra ni se luce.
       const descartadas = new Set(toolSelection.droppedIds);
-      const tokensDescartados = (request.tools ?? [])
-        .filter((t) => descartadas.has(t.id))
+      const retiradas = (request.tools ?? []).filter((t) => descartadas.has(t.id));
+      const escriturasRetiradas = retiradas.filter((t) => t.risk !== "read").map((t) => t.id);
+      const tokensDescartados = retiradas
+        .filter((t) => t.risk === "read")
         .reduce((n, t) => n + this.tokensFor(textoDeHerramienta(t), request), 0);
       ledger.eliminate(tokensDescartados);
+      // Y tampoco entra en el baseline reconstruido: se resta de
+      // `removedInputLocal` más abajo, como la elisión y la compactación.
+      ledger.withheldWritesLocal += retiradas
+        .filter((t) => t.risk !== "read")
+        .reduce((n, t) => n + this.tokensFor(textoDeHerramienta(t), request), 0);
       trace.record("tool-selector", toolSelection.reason, {
         dropped: toolSelection.droppedIds,
         eliminatedTokens: tokensDescartados,
+        ...(escriturasRetiradas.length > 0 ? { withheldWritesNotCredited: escriturasRetiradas } : {}),
       });
     }
 
@@ -3829,7 +3842,7 @@ export class SavingsPipeline {
     // cola es conteo del libro 3, no dinero reclamable.
     ledger.removedInputLocal = Math.max(
       0,
-      baselineInput - ledger.sentInputLocal - ledger.elididoLocal - ledger.compactedLocal,
+      baselineInput - ledger.sentInputLocal - ledger.elididoLocal - ledger.compactedLocal - ledger.withheldWritesLocal,
     );
     // La cuenta local del prompt del CLIENTE que salió, antes de que el sondeo
     // se sume: es la que E2 compara contra el baseline para decidir si la
@@ -5042,7 +5055,13 @@ export class SavingsPipeline {
     cascada: DecisionDeCascada,
     costModel: CostModel,
   ): { candidatas: ToolDescriptor[]; decision: DecisionDeBusquedaNativa } {
-    const candidatas = candidatasPorRiesgo(request.tools ?? [], execution === "TOOL_ACTION", routerApagado);
+    // La MISMA verja que el selector, con la misma opción (A2-28): sin
+    // `withholdWriteTools`, las de escritura son candidatas siempre.
+    const candidatas = candidatasPorRiesgo(
+      request.tools ?? [],
+      execution === "TOOL_ACTION" || this.deps.toolSelector.withholdWriteTools !== true,
+      routerApagado,
+    );
     const decision = decidirBusquedaNativa({
       opciones,
       capacidad: busquedaNativaDelProveedor(this.config.provider),
@@ -5156,7 +5175,7 @@ export class SavingsPipeline {
     this.avisar(
       clave,
       `[bv-sala] The tool selector sent ${seleccion.tools.length} of ${tools.length} tools, chosen by the ` +
-        "`intents`/`risk` your tools declare: the model cannot call the other " +
+        "`intents`/`risk` your tools declare and the `maxTools`/`withholdWriteTools` options of your ToolSelector: the model cannot call the other " +
         `${seleccion.droppedIds.length} in that request (they are listed in the report's \`tool-selector\` trace). ` +
         "A catalogue with no `intents` and no `risk`, or `savings: { router: false }`, is sent whole." +
         sugerencia,

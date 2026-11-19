@@ -66,15 +66,30 @@ describe("ToolSelector", () => {
     { id: "search_docs", intents: ["search documentation"], risk: "read" },
   ];
 
-  it("never hands write/destructive tools to a non-TOOL_ACTION request", () => {
-    const selection = new ToolSelector().select("delete account now", tools, "NO_RETRIEVAL");
+  // A2-28 (2026-11-19): the write gate is opt-in. These two tests pinned it as
+  // the default; they now ask for it with `withholdWriteTools`, and a third
+  // pins the new default.
+  it("with `withholdWriteTools`, never hands write/destructive tools to a non-TOOL_ACTION request", () => {
+    const selection = new ToolSelector({ withholdWriteTools: true }).select("delete account now", tools, "NO_RETRIEVAL");
     expect(selection.tools.some((t) => t.risk === "destructive")).toBe(false);
   });
 
+  it("by default hands every declared tool to any request, write tools included", () => {
+    const selection = new ToolSelector().select("close my account please", tools, "NO_RETRIEVAL");
+    expect(selection.tools.map((t) => t.id)).toEqual(["get_weather", "delete_account", "search_docs"]);
+    expect(selection.droppedIds).toEqual([]);
+  });
+
   it("selects only intent-matching tools (when maxTools opts in to pruning)", () => {
-    const selection = new ToolSelector({ maxTools: 8 }).select("what is the weather forecast", tools, "SINGLE_RETRIEVAL");
+    const selection = new ToolSelector({ maxTools: 8, withholdWriteTools: true }).select("what is the weather forecast", tools, "SINGLE_RETRIEVAL");
     expect(selection.tools.map((t) => t.id)).toEqual(["get_weather"]);
     expect(selection.droppedIds).toContain("search_docs");
+  });
+
+  it("maxTools prunes read tools only: a write tool is never pruned by relevance", () => {
+    const selection = new ToolSelector({ maxTools: 8 }).select("what is the weather forecast", tools, "SINGLE_RETRIEVAL");
+    expect(selection.tools.map((t) => t.id)).toEqual(["delete_account", "get_weather"]);
+    expect(selection.droppedIds).toEqual(["search_docs"]);
   });
 
   it("allows destructive tools only under TOOL_ACTION", () => {

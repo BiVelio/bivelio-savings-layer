@@ -251,6 +251,11 @@ are not actions. Up to 0.4.32 a *typed* catalogue (tools that declare
 travelled whole since 0.4.31. Tools that are not pruned are not credited as a
 saving.
 
+**Since 1.2.3** write and destructive tools travel too: the gate that withheld
+them is opt-in (`new ToolSelector({ withholdWriteTools: true })`), and a write
+tool it leaves out is never credited as a saving. See
+[Tools](https://github.com/BiVelio/bivelio-savings-layer/blob/main/docs/guias/herramientas.md).
+
 ```ts
 // 0.4.33+ and 0.5, to keep the 0.4.32 behaviour on a typed catalogue:
 const layer = createSavingsLayer({

@@ -587,7 +587,8 @@
     "ToolSelectorOptions.freezer": "estable",
     "ToolSelectorOptions.learningTurns": "estable",
     "ToolSelectorOptions.maxTools": "estable",
-    "ToolSelectorOptions.scoreIntentMatch": "estable"
+    "ToolSelectorOptions.scoreIntentMatch": "estable",
+    "ToolSelectorOptions.withholdWriteTools": "estable"
   },
   "retirados": {
     "exports": {

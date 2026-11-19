@@ -4,6 +4,7 @@ import { createSavingsLayer } from "../src/pipeline/create.js";
 import { TokenizerRegistry } from "../src/tokenizer/registry.js";
 import { ExactTokenizer } from "../src/tokenizer/exact.js";
 import { HeuristicEstimator } from "../src/tokenizer/estimator.js";
+import { ToolSelector } from "../src/router/tool-selector.js";
 import type { Provider, ProviderRequest, ProviderResponse } from "../src/providers/types.js";
 import type { SavingsRequest, ToolDescriptor } from "../src/contracts/types.js";
 
@@ -124,7 +125,11 @@ describe("el envoltorio de las herramientas se cuenta como lo factura el proveed
       id: "send_email_to_recipient",
       description: "Send an email message to one or more recipients with an optional attachment",
       intents: ["email"],
-      risk: "write" as const,
+      // A2-28 (2026-11-19): era `risk: "write"` y la retiraba la verja de riesgo,
+      // que ya no corre por defecto ni se acredita. Estas pruebas necesitan
+      // material RETIRADO Y ACREDITADO, así que la herramienta es de lectura y
+      // se poda por relevancia con `maxTools` (ver las dos capas de abajo).
+      risk: "read" as const,
       parameters: { type: "object" as const, properties: { to: { type: "string" as const } } },
     },
   ];
@@ -188,9 +193,10 @@ describe("el envoltorio de las herramientas se cuenta como lo factura el proveed
     const naive = await proveedor.generate({ ...peticion, messages: [...peticion.messages] });
     const baselineReal = naive.usage.inputTokens;
 
-    const layer = createSavingsLayer({ provider: proveedor, devUnlicensed: true });
+    const layer = createSavingsLayer({ provider: proveedor, devUnlicensed: true, toolSelector: new ToolSelector({ maxTools: 8 }) });
     const r = await layer.generate(peticion);
     const t = r.report.tokens;
+    expect(t.eliminatedInput).toBeGreaterThan(0);
 
     // Con el heurístico la cifra sigue inflada, y hay que decir POR QUÉ: k se
     // calibra sobre lo que QUEDÓ en el prompt (texto llano, donde las dos reglas
@@ -240,8 +246,14 @@ describe("el envoltorio de las herramientas se cuenta como lo factura el proveed
     };
     const naive = await proveedor.generate({ ...peticion, messages: [...peticion.messages] });
 
-    const layer = createSavingsLayer({ provider: proveedor, tokenizer: registro, devUnlicensed: true });
+    const layer = createSavingsLayer({
+      provider: proveedor,
+      tokenizer: registro,
+      devUnlicensed: true,
+      toolSelector: new ToolSelector({ maxTools: 8 }),
+    });
     const r = await layer.generate(peticion);
+    expect(r.report.tokens.eliminatedInput).toBeGreaterThan(0);
 
     // Con las dos reglas iguales Y sin sobrecoste de protocolo (este proveedor de
     // prueba no lo tiene), el baseline reconstruido cae muy cerca del real. Es lo

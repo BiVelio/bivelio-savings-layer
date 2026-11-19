@@ -340,7 +340,9 @@ describe("el pipeline con `savings.toolSearch`", () => {
     expect(JSON.stringify(vistas[0])).not.toContain("defer_loading");
   });
 
-  it("con un catálogo TIPADO, una petición que no es acción sigue sin recibir herramientas de escritura", async () => {
+  // A2-28 (2026-11-19): la verja de riesgo es opción explícita, también en la
+  // ruta nativa, y lo que retira ya NO se acredita.
+  it("con un catálogo TIPADO, por defecto la de escritura viaja diferida como las demás", async () => {
     const tipadas: ToolDescriptor[] = [
       ...Array.from({ length: 12 }, (_, i) => ({ id: `leer_${i}`, intents: [`consultar cosa ${i}`], risk: "read" as const })),
       { id: "borrar_pedido", intents: ["borrar pedido"], risk: "destructive" as const },
@@ -350,12 +352,31 @@ describe("el pipeline con `savings.toolSearch`", () => {
       peticion("¿Cuántos pedidos hay abiertos?", tipadas, { toolSearch: "always" }),
     );
     expect(report.routing.executionClass).not.toBe("TOOL_ACTION");
+    expect(herramientasDe(capturas[0]!).map((t) => t["name"])).toContain("borrar_pedido");
+    expect(report.tokens.eliminatedInput).toBe(0);
+  });
+
+  it("con un catálogo TIPADO y `withholdWriteTools`, una petición que no es acción no recibe herramientas de escritura", async () => {
+    const tipadas: ToolDescriptor[] = [
+      ...Array.from({ length: 12 }, (_, i) => ({ id: `leer_${i}`, intents: [`consultar cosa ${i}`], risk: "read" as const })),
+      { id: "borrar_pedido", intents: ["borrar pedido"], risk: "destructive" as const },
+    ];
+    const capturas: Cuerpo[] = [];
+    const { report } = await capa(new AnthropicProvider({ fetchImpl: fetchEspia(capturas) }), {
+      toolSelector: new ToolSelector({ withholdWriteTools: true }),
+    }).generate(peticion("¿Cuántos pedidos hay abiertos?", tipadas, { toolSearch: "always" }));
+    expect(report.routing.executionClass).not.toBe("TOOL_ACTION");
     const nombres = herramientasDe(capturas[0]!).map((t) => t["name"]);
     expect(nombres).not.toContain("borrar_pedido");
     // Las 12 de lectura viajan todas: la relevancia no poda, elige el modelo.
     expect(nombres.filter((n) => String(n).startsWith("leer_"))).toHaveLength(12);
-    // Y lo que retiró la verja de riesgo se apunta como hoy lo apunta el selector.
-    expect(report.tokens.eliminatedInput).toBeGreaterThan(0);
+    // Y lo que retiró la verja de riesgo NO es ahorro: sale en la traza, sin crédito.
+    expect(report.tokens.eliminatedInput).toBe(0);
+    expect(traza(report, "tool-selector")[0]!.detail).toMatchObject({
+      dropped: ["borrar_pedido"],
+      eliminatedTokens: 0,
+      withheldWritesNotCredited: ["borrar_pedido"],
+    });
   });
 
   it("con un contrato de salida se queda el selector", async () => {

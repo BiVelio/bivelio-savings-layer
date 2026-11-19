@@ -89,8 +89,10 @@ answer. The `policy` engine gates every saving:
   **and** must pass metadata filters + a verifier + a freshness check + a
   contract-compatibility check. Its headline metric is hit *precision*, not hit
   ratio.
-- Write/destructive tools disable semantic cache and singleflight, and are never
-  handed to a non-`TOOL_ACTION` request.
+- Write/destructive tools disable semantic cache and singleflight. Since 1.2.3 they
+  reach every request by default; `new ToolSelector({ withholdWriteTools: true })`
+  keeps them out of a non-`TOOL_ACTION` request, and a withheld write tool is never
+  credited as a saving.
 
 ### 3. Formats are measured, not assumed
 
