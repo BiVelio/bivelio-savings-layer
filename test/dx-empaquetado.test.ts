@@ -64,8 +64,11 @@ describe("el paquete publicado", () => {
     // producto. Sin minificar (y sin comentarios) el bundle mide ~750 KB; con él,
     // ~409 KB desde el adaptador nativo de Gemini (+11 KB), que dejó el
     // techo anterior (400 KB) sin margen. La licencia Medir (+4 KB) y el carril
-    // del ahorro nativo (0032) caben.
-    expect(src.length).toBeLessThan(450_000);
+    // del ahorro nativo (0032) cupieron; el 2026-11-19 el bundle medía 449,3 KB
+    // y las filas de precio de A2-5 (gpt-5.1, gpt-6.1, gpt-6.2 y Gemini 4, con
+    // sus filas Flex/Batch: +3,7 KB) lo dejaron en ~453 KB. El techo sube a
+    // 470 KB: sigue muy lejos de lo que mediría sin minificar.
+    expect(src.length).toBeLessThan(470_000);
   });
 });
 

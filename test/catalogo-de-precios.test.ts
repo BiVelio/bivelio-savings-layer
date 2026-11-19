@@ -180,6 +180,46 @@ describe("la forma del catálogo", () => {
     expect(claveDeCatalogo("claude-sonnet-5")).toBe("claude-sonnet-5");
   });
 
+  it("las filas nuevas del 2026-11-19 (A2-5), con las cifras de las páginas OFICIALES (USD por 1M → por 1K)", () => {
+    // developers.openai.com/api/docs/pricing, tabla «Standard», contexto corto
+    // (entrada / entrada cacheada / salida): gpt-5.1 $1.25 / $0.125 / $10;
+    // gpt-6.1-sol y gpt-6.2-sol $2 / $0.10 / $10; gpt-6.1-terra $1 / $0.05 / $5;
+    // gpt-6.2-astra $8 / $0.40 / $40.
+    const oficiales: Record<string, { inputPer1k: number; outputPer1k: number; cachedInputPer1k: number }> = {
+      "gpt-5.1": { inputPer1k: 0.00125, outputPer1k: 0.01, cachedInputPer1k: 0.000125 },
+      "gpt-6.1-sol": { inputPer1k: 0.002, outputPer1k: 0.01, cachedInputPer1k: 0.0001 },
+      "gpt-6.1-terra": { inputPer1k: 0.001, outputPer1k: 0.005, cachedInputPer1k: 0.00005 },
+      "gpt-6.2-sol": { inputPer1k: 0.002, outputPer1k: 0.01, cachedInputPer1k: 0.0001 },
+      "gpt-6.2-astra": { inputPer1k: 0.008, outputPer1k: 0.04, cachedInputPer1k: 0.0004 },
+      // ai.google.dev/gemini-api/docs/pricing, «Standard», «Paid Tier» (entrada /
+      // salida / caché). Carbon y Argon, el precio «through November 30, 2026».
+      "gemini-4-carbon": { inputPer1k: 0.002, outputPer1k: 0.01, cachedInputPer1k: 0.0001 },
+      "gemini-4-argon": { inputPer1k: 0.002, outputPer1k: 0.01, cachedInputPer1k: 0.0001 },
+      "gemini-4-neon": { inputPer1k: 0.003, outputPer1k: 0.015, cachedInputPer1k: 0.00015 },
+      "gemini-4-hydrogen": { inputPer1k: 0.0015, outputPer1k: 0.0075, cachedInputPer1k: 0.000075 },
+    };
+    const dia = Date.parse(`${PRECIOS_AL_DIA}T12:00:00Z`);
+    for (const [m, fila] of Object.entries(oficiales)) {
+      expect(CATALOGO[m], m).toEqual(fila);
+      expect(precioDeLista(m, dia), m).toBe(CATALOGO[m]);
+      expect(precioDeLista(m.startsWith("gpt-") ? `openai/${m}` : `google/${m}`, dia), m).toBe(CATALOGO[m]);
+      expect(claveDeCatalogo(m), m).toBe(m);
+    }
+    // gpt-6.1 y gpt-6.2 leen la caché al 5 % de la entrada, no al 10 % de gpt-6.
+    for (const m of ["gpt-6.1-sol", "gpt-6.1-terra", "gpt-6.2-sol", "gpt-6.2-astra"]) {
+      expect(CATALOGO[m]!.cachedInputPer1k! / CATALOGO[m]!.inputPer1k, m).toBeCloseTo(0.05, 12);
+    }
+    // Gemini 4 Carbon y Argon doblan el 1-dic-2026 («starting December 1, 2026»).
+    for (const m of ["gemini-4-carbon", "gemini-4-argon"]) {
+      expect(precioDeLista(m, Date.parse("2026-11-30T23:59:59Z")), m).toBe(CATALOGO[m]);
+      expect(precioDeLista(m, Date.parse("2026-12-01T00:00:00Z")), m).toEqual({ inputPer1k: 0.004, outputPer1k: 0.02, cachedInputPer1k: 0.0002 });
+    }
+    // Lo que sigue sin fila no hereda de la nueva: otra versión menor, avisa.
+    expect(precioDeLista("gpt-6.3-sol")).toBeUndefined();
+    expect(precioDeLista("gpt-5.3")).toBeUndefined();
+    expect(precioDeLista("gemini-4-xenon")).toBeUndefined();
+  });
+
   it("⛔ la versión menor no hereda: Opus 5.5 no es Opus 5, ni gpt-6-luna es gpt-5.6-luna", () => {
     expect(precioDeLista("claude-opus-5-5")).not.toEqual(CATALOGO["claude-opus-5"]);
     expect(claveDeCatalogo("claude-opus-5-5-20260901")).toBe("claude-opus-5-5");

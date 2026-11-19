@@ -54,7 +54,10 @@ import type { CostModel } from "../tokenizer/accounting.js";
 //     promocional de gpt-5.6-sol: sus filas Flex y Batch rigen hasta el
 //     2026-11-30 (antes, el 2026-11-21) y la estándar hasta el 1-dic. Y (A2-6)
 //     la lectura de caché de claude-sonnet-5-5, a 0,05× desde el 2026-10-07:
-//     $0.10/MTok en estándar y $0.05 en lote, no $0.20 y $0.10.
+//     $0.10/MTok en estándar y $0.05 en lote, no $0.20 y $0.10. Y (A2-5) filas
+//     propias de gpt-5.1, gpt-6.1-sol, gpt-6.1-terra, gpt-6.2-sol,
+//     gpt-6.2-astra y la familia Gemini 4 (con el tramo del 1-dic de Carbon y
+//     Argon), con sus filas Flex/Batch y su clasificación de razonamiento.
 
 /**
  * Version of this price catalogue: the UTC day its content last changed (rows,
@@ -73,7 +76,7 @@ export const PRECIOS_AL_DIA = "2026-11-19";
 export const HUELLAS_DEL_CATALOGO: Readonly<Record<string, string>> = {
   "2026-09-29": "bfbf91f324c7a3c7319db6c816cb7cce545f4a285e1ff0ad4ac9f1b706634a2e",
   "2026-11-03": "e14ffe5559e35c21f2bbb5d4e42639dc2b80cb262cdb2bd6fd27efdc475ee6d8",
-  "2026-11-19": "79ebd22508ab53af391a1674e36af130baca30d07b5afea54965afb6ab3e5a27",
+  "2026-11-19": "1c07e0e37f3bbd37cbbbc65bd90b6b3a743436237e4323917cbe6b2d89605ebf",
 };
 
 /**
@@ -127,6 +130,10 @@ export const CATALOGO: Readonly<Record<string, CostModel>> = {
   "gpt-5-codex":        { inputPer1k: 0.00125,  outputPer1k: 0.01,     cachedInputPer1k: 0.000125  },
   "gpt-5-mini":         { inputPer1k: 0.00025,  outputPer1k: 0.002,    cachedInputPer1k: 0.000025  },
   "gpt-5-nano":         { inputPer1k: 0.00005,  outputPer1k: 0.0004,   cachedInputPer1k: 0.000005  },
+  // gpt-5.1 a secas: $1.25 / $0.125 / $10 en la tabla «Standard» oficial
+  // (consultada el 2026-11-19, A2-5), la misma lista que gpt-5. Sin esta fila
+  // caía al respaldo ilustrativo: la versión menor no hereda la de gpt-5.
+  "gpt-5.1":            { inputPer1k: 0.00125,  outputPer1k: 0.01,     cachedInputPer1k: 0.000125  },
   "gpt-5.1-codex":      { inputPer1k: 0.00125,  outputPer1k: 0.01,     cachedInputPer1k: 0.000125  },
   "gpt-5.1-codex-max":  { inputPer1k: 0.00125,  outputPer1k: 0.01,     cachedInputPer1k: 0.000125  },
   "gpt-5.1-codex-mini": { inputPer1k: 0.00025,  outputPer1k: 0.002,    cachedInputPer1k: 0.000025  },
@@ -168,6 +175,23 @@ export const CATALOGO: Readonly<Record<string, CostModel>> = {
   "gpt-6-astra":        { inputPer1k: 0.01,     outputPer1k: 0.05,     cachedInputPer1k: 0.001     },
   "gpt-6-sol":          { inputPer1k: 0.002,    outputPer1k: 0.01,     cachedInputPer1k: 0.0002    },
   "gpt-6-luna":         { inputPer1k: 0.0001,   outputPer1k: 0.0005,   cachedInputPer1k: 0.00001   },
+  // gpt-6.1 y gpt-6.2 (A2-5). Verificadas el 2026-11-19 contra la tabla
+  // «Standard» OFICIAL (https://developers.openai.com/api/docs/pricing, versión
+  // `.md` descargada tal cual; columnas de contexto corto, «≤272K input
+  // tokens», USD por 1M, entrada / salida / entrada cacheada): 6.2-astra $8 /
+  // $40 / $0.40; 6.2-sol y 6.1-sol $2 / $10 / $0.10; 6.1-terra $1 / $5 /
+  // $0.05. OJO: la lectura cacheada es el 5 % de la entrada, no el 10 % de
+  // gpt-6 y gpt-5.6. La escritura de 30 min es 1,25× la entrada y la pone
+  // `primaDeEscritura`, como en gpt-6. Fuera de la fila, como en gpt-6: el
+  // contexto largo (2× entrada y caché, 1,5× salida; tarifarlo al corto
+  // infra-mide los dos lados por igual), Fast, Ultrafast y los descuentos de
+  // las peticiones en segundo plano. Sin estas filas su tráfico caía al
+  // respaldo ilustrativo: gpt-6.2-sol se medía unas cuatro veces por debajo de
+  // la factura.
+  "gpt-6.2-astra":      { inputPer1k: 0.008,    outputPer1k: 0.04,     cachedInputPer1k: 0.0004    },
+  "gpt-6.2-sol":        { inputPer1k: 0.002,    outputPer1k: 0.01,     cachedInputPer1k: 0.0001    },
+  "gpt-6.1-sol":        { inputPer1k: 0.002,    outputPer1k: 0.01,     cachedInputPer1k: 0.0001    },
+  "gpt-6.1-terra":      { inputPer1k: 0.001,    outputPer1k: 0.005,    cachedInputPer1k: 0.00005   },
 
   // La serie o (razonamiento). Verificada el 2026-09-25 contra la página oficial
   // de precios de OpenAI (developers.openai.com/api/docs/pricing, tabla
@@ -348,6 +372,22 @@ export const CATALOGO: Readonly<Record<string, CostModel>> = {
   // tráfico salía `estimated` (N5): desde N4 no hereda la de gemini-2.5-flash,
   // que cuesta el triple de entrada y más de seis veces la salida.
   "gemini-2.5-flash-lite":  { inputPer1k: 0.0001,  outputPer1k: 0.0004,  cachedInputPer1k: 0.00001  },
+  // La familia Gemini 4 (A2-5). Verificada el 2026-11-19 contra la página
+  // OFICIAL de precios de Gemini (https://ai.google.dev/gemini-api/docs/pricing,
+  // que redirige a https://aistudio.google.com/docs/pricing), bloque
+  // «Standard», columna «Paid Tier», USD por 1M, entrada / salida (con
+  // thinking) / caché de contexto (solo implícita: «explicit caching is not
+  // supported»), sin tramo de contexto largo publicado:
+  //   · Carbon y Argon: $2.00 / $10.00 / $0.10 «through November 30, 2026» y
+  //     $4.00 / $20.00 / $0.20 «starting December 1, 2026»: la vigencia de la
+  //     fila acaba el 1-dic y el precio nuevo es su tramo (más abajo).
+  //   · Neon: $3.00 / $15.00 / $0.15.
+  //   · Hydrogen: $1.50 / $7.50 / $0.075 (también tiene tier gratuito).
+  // Sin estas filas su tráfico salía `estimated` al precio ilustrativo.
+  "gemini-4-carbon":        { inputPer1k: 0.002,   outputPer1k: 0.01,    cachedInputPer1k: 0.0001   },
+  "gemini-4-argon":         { inputPer1k: 0.002,   outputPer1k: 0.01,    cachedInputPer1k: 0.0001   },
+  "gemini-4-neon":          { inputPer1k: 0.003,   outputPer1k: 0.015,   cachedInputPer1k: 0.00015  },
+  "gemini-4-hydrogen":      { inputPer1k: 0.0015,  outputPer1k: 0.0075,  cachedInputPer1k: 0.000075 },
 
   // ── DeepSeek, Qwen, GLM — proveedores chinos ───────────────────────────────
   //
@@ -434,6 +474,10 @@ const VIGENCIA_DE_FILA: Readonly<Record<string, { readonly vigenteDesde?: string
   // «GPT-5.6 Sol's promotional pricing is available until November 30, 2026».
   // Sin precio anunciado detrás: no hay tramo, y el 1-dic deja de tener precio.
   "gpt-5.6-sol": { vigenteHasta: "2026-12-01" },
+  // https://ai.google.dev/gemini-api/docs/pricing (consultada el 2026-11-19):
+  // «$2.00 through November 30, 2026. $4.00 starting December 1, 2026».
+  "gemini-4-carbon": { vigenteHasta: "2026-12-01" },
+  "gemini-4-argon": { vigenteHasta: "2026-12-01" },
   // https://ai.google.dev/gemini-api/docs/pricing (consultada el 2026-09-27):
   // «$0.75 through December 31, 2026. $1.50 starting January 1, 2027».
   "gemini-3.8-flash": { vigenteHasta: "2027-01-01" },
@@ -459,6 +503,15 @@ const TRAMOS_ANUNCIADOS: Readonly<Record<string, readonly TramoDePrecio[]>> = {
   ],
   "gemini-3.6-flash": [
     { vigenteDesde: "2027-01-01", precio: { inputPer1k: 0.0015, outputPer1k: 0.0075, cachedInputPer1k: 0.00015 } },
+  ],
+  // https://ai.google.dev/gemini-api/docs/pricing (consultada el 2026-11-19),
+  // tier de pago «Standard», USD por 1M, «starting December 1, 2026»: entrada
+  // $4.00, salida $20.00, caché $0.20 — el doble exacto de hoy en las tres.
+  "gemini-4-carbon": [
+    { vigenteDesde: "2026-12-01", precio: { inputPer1k: 0.004, outputPer1k: 0.02, cachedInputPer1k: 0.0002 } },
+  ],
+  "gemini-4-argon": [
+    { vigenteDesde: "2026-12-01", precio: { inputPer1k: 0.004, outputPer1k: 0.02, cachedInputPer1k: 0.0002 } },
   ],
 };
 
