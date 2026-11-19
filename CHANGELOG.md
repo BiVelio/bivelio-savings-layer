@@ -160,6 +160,11 @@
 
 ### Docs
 
+- README and website: "install it and it saves" refers to the SDK. With a coding
+  agent, the local gateway meters your spend on your machine, and its cache-write
+  TTL lever saves only when the client pays per token and asks for the one-hour
+  cache. Claude Code on an API key asks for five minutes unless `promptCacheTtl` is
+  set to `1h`.
 - The npm README fits under the registry's 64 KiB limit, so the package page no
   longer ends mid-sentence: the 14 optional sections moved word for word to
   `docs/guias/` and the README links each one; "Licensing & privacy" now follows the
