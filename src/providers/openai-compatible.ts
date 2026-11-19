@@ -647,9 +647,13 @@ export class OpenAICompatibleProvider implements Provider {
       if (esTextoNoVacio(delta?.reasoning_content) || esTextoNoVacio(delta?.reasoning)) {
         huboTextoDeRazonamiento = true;
       }
-      if (typeof delta?.content === "string" && delta.content !== "") {
-        text += delta.content;
-        yield { type: "text", delta: delta.content };
+      // `delta.content` puede llegar como lista de partes (A2-7).
+      const trozoDeTexto = Array.isArray(delta?.content) ? contenidoDePartes(delta.content) : undefined;
+      if (trozoDeTexto?.otrasPartes) huboTextoDeRazonamiento = true;
+      const contenido = trozoDeTexto ? trozoDeTexto.texto : delta?.content;
+      if (typeof contenido === "string" && contenido !== "") {
+        text += contenido;
+        yield { type: "text", delta: contenido };
       }
       if (typeof delta?.refusal === "string") negativa += delta.refusal;
       for (const tc of delta?.tool_calls ?? []) {
@@ -1093,14 +1097,21 @@ export class OpenAICompatibleProvider implements Provider {
   ): ProviderResponse {
     const mensaje = json.choices?.[0]?.message as
       | {
-          content?: string | null;
+          content?: unknown;
           refusal?: unknown;
           tool_calls?: { id?: string; function?: { name?: string; arguments?: string }; extra_content?: unknown }[];
           reasoning_content?: unknown;
           reasoning?: unknown;
         }
       | undefined;
-    const text = mensaje?.content ?? "";
+    // `content` como LISTA DE PARTES (A2-7): se queda el texto de las partes de
+    // texto; el resto (el razonamiento de Mistral) cuenta como razonamiento visto.
+    const partes = Array.isArray(mensaje?.content) ? contenidoDePartes(mensaje.content) : undefined;
+    const contenido: unknown = partes ? partes.texto : (mensaje?.content ?? "");
+    if (typeof contenido !== "string") {
+      throw new Error("provider returned a message whose content is neither text nor a list of parts");
+    }
+    const text = contenido;
     // LA NEGATIVA DE SALIDAS ESTRUCTURADAS. Con `response_format: json_schema`
     // OpenAI no mete la negativa en `content` (no cumpliría el esquema): llega en
     // `message.refusal`, sin `content` y con `finish_reason: "stop"`, y sus
@@ -1137,7 +1148,7 @@ export class OpenAICompatibleProvider implements Provider {
     const facturada = salidaFacturada(
       usage,
       this.origen,
-      esTextoNoVacio(mensaje?.reasoning_content) || esTextoNoVacio(mensaje?.reasoning),
+      esTextoNoVacio(mensaje?.reasoning_content) || esTextoNoVacio(mensaje?.reasoning) || partes?.otrasPartes === true,
     );
     const outputTokens = facturada.salida;
 
@@ -1335,6 +1346,33 @@ function extraContentDe(v: unknown): Record<string, unknown> | undefined {
   return v !== null && typeof v === "object" && !Array.isArray(v) ? (v as Record<string, unknown>) : undefined;
 }
 
+// `content` COMO LISTA DE PARTES (auditoría del 2026-11-19, A2-7). Algunos
+// servicios compatibles con OpenAI devuelven la respuesta así
+// (`[{type:"thinking",…},{type:"text",text:"…"}]`; Mistral con sus modelos de
+// razonamiento) en vez de una cadena, también en el `delta` del stream. El
+// lector daba por hecho una cadena y la llamada, ya cobrada por el proveedor,
+// moría con «me.trim is not a function».
+//
+// La respuesta es el texto de las partes de TEXTO, en orden. Cualquier otra
+// parte se avisa con `otrasPartes`: quien llama la trata como razonamiento
+// visto, y entonces un `reasoning_tokens: 0` al lado no se afirma (ver
+// `razonamientoDeclarado`). Es el lado seguro: nunca se acredita de más.
+function contenidoDePartes(partes: readonly unknown[]): { texto: string; otrasPartes: boolean } {
+  let texto = "";
+  let otrasPartes = false;
+  for (const parte of partes) {
+    if (typeof parte === "string") {
+      texto += parte;
+      continue;
+    }
+    const p =
+      parte !== null && typeof parte === "object" && !Array.isArray(parte) ? (parte as Record<string, unknown>) : undefined;
+    if (p && (p["type"] === "text" || p["type"] === undefined) && typeof p["text"] === "string") texto += p["text"];
+    else otrasPartes = true;
+  }
+  return { texto, otrasPartes };
+}
+
 function esTextoNoVacio(v: unknown): boolean {
   return typeof v === "string" && v !== "";
 }
@@ -1384,7 +1422,8 @@ interface OpenAIChatResponse {
 interface TrozoDeChat {
   choices?: {
     delta?: {
-      content?: string | null;
+      /** Texto, o una lista de partes en algunos compatibles (ver `contenidoDePartes`). */
+      content?: unknown;
       refusal?: string | null;
       reasoning_content?: unknown;
       reasoning?: unknown;
