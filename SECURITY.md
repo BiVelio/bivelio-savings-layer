@@ -50,13 +50,16 @@ section that links to the source commit and the build that produced it.
 
 How each version was published:
 
-- **Up to and including 0.4.24**, every version was published by hand. None of
+- **Up to and including 0.4.32**, every version was published by hand. None of
   them carries a provenance attestation.
-- A version published by our release workflow uses npm trusted publishing
-  (short-lived OIDC credentials, no stored npm token). npm only generates
-  provenance when the source repository is public. While our repository is
-  private, the workflow publishes without it, and the command above prints
-  nothing.
+- **From 0.4.33 to 0.5.2**, our release workflow published each version with npm
+  trusted publishing (short-lived OIDC credentials, no stored npm token), but
+  without provenance: npm only generates provenance when the source repository
+  is public, and ours was not public yet. For these versions the command above
+  prints nothing.
+- **From 1.0.0 on**, every version is published by the release workflow with
+  trusted publishing and carries a provenance attestation. The repository is
+  public: https://github.com/BiVelio/bivelio-savings-layer.
 - If a later version has to be published by hand, it is listed here as such.
 
 ### What the release workflow checks before publishing
@@ -83,8 +86,9 @@ the optional peer dependency, which is not bundled. The SBOM carries the
 tarball's SHA-512 and SHA-256, so you can check that it describes the file you
 installed.
 
-The SBOM is attached to the GitHub Release. While the repository is private,
-write to privacy@bivelio.com to get it for the version you use.
+The SBOM is attached to every GitHub Release the workflow publishes (from 0.4.33
+on), as `bivelio-savings-layer-X.Y.Z.cdx.json`:
+https://github.com/BiVelio/bivelio-savings-layer/releases.
 
 ## Availability: what happens if our servers do not respond
 
@@ -92,6 +96,13 @@ Once running, license checks never wait on our servers: they read state kept in
 memory, and every call to our servers runs in the background. The one exception
 is gateway startup, described below. What an outage changes depends on how you
 run the product.
+
+With no key (the open-core default), neither the SDK nor the `bvsala` gateway
+calls our servers at all: every local saving lever runs on your machine, so an
+outage on our side changes nothing. A key only adds Savings Cloud (the dashboard,
+team metering, org entitlements and license management), and a key that is
+configured but invalid, expired or revoked fails closed. Everything below applies
+when you configure a key.
 
 ### SDK with an offline license (`licenseKey` only)
 
