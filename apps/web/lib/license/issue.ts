@@ -62,6 +62,11 @@ export interface IssueInput {
   stripeInvoiceId?: string | null;
 }
 
+/** El plan de la licencia gratuita «Medir» (el mismo valor que `PLAN_MEDIR` en
+ *  ./medir.ts, que importa de aquí: no se puede importar al revés). `plan` es
+ *  NOT NULL en `bvsala.licenses`, así que `neq` no pierde filas sin plan. */
+const PLAN_GRATUITO_MEDIR = "measure";
+
 export interface IssuedLicense {
   jti: string;
   token: string;
@@ -157,10 +162,15 @@ async function licenciaViva(
 }
 
 /**
- * The org's current (newest, non-revoked) license jti — used to supersede the
- * old license when re-issuing after a seat change / renewal.
+ * The org's current (newest, non-revoked) PAID license jti — used to supersede
+ * the old license when re-issuing after a seat change / renewal.
+ *
+ * SOLO DE PAGO (auditoría del lanzamiento, 2026-11-19). La gratuita «Medir»
+ * (plan `measure`) convive con la de pago y se conserva al pagar; si esta
+ * consulta la devolviera, una renovación «sustituiría» la Medir en vez de la de
+ * pago anterior. Ver `currentPaidLicense`.
  */
-export async function currentLicenseJti(
+export async function currentPaidLicenseJti(
   admin: AdminClient,
   orgId: string,
 ): Promise<string | null> {
@@ -169,6 +179,7 @@ export async function currentLicenseJti(
     .select("id")
     .eq("org_id", orgId)
     .eq("revoked", false)
+    .neq("plan", PLAN_GRATUITO_MEDIR)
     .order("issued_at", { ascending: false })
     .limit(1)
     .maybeSingle();
@@ -224,11 +235,18 @@ export async function supersedeLicense(admin: AdminClient, jti: string): Promise
     .eq("id", jti);
 }
 
-/** The org's current (newest, non-revoked) license — id + the seat count it was
- *  minted with. Used to decide whether a seat change actually needs a re-issue
+/** The org's current (newest, non-revoked) PAID license — id + the seat count it
+ *  was minted with. Used to decide whether a seat change actually needs a re-issue
  *  (comparing against the license, not a subscription row this handler may have
- *  already overwritten, so a retry after a failed issue still re-issues). */
-export async function currentLicense(
+ *  already overwritten, so a retry after a failed issue still re-issues).
+ *
+ *  ⚠️ LA GRATUITA «MEDIR» NO CUENTA (auditoría del lanzamiento, 2026-11-19). Esta
+ *  función es la que contesta «¿esta organización ya tiene SU licencia de pago?»
+ *  a la red de seguridad del webhook (`ensurePrimeraLicencia`). Mientras miraba
+ *  solo `revoked = false`, la Medir de quien venía del plan gratuito contestaba
+ *  «sí»: si el checkout llegaba fuera de orden o tras un reintento, el cliente
+ *  pagaba y se quedaba con la licencia gratuita, sin que nada avisara. */
+export async function currentPaidLicense(
   admin: AdminClient,
   orgId: string,
 ): Promise<{ jti: string; seats: number; expiresAt: string | null } | null> {
@@ -240,6 +258,7 @@ export async function currentLicense(
     .select("id, seats, expires_at")
     .eq("org_id", orgId)
     .eq("revoked", false)
+    .neq("plan", PLAN_GRATUITO_MEDIR)
     .order("issued_at", { ascending: false })
     .limit(1)
     .maybeSingle();
@@ -269,7 +288,7 @@ export async function revokeAllLicenses(
 ): Promise<string[]> {
   const { data } = await admin.from("licenses").select("id, plan").eq("org_id", orgId).eq("revoked", false);
   const ids = ((data as { id?: string; plan?: string | null }[] | null) ?? [])
-    .filter((r) => !(opts.conservarMedir === true && r.plan === "measure"))
+    .filter((r) => !(opts.conservarMedir === true && r.plan === PLAN_GRATUITO_MEDIR))
     .map((r) => r.id)
     .filter((x): x is string => Boolean(x));
   for (const jti of ids) await revokeLicense(admin, jti, reason);

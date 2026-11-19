@@ -13,8 +13,8 @@ import { esStale, condicionEscritura, puedeAplicarImpago, fallbackVencimientoUni
 import {
   issueLicense,
   supersedeLicense,
-  currentLicense,
-  currentLicenseJti,
+  currentPaidLicense,
+  currentPaidLicenseJti,
   revokeAllLicenses,
 } from "@/lib/license/issue";
 import { volverAMedir, type VueltaAMedir } from "@/lib/license/medir";
@@ -279,7 +279,9 @@ async function ensurePrimeraLicencia(
   eventId: string,
   motivo: string,
 ): Promise<boolean> {
-  const cur = await currentLicense(admin, orgId);
+  // Solo cuenta la de PAGO: la gratuita «Medir» de quien venía del plan
+  // gratuito no es «ya tiene licencia» (lib/license/issue.ts#currentPaidLicense).
+  const cur = await currentPaidLicense(admin, orgId);
   if (cur) return false;
   const issued = await issueLicense(admin, {
     orgId,
@@ -461,7 +463,7 @@ async function handleSubUpsert(admin: Admin, sub: Stripe.Subscription, eventId: 
   // acabamos de sobrescribir, para que un reintento tras una emisión fallida
   // vuelva a intentarlo. Y NUNCA se revoca al cambiar: se supersede, así la flota
   // en marcha sigue funcionando hasta que recoja la nueva.
-  const cur = isUpdate && active ? await currentLicense(admin, f.orgId) : null;
+  const cur = isUpdate && active ? await currentPaidLicense(admin, f.orgId) : null;
   const motivo = motivoDeReemision({
     asientosNuevos: f.quantity,
     finDePeriodoUnix: f.periodEnd,
@@ -652,7 +654,7 @@ async function handleInvoicePaid(admin: Admin, stripe: Stripe, invoice: Stripe.I
     return;
   }
 
-  const oldJti = await currentLicenseJti(admin, f.orgId);
+  const oldJti = await currentPaidLicenseJti(admin, f.orgId);
   if (oldJti) await supersedeLicense(admin, oldJti);
   const invId = typeof invoice.id === "string" ? invoice.id : null;
   const issued = await issueLicense(admin, {

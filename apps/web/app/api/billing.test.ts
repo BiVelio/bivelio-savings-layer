@@ -196,12 +196,25 @@ const emitirLicencia = vi.fn(async () => ({ jti: "jti-1", token: "bvl.t", expire
 const revocar = vi.fn(async () => ["jti-vieja"]);
 /** Lo que ve el webhook al preguntar "¿esta org ya tiene licencia viva?" — es lo
  *  que decide si la red de seguridad de la PRIMERA licencia entra o no. */
-let licenciaVigente: { jti: string; seats: number } | null = null;
+let licenciaVigente: { jti: string; seats: number; plan?: string } | null = null;
+/** La de PAGO: la gratuita «Medir» (plan `measure`) no cuenta, que es lo que
+ *  hace la consulta real (`.neq("plan", "measure")`, probada en
+ *  lib/license/licencia-de-pago.test.ts). */
+const licenciaDePago = () => (licenciaVigente?.plan === "measure" ? null : licenciaVigente);
+/** Qué licencias se marcan como sustituidas. */
+const sustituidas: string[] = [];
 vi.mock("@/lib/license/issue", () => ({
   issueLicense: (...a: unknown[]) => emitirLicencia(...(a as [])),
-  supersedeLicense: async () => {},
+  supersedeLicense: async (_admin: unknown, jti: string) => {
+    sustituidas.push(jti);
+  },
+  // Los nombres de antes del 2026-11-19, que NO distinguían la Medir: se dejan
+  // en el doble para que, si alguien vuelve a llamarlos, las pruebas de «la
+  // Medir no cuenta» fallen por lo que tienen que fallar.
   currentLicense: async () => licenciaVigente,
   currentLicenseJti: async () => licenciaVigente?.jti ?? null,
+  currentPaidLicense: async () => licenciaDePago(),
+  currentPaidLicenseJti: async () => licenciaDePago()?.jti ?? null,
   revokeAllLicenses: (...a: unknown[]) => revocar(...(a as [])),
 }));
 
@@ -236,6 +249,7 @@ beforeEach(() => {
   revocar.mockClear();
   esc.eventoVisto = undefined;
   licenciaVigente = null;
+  sustituidas.length = 0;
   suscripcionStripe.status = "active";
   suscripcionStripe.items.data[0]!.price = { id: "price_test_123" };
 });
@@ -643,6 +657,37 @@ describe("POST /api/stripe/webhook — el reintento tardío de un checkout no re
     expect(emitirLicencia).toHaveBeenCalledTimes(1);
   });
 
+  it("⛔ fuera de orden y con SOLO la gratuita Medir: se emite la de pago y queda auditado (W7)", async () => {
+    // Quien venía del plan gratuito tiene una Medir viva. La red de seguridad
+    // la tomaba por «ya tiene licencia» y no emitía: el cliente pagaba y se
+    // quedaba con la gratuita, con un 200 a Stripe y nada que lo delatase.
+    esc.suscripcionActiva = { id: "sub-row-1", org_id: orgId, stripe_subscription_id: "sub_123", seats: 2, last_event_at: "2099-01-01T00:00:00.000Z" };
+    licenciaVigente = { jti: "jti-medir", seats: 1, plan: "measure" };
+    construirEvento.mockReturnValueOnce(eventoCheckout());
+    const res = await dispara();
+    expect(res.status).toBe(200);
+    expect(emitirLicencia).toHaveBeenCalledTimes(1);
+    const pedido = (emitirLicencia.mock.calls[0] as unknown[])[1] as { orgId?: string; seats?: number; plan?: string };
+    expect(pedido).toMatchObject({ orgId, seats: 2 });
+    expect(pedido.plan ?? "pro").not.toBe("measure");
+    const auditado = upserts.find(
+      (u) => u.tabla === "billing_audit" && (u.fila as { kind?: string }).kind === "checkout_stale_ignored",
+    );
+    expect((auditado!.fila as { detail: { primeraLicenciaEmitida?: boolean } }).detail.primeraLicenciaEmitida).toBe(true);
+    // La Medir no se toca: ni se sustituye ni se revoca.
+    expect(sustituidas).toEqual([]);
+    expect(revocar).not.toHaveBeenCalled();
+  });
+
+  it("fuera de orden y con una de PAGO viva además de la Medir: no se emite otra", async () => {
+    esc.suscripcionActiva = { id: "sub-row-1", org_id: orgId, stripe_subscription_id: "sub_123", seats: 2, last_event_at: "2099-01-01T00:00:00.000Z" };
+    licenciaVigente = { jti: "jti-pro", seats: 2, plan: "pro" };
+    construirEvento.mockReturnValueOnce(eventoCheckout());
+    const res = await dispara();
+    expect(res.status).toBe(200);
+    expect(emitirLicencia).not.toHaveBeenCalled();
+  });
+
   it("el camino feliz sigue emitiendo la licencia (el cobro no se rompió)", async () => {
     construirEvento.mockReturnValueOnce(eventoCheckout());
     const res = await dispara();
@@ -848,6 +893,48 @@ describe("POST /api/stripe/webhook — los seis manejadores que no tenían prueb
     expect(res.status).toBe(200);
     expect(planEscrito("pro")).toBe(true);
     expect(emitirLicencia).toHaveBeenCalledTimes(1);
+  });
+
+  it("⛔ customer.subscription.created (activa) con SOLO la gratuita Medir → se emite la primera de pago (W7)", async () => {
+    licenciaVigente = { jti: "jti-medir", seats: 1, plan: "measure" };
+    const res = await enviar(evento("customer.subscription.created", suscripcion()));
+    expect(res.status).toBe(200);
+    expect(emitirLicencia).toHaveBeenCalledTimes(1);
+    expect(upserts.some((u) => u.tabla === "billing_audit" && (u.fila as { kind?: string }).kind === "primera_licencia")).toBe(true);
+    expect(sustituidas).toEqual([]);
+  });
+
+  it("⛔ invoice.paid de la PRIMERA factura con SOLO la gratuita Medir → se emite la de pago (W7)", async () => {
+    esc.suscripcionActiva = { id: "sub-row-1", org_id: orgId, stripe_subscription_id: "sub_123", status: "active", last_event_at: null, past_due_since: null };
+    licenciaVigente = { jti: "jti-medir", seats: 1, plan: "measure" };
+    suscripcionStripe.metadata = { org_id: orgId };
+    try {
+      const res = await enviar(evento("invoice.paid", { id: "in_primera", subscription: "sub_123", billing_reason: "subscription_create", amount_paid: 800 }));
+      expect(res.status).toBe(200);
+      expect(emitirLicencia).toHaveBeenCalledTimes(1);
+      expect(sustituidas).toEqual([]);
+    } finally {
+      suscripcionStripe.metadata = {};
+    }
+  });
+
+  it("⛔ una renovación nunca «sustituye» la Medir: solo la de pago anterior (W7)", async () => {
+    esc.suscripcionActiva = { id: "sub-row-1", org_id: orgId, stripe_subscription_id: "sub_123", status: "active", last_event_at: null, past_due_since: null };
+    licenciaVigente = { jti: "jti-medir", seats: 1, plan: "measure" };
+    suscripcionStripe.metadata = { org_id: orgId };
+    try {
+      await enviar(evento("invoice.paid", { id: "in_ciclo", subscription: "sub_123", billing_reason: "subscription_cycle", amount_paid: 800 }));
+      expect(sustituidas).toEqual([]);
+      expect(emitirLicencia).toHaveBeenCalledTimes(1);
+
+      emitirLicencia.mockClear();
+      licenciaVigente = { jti: "jti-pro-anterior", seats: 2, plan: "pro" };
+      await enviar(evento("invoice.paid", { id: "in_ciclo_2", subscription: "sub_123", billing_reason: "subscription_cycle", amount_paid: 800 }, "evt_ciclo_2"));
+      expect(sustituidas).toEqual(["jti-pro-anterior"]);
+      expect(emitirLicencia).toHaveBeenCalledTimes(1);
+    } finally {
+      suscripcionStripe.metadata = {};
+    }
   });
 
   it("customer.subscription.updated con MÁS asientos → la licencia vigente se sustituye por una con los asientos nuevos", async () => {
