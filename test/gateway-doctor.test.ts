@@ -169,12 +169,15 @@ describe("bvsala doctor — la forma exacta del base URL por terminal", () => {
     expect(texto).toContain("docs/terminales/");
   });
 
-  it("dice que el gateway arranca sin claves (modo Community) y que la suscripción no lleva comisión", async () => {
+  it("dice que el gateway arranca sin claves (modo Community) y que a la suscripción no se le acredita ahorro", async () => {
     // Open core: el doctor imprime recetas que acaban en `bvsala gateway`, y
     // quien las siga arranca sin ninguna clave, con todas las palancas locales.
+    // A2-14 · la comisión es un plan cerrado y no hay licencia por asiento que
+    // pagar para usar el gateway: el doctor ya no habla de ninguna de las dos.
     const { texto } = await vacio();
     expect(texto).toContain("COMMUNITY");
-    expect(texto).toContain("no commission");
+    expect(texto).toContain("no saving is credited on that traffic");
+    expect(texto).not.toMatch(/commission|per-seat license/);
     expect(texto).not.toContain("but not billed");
   });
 });

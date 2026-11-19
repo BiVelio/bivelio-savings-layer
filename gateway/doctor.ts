@@ -439,7 +439,7 @@ export async function doctor(puerto: number, opts: OpcionesDoctor = {}): Promise
     "BYOK rule: the recipes for the third-party terminals (opencode, Kilo, Copilot, Aider, Goose, Crush, Qwen Code, Droid,",
     "Cline, Continue) are for API keys. Never route the OAuth of a Claude Pro/Max subscription through the gateway from a",
     "third-party harness - Anthropic forbids it. Claude Code and Codex on a subscription are routed and metered at",
-    "list-price equivalent, with no commission (there is no per-token invoice); the per-seat license applies.",
+    "list-price equivalent (there is no per-token invoice) and no saving is credited on that traffic.",
     "Any language through the gateway: it measures every request whose usage it can read (Anthropic Messages, OpenAI Chat",
     "Completions and Responses) for models with a list price, and its log line says when one is not metered. The saving",
     "levers of the SDK (npm) are TypeScript; the gateway's own levers apply to Anthropic /v1/messages, free and with no key.",

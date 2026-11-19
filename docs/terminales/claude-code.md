@@ -9,12 +9,11 @@ construcción, con test.
 
 - `claude` en el PATH.
 - **Una API key de Anthropic** (`ANTHROPIC_API_KEY`, o `ANTHROPIC_AUTH_TOKEN` /
-  `apiKeyHelper`): es el segmento que BV-SALA mide y factura. Con login de
-  claude.ai el enrutado también funciona — la doc oficial lo sanciona: el login
-  sigue siendo la credencial activa y «its usage limits and billing apply» [V] —
-  pero ahí no hay factura por token: el gateway lo mide a precio de lista
-  equivalente y nunca le acredita ahorro ni comisión (la licencia por asiento
-  hace falta igual).
+  `apiKeyHelper`): es el caso en que hay factura por token y las palancas
+  ahorran dinero. Con login de claude.ai el enrutado también funciona — la doc
+  oficial lo sanciona: el login sigue siendo la credencial activa y «its usage
+  limits and billing apply» [V] — pero ahí no hay factura por token: el gateway
+  lo mide a precio de lista equivalente y nunca le acredita ahorro.
 - `bvsala` instalado. Open core: sin claves el gateway arranca en modo Community (todo el ahorro local, cero telemetría); `BIVELIO_SERVICE_KEY` añade el panel y los entitlements de la org (ver [README](README.md)).
 
 ## Envoltorio: `bvsala claude` (recomendado)
@@ -119,15 +118,15 @@ contra cada versión nueva.
 Las cabeceras `x-claude-code-session-id` / `agent-id` / `parent-agent-id`
 llegan en el tráfico real y se reenvían al proveedor sin tocarlas. Además, el
 gateway LEE las dos primeras y, si tienen forma de identificador, adjunta su
-valor (`sessionId`, `agentId`) al registro de uso que manda a BiVelio: es lo que
-reparte el coste por sesión y por subagente en el panel. Son los ids que Claude
-Code ya pone en sus propias peticiones, no una persona ni un contenido;
-`parent-agent-id` no se lee. La lista completa de lo que viaja está en la
-LICENSE §5.
+valor (`sessionId`, `agentId`) al registro de uso que manda a BiVelio (solo con
+`BIVELIO_SERVICE_KEY`; sin clave no sale nada): es lo que reparte el coste por
+sesión y por subagente en el panel. Son los ids que Claude Code ya pone en sus
+propias peticiones, no una persona ni un contenido; `parent-agent-id` no se lee.
+La lista completa de lo que viaja está en LICENSE-CLOUD.md §5.
 
 ## Nota BYOK y wording
 
 El modo BV-SALA es **configuración soportada del binario sin modificar**, nunca
 «aprobado por Anthropic» («Anthropic doesn't endorse, maintain, or audit
-third-party gateway products» [V]). Lo que BV-SALA mide y factura es el uso por
+third-party gateway products» [V]). El ahorro se acredita solo sobre el uso por
 API key; el gateway no persiste ninguna credencial, sea cual sea.

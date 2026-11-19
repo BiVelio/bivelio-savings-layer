@@ -180,33 +180,50 @@ export function fusionarDiales(cm: unknown): { edits: unknown[] } & Record<strin
  * org que consultar): el brazo «palanca» fue control en silencio. Pura;
  * `aviso` marca los casos que merecen stderr (la intención del operador no
  * se cumple).
+ *
+ * `hayCanal`: hay quien conceda las palancas — el canal LOCAL del modo
+ * comunitario o el de la org (con clave de servicio). Solo falta con una
+ * licencia offline sin clave de servicio. `comunidad` (A2-29): sin ninguna
+ * clave de BiVelio las palancas son gratis y las concede este proceso
+ * (CanalComunitario): la línea no habla de ninguna licencia. Con una licencia
+ * de organización, manda la lista de features de esa licencia.
  */
 export function describirEstadoDeElision(
   bandera: string | undefined,
-  hayClave: boolean,
+  hayCanal: boolean,
   dialesArmados = false,
+  comunidad = false,
 ): { linea: string; aviso: boolean } {
   // 2026-09-09 · el cartel distingue las DOS cosas que antes confundía. La
   // bandera BVSALA_GATEWAY_ELISION abre el CANAL de entitlements, del que
   // cuelgan la rebaja de TTL (A, la que gana) y los diales (B, la que pierde).
   // Los diales tienen bandera propia y nacen apagados: decir "ARMADA" por
   // tener el canal abierto era mentirle al dueño cada mañana.
-  const cola = " (TTL tuning ON if your licence includes cache_ttl_tuning; fail-closed)";
+  const cola = " (TTL tuning ON if your organization's licence includes cache_ttl_tuning; fail-closed)";
   const diales = dialesArmados
     ? " · context elision dials FORCED ON BY HAND (BVSALA_GATEWAY_DIALES_ELISION=1): they measure as a net loss, R=4.05 vs R*=0.0127"
     : " · context elision dials OFF";
   if (bandera === "0") {
     // Desde que la licencia verja el gateway, =0 apaga las PALANCAS pero no el
     // canal: por él llega el bloqueo del control plane (`reason`), y cerrarlo
-    // era también cerrar la revocación.
+    // era también cerrar la revocación. Sin licencia no hay canal que mencionar.
     return {
       linea:
-        "savings levers: OFF (BVSALA_GATEWAY_ELISION=0) - no TTL tuning and no context elision dials; " +
-        "the licence channel stays open for the license status",
+        "savings levers: OFF (BVSALA_GATEWAY_ELISION=0) - no TTL tuning and no context elision dials" +
+        (comunidad ? "" : "; the licence channel stays open for the license status"),
       aviso: false,
     };
   }
-  if (!hayClave) {
+  if (comunidad) {
+    return {
+      linea:
+        "savings levers: ON (community mode: free, no key needed) · cache TTL tuning ON for Anthropic API-key traffic " +
+        "(subscription traffic is never touched) · BVSALA_GATEWAY_ELISION=0 turns them off" +
+        diales,
+      aviso: dialesArmados,
+    };
+  }
+  if (!hayCanal) {
     return {
       linea:
         "licence channel: NOT OPENED — BIVELIO_SERVICE_KEY is missing (without it there is no org whose licence to check); no TTL tuning and no context elision dials" +
@@ -218,7 +235,7 @@ export function describirEstadoDeElision(
     linea:
       (bandera === "1"
         ? "licence channel: OPEN (BVSALA_GATEWAY_ELISION=1)"
-        : "licence channel: OPEN by default (=0 turns the levers off)") +
+        : "licence channel: OPEN by default (BVSALA_GATEWAY_ELISION=0 turns the levers off)") +
       cola +
       diales,
     aviso: dialesArmados,

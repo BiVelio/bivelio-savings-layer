@@ -121,7 +121,7 @@ function mensajeCodex(destino: string, que: string): string {
   return (
     `[bvsala skill] ${que}: ${destino}\n` +
     `[bvsala skill] AGENTS.md is ALWAYS active in Codex (there is no activation step); delete the block to turn it off.\n` +
-    `[bvsala skill] to measure its effect: work a few days with it and a few without, under \`bvsala codex\`, and compare in the dashboard.`
+    `[bvsala skill] to measure its effect: work a few days with it and a few without, under \`bvsala codex\`, and compare the cost of each request (BVSALA_GATEWAY_LOG=1 logs it), or the dashboard if you use Savings Cloud.`
   );
 }
 
@@ -158,6 +158,6 @@ export function instalarSkill(o: OpcionesInstalarSkill): ResultadoInstalarSkill 
     mensaje:
       `[bvsala skill] installed: ${destino}\n` +
       `[bvsala skill] start (or restart) Claude Code and ask for "savings mode" — or let it activate on its own when you mention limits.\n` +
-      `[bvsala skill] to measure its real effect: work a few days with it and a few without, under \`bvsala claude\`, and compare in the dashboard.`,
+      `[bvsala skill] to measure its real effect: work a few days with it and a few without, under \`bvsala claude\`, and compare the cost of each request (BVSALA_GATEWAY_LOG=1 logs it), or the dashboard if you use Savings Cloud.`,
   };
 }

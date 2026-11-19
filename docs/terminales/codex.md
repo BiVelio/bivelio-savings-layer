@@ -10,10 +10,9 @@ cifras.
 ## Qué necesitas
 
 - `codex` en el PATH.
-- Login en Codex: **API key de OpenAI** (el caso que se monetiza) o
+- Login en Codex: **API key de OpenAI** (el caso con factura por token) o
   suscripción ChatGPT (se enruta y se mide a precio de lista equivalente, **sin
-  comisión**: no hay factura por tokens; la licencia por asiento hace falta
-  igual; ver más abajo).
+  ahorro acreditado**: no hay factura por tokens; ver más abajo).
 - `bvsala` instalado. Open core: sin claves el gateway arranca en modo Community (todo el ahorro local, cero telemetría); `BIVELIO_SERVICE_KEY` añade el panel y los entitlements de la org (ver [README](README.md)).
 
 ## Envoltorio: `bvsala codex [args…]`
@@ -93,21 +92,22 @@ que el tráfico real enseñó y el gateway ya contempla:
    de Codex frente a su backend: aparece igual **sin** gateway (comprobado).
 4. **Barra final.** `…/v1/` no.
 
-## Modo suscripción ChatGPT — validado, medido, sin comisión
+## Modo suscripción ChatGPT — validado, medido, sin ahorro acreditado
 
 Validado en mano el 30-08 (prefijo `/backend-api/codex`, upstream
 `https://chatgpt.com`): 200, stream íntegro, `usage` presente en
 `response.completed` y registro `measured` en la ingesta. **Pero un suscriptor
 no paga por tokens**: la cifra que ve es el equivalente a precio de lista por
-API key, no una factura; y como la comisión de BV-SALA solo toca ahorro medido
-sobre gasto real, este tráfico **no genera comisión** — igual que el OAuth de
-suscripción en Claude Code (`docs/PASARELA-F0.md`: «el caso que NO
-facturamos»). OpenAI ni bendice ni prohíbe el proxy de suscripción (silencio
-del staff, a diferencia de Anthropic, que lo documenta). Postura idéntica a
+API key, no una factura; por eso a este tráfico **no se le acredita ahorro** —
+igual que al OAuth de suscripción en Claude Code (`docs/PASARELA-F0.md`). (La
+comisión sobre ahorro medido fue un plan antiguo y está cerrado: hoy el gateway
+es gratis y solo se paga Savings Cloud, que es opcional.) OpenAI ni bendice ni
+prohíbe el proxy de suscripción (silencio del staff, a diferencia de Anthropic,
+que lo documenta). Postura idéntica a
 Claude Code: cero persistencia de `Authorization` / `ChatGPT-Account-ID`,
 binario sin modificar, y no se promociona como modo de ahorro.
 
-**Comisión 0 por diseño:**
+**Ahorro 0 por diseño:**
 el gateway clasifica como suscripción el tráfico de `/backend-api/…` o con
 upstream chatgpt.com (y el de Claude Code con `anthropic-beta: oauth-*`) y no le
 acredita ahorro: `baseline == actual`. Laguna que queda: el registro no lleva
@@ -130,4 +130,4 @@ etiqueta propia en el wire, así que el panel no distingue suscripción de API k
 ## Nota BYOK
 
 La receta documentada es **API key exclusivamente**. El gateway no persiste
-ninguna credencial; lo que factura BV-SALA es el uso por API key.
+ninguna credencial; el ahorro se acredita solo sobre el uso por API key.
