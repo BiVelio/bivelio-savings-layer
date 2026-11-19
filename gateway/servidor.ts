@@ -251,6 +251,12 @@ export interface OpcionesGateway {
    * se cuelga por esto. Por defecto, TOPE_MEDICIONES_AL_CERRAR_MS.
    */
   topeMedicionesAlCerrarMs?: number;
+  /**
+   * A2-15 · cuánto espera `cerrar()` a que las conexiones abiertas terminen
+   * solas (un stream en curso) antes de cortarlas. Por defecto,
+   * TOPE_CONEXIONES_AL_CERRAR_MS.
+   */
+  topeConexionesAlCerrarMs?: number;
   /** Inyectables para tests. */
   fetchImpl?: typeof fetch;
   log?: (linea: string) => void;
@@ -354,6 +360,15 @@ function sinCabecerasDeSalto(cabeceras: Record<string, string>): Record<string, 
  * un sistema cargado sin que un cliente atascado retenga el apagado.
  */
 const TOPE_MEDICIONES_AL_CERRAR_MS = 5_000;
+
+/**
+ * A2-15 · tope de la espera de `cerrar()` a las conexiones abiertas. Sin él,
+ * `server.close()` esperaba sin límite a cualquier respuesta en curso: con un
+ * stream atascado, Ctrl-C dejaba el gateway sin escuchar pero vivo, y solo
+ * quedaba `kill -9`. Una respuesta que termina en estos segundos termina
+ * entera; la que no, se corta (y su upstream se aborta).
+ */
+const TOPE_CONEXIONES_AL_CERRAR_MS = 5_000;
 
 /**
  * Cabeceras del SALTO cliente→gateway que no viajan al proveedor: las
@@ -2101,7 +2116,17 @@ export async function arrancarGateway(opts: OpcionesGateway): Promise<GatewayArr
       // stop() disparaba el flush sin esperarlo y el último lote de cada sesión
       // de `bvsala claude` se perdía (caza del 27-08).
       await emisor?.stopAndDrain();
-      await new Promise<void>((resolve) => server.close(() => resolve()));
+      await new Promise<void>((resolve) => {
+        const corte = setTimeout(
+          () => server.closeAllConnections(),
+          opts.topeConexionesAlCerrarMs ?? TOPE_CONEXIONES_AL_CERRAR_MS,
+        );
+        corte.unref?.();
+        server.close(() => {
+          clearTimeout(corte);
+          resolve();
+        });
+      });
     },
     licenseStatus: () => veredicto().state,
     degradaciones: () => vigia.contadores(),
