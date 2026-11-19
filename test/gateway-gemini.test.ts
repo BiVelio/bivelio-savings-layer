@@ -269,4 +269,72 @@ describe("gateway · --upstream deepseek reescribe Anthropic a /anthropic", () =
     expect(up.recibidas[0]!.path).toBe("/anthropic/v1/messages");
     expect(String(up.recibidas[0]!.headers["authorization"] ?? "")).toBe("Bearer ds-test-key");
   });
+
+  /**
+   * A2-13 · la ruta reescrita viajaba, pero también decidía: dialecto, medición,
+   * palancas y recuento comparaban con "/v1/messages" y veían "/anthropic/v1/
+   * messages". Claude Code con DeepSeek no medía nada («no usage dialect for this
+   * route») y el resumen de salida ni contaba esas peticiones. Las decisiones
+   * usan ahora la ruta del CLIENTE; solo el fetch lleva la reescrita.
+   */
+  it("A2-13 · Claude Code con --upstream deepseek SE MIDE: stream y JSON, recuento e informe local", async () => {
+    const usoAnthropic = { input_tokens: 1000, output_tokens: 500 };
+    const up = await upstreamFalso((r, res) => {
+      const pide = JSON.parse(r.body.toString("utf8")) as { stream?: boolean };
+      if (pide.stream) {
+        res.writeHead(200, { "content-type": "text/event-stream" });
+        res.end(
+          `event: message_start\ndata: ${JSON.stringify({ type: "message_start", message: { id: "msg_ds_1", model: "deepseek-flash", usage: { input_tokens: 1000, output_tokens: 1 } } })}\n\n` +
+            `event: content_block_delta\ndata: ${JSON.stringify({ type: "content_block_delta", index: 0, delta: { type: "text_delta", text: "ok" } })}\n\n` +
+            `event: message_delta\ndata: ${JSON.stringify({ type: "message_delta", delta: { stop_reason: "end_turn" }, usage: { output_tokens: 500 } })}\n\n` +
+            `event: message_stop\ndata: ${JSON.stringify({ type: "message_stop" })}\n\n`,
+        );
+        return;
+      }
+      res.writeHead(200, { "content-type": "application/json" });
+      res.end(
+        JSON.stringify({
+          id: "msg_ds_2",
+          type: "message",
+          role: "assistant",
+          model: "deepseek-flash",
+          content: [{ type: "text", text: "ok" }],
+          stop_reason: "end_turn",
+          usage: usoAnthropic,
+        }),
+      );
+    });
+    const OFICIAL = "https://api.deepseek.com";
+    const fetchImpl = ((input: string | URL | Request, init?: RequestInit) => {
+      const u = new URL(typeof input === "string" ? input : input instanceof URL ? input.href : input.url);
+      if (u.origin === OFICIAL) return fetch(`http://127.0.0.1:${up.puerto}${u.pathname}${u.search}`, init);
+      return fetch(input, init);
+    }) as typeof fetch;
+    // Modo comunitario, como lo arranca `bvsala gateway --upstream deepseek` sin claves.
+    const gw = await arrancarGateway({ puerto: 0, upstream: OFICIAL, fetchImpl, log: () => {}, warn: () => {} });
+    recursos.push(gw);
+    const cuerpo = (stream: boolean) => ({ model: "deepseek-flash", max_tokens: 10, stream, messages: [{ role: "user", content: "hi" }] });
+    const enStream = await pedir(gw.puerto, "/v1/messages", cuerpo(true), { authorization: "Bearer ds-test-key" });
+    expect(enStream.status).toBe(200);
+    await enStream.text();
+    const enJson = await pedir(gw.puerto, "/v1/messages", cuerpo(false), {
+      authorization: "Bearer ds-test-key",
+      "x-bvsala-report": "1",
+    });
+    expect(enJson.status).toBe(200);
+    await enJson.text();
+    expect(up.recibidas.map((r) => r.path)).toEqual(["/anthropic/v1/messages", "/anthropic/v1/messages"]);
+    // La medición termina tras el final de la respuesta: se espera, con tope.
+    const t0 = Date.now();
+    while (gw.medicion().medidas < 2 && Date.now() - t0 < 3000) await new Promise((r) => setTimeout(r, 20));
+    expect(gw.medicion()).toMatchObject({ recibidas: 2, medidas: 2, sinContador: 0 });
+    expect(gw.medicion().noMedidas).toEqual({});
+    const id = enJson.headers.get("x-bvsala-request-id");
+    expect(id).toBeTruthy();
+    const informe = (await (await fetch(`http://127.0.0.1:${gw.puerto}/_bvsala/v1/reports/${id}?wait_ms=2000`)).json()) as {
+      status: string;
+      path?: string;
+    };
+    expect(informe.status).toBe("metered");
+  });
 });
