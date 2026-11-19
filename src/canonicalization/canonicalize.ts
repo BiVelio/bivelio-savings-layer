@@ -159,9 +159,47 @@ const LETRA = /\p{L}/u;
 const CODIGO = /```[\s\S]*?(?:```|$)|(?<![\p{L}\p{N}`])`[^`\n]+`(?![\p{L}\p{N}`])/gu;
 
 // Una cita: comillas (ya plegadas a ASCII) que no tocan letra ni cifra por
-// fuera y cuyo contenido no empieza ni acaba en espacio. El apóstrofo de
-// «don't» o «l'import» y las unidades de «5'» no abren cita.
-const CITA = /(?<![\p{L}\p{N}])(["'])(?!\s)([^\n]*?)(?<!\s)\1(?![\p{L}\p{N}])/gu;
+// fuera, cuyo contenido no empieza ni acaba en espacio y que no cruza de línea.
+// El apóstrofo de «don't» o «l'import» y las unidades de «5'» no abren cita.
+//
+// EN UNA PASADA, y no con una sola regex `abre…cierra`: esa reintenta desde
+// cada comilla que abre hasta el final de la línea cuando ninguna cierra bien.
+// 20.000 comillas sin pareja en una línea tardaban 2,3 s y 100.000 más de un
+// minuto, con el hilo parado, y ese texto lo escribe el usuario final del
+// cliente. Aquí se buscan por separado las comillas que pueden ABRIR y las que
+// pueden CERRAR (dos regex sin retroceso) y se emparejan con un cursor que solo
+// avanza: tiempo lineal, mismas citas.
+const ABRE_CITA = /(?<![\p{L}\p{N}])["'](?!\s)/gu;
+const CIERRA_CITA = /(?<!\s)["'](?![\p{L}\p{N}])/gu;
+
+/** Cada cita como [posición de la comilla que abre, posición de la que cierra]. */
+function citas(texto: string): Array<readonly [number, number]> {
+  const cierres: Record<string, number[]> = { '"': [], "'": [] };
+  for (const m of texto.matchAll(CIERRA_CITA)) cierres[m[0]]!.push(m.index);
+  const cursor: Record<string, number> = { '"': 0, "'": 0 };
+  const out: Array<readonly [number, number]> = [];
+  let desde = 0; // el final de la última cita: dentro de ella no se abre otra
+  let finDeLinea = -1; // el primer salto de línea en o después de la comilla que se mira
+  for (const m of texto.matchAll(ABRE_CITA)) {
+    const abre = m.index;
+    if (abre < desde) continue;
+    const comilla = m[0];
+    const lista = cierres[comilla]!;
+    let k = cursor[comilla]!;
+    while (k < lista.length && lista[k]! <= abre) k += 1;
+    cursor[comilla] = k;
+    if (k === lista.length) continue;
+    if (finDeLinea < abre) {
+      finDeLinea = texto.indexOf("\n", abre);
+      if (finDeLinea === -1) finDeLinea = texto.length;
+    }
+    const cierra = lista[k]!;
+    if (cierra > finDeLinea) continue; // una cita no cruza de línea
+    out.push([abre, cierra]);
+    desde = cierra + 1;
+  }
+  return out;
+}
 
 // Lo que puede seguir a un signo SIN convertirlo en operador: más puntuación de
 // frase o un cierre. «(¿seguro?)», «"hola".», «¿qué?!».
@@ -176,17 +214,18 @@ function esDigito(c: string): boolean {
   return c >= "0" && c <= "9";
 }
 
-/** ¿Está `signo` pegado a lo que le sigue, como un operador y no como puntuación? */
-function pegado(todo: string, i: number): boolean {
+/**
+ * ¿Está el signo de `i` pegado a lo que le sigue, como un operador y no como
+ * puntuación? `finDeRacha` es la posición donde acaba la racha de ese signo.
+ */
+function pegado(todo: string, i: number, finDeRacha: number): boolean {
   // Una racha del mismo signo decide junta: `!!x` se queda entero y «¿¡qué!!»
   // se va entero.
   const signo = todo[i]!;
-  let j = i + 1;
-  while (todo[j] === signo) j += 1;
-  const despues = todo[j];
+  const despues = todo[finDeRacha];
   if (despues === undefined || CIERRE.test(despues)) {
     // El encadenamiento opcional: `?.` seguido de nombre, índice o llamada.
-    return signo === "?" && despues === "." && /[\p{L}_$(\[]/u.test(todo[j + 1] ?? "");
+    return signo === "?" && despues === "." && /[\p{L}_$(\[]/u.test(todo[finDeRacha + 1] ?? "");
   }
   return true;
 }
@@ -195,9 +234,9 @@ function pegado(todo: string, i: number): boolean {
 function minusculasFueraDeCitas(texto: string): string {
   let out = "";
   let desde = 0;
-  for (const m of texto.matchAll(CITA)) {
-    out += texto.slice(desde, m.index).toLowerCase() + m[0];
-    desde = m.index + m[0].length;
+  for (const [abre, cierra] of citas(texto)) {
+    out += texto.slice(desde, abre).toLowerCase() + texto.slice(abre, cierra + 1);
+    desde = cierra + 1;
   }
   return out + texto.slice(desde).toLowerCase();
 }
@@ -205,12 +244,11 @@ function minusculasFueraDeCitas(texto: string): string {
 /** Las posiciones de las comillas que delimitan una cadena de código. */
 function comillasDeCodigo(texto: string): Set<number> {
   const fijas = new Set<number>();
-  for (const m of texto.matchAll(CITA)) {
-    const fin = m.index + m[0].length - 1;
-    const antes = texto[m.index - 1] ?? "";
+  for (const [abre, fin] of citas(texto)) {
+    const antes = texto[abre - 1] ?? "";
     const despues = texto[fin + 1] ?? "";
     if (ABRE_CODIGO.test(antes) || CIERRA_CODIGO.test(despues)) {
-      fijas.add(m.index);
+      fijas.add(abre);
       fijas.add(fin);
     }
   }
@@ -235,7 +273,17 @@ function normalizarProsa(text: string): string {
   // Cada signo decide MIRANDO A SUS VECINOS. Es la diferencia entre quitar
   // puntuación y estropear datos: el mismo carácter es adorno entre letras y
   // dato entre cifras.
+  // Dónde acaba la racha del signo que se mira, recordado de un signo al
+  // siguiente: sin esto cada punto de «......» recorría la racha entera, y
+  // 50.000 puntos seguidos tardaban 1,4 s.
+  let rachaDe = "";
+  let rachaHasta = 0;
   out = out.replace(PUNTUACION, (signo: string, i: number, todo: string) => {
+    if (signo !== rachaDe || i >= rachaHasta) {
+      rachaDe = signo;
+      rachaHasta = i + 1;
+      while (todo[rachaHasta] === signo) rachaHasta += 1;
+    }
     const antes = todo[i - 1] ?? "";
     const despues = todo[i + 1] ?? "";
     switch (signo) {
@@ -255,13 +303,13 @@ function normalizarProsa(text: string): string {
         // respuesta calculada aquí, con la llamada apuntada como evitada—.
         if (esDigito(antes) && esDigito(despues)) return signo;
         // Y pegado a lo que sigue es código: `obj?.name`, `a?b:c`, `x;y`.
-        return pegado(todo, i) ? signo : "";
+        return pegado(todo, i, rachaHasta) ? signo : "";
       case "!":
         // Pegado a una cifra es un factorial, y el resolver aritmético declina al
         // verlo. Quitarlo le hace leer «3! + 2» como «3 + 2» y responder 5.
         if (esDigito(antes)) return signo;
         // Pegado a lo que sigue es una NEGACIÓN: `!ok`, `!=`, `!(a && b)`.
-        return pegado(todo, i) ? signo : "";
+        return pegado(todo, i, rachaHasta) ? signo : "";
       case ".":
       case ",":
         if (esDigito(antes) && esDigito(despues)) return signo; // 1.234,56
@@ -271,10 +319,10 @@ function normalizarProsa(text: string): string {
         if (signo === "." && antes === "l" && despues === "l") return "";
         // Pegado a lo que sigue no cierra frase: `obj.name`, `^a.b$`, `f(a,b)`,
         // `.env`, `v1.x`. Y tras `?` es la segunda mitad de `?.`.
-        return pegado(todo, i) ? signo : "";
+        return pegado(todo, i, rachaHasta) ? signo : "";
       case ":":
         if (esDigito(antes) && esDigito(despues)) return signo; // 12:30
-        return pegado(todo, i) ? signo : ""; // `std::vector`, `clave:valor`
+        return pegado(todo, i, rachaHasta) ? signo : ""; // `std::vector`, `clave:valor`
       case "'":
       case '"':
         if (fijas.has(i)) return signo;
