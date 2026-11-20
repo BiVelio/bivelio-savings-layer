@@ -118,6 +118,30 @@ describe("A2-9 · web: la tarjeta Gateway y las notas que dicen lo mismo, en los
   });
 });
 
+describe("A2-9 · lo que viaja DENTRO del paquete npm dice lo mismo que el README", () => {
+  // docs/terminales va en `files` de package.json y el --help es lo primero que lee
+  // quien instala: prometían ahorro con Claude Code y clave de API, sin condición,
+  // mientras el README ya decía que por defecto el gateway mide.
+  it("la guía de Claude Code no dice que con clave de API «las palancas ahorran dinero» sin más", () => {
+    const guia = plano(leer("docs/terminales/claude-code.md"));
+    expect(guia).not.toMatch(/las palancas ahorran dinero/);
+    expect(guia).toMatch(/Por defecto el gateway ahí \*\*mide\*\*/);
+    expect(guia).toMatch(/solo ahorra si Claude Code pide la caché de una hora/);
+    expect(guia).toContain("con API key pide la de cinco minutos salvo que pongas `promptCacheTtl` a `1h`");
+  });
+
+  it("la guía general de terminales pone la condición junto a «la palanca por defecto»", () => {
+    const guia = plano(leer("docs/terminales/README.md"));
+    expect(guia).toMatch(/palanca por defecto[^]*?Solo tiene algo que rebajar cuando el cliente paga por token y pide la caché de una hora/);
+    expect(guia).toContain("Claude Code con API key pide la de cinco minutos salvo que pongas `promptCacheTtl` a `1h`, y entonces el gateway solo mide");
+  });
+
+  it("el --help de bvsala pone la condición en cache_ttl_tuning", () => {
+    const ayuda = plano(leer("gateway/bin.ts"));
+    expect(ayuda).toMatch(/cache_ttl_tuning — [^]*?Claude Code on an API key asks for 5m unless you set promptCacheTtl to 1h, and then the gateway only measures\./);
+  });
+});
+
 describe("A2-9 · el código sigue haciendo lo que dicen los textos", () => {
   it("la rebaja solo reescribe marcas de una hora, y nunca el tráfico de suscripción", () => {
     expect(leer("gateway/tarifa.ts")).toContain('if (marca.ttl === "1h") {');

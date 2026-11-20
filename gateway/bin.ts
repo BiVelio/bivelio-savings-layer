@@ -201,7 +201,10 @@ Environment:
                              input price) to 5m (1.25x) while the session stays warm. It does
                              NOT touch a single token the model reads: it changes the rate,
                              not the content. API-key traffic only: a Claude Pro/Max
-                             subscription has no write surcharge and travels untouched. In
+                             subscription has no write surcharge and travels untouched. It
+                             only has something to lower when the client asks for the 1h
+                             cache: Claude Code on an API key asks for 5m unless you set
+                             promptCacheTtl to 1h, and then the gateway only measures. In
                              measured Claude Code traffic, 99.1% of turns chain within 5
                              minutes, and at API list prices that surcharge was 8.0% of the cost.
                          When in doubt, the request travels untouched. (Up to 0.4.13 the flag
