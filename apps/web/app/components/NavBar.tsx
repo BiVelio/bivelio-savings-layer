@@ -3,7 +3,9 @@ import { useLocale } from "next-intl";
 import { Link } from "@/i18n/navigation";
 
 import { AnnouncementBar } from "./AnnouncementBar";
-import { elegirVariante, fechaDelLanzamiento, guionPrevio } from "./franja-lanzamiento";
+import { fechasDeAviso, guionDeLanzamiento } from "@/lib/plataformas-de-lanzamiento";
+
+import { elegirVariante, guionPrevio } from "./franja-lanzamiento";
 import { LocaleSwitcher } from "./LocaleSwitcher";
 import { BivelioWordmark } from "./BivelioWordmark";
 import { MobileMenu, NavCta, NavSections } from "./NavLinks";
@@ -29,18 +31,21 @@ import { URL_CORPORATIVA } from "./sitio";
  */
 export function NavBar() {
   const locale = useLocale();
-  // La variante con el reloj del servidor (en páginas estáticas, el del build)
-  // y la fecha ya formateada aquí: el cliente hidrata con lo mismo y después
-  // se corrige solo con su propio reloj.
-  const inicial = elegirVariante(Date.now());
-  const guion = guionPrevio(inicial);
+  // El reloj del servidor (en páginas estáticas, el del build) y las fechas ya
+  // formateadas aquí: el cliente hidrata con lo mismo y después se corrige
+  // solo con su propio reloj.
+  const construido = Date.now();
+  const guion = guionDeLanzamiento(construido);
+  const guionInsignia = guionPrevio(elegirVariante(construido));
   return (
     <>
-      {/* Antes de la franja y del primer pintado: si el build es de una ventana
-          que ya pasó (páginas sin ISR), corrige lo que se ve con una hoja de
-          estilo, sin tocar el DOM. Después de la campaña no se emite. */}
+      {/* Antes de la franja y del primer pintado: el reparto al azar de esta
+          carga (qué plataforma va en la franja y cuál en la tarjeta) y, si el
+          build es de una ventana que ya pasó, la corrección de lo que se ve.
+          Todo con hojas de estilo, sin tocar el DOM. */}
       {guion && <script dangerouslySetInnerHTML={{ __html: guion }} />}
-      <AnnouncementBar inicial={inicial} fecha={fechaDelLanzamiento(locale)} />
+      {guionInsignia && <script dangerouslySetInnerHTML={{ __html: guionInsignia }} />}
+      <AnnouncementBar construido={construido} fechas={fechasDeAviso(construido, locale)} />
       <NavShell>
         <div className="site-nav-inner">
           <div className="nav-left">

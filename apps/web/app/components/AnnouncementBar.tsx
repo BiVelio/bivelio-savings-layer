@@ -1,127 +1,157 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useSyncExternalStore, type CSSProperties } from "react";
 import { useLocale, useTranslations } from "next-intl";
 
-import { ArrowRightIcon, CloseIcon, VotoIcon } from "./icons";
 import {
-  URL_PRODUCT_HUNT,
-  alcanzables,
-  atado,
-  fechaAtada,
-  partirCola,
-  programarFranja,
-  retirarHojaPrevia,
-  type Variante,
-} from "./franja-lanzamiento";
+  CLAVE_FRANJA_CERRADA,
+  PLATAFORMAS,
+  filasDe,
+  piezasDeFranja,
+  plataforma,
+  repartir,
+  repartoDelServidor,
+  retirarHojaDeLanzamiento,
+  textoDe,
+  type Traductor,
+} from "@/lib/plataformas-de-lanzamiento";
+
+import { ArrowRightIcon, CloseIcon } from "./icons";
+import { atado, fechaAtada, partirCola, retirarHojaPrevia } from "./franja-lanzamiento";
+import { leerRotacion, leerRotacionEnServidor, rotacion, suscribirRotacion } from "./rotacion-lanzamiento";
+
+const FILAS = filasDe();
 
 /**
  * La franja negra sobre el nav — misma pieza que abre bivelio.com. Aquí lleva
  * de vuelta a la web corporativa, para que savings.bivelio.com se lea como una
  * superficie más del mismo sitio y no como otro producto.
  *
- * Arranca VISIBLE y sin persistencia, exactamente como el <AnnouncementBar> del
- * origen. Una versión anterior decidía en un useEffect leyendo localStorage: el
- * servidor devolvía null, el documento pintaba con el nav pegado arriba y al
- * hidratar se insertaban 38px que empujaban la página entera. Recordar el
- * cierre cuesta un salto de layout en cada carga, y no lo vale.
+ * Arranca VISIBLE en el HTML, como el <AnnouncementBar> del origen. Una versión
+ * anterior decidía en un useEffect leyendo localStorage: el servidor devolvía
+ * null, el documento pintaba con el nav pegado arriba y al hidratar se
+ * insertaban 38px que empujaban la página entera.
  *
- * LANZAMIENTO EN PRODUCT HUNT (22-11-2026). Durante la campaña la franja pasa a
- * ser la de Product Hunt (ver franja-lanzamiento.ts) y cambia SOLA, sin
- * despliegue:
+ * LAS PLATAFORMAS DE LANZAMIENTO (desde el 22-11-2026). Mientras alguna
+ * plataforma del registro (lib/plataformas-de-lanzamiento.ts) está en campaña,
+ * la franja es la de UNA de ellas —con su color— y cambia SOLA, sin despliegue:
  *
- *   · `inicial` la calcula el servidor (NavBar) con su reloj. Como las páginas
- *     son estáticas, ese reloj es el del BUILD: el de la última regeneración
- *     ISR en la portada y precios (cada hora), y el del DESPLIEGUE en todas las
- *     demás, que no se regeneran. El primer render del cliente usa el mismo
- *     valor, así que el marcado coincide y no hay error de hidratación.
- *   · Antes del primer pintado, el guion en línea de <GuionFranja> (NavBar)
- *     corrige con una hoja de estilo la variante de un build viejo, sin tocar
- *     el DOM (ver guionPrevio en franja-lanzamiento.ts).
- *   · Al montar se reevalúa con el reloj del navegador (`programarFranja`), y
- *     un temporizador dispara justo al cruzar la siguiente frontera si la
- *     pestaña sigue abierta (y al volver a ella, por si el equipo durmió).
- *   · La altura no salta: las variantes que esta página aún puede enseñar se
- *     apilan en la MISMA celda de rejilla y solo la activa es visible. La
- *     franja mide siempre lo que la más alta, en cualquier ancho e idioma. La
- *     pila se fija con la variante AL CARGAR (`base`): las que ya pasaron
- *     salen de ella, como las sacó la hoja del guion, y un cruce con la
- *     pestaña abierta no cambia la altura. Una página cargada después del 29
- *     solo pinta la de BiVelio: idéntica a la de antes.
+ *   · Cuál: la que le toca en el reparto de esta carga (al azar), siempre
+ *     DISTINTA de la que enseña la tarjeta del final de la portada. Si el
+ *     carrusel de la tarjeta avanza, la franja toma la que la tarjeta suelta;
+ *     en las páginas sin tarjeta se queda fija.
+ *   · `construido` es el reloj del servidor (NavBar): el de la última
+ *     regeneración ISR en la portada y precios, el del DESPLIEGUE en las demás.
+ *     El HTML lleva una pieza por plataforma y estado que aún pueda tocar
+ *     (`piezasDeFranja`), apiladas en la MISMA celda de rejilla: la franja mide
+ *     siempre lo que la más alta y no salta al cambiar de una a otra.
+ *   · El primer render del cliente es el del servidor (sin error de
+ *     hidratación). Antes del primer pintado, el guion en línea de NavBar
+ *     (`guionDeLanzamiento`) ya enseñó con una hoja de estilo lo que toca en
+ *     esta carga, sin tocar el DOM; al montar, la franja lee el mismo reparto
+ *     (rotacion-lanzamiento.ts), pinta lo mismo con su estado y retira la hoja.
+ *   · Al cruzar una frontera con la pestaña abierta (una plataforma abre o
+ *     acaba), el reloj de la rotación salta y la franja se recalcula. Las
+ *     piezas que ya habían pasado AL CARGAR salen de la pila, como las sacó la
+ *     hoja del guion; un cruce con la pestaña abierta no cambia la altura.
+ *   · Sin ninguna plataforma en campaña (después del 6-12): la franja negra de
+ *     BiVelio, idéntica a la de antes.
+ *
+ * LA ✕ cierra, y el cierre dura lo que la pestaña (sessionStorage): al
+ * recargar, el guion en línea esconde la franja ANTES del primer pintado, así
+ * que recordarlo ya no cuesta un salto de layout.
  */
-export function AnnouncementBar({ inicial = "bivelio", fecha = "" }: { inicial?: Variante; fecha?: string }) {
+export function AnnouncementBar({ construido = Number.NaN, fechas = {} }: { construido?: number; fechas?: Record<string, string> }) {
   const t = useTranslations("nav");
   const locale = useLocale();
   const [visible, setVisible] = useState(true);
-  // `base`: la variante al cargar, que fija la pila; `activa`: la que se ve.
-  const [base, setBase] = useState<Variante>(inicial);
-  const [activa, setActiva] = useState<Variante>(inicial);
-  const [montada, setMontada] = useState(false);
+  // null: el render del servidor y el de la hidratación.
+  const r = useSyncExternalStore(suscribirRotacion, leerRotacion, leerRotacionEnServidor);
 
   useEffect(() => {
-    const franja = programarFranja(inicial, setActiva, {
-      ahora: () => Date.now(),
-      setTimeout: (fn, ms) => window.setTimeout(fn, ms),
-      clearTimeout: (id) => window.clearTimeout(id as number),
-    });
-    setBase(franja.variante());
-    setMontada(true);
-    const alVolver = () => {
-      if (document.visibilityState === "visible") franja.reevaluar();
-    };
-    document.addEventListener("visibilitychange", alVolver);
-    return () => {
-      franja.cancelar();
-      document.removeEventListener("visibilitychange", alVolver);
-    };
-  }, [inicial]);
+    try {
+      if (window.sessionStorage.getItem(CLAVE_FRANJA_CERRADA) === "1") setVisible(false);
+    } catch {
+      /* sin almacenamiento (modo privado estricto): la franja no recuerda el cierre */
+    }
+    // La hoja de la insignia de Product Hunt (guionPrevio): sus componentes ya
+    // pintan lo mismo con su estado.
+    retirarHojaPrevia();
+  }, []);
 
   // Ya pinta el estado lo mismo que pintaba la hoja del guion: fuera la hoja
-  // (si no, se quedaría fijando esa variante al cruzar la siguiente frontera).
+  // (si no, se quedaría fijando ese reparto cuando el carrusel avance).
+  const montada = r !== null;
   useEffect(() => {
-    if (montada) retirarHojaPrevia();
+    if (montada) retirarHojaDeLanzamiento("f");
   }, [montada]);
 
   if (!visible) return null;
 
-  const enlace = (v: Variante) => {
-    const oculta = v !== activa;
-    // Las que no tocan siguen ocupando su sitio (para fijar la altura), pero
-    // invisibles: `visibility: hidden` las saca del foco y del árbol accesible.
-    // `data-v`: por él las encuentra la hoja del guion previo. Fuera de la
-    // campaña no hay guion ni atributo: el marcado de siempre.
-    const comunes = { "data-v": inicial === "bivelio" ? undefined : v, "aria-hidden": oculta || undefined, "data-oculta": oculta || undefined } as const;
-    if (v === "bivelio") {
-      return (
-        <a key={v} {...comunes} href={`https://bivelio.com/${locale}`} target="_blank" rel="noopener noreferrer">
-          {t("announce")} <ArrowRightIcon />
-        </a>
-      );
+  // Las piezas se fijan AL CARGAR; el reparto se mueve con el reloj y el carrusel.
+  const base = r ? Math.max(construido, r.t0) : construido;
+  const piezas = piezasDeFranja(Number.isNaN(base) ? construido : base);
+  const reparto = r ? repartir(FILAS, construido, r.t, r.orden, r.k) : repartoDelServidor(construido);
+  const activa = reparto.franja !== null && piezas.some((p) => p.id === reparto.franja && p.estado === reparto.estadoFranja) ? `${reparto.franja}:${reparto.estadoFranja}` : null;
+  const deLaActiva = reparto.franja !== null && activa !== null ? plataforma(reparto.franja) : undefined;
+
+  // Las que no tocan siguen ocupando su sitio (para fijar la altura), pero
+  // invisibles: `visibility: hidden` las saca del foco y del árbol accesible.
+  const oculta = (si: boolean) => ({ "aria-hidden": si || undefined, "data-oculta": si || undefined }) as const;
+
+  const cerrar = () => {
+    setVisible(false);
+    rotacion()?.retener("franja", false);
+    try {
+      window.sessionStorage.setItem(CLAVE_FRANJA_CERRADA, "1");
+    } catch {
+      /* sin almacenamiento: se cierra solo hasta la siguiente carga */
     }
-    const [cabeza, cola] = partirCola(
-      atado(v === "aviso" ? t("announcePhSoon", { date: fechaAtada(fecha) }) : t("announcePhLive")),
-    );
-    return (
-      <a key={v} {...comunes} href={URL_PRODUCT_HUNT} target="_blank" rel="noopener">
-        <VotoIcon className="announce-voto" />
-        {cabeza}
-        {/* La última palabra y la flecha, juntas: la flecha nunca se queda
-            sola en la última línea. El aviso para lectores de pantalla va
-            después. */}
-        <span className="announce-cola">
-          {cola}
-          {"\u00A0"}
-          <ArrowRightIcon />
-        </span>
-        <span className="sr-only"> {t("newTab")}</span>
-      </a>
-    );
   };
+  // Con el ratón o el foco en la franja, el carrusel no la cambia bajo el cursor.
+  const retener = (si: boolean) => () => rotacion()?.retener("franja", si);
 
   return (
-    <div className={activa === "bivelio" ? "announce" : "announce announce--ph"} data-variante={activa}>
-      <div className="announce-pila">{alcanzables(base).map(enlace)}</div>
-      <button type="button" className="announce-close" aria-label={t("announceClose")} onClick={() => setVisible(false)}>
+    <div
+      className={deLaActiva ? "announce announce--lz" : "announce"}
+      data-variante={activa ?? "bivelio"}
+      style={deLaActiva ? ({ "--lz-fondo": deLaActiva.color.fondo, "--lz-texto": deLaActiva.color.texto } as CSSProperties) : undefined}
+      onMouseEnter={retener(true)}
+      onMouseLeave={retener(false)}
+      onFocus={retener(true)}
+      onBlur={retener(false)}
+    >
+      <div className="announce-pila">
+        {piezas.map(({ id, estado }) => {
+          const p = PLATAFORMAS.find((x) => x.id === id)!;
+          const clave = `${id}:${estado}`;
+          const texto = estado === "antes" ? textoDe(t as unknown as Traductor, "launchSoon", p, { date: fechaAtada(fechas[id] ?? "") }) : textoDe(t as unknown as Traductor, "launchLive", p);
+          const [cabeza, cola] = partirCola(atado(texto));
+          return (
+            <a key={clave} data-lz={clave} {...oculta(clave !== activa)} href={p.ficha.franja} target="_blank" rel="noopener">
+              <svg className="announce-voto" viewBox={p.icono.viewBox} fill="currentColor" aria-hidden="true">
+                {p.icono.trazos.map((d) => (
+                  <path key={d.slice(0, 24)} fillRule="evenodd" clipRule="evenodd" d={d} />
+                ))}
+              </svg>
+              {cabeza}
+              {/* La última palabra y la flecha, juntas: la flecha nunca se queda
+                  sola en la última línea. El aviso para lectores de pantalla va
+                  después. */}
+              <span className="announce-cola">
+                {cola}
+                {"\u00A0"}
+                <ArrowRightIcon />
+              </span>
+              <span className="sr-only"> {t("newTab")}</span>
+            </a>
+          );
+        })}
+        <a {...oculta(activa !== null)} href={`https://bivelio.com/${locale}`} target="_blank" rel="noopener noreferrer">
+          {t("announce")} <ArrowRightIcon />
+        </a>
+      </div>
+      <button type="button" className="announce-close" aria-label={t("announceClose")} onClick={cerrar}>
         <CloseIcon />
       </button>
     </div>

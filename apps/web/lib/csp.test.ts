@@ -67,6 +67,16 @@ describe("CSP de la web", () => {
     expect(d["img-src"]!.filter((v) => /producthunt/.test(v))).toEqual([host]);
   });
 
+  it("las plataformas de lanzamiento no abren nada (20-11): ni DevHunt ni ningún otro host nuevo", async () => {
+    const d = await csp();
+    // La franja y el carrusel no cargan nada de las plataformas (iconos en
+    // línea, miniatura propia); su guion en línea entra por el 'unsafe-inline'
+    // que ya había, sin nonce ni hash.
+    for (const valores of Object.values(d)) expect(valores.join(" ")).not.toMatch(/devhunt/i);
+    expect(d["script-src"]).toContain("'unsafe-inline'");
+    expect(d["img-src"]!.filter((v) => /producthunt/.test(v))).toEqual(["https://api.producthunt.com"]);
+  });
+
   it("ad.doubleclick.net solo recibe pings: nunca sirve script", async () => {
     const d = await csp();
     expect(d["script-src"]).not.toContain("https://ad.doubleclick.net");

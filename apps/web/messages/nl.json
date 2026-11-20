@@ -2,8 +2,8 @@
   "nav": {
     "announce": "Savings Layer maakt deel uit van het BiVelio-platform",
     "announceClose": "Sluiten",
-    "announcePhSoon": "Op {date} lanceren we op Product Hunt — zet een herinnering",
-    "announcePhLive": "Savings Layer staat nu op Product Hunt — steun ons",
+    "launchSoon": "Op {date} lanceren we op {platform} — zet een herinnering",
+    "launchLive": "Savings Layer staat nu op {platform} — steun ons",
     "langTitle": "Kies je taal",
     "langSubtitle": "Kies de taal waarin je BiVelio Savings Layer wilt gebruiken.",
     "langSearch": "Taal zoeken",
@@ -1700,11 +1700,15 @@
       "compatNote": "Compatibel betekent niet gemeten.",
       "compatLink": "Wat er per provider is gemeten"
     },
-    "productHunt": {
-      "kicker": "Vind ons op Product Hunt",
+    "launch": {
+      "kicker": "Vind ons op {platform}",
       "tagline": "Verlaag je LLM-kosten met een open-source besparingslaag",
-      "notify": "Zet een herinnering op Product Hunt",
-      "live": "Bekijk het op Product Hunt"
+      "notify": "Zet een herinnering op {platform}",
+      "live": "Bekijk het op {platform}",
+      "carousel": "Lanceerplatformen",
+      "pause": "Rotatie pauzeren",
+      "play": "Rotatie hervatten",
+      "show": "{platform} tonen"
     }
   },
   "invitacion": {

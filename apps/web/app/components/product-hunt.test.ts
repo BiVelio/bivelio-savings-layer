@@ -1,19 +1,16 @@
-import { readFileSync, readdirSync, statSync } from "node:fs";
+import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { createElement } from "react";
 import { renderToString } from "react-dom/server";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-import { BotonProductHunt, InsigniaProductHunt } from "./ProductHunt";
-import { TarjetaProductHunt } from "./landing/TarjetaProductHunt";
+import { InsigniaProductHunt } from "./ProductHunt";
 import {
   FIN_CAMPANA,
   INSIGNIA_PH,
   LANZAMIENTO,
-  MINIATURA_PH,
   URL_TARJETA_PH,
   VARIANTES,
-  botonDeLaTarjeta,
   elegirVariante,
   guionPrevio,
   hojaDelGuion,
@@ -27,12 +24,13 @@ import {
 } from "./franja-lanzamiento";
 
 /**
- * LA INSIGNIA Y LA TARJETA DE PRODUCT HUNT (lanzamiento del 22-11-2026).
+ * LA INSIGNIA OFICIAL DE PRODUCT HUNT (lanzamiento del 22-11-2026).
  *
- * La insignia oficial va en el pie desde el lanzamiento y para siempre, y en el
- * héroe solo la semana del lanzamiento; antes no aparece y su imagen no se
- * pide. La tarjeta del final de la portada cambia el texto del botón y mide lo
- * mismo en las tres ventanas. Mismas fronteras que la franja.
+ * Va en el pie desde el lanzamiento y para siempre, y en el héroe solo mientras
+ * dura la campaña (dos semanas); antes no aparece y su imagen no se pide.
+ * Mismas fronteras que la campaña. La tarjeta del final de la portada, que
+ * ahora es el carrusel de plataformas, se prueba en
+ * landing/tarjeta-lanzamiento.test.ts y en lib/plataformas-de-lanzamiento.test.ts.
  */
 
 const DIA = 24 * 60 * 60 * 1000;
@@ -41,7 +39,7 @@ const leer = (ruta: string) => readFileSync(`${WEB}${ruta}`, "utf8");
 const amp = (s: string) => s.replace(/&/g, "&amp;");
 
 describe("cuándo va la insignia", () => {
-  it("héroe: solo la semana del lanzamiento; pie: desde el lanzamiento, para siempre", () => {
+  it("héroe: solo durante la campaña; pie: desde el lanzamiento, para siempre", () => {
     expect(VARIANTES.map((v) => tocaInsignia("heroe", v))).toEqual([false, true, false]);
     expect(VARIANTES.map((v) => tocaInsignia("pie", v))).toEqual([false, true, true]);
     expect(tocaInsignia("pie", elegirVariante(LANZAMIENTO - 1))).toBe(false);
@@ -56,10 +54,6 @@ describe("cuándo va la insignia", () => {
     expect(insigniaAlcanzable("heroe", "en-vivo")).toBe(true);
     expect(insigniaAlcanzable("heroe", "bivelio")).toBe(false);
     for (const v of VARIANTES) expect(insigniaAlcanzable("pie", v)).toBe(true);
-  });
-
-  it("el botón de la tarjeta: «avísame» antes; «échale un vistazo» durante y después", () => {
-    expect(VARIANTES.map(botonDeLaTarjeta)).toEqual(["aviso", "vivo", "vivo"]);
   });
 });
 
@@ -132,8 +126,10 @@ describe("con qué variante arranca un componente cliente", () => {
     // Un payload RSC de antes del lanzamiento, montado el 23-11: «en vivo» de entrada,
     // sin pintar primero el hueco escondido ni el botón «avísame».
     expect(varianteAlMontar("aviso", false, Date.UTC(2026, 10, 23, 12))).toBe("en-vivo");
-    expect(varianteAlMontar("aviso", false, Date.UTC(2026, 11, 1, 12))).toBe("bivelio");
-    expect(varianteAlMontar("en-vivo", false, Date.UTC(2026, 11, 1, 12))).toBe("bivelio");
+    // La campaña dura dos semanas: el 1-12 sigue en vivo; el 7-12 ya no.
+    expect(varianteAlMontar("aviso", false, Date.UTC(2026, 11, 1, 12))).toBe("en-vivo");
+    expect(varianteAlMontar("aviso", false, Date.UTC(2026, 11, 7, 12))).toBe("bivelio");
+    expect(varianteAlMontar("en-vivo", false, Date.UTC(2026, 11, 7, 12))).toBe("bivelio");
     expect(varianteAlMontar("aviso", false, LANZAMIENTO)).toBe("en-vivo");
     expect(varianteAlMontar("aviso", false, LANZAMIENTO - 1)).toBe("aviso");
     // Un reloj atrasado no devuelve una ventana que ya pasó.
@@ -156,63 +152,12 @@ describe("con qué variante arranca un componente cliente", () => {
   });
 });
 
-describe("la tarjeta del final de la portada", () => {
-  const boton = (inicial: Variante) =>
-    renderToString(createElement(BotonProductHunt, { inicial, aviso: "Get notified on Product Hunt", vivo: "Check it out on Product Hunt", nuevaPestana: "(opens in a new tab)" }));
-
-  it.each(VARIANTES)("build en «%s»: los dos textos apilados, solo el que toca visible", (v) => {
-    const html = boton(v);
-    expect(html.match(/data-ph-boton="(aviso|vivo)"/g)).toEqual(['data-ph-boton="aviso"', 'data-ph-boton="vivo"']);
-    const oculto = botonDeLaTarjeta(v) === "aviso" ? "vivo" : "aviso";
-    expect(html).toMatch(new RegExp(`data-ph-boton="${oculto}" data-oculta="true" aria-hidden="true"`));
-    expect(html.match(/data-oculta="true"/g)).toHaveLength(1);
-    expect(html).toContain(`href="${amp(URL_TARJETA_PH)}" target="_blank" rel="noopener"`);
-    expect(html).toContain("(opens in a new tab)");
-    // La flecha va con la última palabra, sin poder partir.
-    expect(html).toMatch(/<span class="ph-cola">Product\u00A0Hunt(<!-- -->)? <svg/);
-  });
-
-  it("la miniatura es la nuestra, servida a 64×64 con su 2×; ni imgix ni imágenes de PH", () => {
-    const html = renderToString(
-      createElement(TarjetaProductHunt, {
-        inicial: "aviso",
-        t: { kicker: "Find us on Product Hunt", lema: "Cut LLM costs with an open-source savings layer", aviso: "a", vivo: "b c", nuevaPestana: "(nt)" },
-      }),
-    );
-    expect(html).toContain('width="64" height="64"');
-    expect(html).toContain(encodeURIComponent(MINIATURA_PH));
-    expect(html).toMatch(/w=64&amp;q=\d+ 1x, [^"]*w=128&amp;q=\d+ 2x/);
-    expect(html).not.toMatch(/imgix|ph-files|producthunt\.com\/[^"]*\.(png|jpe?g|gif|webp)/);
-    expect(html).toContain("BiVelio Savings Layer");
-    expect(html).toMatch(/<h2 class="ph-k" id="ph-sec-t">Find us on <span class="mk">Product Hunt<\/span><\/h2>/);
-    expect(html).toContain('aria-labelledby="ph-sec-t"');
-    // Una imagen en toda la tarjeta, decorativa (el nombre va al lado).
-    expect(html.match(/<img/g)).toHaveLength(1);
-    expect(html).toContain('alt=""');
-  });
-
-  it("el fichero de la miniatura existe, fechado, 240×240", () => {
-    const ruta = `${WEB}public${MINIATURA_PH}`;
-    expect(MINIATURA_PH).toMatch(/^\/brand\/product-hunt-thumb-\d{4}-\d{2}\.png$/);
-    const png = readFileSync(ruta);
-    expect(png.subarray(1, 4).toString()).toBe("PNG");
-    expect([png.readUInt32BE(16), png.readUInt32BE(20)]).toEqual([240, 240]);
-    expect(statSync(ruta).size).toBeLessThan(100_000);
-  });
-});
-
-describe("el guion previo también corrige la insignia y la tarjeta", () => {
+describe("el guion previo corrige la insignia", () => {
   it("cada regla apunta a lo que pintan los componentes", () => {
-    expect(hojaProductHunt("aviso", "en-vivo")).toBe(
-      '.ph-insignia[data-ph-espera="heroe"]{display:block}.ph-insignia[data-ph-espera="pie"]{display:block}' +
-        '.ph-pila>[data-ph-boton="aviso"]{visibility:hidden}.ph-pila>[data-ph-boton="vivo"]{visibility:visible}',
-    );
+    expect(hojaProductHunt("aviso", "en-vivo")).toBe('.ph-insignia[data-ph-espera="heroe"]{display:block}.ph-insignia[data-ph-espera="pie"]{display:block}');
     // Del aviso a después de la campaña: el héroe sigue sin insignia; el pie la enseña.
-    expect(hojaProductHunt("aviso", "bivelio")).toBe(
-      '.ph-insignia[data-ph-espera="pie"]{display:block}' +
-        '.ph-pila>[data-ph-boton="aviso"]{visibility:hidden}.ph-pila>[data-ph-boton="vivo"]{visibility:visible}',
-    );
-    // De en vivo a después: fuera la del héroe; el botón ya decía lo mismo.
+    expect(hojaProductHunt("aviso", "bivelio")).toBe('.ph-insignia[data-ph-espera="pie"]{display:block}');
+    // De en vivo a después: fuera la del héroe.
     expect(hojaProductHunt("en-vivo", "bivelio")).toBe('.ph-insignia[data-ph="heroe"]{display:none}');
     expect(hojaProductHunt("en-vivo", "aviso")).toBe("");
     expect(hojaProductHunt("bivelio", "bivelio")).toBe("");
@@ -227,7 +172,7 @@ describe("el guion previo también corrige la insignia y la tarjeta", () => {
     expect(hojaProductHunt("aviso", "en-vivo")).toContain(".ph-insignia[data-ph-espera=");
   });
 
-  it("el guion de un build en aviso lleva la insignia y la tarjeta en cada ventana", () => {
+  it("el guion de un build en aviso lleva la insignia en cada ventana", () => {
     const guion = guionPrevio("aviso")!;
     expect(guion).toContain(JSON.stringify(hojaDelGuion("aviso", "en-vivo")).slice(1, -1));
     expect(guion).toContain(JSON.stringify(hojaDelGuion("aviso", "bivelio")).slice(1, -1));
@@ -256,14 +201,23 @@ describe("dónde está montado", () => {
     expect(portada).toContain("const ventanaPh = elegirVariante(Date.now());");
   });
 
-  it("tarjeta: después del cierre, al final de main (antes de NVIDIA y del pie)", () => {
+  it("la tarjeta de plataformas: después del cierre, al final de main (antes de NVIDIA y del pie)", () => {
     const cierre = portada.indexOf('className="cierre-sec"');
-    const tarjeta = portada.indexOf("<TarjetaProductHunt");
+    const tarjeta = portada.indexOf("<TarjetaLanzamiento construido={Date.now()}");
     const finMain = portada.indexOf("</main>");
     expect(tarjeta).toBeGreaterThan(cierre);
     expect(finMain).toBeGreaterThan(tarjeta);
     expect(portada.indexOf("<NvidiaEcosystemBand")).toBeGreaterThan(finMain);
-    expect(portada).toContain('nuevaPestana: tn("newTab")');
+    expect(portada).toContain('textosDeTarjeta(tl as unknown as Traductor, tn("newTab"))');
+  });
+
+  it("el héroe y el pie no llevan más insignia que la de Product Hunt (ni DevHunt ni fila de insignias)", () => {
+    expect(portada).not.toMatch(/DevHunt|hero-insignias/);
+    expect(pie).not.toMatch(/DevHunt|ftr-insignias/);
+    expect(portada.match(/<Insignia/g)).toHaveLength(1);
+    expect(pie.match(/<Insignia/g)).toHaveLength(1);
+    const css = leer("app/globals.css");
+    expect(css).not.toMatch(/dh-insignia|hero-insignias|ftr-insignias/);
   });
 
   it("pie: en todas las páginas, cerrando la columna de marca después de NVIDIA", () => {
@@ -271,23 +225,5 @@ describe("dónde está montado", () => {
     const ins = pie.indexOf('<InsigniaProductHunt lugar="pie" inicial={elegirVariante(Date.now())}');
     expect(nvidia).toBeGreaterThan(-1);
     expect(ins).toBeGreaterThan(nvidia);
-  });
-});
-
-describe("los textos de la tarjeta, en los 12 idiomas", () => {
-  const DIR = `${WEB}messages/`;
-  const locales = readdirSync(DIR).filter((f) => f.endsWith(".json")).map((f) => f.slice(0, -5));
-  it.each(locales)("%s: kicker, lema y los dos botones; «Product Hunt» sin traducir", (loc) => {
-    const ph = JSON.parse(readFileSync(`${DIR}${loc}.json`, "utf8")).landing.productHunt as Record<string, string>;
-    expect(Object.keys(ph).sort()).toEqual(["kicker", "live", "notify", "tagline"]);
-    for (const k of ["kicker", "notify", "live"]) expect(ph[k], k).toContain("Product Hunt");
-    expect(ph.tagline).toMatch(/LLM/);
-    expect(ph.tagline).not.toContain("Product Hunt");
-    // Cortos: caben en el botón sin que la tarjeta crezca.
-    for (const k of ["notify", "live"]) expect(ph[k]!.length, `${loc}.${k}`).toBeLessThanOrEqual(40);
-    if (loc === "en") {
-      expect(ph.tagline).toBe("Cut LLM costs with an open-source savings layer");
-      expect(ph.kicker).toBe("Find us on Product Hunt");
-    }
   });
 });
