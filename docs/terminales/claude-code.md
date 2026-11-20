@@ -9,8 +9,10 @@ construcción, con test.
 
 - `claude` en el PATH.
 - **Una API key de Anthropic** (`ANTHROPIC_API_KEY`, o `ANTHROPIC_AUTH_TOKEN` /
-  `apiKeyHelper`): es el caso en que hay factura por token y las palancas
-  ahorran dinero. Con login de claude.ai el enrutado también funciona — la doc
+  `apiKeyHelper`): es el caso en que hay factura por token. Por defecto el
+  gateway ahí **mide**: su rebaja de TTL solo ahorra si Claude Code pide la caché
+  de una hora, y con API key pide la de cinco minutos salvo que pongas
+  `promptCacheTtl` a `1h` en su configuración. Con login de claude.ai el enrutado también funciona — la doc
   oficial lo sanciona: el login sigue siendo la credencial activa y «its usage
   limits and billing apply» [V] — pero ahí no hay factura por token: el gateway
   lo mide a precio de lista equivalente y nunca le acredita ahorro.

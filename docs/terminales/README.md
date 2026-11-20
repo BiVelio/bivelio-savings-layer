@@ -26,7 +26,10 @@ reenvía y avisa.
 
 Mide cada petición con contador de proveedor. La **palanca por defecto**:
 rebaja el TTL de escritura de caché mientras la sesión sigue caliente — cambia la
-tarifa, nunca el contenido que lee el modelo. Las demás (modelo hermano, esfuerzo
+tarifa, nunca el contenido que lee el modelo. Solo tiene algo que rebajar cuando
+el cliente paga por token y pide la caché de una hora: Claude Code con API key
+pide la de cinco minutos salvo que pongas `promptCacheTtl` a `1h`, y entonces el
+gateway solo mide. Las demás (modelo hermano, esfuerzo
 por turno) van apagadas hasta que las enciendes. Y mide **todo el tráfico de inferencia**
 que el terminal enruta por el base URL — no «todo el tráfico»: cada guía dice
 lo que su terminal manda por fuera.
