@@ -156,6 +156,13 @@ describe("A2-16 · argumentoDesconocido: un flag mal escrito es un error que nom
     expect(argumentoDesconocido("doctor", ["--port", "9000"])).toBeNull();
     // `--write` lo sigue contestando el doctor con «does not exist yet».
     expect(argumentoDesconocido("doctor", ["--write"])).toBeNull();
+    // Y con la terminal detrás, que es la forma que citan las guías del tarball
+    // (docs/terminales/crush.md y droid.md): en la 1.2.1 `doctor --write crush`
+    // contestaba «does not exist yet»; sin esto contestaba «unexpected argument».
+    expect(argumentoDesconocido("doctor", ["--write", "crush"])).toBeNull();
+    expect(argumentoDesconocido("doctor", ["--write", "droid", "--port", "9000"])).toBeNull();
+    // Solo UN valor: un segundo argumento suelto sigue siendo un error.
+    expect(argumentoDesconocido("doctor", ["--write", "crush", "otra-cosa"])).toContain("unexpected argument");
     // Lo que empieza por --port lo juzga flagDePuerto, con su mensaje de siempre.
     expect(argumentoDesconocido("gateway", ["--ports", "9000"])).toBeNull();
   });

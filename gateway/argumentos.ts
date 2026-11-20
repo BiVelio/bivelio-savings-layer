@@ -89,7 +89,10 @@ export function flagDePuerto(args: readonly string[]): FlagDePuerto {
  * el más parecido.
  *
  * Lo que empieza por `--port` lo sigue juzgando `flagDePuerto` (con su mensaje).
- * `--write` en el doctor se reconoce para que siga diciendo que aún no existe.
+ * `--write` en el doctor se reconoce para que siga diciendo que aún no existe,
+ * también con la terminal detrás (`doctor --write crush`, la forma que citan
+ * docs/terminales/crush.md y droid.md): sin su valor, `crush` era un «unexpected
+ * argument» y el aviso de siempre no llegaba a salir.
  */
 const FLAGS_DE: Readonly<Record<"gateway" | "doctor", readonly { flag: string; valor: string | null; ayuda: boolean }[]>> = {
   gateway: [
@@ -98,7 +101,7 @@ const FLAGS_DE: Readonly<Record<"gateway" | "doctor", readonly { flag: string; v
   ],
   doctor: [
     { flag: "--port", valor: "N", ayuda: true },
-    { flag: "--write", valor: null, ayuda: false },
+    { flag: "--write", valor: "TERMINAL", ayuda: false },
   ],
 };
 
