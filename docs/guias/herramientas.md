@@ -136,20 +136,26 @@ const selectiveLayer = createSavingsLayer({
 
 - **`maxTools`** keeps the read tools whose `intents` appear in the request text, up to
   that many (up to 0.4.32 this was the default, with 8). Write and destructive tools are
-  never pruned by relevance: they take the first places.
+  never pruned by relevance. On a request the router does not classify as an action they
+  are all sent on top of those read tools, so the model can receive more than `maxTools`
+  tools. On a request it does classify as an action (the rule is below) they share the
+  budget and take the first places: read tools get what is left, and if there are more
+  write tools than `maxTools`, the ones that match the request least are left out.
 - **`withholdWriteTools`** applies this rule, exactly: a tool whose `risk` is not
   `"read"` is sent only when the router classifies the request as an action, and it does
-  so only when the conversation text contains one of these words: `create`, `update`,
-  `delete`, `send`, `pay`, `book`, `cancel`, `crea`, `actualiza`, `elimina`, `envía`,
-  `paga`. "Refund order 4411" contains none of them, so with this option on the model
-  does not receive `refund_order` and answers that it cannot do it. Use it only if you
+  so only when at least one tool declares `risk: "write"` or `"destructive"` and the
+  conversation (every message except the system prompt) contains one of these as a whole
+  word: `create`, `update`, `delete`, `send`, `pay`, `book`, `cancel`, `crea`,
+  `actualiza`, `elimina`, `envía`, `paga`. "Refund order 4411" contains none of them
+  ("Sending a refund" does not either: `sending` is not `send`), so with this option on
+  the model does not receive `refund_order` and answers that it cannot do it. Use it only if you
   prefer a model that cannot act to one that acts on a request you did not expect, and
   check your own phrasing against that list first.
 
 Neither option applies to a catalogue that declares no `intents` and no `risk` (the
 usual shape of MCP and OpenAI tool lists), to a request with
-`savings: { router: false }`, or to the framework adapters: there every tool goes to
-the provider exactly as you sent it.
+`savings: { router: false }`, to `layer.batches.submit`, or to the framework adapters:
+there every tool goes to the provider exactly as you sent it.
 
 Whatever the selector leaves out, the model cannot call in that request. The report's
 `tool-selector` trace lists every tool left out, and the SDK warns once per process

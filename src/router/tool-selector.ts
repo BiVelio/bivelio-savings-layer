@@ -36,9 +36,16 @@ export interface ToolSelectorOptions {
    * `intents` and/or `risk`, with the router on) down to the `maxTools` most
    * relevant ones — up to 0.4.32 that was the default, with 8.
    *
-   * What is never affected by this option: write and destructive tools are
-   * never pruned by relevance (see `withholdWriteTools` for the one gate that
-   * can leave them out), and a catalogue that declares no
+   * Write and destructive tools are never pruned by relevance. On a request the
+   * router does not classify as an action they are all sent ON TOP of the read
+   * tools this option keeps, so the model can receive more than `maxTools`
+   * tools. On an action request they share the budget and take the first
+   * places: read tools get what is left, and with more write tools than
+   * `maxTools` the ones that match the request least are left out (never
+   * credited as a saving). `withholdWriteTools` is the gate that keeps them out
+   * of non-action requests.
+   *
+   * What is never affected by this option: a catalogue that declares no
    * `intents` and no `risk` (the usual case: MCP and OpenAI tool lists), or any
    * request with `savings: { router: false }`, goes to the provider WHOLE,
    * exactly as the caller sent it. Cutting blind left the model unable to call
@@ -56,14 +63,16 @@ export interface ToolSelectorOptions {
    *
    * The rule, exactly, when this is `true`: a tool whose `risk` is not `"read"`
    * is sent only if the router classifies the request as `TOOL_ACTION`, and it
-   * does that only when the conversation text contains one of these words:
+   * does that only when at least one tool declares `risk` "write" or
+   * "destructive" and the conversation (every message except the system
+   * prompt) contains one of these as a whole word:
    * create, update, delete, send, pay, book, cancel, crea, actualiza, elimina,
    * envia, paga. "Refund order 4411" contains none of them, so with the gate on
    * the model would not see `refund_order`. Switch it on only if you prefer a
    * model that cannot act to one that acts on a request you did not expect.
    *
-   * A withheld write tool is never credited as a saving: its tokens do not
-   * enter `tokens.eliminatedInput`.
+   * A withheld write tool is never credited as a saving: its tokens enter
+   * neither `tokens.eliminatedInput` nor the baseline behind `cost.*`.
    */
   withholdWriteTools?: boolean;
   /** Tokenizer-aware scorer for tie-breaking (optional). */
@@ -201,6 +210,60 @@ export class ToolSelector {
     // apuntaba como ahorro. Los adaptadores y el catálogo sin tipar ya las
     // mandaban todas; ahora la API nativa también.
     const allowWrites = execution === "TOOL_ACTION" || !this.withholdWriteTools;
+
+    // FUERA DE UNA ACCIÓN, `maxTools` PODA SOLO LAS DE LECTURA (verificación de
+    // A2-28, 2026-11-20). Al abrir la verja, las de escritura pasaron a ocupar
+    // «los primeros huecos» de `maxTools` en TODA petición, y las de lectura se
+    // quedaban con lo que sobrara: con `maxTools: 3` y tres de escritura,
+    // «Where is order 4411?» salía con reembolsar, escribir y borrar, y SIN
+    // `get_order`, que la 1.2.1 sí mandaba. Y con más escrituras que hueco se
+    // retiraba alguna de escritura, justo lo que A2-28 vino a quitar.
+    //
+    // Aquí las de lectura se eligen EXACTAMENTE como en la 1.2.1 —el mismo camino
+    // que con la verja, congelación incluida— y las de escritura van todas,
+    // además: el modelo nunca recibe menos que en la 1.2.1. El total puede pasar
+    // de `maxTools` en tantas como escrituras haya; `maxTools` acota lo que se
+    // elige por relevancia, y las de escritura no se eligen por relevancia.
+    //
+    // En una petición de ACCIÓN no se toca nada: sigue el reparto de siempre
+    // (las de escritura primero, dentro de `maxTools`), igual que en la 1.2.1.
+    if (this.maxTools !== undefined && allowWrites && execution !== "TOOL_ACTION") {
+      const idsDeEscritura = new Set(tools.filter((t) => t.risk !== "read").map((t) => t.id));
+      if (idsDeEscritura.size > 0) {
+        const lecturas = this.elegir(text, tools, false, freezeKey);
+        const idsEmitidos = new Set([...lecturas.tools.map((t) => t.id), ...idsDeEscritura]);
+        // Por id, como el resto de la poda: el bloque no cambia de orden entre
+        // dos preguntas que eligen el mismo conjunto.
+        const emitidas = tools
+          .filter((t) => idsEmitidos.has(t.id))
+          .sort((a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
+        const droppedIds = tools.filter((t) => !idsEmitidos.has(t.id)).map((t) => t.id);
+        return {
+          tools: emitidas,
+          droppedIds,
+          reason:
+            `selected ${emitidas.length}/${tools.length}: read tools by intent match (maxTools ${this.maxTools}) ` +
+            `plus every write tool (${idsDeEscritura.size}); maxTools does not prune write tools outside an action`,
+          // Estable si no se quitó nada o si las de lectura ya están congeladas
+          // (las de escritura van siempre: no dependen de la pregunta).
+          setIsStable: droppedIds.length === 0 || lecturas.setIsStable,
+        };
+      }
+    }
+
+    return this.elegir(text, tools, allowWrites, freezeKey);
+  }
+
+  /**
+   * La selección de siempre, con la decisión de las de escritura ya tomada:
+   * `allowWrites` dice si son elegibles en esta petición.
+   */
+  private elegir(
+    text: string,
+    tools: ToolDescriptor[],
+    allowWrites: boolean,
+    freezeKey: string | undefined,
+  ): ToolSelection {
     const eligible = tools.filter((t) => allowWrites || t.risk === "read");
     const esEscritura = (t: ToolDescriptor) => allowWrites && t.risk !== "read";
 
