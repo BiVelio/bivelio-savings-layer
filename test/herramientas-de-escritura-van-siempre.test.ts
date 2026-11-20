@@ -146,10 +146,14 @@ describe("A2-28 · la verja es opción explícita, y lo que retira nunca es ahor
   });
 
   it("con `maxTools`, una de lectura podada SÍ se acredita, y una de escritura que no cabe NO", async () => {
-    // maxTools: 1 → cabe una sola. Las de escritura van primero, así que dos de
-    // las tres de escritura y la de lectura se quedan fuera.
+    // maxTools: 1 en una petición de ACCIÓN («send» es uno de los 11 verbos) →
+    // cabe una sola. Las de escritura van primero, así que dos de las tres de
+    // escritura y la de lectura se quedan fuera. Fuera de una acción `maxTools`
+    // ya no retira ninguna de escritura (ver
+    // maxtools-fuera-de-accion-conserva-lecturas.test.ts).
     const { vistas, pedir } = montar({ toolSelector: new ToolSelector({ maxTools: 1 }) });
-    const r = await pedir("Refund order 4411");
+    const r = await pedir("Send a refund for order 4411");
+    expect(r.report.routing.executionClass).toBe("TOOL_ACTION");
     expect(vistas[0]).toEqual(["refund_order"]);
     const detalle = trazaDelSelector(r.report)[0]!.detail as { eliminatedTokens: number; withheldWritesNotCredited: string[] };
     expect(detalle.withheldWritesNotCredited).toEqual(["email_customer", "delete_order"]);

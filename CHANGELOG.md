@@ -12,7 +12,9 @@
   `new ToolSelector({ withholdWriteTools: true })`. A write or destructive tool left
   out by the selector is never credited as a saving: it does not count in
   `tokens.eliminatedInput` or in `cost.*`, and the `tool-selector` trace lists it
-  under `withheldWritesNotCredited`.
+  under `withheldWritesNotCredited`. If you set `maxTools`, it keeps pruning read
+  tools exactly as before, and outside an action request the write tools are sent
+  on top of them, so a request can carry more than `maxTools` tools.
 - **The exact cache starts cold.** Its key generation moves from `n2` to `n3` (see
   the key fix below), so no entry written by an earlier version is read again:
   expect fewer exact hits for the first days. Old entries in Redis, KV or
