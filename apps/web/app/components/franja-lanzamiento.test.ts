@@ -5,17 +5,17 @@ import { renderToString } from "react-dom/server";
 import { NextIntlClientProvider, type AbstractIntlMessages } from "next-intl";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
+import { PLATAFORMAS, fechasDeAviso, finDeTodas, plataforma } from "@/lib/plataformas-de-lanzamiento";
+
 import { AnnouncementBar } from "./AnnouncementBar";
 import {
   CLAVE_HOJA_PREVIA,
-  DESHACER_PH,
   FIN_CAMPANA,
   LANZAMIENTO,
   VARIANTES,
   fechaAtada,
   guionPrevio,
   partirCola,
-  hojaPrevia,
   hojaDelGuion,
   programarFranja,
   retirarHojaPrevia,
@@ -32,13 +32,13 @@ import {
 } from "./franja-lanzamiento";
 
 /**
- * LA FRANJA DE PRODUCT HUNT (lanzamiento del 22-11-2026).
+ * LA FRANJA DURANTE EL LANZAMIENTO (desde el 22-11-2026).
  *
- * La franja cambia sola a las 9:00 de Andorra del domingo, sin despliegue, y
- * vuelve a la de BiVelio una semana después. Aquí se prueban las fronteras al
- * milisegundo, el temporizador que las cruza, que el render de servidor no
- * dependa del reloj del cliente, los textos de los 12 idiomas y el contraste
- * del coral de PH.
+ * Las tres ventanas de Product Hunt (aviso, en vivo dos semanas, BiVelio), sus
+ * fronteras al milisegundo y el temporizador que las cruza; lo que pinta la
+ * franja en el servidor con las plataformas del registro; los cortes de línea
+ * y el guion previo de la insignia. El reparto al azar entre la franja y la
+ * tarjeta se prueba en lib/plataformas-de-lanzamiento.test.ts.
  */
 
 const MIN = 60_000;
@@ -48,7 +48,11 @@ const DIA = 24 * HORA;
 describe("elegirVariante: las tres ventanas", () => {
   it("el lanzamiento es el domingo 22 a las 9:00 de Andorra = 08:00Z = 00:00 PT", () => {
     expect(new Date(LANZAMIENTO).toISOString()).toBe("2026-11-22T08:00:00.000Z");
-    expect(new Date(FIN_CAMPANA).toISOString()).toBe("2026-11-29T08:00:00.000Z");
+    // Dos semanas justas (decisión del dueño, 20-11): hasta el domingo 6 de diciembre.
+    expect(new Date(FIN_CAMPANA).toISOString()).toBe("2026-12-06T08:00:00.000Z");
+    expect(FIN_CAMPANA - LANZAMIENTO).toBe(14 * 24 * 60 * 60 * 1000);
+    // Las fechas son las del registro de plataformas.
+    expect([LANZAMIENTO, FIN_CAMPANA]).toEqual([plataforma("product-hunt")!.desde, plataforma("product-hunt")!.hasta]);
     const hora = (tz: string) =>
       new Intl.DateTimeFormat("en-GB", { timeZone: tz, weekday: "long", hour: "2-digit", minute: "2-digit", hourCycle: "h23" }).format(LANZAMIENTO);
     expect(hora("Europe/Andorra")).toBe("Sunday 09:00");
@@ -68,7 +72,7 @@ describe("elegirVariante: las tres ventanas", () => {
     expect(elegirVariante(FIN_CAMPANA - 1)).toBe("en-vivo");
   });
 
-  it("desde el 29 a las 08:00Z, la franja de BiVelio de siempre", () => {
+  it("desde el 6-12 a las 08:00Z, la franja de BiVelio de siempre", () => {
     expect(elegirVariante(FIN_CAMPANA)).toBe("bivelio");
     expect(elegirVariante(FIN_CAMPANA + 365 * DIA)).toBe("bivelio");
   });
@@ -130,39 +134,87 @@ describe("el render del servidor no depende del reloj del cliente", () => {
       }),
     );
 
-  it("antes del lanzamiento: el aviso visible, las otras dos apiladas e invisibles", () => {
-    const html = pinta({ inicial: "aviso", fecha: fechaDelLanzamiento("en") });
-    expect(html).toContain('class="announce announce--ph"');
-    expect(html).toContain('data-variante="aviso"');
+  const HOY = Date.UTC(2026, 10, 20, 12);
+  const enlaces = (html: string) => [...html.matchAll(/<a ([^>]*)>/g)].map((m) => m[1]!);
+
+  it("antes del lanzamiento: una pieza por plataforma y estado que aún puede tocar, y la de BiVelio; solo una visible", () => {
+    const html = pinta({ construido: HOY, fechas: fechasDeAviso(HOY, "en") });
+    // El reparto del servidor (sin azar): la primera del registro, en la franja.
+    expect(html).toContain('class="announce announce--lz"');
+    expect(html).toContain('data-variante="product-hunt:antes"');
+    expect(html).toContain('style="--lz-fondo:#FF6154;--lz-texto:#0F1218"');
+    expect(html.match(/data-lz="[^"]+"/g)).toEqual(['data-lz="product-hunt:antes"', 'data-lz="product-hunt:durante"', 'data-lz="devhunt:durante"']);
     expect(html).toContain(atado(`We're launching on Product Hunt ${fechaAtada("Sunday, November 22")} — get `).replace("'", "&#x27;"));
     expect(html).toContain(atado("Savings Layer is live on Product Hunt — support "));
+    expect(html).toContain("Savings Layer is live on DevHunt\u00A0— support ");
     expect(html).toContain("Savings Layer is part of the BiVelio platform");
-    expect(html.match(/data-oculta="true"/g)).toHaveLength(2);
-    expect(html.match(/data-v="(aviso|en-vivo|bivelio)"/g)).toEqual(['data-v="aviso"', 'data-v="en-vivo"', 'data-v="bivelio"']);
+    // Cuatro enlaces apilados, uno visible: los otros tres, fuera del foco y del árbol accesible.
+    const as = enlaces(html);
+    expect(as).toHaveLength(4);
+    expect(as.filter((a) => a.includes('data-oculta="true"') && a.includes('aria-hidden="true"'))).toHaveLength(3);
+    expect(as.find((a) => !a.includes("data-oculta"))).toContain('data-lz="product-hunt:antes"');
     // La última palabra y la flecha van juntas, sin poder partir.
     expect(html).toMatch(/get <span class="announce-cola">notified(<!-- -->)?\u00A0<svg/);
     expect(html).toContain(URL_PRODUCT_HUNT.replace(/&/g, "&amp;"));
+    expect(html).toContain('href="https://devhunt.org/tool/bivelio-savings-layer"');
     expect(html).toContain('target="_blank" rel="noopener"');
     expect(html).toContain("(opens in a new tab)");
     // El botón de cerrar sigue ahí, con su nombre.
     expect(html).toMatch(/<button[^>]*class="announce-close"[^>]*aria-label="Close"/);
   });
 
-  it("después de la campaña la franja es la de siempre: sin rastro de Product Hunt", () => {
-    const html = pinta({ inicial: "bivelio" });
+  it("durante la campaña: el «avísame» de Product Hunt ya no está en la pila", () => {
+    const html = pinta({ construido: LANZAMIENTO + DIA, fechas: {} });
+    expect(html.match(/data-lz="[^"]+"/g)).toEqual(['data-lz="product-hunt:durante"', 'data-lz="devhunt:durante"']);
+    expect(html).toContain('data-variante="product-hunt:durante"');
+    expect(html).not.toContain("get notified");
+  });
+
+  it("cada plataforma lleva su icono, sus trazos tal cual", () => {
+    const html = pinta({ construido: HOY, fechas: fechasDeAviso(HOY, "en") });
+    for (const p of PLATAFORMAS) {
+      expect(html).toContain(`viewBox="${p.icono.viewBox}"`);
+      for (const d of p.icono.trazos) expect(html).toContain(`d="${d}"`);
+    }
+    expect(html.match(/class="announce-voto"/g)).toHaveLength(3);
+  });
+
+  it("después de la campaña la franja es la de siempre: sin rastro de las plataformas", () => {
+    const html = pinta({ construido: finDeTodas() });
     expect(html).toContain('class="announce"');
-    expect(html).not.toMatch(/Product.Hunt/);
+    expect(html).not.toMatch(/Product.Hunt|DevHunt/);
     expect(html).not.toContain("data-oculta");
-    expect(html).not.toContain("data-v=");
+    expect(html).not.toContain("data-lz=");
+    expect(html).not.toContain("style=");
+    expect(html).toContain('data-variante="bivelio"');
     expect(html).toContain('href="https://bivelio.com/en"');
+    expect(enlaces(html)).toHaveLength(1);
   });
 
   it("sin props (otro montaje) se comporta como antes", () => {
-    expect(pinta({})).toBe(pinta({ inicial: "bivelio" }));
+    expect(pinta({})).toBe(pinta({ construido: finDeTodas() + 365 * DIA }));
+  });
+
+  it("la ✕ recuerda el cierre en la pestaña (sessionStorage) y la franja no cambia bajo el cursor", () => {
+    const fuente = readFileSync(fileURLToPath(new URL("./AnnouncementBar.tsx", import.meta.url)), "utf8").replace(/\/\*[\s\S]*?\*\//g, "");
+    expect(fuente).toContain("window.sessionStorage.setItem(CLAVE_FRANJA_CERRADA, \"1\")");
+    expect(fuente).toContain("window.sessionStorage.getItem(CLAVE_FRANJA_CERRADA) === \"1\"");
+    expect(fuente).not.toContain("localStorage");
+    expect(fuente).toContain("onMouseEnter={retener(true)}");
+    expect(fuente).toContain("onFocus={retener(true)}");
+    // El primer render es el del servidor: la rotación se lee con useSyncExternalStore.
+    expect(fuente).toContain("useSyncExternalStore(suscribirRotacion, leerRotacion, leerRotacionEnServidor)");
   });
 });
 
 describe("los cortes de línea en móvil", () => {
+  it("los nombres de plataforma con espacios no se parten: salen del registro", () => {
+    for (const p of PLATAFORMAS) {
+      const pegado = p.nombre.replace(/ /g, "\u00A0");
+      expect(atado(`Find us on ${p.nombre}`)).toBe(`Find us on ${pegado}`);
+    }
+  });
+
   it("«Product Hunt» no se parte y la raya no abre línea", () => {
     expect(atado("Savings Layer ya está en Product Hunt — apóyanos")).toBe("Savings Layer ya está en Product\u00A0Hunt\u00A0— apóyanos");
     expect(atado("Wir starten am X auf Product Hunt – lass dich erinnern")).toBe("Wir starten am X auf Product\u00A0Hunt\u00A0– lass dich erinnern");
@@ -217,27 +269,19 @@ describe("el enlace", () => {
   });
 });
 
-describe("los textos, en los 12 idiomas", () => {
+describe("la fecha del lanzamiento, en los 12 idiomas", () => {
   const DIR = fileURLToPath(new URL("../../messages/", import.meta.url));
   const locales = readdirSync(DIR).filter((f) => f.endsWith(".json")).map((f) => f.slice(0, -5));
-  const nav = (loc: string) => JSON.parse(readFileSync(`${DIR}${loc}.json`, "utf8")).nav as Record<string, string>;
 
   it("son los 12", () => expect(locales.sort()).toEqual(["ca", "de", "en", "es", "fr", "id", "it", "nl", "pl", "pt", "tr", "vi"]));
-
-  it.each(locales)("%s: los dos textos existen, nombran Product Hunt sin traducirlo, y el aviso lleva la fecha", (loc) => {
-    const n = nav(loc);
-    expect(n.announcePhSoon).toContain("Product Hunt");
-    expect(n.announcePhLive).toContain("Product Hunt");
-    expect(n.announcePhSoon).toContain("{date}");
-    expect(n.announcePhLive).not.toContain("{");
-    expect(n.newTab).toBeTruthy();
-  });
 
   it.each(locales)("%s: la fecha sale con el domingo en su idioma y el día 22", (loc) => {
     const fecha = fechaDelLanzamiento(loc);
     const domingo = new Intl.DateTimeFormat(loc, { weekday: "long", timeZone: "UTC" }).format(Date.UTC(2026, 10, 22, 12));
     expect(fecha.toLowerCase()).toContain(domingo.toLowerCase());
     expect(fecha).toContain("22");
+    // La que viaja a la franja es la misma.
+    expect(fechasDeAviso(Date.UTC(2026, 10, 20), loc)).toEqual({ "product-hunt": fecha });
   });
 
   it("la fecha en algunos idiomas, tal cual", () => {
@@ -247,34 +291,24 @@ describe("los textos, en los 12 idiomas", () => {
   });
 });
 
-describe("el coral de Product Hunt se lee", () => {
+describe("la franja toma el color de la plataforma", () => {
   const css = readFileSync(fileURLToPath(new URL("../globals.css", import.meta.url)), "utf8").replace(/\/\*[\s\S]*?\*\//g, "");
-  const lin = (c: number) => ((c /= 255) <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4);
-  const rgb = (h: string) => [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16)) as [number, number, number];
-  const lum = ([r, g, b]: number[]) => 0.2126 * lin(r!) + 0.7152 * lin(g!) + 0.0722 * lin(b!);
-  const contraste = (a: number[], b: number[]) => {
-    const [x, y] = [lum(a), lum(b)].sort((p, q) => q - p);
-    return (x! + 0.05) / (y! + 0.05);
-  };
-  const regla = css.match(/\.announce--ph\s*\{([^}]*)\}/)![1]!;
-  const fondo = rgb(regla.match(/background:\s*(#[0-9A-Fa-f]{6})/)![1]!);
-  const texto = rgb(regla.match(/(?:^|;)\s*color:\s*(#[0-9A-Fa-f]{6})/)![1]!);
 
-  it("es el coral de PH y el blanco no pasaría AA", () => {
-    expect(fondo).toEqual(rgb("#FF6154"));
-    expect(contraste(fondo, [255, 255, 255])).toBeLessThan(3);
+  it("fondo y texto salen de las variables que pone el componente", () => {
+    expect(css).toMatch(/\.announce--lz\s*\{\s*background:\s*var\(--lz-fondo\);\s*color:\s*var\(--lz-texto\);\s*\}/);
+    expect(css).toMatch(/\.announce--lz a\s*\{\s*color:\s*var\(--lz-texto\);/);
+    expect(css).toMatch(/\.announce--lz a:focus-visible, \.announce--lz \.announce-close:focus-visible\s*\{\s*outline-color:\s*var\(--lz-texto\);/);
+    // La ✕ al 72 % del color del texto (≥ 3:1: lo mide la prueba del registro).
+    expect(css).toMatch(/\.announce--lz \.announce-close\s*\{\s*color:\s*color-mix\(in srgb, var\(--lz-texto\) 72%, transparent\);/);
+    expect(css).not.toContain("announce--ph");
   });
 
-  it("el texto tinta pasa AA en texto normal (≥ 4,5:1; da 6,33:1)", () => {
-    expect(contraste(fondo, texto)).toBeGreaterThanOrEqual(4.5);
-    expect(contraste(fondo, texto).toFixed(2)).toBe("6.33");
-  });
-
-  it("la ✕ semitransparente queda ≥ 3:1 sobre el coral", () => {
-    const m = css.match(/\.announce--ph \.announce-close\s*\{\s*color:\s*rgba\((\d+),\s*(\d+),\s*(\d+),\s*([\d.]+)\)/)!;
-    const [r, g, b, a] = [Number(m[1]), Number(m[2]), Number(m[3]), Number(m[4])];
-    const mezcla = [r, g, b].map((c, i) => c * a + fondo[i]! * (1 - a));
-    expect(contraste(fondo, mezcla)).toBeGreaterThanOrEqual(3);
+  it("el cambio de plataforma se funde, y con movimiento reducido no se anima", () => {
+    expect(css).toMatch(/\.announce\s*\{\s*transition:\s*background-color [^;]+, color [^;]+;\s*\}/);
+    expect(css).toMatch(/\.announce-pila > \[data-oculta\]\s*\{\s*opacity:\s*0;/);
+    expect(css).toMatch(/@media \(prefers-reduced-motion: reduce\)\s*\{\s*\.announce, \.announce-pila > \*, \.announce-pila > \[data-oculta\]\s*\{\s*transition:\s*none;/);
+    // Las que no tocan siguen sin verse ni enfocarse.
+    expect(css).toMatch(/\.announce-pila > \[data-oculta\]\s*\{\s*visibility:\s*hidden;\s*\}/);
   });
 });
 
@@ -304,7 +338,7 @@ describe("el motor del cliente (programarFranja), con relojes falsos", () => {
     franja.cancelar();
   });
 
-  it("encadena la espera por encima del máximo de setTimeout y llega al 29", () => {
+  it("encadena la espera por encima del máximo de setTimeout y llega al 6 de diciembre", () => {
     vi.setSystemTime(Date.UTC(2026, 9, 1));
     const vistas: Variante[] = [];
     const franja = programarFranja("aviso", (v) => vistas.push(v), reloj());
@@ -363,7 +397,7 @@ describe("el motor del cliente (programarFranja), con relojes falsos", () => {
   });
 });
 
-describe("el primer pintado de las páginas sin ISR (guion previo)", () => {
+describe("el primer pintado de la insignia en las páginas sin ISR (guion previo)", () => {
   /** Ejecuta el guion como lo haría el navegador, con un reloj y un documento falsos. */
   const ejecutar = (guion: string, ahora: number, { sinHojas = false } = {}) => {
     class Hoja {
@@ -390,9 +424,8 @@ describe("el primer pintado de las páginas sin ISR (guion previo)", () => {
     for (const t of instantes) {
       const toca = laMasAvanzada(inicial, elegirVariante(t));
       const { css } = ejecutar(guion, t);
-      // La hoja de la franja más la de la insignia y la tarjeta de Product Hunt.
+      // La hoja de la insignia de Product Hunt (la franja y la tarjeta van en el guion del registro).
       expect(css, new Date(t).toString()).toEqual(toca === inicial ? [] : [hojaDelGuion(inicial, toca)]);
-      if (toca !== inicial) expect(css[0]!.startsWith(hojaPrevia(inicial, toca))).toBe(true);
     }
   });
 
@@ -400,34 +433,13 @@ describe("el primer pintado de las páginas sin ISR (guion previo)", () => {
     expect(guionPrevio("bivelio")).toBeNull();
   });
 
-  it("la hoja esconde lo que ya pasó, enseña lo que toca y deshace el coral solo para BiVelio", () => {
-    expect(hojaPrevia("aviso", "aviso")).toBe("");
-    expect(hojaPrevia("en-vivo", "aviso")).toBe("");
-    expect(hojaPrevia("aviso", "en-vivo")).toBe(
-      '.announce-pila>[data-v="aviso"]{display:none}.announce-pila>[data-v="en-vivo"]{visibility:visible}',
-    );
-    const aBivelio = hojaPrevia("aviso", "bivelio");
-    expect(aBivelio).toContain('[data-v="aviso"]{display:none}');
-    expect(aBivelio).toContain('[data-v="en-vivo"]{display:none}');
-    expect(aBivelio).toContain('[data-v="bivelio"]{visibility:visible}');
-    expect(aBivelio).toContain(DESHACER_PH);
-    // Nada que cierre la etiqueta <script> ni abra un comentario HTML.
-    for (const v of VARIANTES) expect(guionPrevio(v) ?? "").not.toMatch(/<\/|<!--/);
-  });
-
-  it("deshace el coral con los mismos colores de la franja de BiVelio en globals.css", () => {
-    const css = readFileSync(fileURLToPath(new URL("../globals.css", import.meta.url)), "utf8")
-      .replace(/\/\*[\s\S]*?\*\//g, "")
-      .replace(/\s+/g, "");
-    const cuerpo = (sel: string) => css.match(new RegExp(`(?:^|\\})${sel.replace(/[.]/g, "\\.")}\\{([^}]*)\\}`))![1]!;
-    const deshacer = DESHACER_PH.replace(/\s+/g, "");
-    expect(cuerpo(".announce")).toContain("background:var(--ink)");
-    expect(cuerpo(".announce")).toContain("color:#fff");
-    expect(deshacer).toContain(".announce--ph{background:var(--ink);color:#fff}");
-    const enlace = cuerpo(".announcea").match(/(?:^|;)color:([^;]+)/)![1]!;
-    expect(deshacer).toContain(`.announce--pha{color:${enlace};`);
-    const cerrar = cuerpo(".announce-close").match(/(?:^|;)color:([^;]+)/)![1]!;
-    expect(deshacer).toContain(`.announce--ph.announce-close{color:${cerrar}}`);
+  it("la hoja solo toca la insignia; nada que cierre la etiqueta <script> ni abra un comentario HTML", () => {
+    expect(hojaDelGuion("aviso", "aviso")).toBe("");
+    expect(hojaDelGuion("en-vivo", "aviso")).toBe("");
+    for (const [de, a] of [["aviso", "en-vivo"], ["aviso", "bivelio"], ["en-vivo", "bivelio"]] as const) {
+      expect(hojaDelGuion(de, a)).toMatch(/^(\.ph-insignia\[data-ph(-espera)?="(heroe|pie)"\]\{display:(block|none)\})+$/);
+    }
+    for (const v of VARIANTES) expect(guionPrevio(v) ?? "").not.toMatch(/<\/|<!--|announce/);
   });
 
   it("sin hojas construidas (navegador viejo) no rompe nada: se corrige al hidratar", () => {
@@ -471,12 +483,16 @@ describe("qué páginas congelan la variante del build", () => {
     expect(congeladas).toEqual(expect.arrayContaining(["benchmarks", "how-it-works", "migrate-to-0.5", "paper", "privacy"]));
   });
 
-  it("por eso NavBar emite el guion previo ANTES de la franja", () => {
+  it("por eso NavBar emite los dos guiones ANTES de la franja, con el mismo reloj que le pasa", () => {
     const nav = readFileSync(fileURLToPath(new URL("./NavBar.tsx", import.meta.url)), "utf8").replace(/\{\/\*[\s\S]*?\*\/\}/g, "");
     const guion = nav.indexOf("<script dangerouslySetInnerHTML={{ __html: guion }} />");
-    const franja = nav.indexOf("<AnnouncementBar inicial={inicial}");
+    const insignia = nav.indexOf("<script dangerouslySetInnerHTML={{ __html: guionInsignia }} />");
+    const franja = nav.indexOf("<AnnouncementBar construido={construido}");
     expect(guion).toBeGreaterThan(-1);
-    expect(franja).toBeGreaterThan(guion);
-    expect(nav).toContain("guionPrevio(inicial)");
+    expect(insignia).toBeGreaterThan(guion);
+    expect(franja).toBeGreaterThan(insignia);
+    expect(nav).toContain("const construido = Date.now();");
+    expect(nav).toContain("guionDeLanzamiento(construido)");
+    expect(nav).toContain("guionPrevio(elegirVariante(construido))");
   });
 });

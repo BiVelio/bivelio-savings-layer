@@ -526,23 +526,32 @@ input[type="range"] { accent-color: var(--brand); }
 .announce-pila > * { grid-area: 1 / 1; align-self: center; }
 .announce-pila > [data-oculta] { visibility: hidden; }
 
-/* ── Lanzamiento en Product Hunt (22–29 de noviembre de 2026) ───────────────
-   El coral de PH con texto TINTA, no blanco: blanco sobre #FF6154 da 2,96:1 y
-   no pasa AA; la tinta #0F1218 da 6,33:1 (AA en texto normal, el de 13px).
-   La ✕ al 72 % queda en 4,18:1 sobre el coral (≥ 3:1 de un control). Colores
-   fijos, no tokens: la franja es la misma con el sistema en claro o en oscuro
-   (la web es solo clara, `color-scheme: light`). Lo comprueba
-   franja-lanzamiento.test.ts. */
-.announce--ph { background: #FF6154; color: #0F1218; }
-.announce--ph a { color: #0F1218; text-decoration: underline; text-decoration-color: transparent; text-underline-offset: 3px; transition: color var(--dur-1), text-decoration-color var(--dur-1); }
-.announce--ph a:hover { color: #0F1218; text-decoration: underline; text-decoration-color: currentColor; }
-.announce--ph a:focus-visible, .announce--ph .announce-close:focus-visible { outline-color: #0F1218; }
-.announce--ph .announce-close { color: rgba(15, 18, 24, .72); }
-.announce--ph .announce-close:hover { color: #0F1218; }
+/* ── Plataformas de lanzamiento (Product Hunt, DevHunt…; desde el 22-11-2026) ─
+   La franja toma el COLOR de la plataforma que enseña: `--lz-fondo` y
+   `--lz-texto` los pone AnnouncementBar desde el registro
+   (lib/plataformas-de-lanzamiento.ts), donde cada pareja pasa AA en texto
+   normal (≥ 4,5:1; lo comprueba plataformas-de-lanzamiento.test.ts). Product
+   Hunt: coral #FF6154 con texto TINTA (6,33:1; el blanco daría 2,96:1). La ✕
+   al 72 % queda ≥ 3:1 (el mínimo de un control). Colores fijos, no tokens: la
+   franja es la misma con el sistema en claro o en oscuro (la web es solo
+   clara, `color-scheme: light`). */
+.announce--lz { background: var(--lz-fondo); color: var(--lz-texto); }
+.announce--lz a { color: var(--lz-texto); text-decoration: underline; text-decoration-color: transparent; text-underline-offset: 3px; transition: color var(--dur-1), text-decoration-color var(--dur-1); }
+.announce--lz a:hover { color: var(--lz-texto); text-decoration: underline; text-decoration-color: currentColor; }
+.announce--lz a:focus-visible, .announce--lz .announce-close:focus-visible { outline-color: var(--lz-texto); }
+.announce--lz .announce-close { color: color-mix(in srgb, var(--lz-texto) 72%, transparent); }
+.announce--lz .announce-close:hover { color: var(--lz-texto); }
+/* Al pasar de una plataforma a otra (el carrusel de la tarjeta avanzó), el
+   color y el texto se funden en vez de saltar. Solo se anima el cambio
+   posterior a la carga: el primer pintado ya sale con lo que toca. */
+.announce { transition: background-color .45s ease, color .45s ease; }
+.announce-pila > * { transition: opacity .35s ease .14s, visibility 0s; }
+.announce-pila > [data-oculta] { opacity: 0; transition: opacity .18s ease-out, visibility 0s linear .18s; }
+@media (prefers-reduced-motion: reduce) { .announce, .announce-pila > *, .announce-pila > [data-oculta] { transition: none; } }
 /* La última palabra y la flecha no se separan (ver partirCola). */
 .announce-cola { white-space: nowrap; }
 /* El triángulo de voto, delante del texto y en línea con él (como la flecha). */
-.announce a svg.announce-voto { width: 12px; height: 12px; vertical-align: -1px; margin-inline: 0 6px; }
+.announce a svg.announce-voto { width: 12px; height: 12px; vertical-align: -1px; margin-inline: 0 6px; stroke: none; }
 .announce a:hover svg.announce-voto { transform: translateY(-1px); }
 
 /* ── Cabecera pública (todas las páginas de marketing y de acceso) ────────
@@ -4567,13 +4576,13 @@ a.ph-insignia:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px
 .lp .ftr-brand > .ph-insignia { align-self: flex-start; }
 @media (prefers-reduced-motion: reduce) { a.ph-insignia:hover { transform: none; } }
 
-/* LA TARJETA «FIND US ON PRODUCT HUNT» (TarjetaProductHunt.tsx), al final de
-   la portada: discreta, una tarjeta blanca con hairline sobre el marfil, el
-   cielo cian muy tenue en su esquina y el marcador de la campaña detrás de
-   «Product Hunt». La miniatura a 64 px, el nombre en la editorial, el lema en
-   gris y el botón coral de PH con texto TINTA (#0F1218 sobre #FF6154: 6,33:1;
-   el blanco daría 2,96:1). Sin hover que cambie el tamaño: la tarjeta mide lo
-   mismo en las tres ventanas. */
+/* LA TARJETA «FIND US ON …» (TarjetaLanzamiento.tsx), al final de la portada:
+   discreta, una tarjeta blanca con hairline sobre el marfil, el cielo cian
+   muy tenue en su esquina y el marcador de la campaña detrás del nombre de la
+   plataforma. La miniatura a 64 px, el nombre en la editorial, el lema en gris
+   y el botón en el color de la plataforma (`--lz-fondo`/`--lz-texto`, del
+   registro; el coral de PH con texto TINTA: 6,33:1). Sin hover que cambie el
+   tamaño: la tarjeta mide lo mismo en todas las ventanas y diapositivas. */
 .lp.lp2 main > section.ph-sec { padding: 0 0 clamp(48px, 6vw, 88px); }
 .lp section.ph-sec::before { display: none; }
 .ph-tarjeta {
@@ -4595,12 +4604,11 @@ a.ph-insignia:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px
 .ph-lema { margin: 3px 0 0; font-size: 14.5px; line-height: 1.45; color: var(--ink-soft); text-wrap: pretty; }
 .ph-boton {
   display: inline-flex; align-items: center; justify-content: center; min-height: 44px; padding: 10px 18px;
-  border-radius: var(--r-control); background: #FF6154; color: #0F1218;
+  border-radius: var(--r-control); background: var(--lz-fondo, #FF6154); color: var(--lz-texto, #0F1218);
   font: 600 14.5px/1.25 var(--font-sans); letter-spacing: -.01em; text-align: center; text-decoration: none;
   box-shadow: inset 0 0 0 1px rgba(15, 18, 24, .06), 0 1px 2px rgba(15, 18, 24, .08);
-  transition: background-color var(--dur-2) var(--ease-out), box-shadow var(--dur-2) var(--ease-out);
 }
-.ph-boton:hover { background: #FF7366; color: #0F1218; text-decoration: none; box-shadow: inset 0 0 0 1px rgba(15, 18, 24, .06), 0 10px 20px -12px rgba(255, 97, 84, .9); }
+.ph-boton:hover { background: var(--lz-realce, #FF7366); color: var(--lz-texto, #0F1218); text-decoration: none; box-shadow: inset 0 0 0 1px rgba(15, 18, 24, .06), 0 10px 20px -12px color-mix(in srgb, var(--lz-fondo, #FF6154) 90%, transparent); }
 .ph-boton:focus-visible { outline: 2px solid #0F1218; outline-offset: 2px; }
 /* Los dos textos del botón, en UNA celda: el botón mide lo que el más largo. */
 .ph-pila { display: grid; }
@@ -4609,11 +4617,43 @@ a.ph-insignia:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px
 .ph-cola { white-space: nowrap; }
 .ph-boton svg { width: 14px; height: 14px; vertical-align: -2px; transition: transform .2s ease; }
 .ph-boton:hover svg { transform: translateX(2px); }
+/* EL CARRUSEL (TarjetaLanzamiento.tsx): una diapositiva por plataforma, todas
+   en el HTML y en las MISMAS celdas de la rejilla de la tarjeta (`.lz-pista` y
+   `.lz-diapo` son `display: contents`: sus hijos, el texto y el botón, son los
+   que ocupan celda). La tarjeta mide lo que la diapositiva más alta y no salta
+   al cambiar. Solo se ve la que toca; las demás se funden y bajan 8 px, y con
+   `visibility: hidden` salen del foco y del árbol accesible. */
+/* `.lz-sec`: la sección del carrusel. El guion en línea la esconde entera si
+   no queda ninguna plataforma que enseñar. Al llegar con el teclado, que la
+   cabecera pegajosa no la tape. */
+.lz-sec { scroll-margin-top: 96px; }
+.lz-pista, .lz-diapo { display: contents; }
+.ph-tarjeta > .ph-miniatura { grid-area: 1 / 1; }
+.lz-diapo > .ph-texto { grid-area: 1 / 2; }
+.lz-diapo > .ph-boton { grid-area: 1 / 3; }
+/* La que sale se funde deprisa y sin moverse; la que entra sube 8 px un
+   instante después: no se leen dos textos encimados a media transición. */
+.lz-diapo > * { transition: opacity .45s var(--ease-out) .14s, transform .45s var(--ease-out) .14s, visibility 0s, background-color var(--dur-2) var(--ease-out), box-shadow var(--dur-2) var(--ease-out); }
+.lz-diapo[data-oculta] > * { visibility: hidden; opacity: 0; transform: translateY(8px); pointer-events: none; transition: opacity .18s ease-out, transform 0s linear .18s, visibility 0s linear .18s; }
+/* LOS MANDOS, bajo la tarjeta: pausa y un punto por plataforma. 24×24 de zona
+   de pulsación (WCAG 2.5.8) aunque el punto mida 8. Su fila está reservada
+   desde el HTML y se enseña al hidratar (sin JavaScript no hay carrusel). */
+.lz-mandos { display: flex; align-items: center; justify-content: center; gap: 2px; height: 28px; margin-top: 12px; visibility: hidden; opacity: 0; transition: opacity .3s ease; }
+.lz-mandos[data-listos] { visibility: visible; opacity: 1; }
+.lz-pausa, .lz-punto { display: grid; place-items: center; width: 24px; height: 24px; padding: 0; border: 0; border-radius: 999px; background: none; color: var(--ink-soft); cursor: pointer; }
+.lz-pausa { width: 28px; height: 28px; margin-inline-end: 4px; transition: color var(--dur-1), background-color var(--dur-1); }
+.lz-pausa svg { width: 12px; height: 12px; }
+.lz-pausa:hover { color: var(--ink); background: var(--surface-2); }
+.lz-punto::before { content: ""; width: 8px; height: 8px; border-radius: 999px; background: #C2BEB4; transition: width .3s var(--ease-out), background-color .3s; }
+.lz-punto:hover::before { background: var(--ink-soft); }
+.lz-punto[aria-current]::before { width: 20px; background: var(--ink); }
+.lz-punto[aria-current] { width: 36px; }
+.lz-pausa:focus-visible, .lz-punto:focus-visible { outline: 2px solid var(--ink); outline-offset: 1px; }
 /* Por debajo de 760 px el botón baja bajo el texto (en tres columnas el lema
    se quedaba en un hilo); por debajo de 480, a todo el ancho de la tarjeta. */
 @media (max-width: 760px) {
   .ph-tarjeta { grid-template-columns: 64px minmax(0, 1fr); padding: 16px 18px 18px 16px; gap: 14px 16px; }
-  .ph-boton { grid-column: 2; justify-self: start; }
+  .lz-diapo > .ph-boton { grid-area: 2 / 2; justify-self: start; }
 }
 /* Por debajo de 480 el texto ocupa varias líneas (de y fr a 320 px: 7–8):
    la miniatura baja a 48 px y se queda arriba, junto al kicker, en vez de
@@ -4621,9 +4661,14 @@ a.ph-insignia:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px
 @media (max-width: 480px) {
   .ph-tarjeta { grid-template-columns: 48px minmax(0, 1fr); align-items: start; gap: 14px; }
   .ph-miniatura { width: 48px; height: 48px; border-radius: 12px; }
-  .ph-boton { grid-column: 1 / -1; justify-self: stretch; }
+  .lz-diapo > .ph-boton { grid-area: 2 / 1 / 3 / -1; justify-self: stretch; }
   .ph-nombre { font-size: 17px; }
   .ph-lema { font-size: 14px; }
 }
-@media (prefers-reduced-motion: reduce) { .ph-boton:hover svg { transform: none; } }
+@media (prefers-reduced-motion: reduce) {
+  .ph-boton:hover svg { transform: none; }
+  .lz-diapo > *, .lz-diapo[data-oculta] > * { transition: none; transform: none; }
+  .lz-mandos, .lz-punto::before { transition: none; }
+}
 /* ==== FIN SLOT PRODUCT HUNT ==== */
+

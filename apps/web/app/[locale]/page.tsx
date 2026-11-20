@@ -12,7 +12,7 @@ import { DosManeras } from "@/app/components/landing/DosManeras";
 import { EnlacesAntiguos } from "@/app/components/landing/EnlacesAntiguos";
 import { PlanesCloud } from "@/app/components/landing/PlanesCloud";
 import { PreguntasDeCompra } from "@/app/components/landing/PreguntasDeCompra";
-import { TarjetaProductHunt } from "@/app/components/landing/TarjetaProductHunt";
+import { TarjetaLanzamiento } from "@/app/components/landing/TarjetaLanzamiento";
 import { elegirVariante } from "@/app/components/franja-lanzamiento";
 import { InsigniaProductHunt } from "@/app/components/ProductHunt";
 import { URL_DEL_CODIGO } from "@/app/components/sitio";
@@ -32,6 +32,7 @@ import { tarifasDeLosPlanes } from "@/lib/stripe/pricing";
 import { terminosDeLosPlanes } from "@/lib/legal/precios-publicados";
 import { LIMITES_MEDIR, VERSION_MINIMA_MEDIR } from "@/lib/license/medir-publico";
 import { BANCO_EN_VIVO } from "@/lib/portada/banco-en-vivo";
+import { textosDeTarjeta, type Traductor } from "@/lib/plataformas-de-lanzamiento";
 import { PALANCA_TTL } from "@/lib/portada/palanca-ttl";
 import { GradientText } from "@/vendor/affectui/gradient-text";
 import panelDelBanco from "@/assets/portada/panel-del-banco.png";
@@ -144,6 +145,7 @@ export default async function LandingPage({ params }: { params: Promise<{ locale
   // y el «se abre en una pestaña nueva» del chrome.
   const tu = await getTranslations("ui");
   const tn = await getTranslations("nav");
+  const tl = await getTranslations("landing.launch");
   // Las etiquetas del replay del gateway son las de su sección del banco público.
   const tb = await getTranslations("benchmarksPage");
   const CODE = lineasDelSnippet(th);
@@ -848,18 +850,12 @@ export default async function LandingPage({ params }: { params: Promise<{ locale
           />
         </section>
 
-        {/* 9 · PRODUCT HUNT — la tarjeta «Find us on Product Hunt», discreta,
-            después del cierre y antes de la banda de NVIDIA y del pie. */}
-        <TarjetaProductHunt
-          inicial={ventanaPh}
-          t={{
-            kicker: t("productHunt.kicker"),
-            lema: t("productHunt.tagline"),
-            aviso: t("productHunt.notify"),
-            vivo: t("productHunt.live"),
-            nuevaPestana: tn("newTab"),
-          }}
-        />
+        {/* 9 · PLATAFORMAS DE LANZAMIENTO — la tarjeta «Find us on …», un
+            carrusel discreto con Product Hunt, DevHunt y las que vengan
+            (lib/plataformas-de-lanzamiento.ts), después del cierre y antes de
+            la banda de NVIDIA y del pie. La franja de arriba enseña siempre
+            otra plataforma que la tarjeta. */}
+        <TarjetaLanzamiento construido={Date.now()} t={textosDeTarjeta(tl as unknown as Traductor, tn("newTab"))} />
       </main>
 
       {/* COMPAÑÍA Y ECOSISTEMA — la banda del NVIDIA Inception Program al

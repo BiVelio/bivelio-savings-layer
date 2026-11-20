@@ -2,8 +2,8 @@
   "nav": {
     "announce": "Savings Layer adalah bagian dari platform BiVelio",
     "announceClose": "Tutup",
-    "announcePhSoon": "Kami hadir di Product Hunt pada {date} — ingatkan saya",
-    "announcePhLive": "Savings Layer sudah hadir di Product Hunt — dukung kami",
+    "launchSoon": "Kami hadir di {platform} pada {date} — ingatkan saya",
+    "launchLive": "Savings Layer sudah hadir di {platform} — dukung kami",
     "langTitle": "Pilih bahasa Anda",
     "langSubtitle": "Pilih bahasa yang ingin Anda gunakan untuk BiVelio Savings Layer.",
     "langSearch": "Cari bahasa",
@@ -1700,11 +1700,15 @@
       "compatNote": "Kompatibel tidak berarti terukur.",
       "compatLink": "Apa yang diukur pada tiap penyedia"
     },
-    "productHunt": {
-      "kicker": "Temukan kami di Product Hunt",
+    "launch": {
+      "kicker": "Temukan kami di {platform}",
       "tagline": "Pangkas biaya LLM dengan lapisan penghematan open source",
-      "notify": "Ingatkan saya di Product Hunt",
-      "live": "Lihat di Product Hunt"
+      "notify": "Ingatkan saya di {platform}",
+      "live": "Lihat di {platform}",
+      "carousel": "Platform peluncuran",
+      "pause": "Jeda rotasi",
+      "play": "Lanjutkan rotasi",
+      "show": "Tampilkan {platform}"
     }
   },
   "invitacion": {

@@ -2,14 +2,9 @@
 
 import { useEffect, useState, useSyncExternalStore } from "react";
 
-import { ArrowRightIcon } from "./icons";
 import {
   INSIGNIA_PH,
-  URL_TARJETA_PH,
-  atado,
-  botonDeLaTarjeta,
   insigniaAlcanzable,
-  partirCola,
   programarFranja,
   tocaInsignia,
   varianteAlMontar,
@@ -64,7 +59,7 @@ function useVariante(inicial: Variante): { base: Variante; activa: Variante } {
 
 /**
  * LA INSIGNIA OFICIAL DE PRODUCT HUNT (tema light), en el héroe de la portada
- * (solo la semana del lanzamiento) y en el pie (desde el lanzamiento, siempre).
+ * (solo durante la campaña, dos semanas) y en el pie (desde el lanzamiento, siempre).
  *
  * Qué pinta, según la ventana de la CARGA (`base`):
  *   · si toca: el enlace con la imagen de PH, 250×54 reservados por los
@@ -120,38 +115,6 @@ export function InsigniaProductHunt({ lugar, inicial, nuevaPestana }: { lugar: L
         fetchPriority="low"
         referrerPolicy="strict-origin-when-cross-origin"
       />
-      <span className="sr-only"> {nuevaPestana}</span>
-    </a>
-  );
-}
-
-/**
- * El botón coral de la tarjeta nativa «Find us on Product Hunt». Sus dos
- * textos —«avísame» antes del lanzamiento, «échale un vistazo →» desde él— se
- * apilan SIEMPRE en la misma celda de rejilla y solo se ve el que toca: el
- * botón, y con él la tarjeta, miden lo mismo en las tres ventanas, al hidratar
- * y al cruzar la frontera con la pestaña abierta. El guion previo cambia el
- * visible antes del primer pintado si la página es de un build viejo.
- */
-export function BotonProductHunt({ inicial, aviso, vivo, nuevaPestana }: { inicial: Variante; aviso: string; vivo: string; nuevaPestana: string }) {
-  const { activa } = useVariante(inicial);
-  const visible = botonDeLaTarjeta(activa);
-  const [cabeza, cola] = partirCola(atado(vivo));
-  return (
-    <a className="ph-boton" href={URL_TARJETA_PH} target="_blank" rel="noopener">
-      <span className="ph-pila">
-        <span data-ph-boton="aviso" data-oculta={visible !== "aviso" || undefined} aria-hidden={visible !== "aviso" || undefined}>
-          {atado(aviso)}
-        </span>
-        <span data-ph-boton="vivo" data-oculta={visible !== "vivo" || undefined} aria-hidden={visible !== "vivo" || undefined}>
-          {cabeza}
-          <span className="ph-cola">
-            {cola}
-            {" "}
-            <ArrowRightIcon />
-          </span>
-        </span>
-      </span>
       <span className="sr-only"> {nuevaPestana}</span>
     </a>
   );
