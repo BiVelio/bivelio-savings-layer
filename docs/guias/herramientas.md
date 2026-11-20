@@ -117,7 +117,7 @@ difference.
 **Which tools reach the model.** By default, all of them: every tool you pass to
 `layer.generate({ tools })` goes to the provider, read and write alike, whether or not
 your tools declare `intents` and `risk`, and the layer credits nothing for the tool
-block. Up to 1.2.2 a catalogue that declared `risk` lost its write tools on any request
+block. Before 1.2.3 a catalogue that declared `risk` lost its write tools on any request
 the router did not classify as an action; since 1.2.3 that gate is off unless you ask
 for it. Two options on the selector leave tools out, and both are opt-in:
 
