@@ -2681,6 +2681,9 @@ export class SavingsPipeline {
       this.avisarDeCatalogoGrande(request, toggles, toolSelection, cascada, costModel);
     }
     ledger.actualTools = toolSelection.tools.length;
+    // Las de escritura que el selector dejó fuera, para medir más abajo —por
+    // diferencia, sobre el prompt que de verdad sale— lo que NO se acredita.
+    let escriturasRetiradasPorElSelector: NonNullable<SavingsRequest["tools"]> = [];
     if (toolSelection.droppedIds.length) {
       // LIBRO 2. Hasta ahora `SavingsLedger.eliminate()` no tenía NI UN llamante
       // en todo `src/` —solo dos tests—, así que `tokens.eliminatedInput` salía 0
@@ -2710,10 +2713,9 @@ export class SavingsPipeline {
         .reduce((n, t) => n + this.tokensFor(textoDeHerramienta(t), request), 0);
       ledger.eliminate(tokensDescartados);
       // Y tampoco entra en el baseline reconstruido: se resta de
-      // `removedInputLocal` más abajo, como la elisión y la compactación.
-      ledger.withheldWritesLocal += retiradas
-        .filter((t) => t.risk !== "read")
-        .reduce((n, t) => n + this.tokensFor(textoDeHerramienta(t), request), 0);
+      // `removedInputLocal` más abajo, como la elisión y la compactación. Lo que
+      // pesa se mide allí, cuando ya se sabe qué prompt sale.
+      escriturasRetiradasPorElSelector = retiradas.filter((t) => t.risk !== "read");
       trace.record("tool-selector", toolSelection.reason, {
         dropped: toolSelection.droppedIds,
         eliminatedTokens: tokensDescartados,
@@ -3831,6 +3833,26 @@ export class SavingsPipeline {
       this.assemblePromptText(messages, herramientasAEnviar),
       request,
     );
+    // A2-28: LO QUE PESAN LAS DE ESCRITURA RETIRADAS SE MIDE POR DIFERENCIA, con
+    // el mismo ensamblador: el prompt enviado CON ellas menos el prompt enviado.
+    // Sumar el peso de cada una por separado se quedaba corto —el baseline las
+    // cuenta dentro del prompt, con el salto de línea que las une— y esa
+    // diferencia salía como ahorro: con la verja y solo escrituras retiradas, el
+    // informe publicaba dólares ahorrados y `basis: "estimated"` (1,5 % con tres
+    // retiradas de cuatro; hasta el 27 % si la petición se quedaba sin ninguna).
+    // En el orden del llamante, que es el del baseline: si nada más cambió, los
+    // dos textos son el mismo byte a byte y lo quitado es exactamente 0.
+    if (escriturasRetiradasPorElSelector.length > 0) {
+      const ordenDelLlamante = new Map((request.tools ?? []).map((t, i) => [t.id, i] as const));
+      const lugar = (t: { id: string }) => ordenDelLlamante.get(t.id) ?? Number.MAX_SAFE_INTEGER;
+      const conLasRetiradas = [...herramientasAEnviar, ...escriturasRetiradasPorElSelector].sort(
+        (a, b) => lugar(a) - lugar(b),
+      );
+      ledger.withheldWritesLocal = Math.max(
+        0,
+        this.tokensFor(this.assemblePromptText(messages, conLasRetiradas), request) - ledger.sentInputLocal,
+      );
+    }
     // Se descuenta `elididoLocal`: la elisión de tool_results bajó `sentInputLocal`
     // de verdad, pero su ahorro es CONTEO (ledger 2), no comisión —«conteo vivo +
     // dinero por sombra»—, así que no debe inflar el baseline reconstruido ni mover
