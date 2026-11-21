@@ -4,6 +4,7 @@ import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 
 import { generarContenido, MATEMATICA_EN_LINEA, renderModulo, RUTAS } from "../scripts/paper.js";
+import { resumir, type Ensayo } from "../benchmarks/publicados/gsm8k/medir.js";
 
 /**
  * EL PAPER Y SU PÁGINA NO PUEDEN DIVERGIR. `docs/PAPER.md` es la fuente; la
@@ -49,6 +50,34 @@ describe("paper: el markdown del repo y la página /paper, byte a byte", () => {
     }
     // El apéndice en español viaja con el paper.
     expect(md).toContain("Resumen en español");
+  });
+
+  it("no quedan frases de borrador del revisor (auditoría m06): remite a los scripts del repositorio", () => {
+    // La edición publicada decía «The draft needs author review … before submission» y
+    // citaba un «companion review package» que no está en el repositorio.
+    for (const ruta of [RUTAS.md, "docs/paper/main.tex", RUTAS.modulo]) {
+      const texto = readFileSync(raiz(ruta), "utf8").replace(/\s+/g, " ");
+      expect(texto, ruta).not.toMatch(/needs author review|before submission|companion review package|companion script/i);
+      expect(texto, ruta).toContain("benchmarks/publicados/gsm8k/medir.ts");
+    }
+  });
+
+  it("lo que el paper dice que el repositorio recalcula, se recalcula: resumir() sobre los ensayos guardados da lo publicado", () => {
+    const publicados = ["docs/benchmarks/2026-09-28/gsm8k-0431.json", "docs/benchmarks/2026-09-28/gsm8k-0431-claude.json"];
+    const puntos: number[] = [];
+    for (const ruta of publicados) {
+      const doc = JSON.parse(readFileSync(raiz(ruta), "utf8")) as {
+        modelos: Array<{ ensayos?: Ensayo[]; resumen?: { comparaciones: unknown } }>;
+      };
+      for (const m of doc.modelos) {
+        if (!m.ensayos) continue;
+        const recalculado = resumir(m.ensayos);
+        expect(recalculado.comparaciones).toEqual(m.resumen?.comparaciones);
+        for (const c of recalculado.comparaciones) if (c.brazo === "B") puntos.push(Math.round(c.ahorroMedido.point * 10_000) / 100);
+      }
+    }
+    // Los dos titulares del paper salen de aquí: 31.50 % (gpt-4o-mini) y 75.08 % (claude-sonnet-5).
+    expect(puntos).toEqual(expect.arrayContaining([31.5, 75.08]));
   });
 });
 
