@@ -464,3 +464,57 @@ describe("verificación final 1.2.4 · el cartel y los ejemplos", () => {
     expect(readme).toContain("The framework adapters have no observe-only mode");
   });
 });
+
+/**
+ * VERIFICACIÓN 2 DE LA 1.2.4: al integrar un borrador se coló en CHANGELOG.md la
+ * mitad de un comentario HTML con notas internas en español («AÑADE el de la
+ * elisión…», «Ver gate-medir/.») y un «-->» suelto. CHANGELOG.md va en el
+ * tarball de npm (`files`) y se ve en GitHub, y release-candidate.test.ts pasó
+ * con ello dentro. Aquí se exige que ningún .md que se publica tenga un
+ * comentario a medias, y que la entrada 1.2.4 esté entera en inglés.
+ */
+describe("verificación 2 · los .md que se publican no llevan notas internas", () => {
+  const paquete = JSON.parse(leer("package.json")) as { files: string[] };
+  const mdDe = (ruta: string): string[] => {
+    const abs = join(RAIZ, ruta);
+    let entradas: import("node:fs").Dirent[];
+    try {
+      entradas = readdirSync(abs, { withFileTypes: true });
+    } catch {
+      return ruta.endsWith(".md") ? [ruta] : [];
+    }
+    return entradas.flatMap((e) => mdDe(join(ruta, e.name)));
+  };
+  const publicados = [...new Set(["CHANGELOG.md", ...paquete.files.flatMap(mdDe)])];
+  const cuenta = (texto: string, aguja: string): number => texto.split(aguja).length - 1;
+
+  it("en CHANGELOG.md y en cada .md de `files` hay tantos «<!--» como «-->»", () => {
+    expect(publicados).toContain("CHANGELOG.md");
+    expect(publicados).toContain("README.md");
+    expect(publicados.some((f) => f.startsWith("docs/terminales/"))).toBe(true);
+    for (const f of publicados) {
+      const texto = leer(f);
+      expect(cuenta(texto, "<!--"), f).toBe(cuenta(texto, "-->"));
+    }
+  });
+
+  it("la entrada 1.2.4 del CHANGELOG no lleva «AÑADE», «gate-medir» ni texto en español", () => {
+    const changelog = leer("CHANGELOG.md");
+    const desde = changelog.indexOf("## 1.2.4");
+    expect(desde).toBeGreaterThan(-1);
+    const hasta = changelog.indexOf("\n## ", desde + 1);
+    const entrada = changelog.slice(desde, hasta === -1 ? undefined : hasta);
+    expect(entrada.length).toBeGreaterThan(2000);
+    expect(entrada).not.toContain("AÑADE");
+    expect(entrada).not.toContain("gate-medir");
+    expect(entrada).not.toContain("<!--");
+    expect(entrada).not.toContain("-->");
+    // Letras y signos que el inglés no usa, y palabras corrientes del español.
+    expect(entrada.match(/[ñÑáéíóúÁÉÍÓÚ¿¡«»]/g)).toBeNull();
+    expect(
+      entrada.match(
+        /\b(que|los|las|del|para|hasta|esta|rama|cifras|ambos|incluidos|proveedor|coste|frente|reloj|una|lectura|caduca|elisión|todavía|existe|añade|verja|recorte)\b/gi,
+      ),
+    ).toBeNull();
+  });
+});

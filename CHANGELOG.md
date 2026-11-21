@@ -9,13 +9,18 @@
   provider untouched and nothing was served from cache, so setting the free key
   saved less than setting none. From 1.2.4 a layer or a gateway with a Measure
   license does exactly what it does with no key: same calls, same request bodies,
-  same savings in the report. If you run Measure today, your traffic starts being cached,
+  same savings in the report (with one exception, below: with any license, trimming
+  of superseded tool results stays off on a provider the layer does not recognise,
+  as in 1.2.3). If you run Measure today, your traffic starts being cached,
   deduplicated, trimmed and cache-marked as soon as you upgrade, and the usage sent
   to your dashboard carries real savings instead of `shadow` records. Measure usage
   is still never billed. To keep only watching, opt in on any plan:
   `observeOnly: true` in the SDK, or `BVSALA_GATEWAY_OBSERVE_ONLY=1` in the gateway.
   In observe-only mode `report.measure.wouldHaveSaved` is reported as before, and
-  submitting a batch throws an `Error`, because a batch is itself a lever.
+  submitting a batch throws an `Error`, because a batch is itself a lever. Where a
+  keyless lever costs more than not using the layer (a system prompt that changes
+  on every request, for example: +21 % on Anthropic, as in 1.2.3 with no key), a
+  Measure layer now does too; `observeOnly: true` keeps the 1.2.3 behaviour.
 - **Pro, Team and Enterprise licenses carry every lever the open core has.** A paid
   license had one lever fewer than no key: trimming of superseded tool results
   (an old tool result is replaced by a stub when a newer call re-reads the same
@@ -23,8 +28,10 @@
   any plan now grants in the SDK everything the keyless mode grants, so that
   trimming runs by default with Pro and Team too. It is decided in the client, so it
   works with the license you already have. Opt out per request with
-  `savings: { elision: false }`. An expired, revoked or invalid license still fails
-  closed, as before.
+  `savings: { elision: false }`. Trimming steps aside where it would break a prompt
+  cache the provider is already reading and, with a license, on a provider the
+  layer does not recognise, as in 1.2.3 (see below). An expired, revoked or invalid
+  license still fails closed, as before.
 - **The gateway's levers no longer depend on your organization's feature list.**
   With a license of any plan, `bvsala` applies the same levers as with no keys: cache
   TTL tuning by default, and sibling model routing, per-turn effort and the context
@@ -34,50 +41,27 @@
   `BVSALA_GATEWAY_ELISION=0` still turns them all off, and a blocked, expired or
   revoked license still answers 402. The startup lines say "free on every plan"
   instead of "ON if your organization's licence includes …; fail-closed".
-- **A system prompt that changes…» hasta «…the console warning says so.», ambos incluidos).
-
-2) AÑADE el de la elisión (no existe todavía en la entrada 1.2.4).
-
-Cifras: proveedor falso que caduca la caché (5 min; una lectura renueva) y reloj simulado,
-coste con capa frente a sin capa, 1.2.3 (tarball de npm) → esta rama. Ver gate-medir/.
--->
-
-- **A system prompt that changes on every request stops paying the cache-write
-  premium once the layer has seen it does not come back.** With a value that
-  changes on every request inside the system prompt (the current time in any
-  format, a request ID, a per-request UUID), 1.2.3 marked the prefix for provider
-  caching on every Anthropic request and never read it back: +21 % against not
-  using the layer. The prefix-cache gate now watches, without marking anything,
-  whether each system header (tools plus system prompt) is sent again before its
-  cache entry expires (5 minutes, or 1 hour for a one-hour write). Once at least
-  90 % of the recent headers for a model and tool set have expired without coming
-  back, it stops marking headers it has not seen before; a header that is sent
-  again is marked as in 1.2.3, and new headers are marked again as soon as headers
-  start coming back. Measured over 600 requests with a fake provider that expires
-  its cache: one every 2 seconds with the time to the second, +21.0 % → +5.8 %;
-  one a minute with "10:42 AM", +21.0 % → +0.7 %; one a second with a UUID v7 or a
-  request ID, +21.0 % → +11.0 %. Until the first headers have had time to expire
-  the layer marks exactly as 1.2.3 did, so a short run of such requests costs what
-  it did in 1.2.3. A session ID, today's date or a customer number in the system
-  prompt comes back on the next turn, before its cache entry expires, so those
-  conversations are marked as in 1.2.3. To get the cache discount on such a
-  prompt, move the changing value out of the system prompt (into the user turn),
-  or write it as an ISO 8601 timestamp, Unix epoch or UUID v4 on a line of its
-  own and set `savings.cachePrefix: true` (that option only moves values it
-  recognises); the console warning says so.
-
-- **Tool-result elision no longer replaces an old result when that would break a
+- **Tool-result elision no longer replaces an old result where that would break a
   prompt cache the provider is already reading.** Replacing an old tool result
   with a stub changes the middle of the history, so everything after it is billed
-  again at full price. On models that cache the whole prompt automatically and
-  bill cached input at 10–25 % (gpt-5, gpt-4.1 and the o series), and with
+  again at full price. Elision now leaves the history untouched, and the `elision`
+  trace says why, on models that cache the whole prompt automatically and bill
+  cached input at 10–25 % (gpt-5, gpt-4.1 and the o series), on Gemini, and with
   `cacheBreakpoints: "auto"` on Anthropic, which places cache points inside the
-  history, elision now leaves the history untouched and the `elision` trace says
-  why. Measured on a 60-step agent loop with a fake provider: gpt-5 goes from
-  +12.2 % to 0 % against not using the layer, and Anthropic with `"auto"` from
-  −71.5 % to −84.4 %. Without a key this already happened in 1.2.3; since every
-  plan now elides, it would have reached Pro, Team, Enterprise and Measure too.
-  gpt-4o-mini and Anthropic with the default placement elide as before.
+  history. With the default placement on Anthropic it only replaces results from
+  the tool loop in progress (after your last user message), never the ones already
+  in the history the layer marks for caching (`elision` trace `partial`). With a
+  license, on a provider the layer does not recognise, elision stays off, as in
+  1.2.3. Measured with a fake provider, cost against not using the layer, 1.2.3 →
+  1.2.4 with no key: a 60-step agent loop on gpt-5, +12.2 % → 0 %; on Gemini 2.5
+  Flash, +11.9 % → 0 %; on Anthropic with `"auto"`, −71.5 % → −84.4 %; a 12-turn
+  support chat on Claude Sonnet 4.5 that re-reads the same file every turn,
+  −30.1 % → −67.2 %. With Pro, which did not elide in 1.2.3, no load costs more than
+  in 1.2.3, and agent loops on Anthropic go from 0 % to −71.6 % and on gpt-4o from
+  0 % to −58.7 %. Other providers that cache the whole prompt automatically
+  (DeepSeek and Qwen, for example) still elide with no key, as in 1.2.3: on a
+  60-step agent loop that costs +166 % (DeepSeek) and +13 % (Qwen) against not
+  using the layer in both versions, so set `savings: { elision: false }` there.
 - **`bvsala` shows the money when it exits.** The exit summary of the terminal
   wrappers adds the spend at list price and the saving by basis (measured, by
   reference, estimated). When nothing was saved it says why: on a subscription no
