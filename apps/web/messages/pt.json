@@ -156,7 +156,7 @@
     "workEmail": "Email profissional",
     "password": "Palavra-passe",
     "createAccountCta": "Criar conta →",
-    "signupLegal": "Ao criar a conta, aceitas as <terms>condições do Savings Cloud</terms> e a <privacy>política de privacidade</privacy>.",
+    "signupLegal": "Ao criar a conta, aceita as <terms>condições do Savings Cloud</terms> e a <privacy>política de privacidade</privacy>.",
     "signInCta": "Iniciar sessão →",
     "loadingEllipsis": "…",
     "notWired": "O início de sessão ainda não está configurado — define NEXT_PUBLIC_SUPABASE_ANON_KEY no deploy.",
