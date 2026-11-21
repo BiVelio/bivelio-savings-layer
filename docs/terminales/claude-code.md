@@ -1,7 +1,7 @@
 # Claude Code through the gateway
 
-**Source:** `docs/PASARELA-S3-TERMINALES.md` §1 (conformance with Claude Code's
-official gateway protocol, read in full on 2026-08-30). It is the reference
+Conformance with Claude Code's official gateway protocol, read in full on
+2026-08-30. It is the reference
 terminal: the passthrough meets 10 of the protocol's 12 requirements by
 construction, with a test.
 

@@ -39,7 +39,7 @@
   (the current time, for example), 1.2.3 marked the prefix for provider caching on
   every Anthropic request and never read it back: in a run of 60 such requests all
   60 were marked, +21.6 % against not using the layer. The prefix-cache gate now also counts per class of request (model,
-  tools and placement) when the prefix carries history or per-request content is
+  tools and placement) when per-request content is
   detected in the system prompt: 8 of 60 are marked, +2.9 %, and it re-checks only
   occasionally afterwards. Sessions that each have their own stable system prompt
   are marked as in 1.2.3. To get the cache discount on such a prompt, put the
