@@ -24,7 +24,10 @@ import { orgsExentasPorMedir } from "@/lib/billing/plan-de-la-org";
  *    opcional pasa intacto al carril sombra, como siempre;
  *  · los topes NO cambian: asientos por mes (402 `measure-seat-limit`) y volumen
  *    diario (429 `measure-volume-limit`), y fail-open si no se pueden leer;
- *  · una org de PAGO no se toca (el mismo lote conserva su ahorro y su referencia).
+ *  · una org de PAGO no se toca (el mismo lote conserva su ahorro y su referencia);
+ *  · si la lectura de licencias o suscripciones falla, se reintenta UNA vez y,
+ *    si sigue fallando, 503 sin tocar la RPC: nunca un lote a ciegas (revisión
+ *    de #612; antes era fail-open y una org ex-comisión en Measure acababa con cargo).
  */
 
 const ORG = "99999999-9999-4999-8999-999999999999";
@@ -40,6 +43,10 @@ const COMISION_CANCELADA = [{ status: "canceled", current_period_end: "2026-10-0
 let asientosDelMes: { seat_id: string }[] = [];
 let peticionesHoy = 0;
 let fallarLecturaDeTopes = false;
+/** Cuántas lecturas de cada tabla del entitlement fallan antes de responder bien (0 = ninguna). */
+let fallosDeLectura: { licenses: number; subscriptions: number } = { licenses: 0, subscriptions: 0 };
+/** Cuántas veces se leyó cada tabla del entitlement en la petición. */
+let lecturas: { licenses: number; subscriptions: number } = { licenses: 0, subscriptions: 0 };
 let rpc: { args: { p_org: string; records: Array<Record<string, unknown>> } } | null = null;
 
 function consulta(tabla: string) {
@@ -51,8 +58,14 @@ function consulta(tabla: string) {
     );
   q["eq"] = () => {
     if (tabla === "service_accounts") return { maybeSingle: async () => ({ data: { org_id: ORG }, error: null }) };
-    if (tabla === "licenses") return Promise.resolve({ data: licencias, error: null });
-    if (tabla === "subscriptions") return Promise.resolve({ data: suscripciones, error: null });
+    if (tabla === "licenses" || tabla === "subscriptions") {
+      lecturas[tabla] += 1;
+      if (fallosDeLectura[tabla] > 0) {
+        fallosDeLectura[tabla] -= 1;
+        return Promise.resolve({ data: null, error: { message: "boom" } });
+      }
+      return Promise.resolve({ data: tabla === "licenses" ? licencias : suscripciones, error: null });
+    }
     return q;
   };
   q["maybeSingle"] = async () =>
@@ -141,6 +154,8 @@ beforeEach(() => {
   asientosDelMes = [];
   peticionesHoy = 0;
   fallarLecturaDeTopes = false;
+  fallosDeLectura = { licenses: 0, subscriptions: 0 };
+  lecturas = { licenses: 0, subscriptions: 0 };
   rpc = null;
 });
 
@@ -341,5 +356,109 @@ describe("ingesta de una org Medir · los topes", () => {
   it("el lote vacío (la sonda «Test my key») sigue siendo 202 para una org Medir", async () => {
     const res = await POST(peticion([]));
     expect(res.status).toBe(202);
+  });
+});
+
+describe("ingesta · la lectura del entitlement falla: reintento y, si no, 503 (nunca a ciegas)", () => {
+  it.each(["licenses", "subscriptions"] as const)("%s falla DOS veces → 503 `entitlement lookup failed` y la RPC sin llamar", async (tabla) => {
+    fallosDeLectura[tabla] = 2;
+    const res = await POST(peticion([registro(), referencia()]));
+    expect(res.status).toBe(503);
+    expect(await res.json()).toEqual({ error: "entitlement lookup failed" });
+    expect(rpc).toBeNull();
+    // Exactamente UN reintento de las dos lecturas, no un bucle.
+    expect(lecturas).toEqual({ licenses: 2, subscriptions: 2 });
+  });
+
+  it.each(["licenses", "subscriptions"] as const)("%s falla UNA vez y la segunda va bien → ingesta normal, con topes y candado", async (tabla) => {
+    fallosDeLectura[tabla] = 1;
+    const res = await POST(peticion([registro(), referencia()]));
+    expect(res.status).toBe(202);
+    expect(lecturas).toEqual({ licenses: 2, subscriptions: 2 });
+    expect(rpc!.args.records).toHaveLength(2);
+    // Org Medir pura: el ahorro medido entra intacto y la referencia, degradada.
+    expect(rpc!.args.records[0]!["baselineCost"]).toBe(0.02);
+    expect(rpc!.args.records.some((r) => r["basis"] === "reference")).toBe(false);
+  });
+
+  it("sin fallo, las dos tablas se leen UNA sola vez (el reintento no es el camino normal)", async () => {
+    await POST(peticion([registro()]));
+    expect(lecturas).toEqual({ licenses: 1, subscriptions: 1 });
+  });
+
+  it("una org de PAGO con la lectura caída también recibe 503: su emisor reencola el lote ante 5xx y lo reenvía", async () => {
+    licencias = PRO;
+    fallosDeLectura.licenses = 2;
+    const res = await POST(peticion([registro(), referencia()]));
+    expect(res.status).toBe(503);
+    expect(rpc).toBeNull();
+    // La lectura vuelve y el mismo lote, reenviado, entra completo.
+    const otra = await POST(peticion([registro(), referencia()]));
+    expect(otra.status).toBe(202);
+    expect(rpc!.args.records.map((r) => r["basis"])).toEqual(["measured", "reference"]);
+  });
+
+  /**
+   * EL ATAQUE DEL REVISOR. Una org que tuvo la modalidad con comisión y volvió a
+   * Measure, con un cliente 1.2.4 (que ahorra de verdad), y la lectura caída. Con
+   * el fail-open el lote entraba sin neutralizar y con referencias: 4 000 $ de
+   * ahorro medido en la base, exenta=false, cargo_eur=308. Su único candado es
+   * la neutralización de la ingesta (el cierre no la exime a propósito).
+   */
+  const ataque = () => [registro({ baselineCost: 5000, actualCost: 1000 }), referencia()];
+  const cargoDe = (registros: Array<Record<string, unknown>>) => {
+    const exentas = orgsExentasPorMedir([{ org_id: ORG, issued_at: "2026-11-01T00:00:00Z" }], suscripciones.map((s) => ({ org_id: ORG, ...s })), PRECIOS, "2026-12-01");
+    const [cierre] = cerrarPeriodo(
+      [{ orgId: ORG, filas: [filaDiariaDe(registros)], primerPeriodoConUso: "2026-10", comisionExenta: exentas.has(ORG) }],
+      "2026-11",
+      { eurPorUsd: 0.9, fuente: "test" },
+    );
+    return cierre!;
+  };
+
+  it("EL ARNÉS MUERDE: ese mismo lote, si entrara sin neutralizar, SÍ generaría cargo", () => {
+    suscripciones = COMISION_CANCELADA;
+    const cierre = cargoDe(ataque());
+    expect(cierre.es_exento).toBe(false);
+    expect(cierre.cargo_eur).toBeGreaterThan(0);
+  });
+
+  it("org ex-comisión en Measure + cliente 1.2.4 + lectura fallida: 503, nada en la base, ningún cargo", async () => {
+    suscripciones = COMISION_CANCELADA;
+    fallosDeLectura.licenses = 2;
+    const res = await POST(
+      new Request("https://savings.bivelio.com/api/metering/usage", {
+        method: "POST",
+        headers: { "content-type": "application/json", authorization: "Bearer bvk_test", "x-bvsala-version": "sdk/1.2.4" },
+        body: JSON.stringify(ataque()),
+      }),
+    );
+    expect(res.status).toBe(503);
+    expect(rpc).toBeNull();
+
+    // El emisor lo reenvía; con la lectura de vuelta entra NEUTRALIZADO y el extracto cobra 0.
+    const reenvio = await POST(
+      new Request("https://savings.bivelio.com/api/metering/usage", {
+        method: "POST",
+        headers: { "content-type": "application/json", authorization: "Bearer bvk_test", "x-bvsala-version": "sdk/1.2.4" },
+        body: JSON.stringify(ataque()),
+      }),
+    );
+    expect(reenvio.status).toBe(202);
+    for (const r of rpc!.args.records) {
+      expect(r["basis"]).not.toBe("reference");
+      expect(r["baselineCost"]).toBe(r["actualCost"]);
+    }
+    const cierre = cargoDe(rpc!.args.records);
+    expect(cierre.es_exento).toBe(false);
+    expect(cierre.cargo_eur).toBe(0);
+  });
+
+  it("y si la lectura falla solo la primera vez, ese lote entra ya neutralizado: ningún cargo", async () => {
+    suscripciones = COMISION_CANCELADA;
+    fallosDeLectura.subscriptions = 1;
+    const res = await POST(peticion(ataque()));
+    expect(res.status).toBe(202);
+    expect(cargoDe(rpc!.args.records).cargo_eur).toBe(0);
   });
 });

@@ -65,41 +65,50 @@ export async function POST(req: Request): Promise<NextResponse> {
   // tier; ver `decideEntitlement`). La lógica refleja la del SDK para que no se
   // contradigan.
   //
-  // Fail-OPEN ante error de BD: el trabajo primario de este endpoint es no
-  // PERDER datos de facturación, así que un fallo transitorio de la consulta de
-  // entitlement no debe descartar el uso de un cliente que paga. La revocación
-  // la refuerzan también el gate del SDK y el poller; una ventana breve durante
-  // una caída de BD es aceptable, tirar el uso legítimo no.
+  // Fail-CLOSED ante error de BD, con UN reintento (decisión del dueño,
+  // 21-11-2026). Hasta la 1.2.3 esto era fail-open: un fallo de la consulta
+  // dejaba entrar el lote a ciegas. Desde la 1.2.4 el cliente Measure ahorra de
+  // verdad, y un lote que entra sin saber quién es la org entra SIN topes y SIN
+  // el candado de cobro: en una org Measure con historia de comisión (a la que
+  // el cierre no exime a propósito) ese lote acababa en la base de comisión. Así
+  // que: se reintentan una vez las dos lecturas y, si siguen fallando, 503 SIN
+  // llamar a la RPC. No se pierde uso de quien paga: el emisor reencola el lote
+  // ante cualquier 5xx (src/metering/emitter.ts) y lo reenvía en el siguiente
+  // flush, cuando la lectura ya responde.
   // TODAS las suscripciones de la org, no solo la más nueva. Con `limit(1)` una
   // fila NO vigente más reciente hacía sombra a la vigente más antigua y el
   // ingest devolvía 402 a un cliente que paga. Ver `hasActiveSubscription`.
-  const [{ data: licenses, error: licErr }, { data: subs, error: subErr }] = await Promise.all([
-    supabase.from("licenses").select("revoked, expires_at, grace_days, plan").eq("org_id", orgId),
-    supabase.from("subscriptions").select("status, current_period_end, price_id").eq("org_id", orgId),
-  ]);
+  const leerEntitlement = () =>
+    Promise.all([
+      supabase.from("licenses").select("revoked, expires_at, grace_days, plan").eq("org_id", orgId),
+      supabase.from("subscriptions").select("status, current_period_end, price_id").eq("org_id", orgId),
+    ]);
+  let [{ data: licenses, error: licErr }, { data: subs, error: subErr }] = await leerEntitlement();
+  if (licErr || subErr) {
+    console.warn("[metering/usage] entitlement lookup failed, retrying once:", licErr ?? subErr);
+    [{ data: licenses, error: licErr }, { data: subs, error: subErr }] = await leerEntitlement();
+  }
+  if (licErr || subErr) {
+    console.error("[metering/usage] entitlement lookup failed twice (fail-closed, 503):", licErr ?? subErr);
+    return NextResponse.json({ error: "entitlement lookup failed" }, { status: 503 });
+  }
   // ¿Solo licencia Medir (gratuita)? Entonces su uso entra para el panel, con
   // topes y PROTEGIDO: jamás comisión ni referencia cobrable. Desde la 1.2.4 su
   // ahorro real se guarda (ver `protegerIngestaDeMedir`); solo se neutraliza
   // como antes si la organización tiene o tuvo la modalidad con comisión.
-  let soloMedir = false;
-  let historiaDeComision = false;
-  if (licErr || subErr) {
-    console.error("[metering/usage] entitlement lookup failed (fail-open):", licErr ?? subErr);
-  } else {
-    const decision = decideEntitlement(licenses ?? [], subs ?? [], Date.now());
-    soloMedir = decision.reason === "measure-license";
-    historiaDeComision = tieneHistoriaDeComision((subs ?? []) as SuscripcionConPrecio[], preciosSinComision());
-    if (decision.blocked) {
-      return NextResponse.json(
-        {
-          error: "subscription required",
-          reason: decision.reason,
-          detail:
-            "This organization has no active BiVelio license or subscription. Subscribe or renew at https://savings.bivelio.com/dashboard/account",
-        },
-        { status: 402 },
-      );
-    }
+  const decision = decideEntitlement(licenses ?? [], subs ?? [], Date.now());
+  const soloMedir = decision.reason === "measure-license";
+  const historiaDeComision = tieneHistoriaDeComision((subs ?? []) as SuscripcionConPrecio[], preciosSinComision());
+  if (decision.blocked) {
+    return NextResponse.json(
+      {
+        error: "subscription required",
+        reason: decision.reason,
+        detail:
+          "This organization has no active BiVelio license or subscription. Subscribe or renew at https://savings.bivelio.com/dashboard/account",
+      },
+      { status: 402 },
+    );
   }
 
   let records;
