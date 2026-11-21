@@ -149,6 +149,11 @@ describe("bvsala doctor — la forma exacta del base URL por terminal", () => {
   it("Claude Code y Codex remiten a sus envoltorios", async () => {
     const { texto } = await vacio();
     expect(seccion(texto, "claude")).toContain("use `bvsala claude`");
+    // La forma manual, como docs/terminales/claude-code.md: ENABLE_TOOL_SEARCH=true «is not optional».
+    expect(seccion(texto, "claude")).toMatch(/by hand: ENABLE_TOOL_SEARCH=true ANTHROPIC_BASE_URL=http:\/\/127\.0\.0\.1:\d+ claude/);
+    expect(readFileSync(new URL("../docs/terminales/claude-code.md", import.meta.url), "utf8")).toContain(
+      "ENABLE_TOOL_SEARCH=true ANTHROPIC_BASE_URL=http://127.0.0.1:8402 claude",
+    );
     expect(seccion(texto, "codex")).toContain("use `bvsala codex`");
   });
 

@@ -855,7 +855,10 @@ if (envoltorio && esEnvoltorio) {
   } else if (host === "api.anthropic.com" || up.upstream === undefined) {
     console.log(
       `[bvsala gateway] point your terminal at it (or use \`bvsala ${TERMINALES_CON_ENVOLTORIO.join("|")}\`):  ` +
-        `ANTHROPIC_BASE_URL=http://127.0.0.1:${arranque.puerto} claude   ·   bvsala doctor for the others`,
+        // ENABLE_TOOL_SEARCH=true como en docs/terminales/claude-code.md («not optional»): sin
+        // ella, contra un host que no es el oficial, Claude Code manda todas las
+        // definiciones de herramientas en cada petición.
+        `ENABLE_TOOL_SEARCH=true ANTHROPIC_BASE_URL=http://127.0.0.1:${arranque.puerto} claude   ·   bvsala doctor for the others`,
     );
   } else {
     console.log(

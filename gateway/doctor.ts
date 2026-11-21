@@ -79,7 +79,8 @@ const TERMINALES: readonly Terminal[] = [
     detectable: true,
     receta: ({ base }) => [
       "use `bvsala claude` — starts the gateway on an ephemeral port, launches `claude` pointed at it and shuts it down on exit.",
-      `by hand: ANTHROPIC_BASE_URL=${base} claude   (no /v1: the client appends /v1/messages)`,
+      // Igual que docs/terminales/claude-code.md: ENABLE_TOOL_SEARCH=true «is not optional».
+      `by hand: ENABLE_TOOL_SEARCH=true ANTHROPIC_BASE_URL=${base} claude   (no /v1: the client appends /v1/messages)`,
     ],
   },
   {
