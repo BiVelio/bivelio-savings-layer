@@ -53,6 +53,21 @@ describe("«Instalar gratis» no promete lo que sin clave no pasa", () => {
     }
   });
 
+  // Pegar el bloque del gateway ENTERO ponía BIVELIO_SERVICE_KEY=bvk_… (el
+  // marcador) y `bvsala claude` no arrancaba: «could not collect your license…
+  // The gateway does not start without a verified license» (exit 1, comprobado
+  // con el tarball de la 1.2.4). La línea opcional va comentada, como el
+  // marcador que es.
+  it("los bloques del gateway llevan la clave opcional comentada (portada y /how-it-works, macOS/Linux y Windows)", () => {
+    const portada = codigo("app/[locale]/page.tsx");
+    const como = codigo("app/[locale]/how-it-works/page.tsx");
+    for (const [f, src] of [["portada", portada], ["how-it-works", como]] as const) {
+      expect(src, f).not.toMatch(/\{"export "\}\s*<span className="s">BIVELIO_/);
+      expect(src, f).toMatch(/\{"# export "\}\s*<span className="s">BIVELIO_SERVICE_KEY<\/span>/);
+    }
+    expect(como).toMatch(/\{"# "\}\s*<span className="s">\$env:BIVELIO_SERVICE_KEY<\/span>/);
+  });
+
   it("en: medido o estimado, en tu máquina, y sin clave no llega nada", () => {
     const en = cargar("en");
     expect(en["howItWorks.snipResult"]).toBe("the saving, with its basis: measured or estimated");

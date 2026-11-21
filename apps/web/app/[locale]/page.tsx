@@ -594,8 +594,8 @@ export default async function LandingPage({ params }: { params: Promise<{ locale
                 >
                   <pre className="code">
                     {"npm i -g @bivelio/savings-layer\n"}
-                    {"# optional: cloud dashboard\n"}
-                    {"export "}
+                    {"# optional, only for the cloud dashboard:\n"}
+                    {"# export "}
                     <span className="s">BIVELIO_SERVICE_KEY</span>
                     {"=bvk_…\n"}
                     <span className="k">bvsala</span>
