@@ -105,7 +105,7 @@ On startup it prints, among others, these lines:
 
 ```
 [bvsala gateway] v1.2.x listening on http://127.0.0.1:8402 → https://api.anthropic.com
-[bvsala gateway] COMMUNITY MODE (open core): every local saving lever on, zero telemetry - no BiVelio keys set
+[bvsala gateway] COMMUNITY MODE (open core): free, zero telemetry - no BiVelio keys set
 [bvsala gateway] metering: LOCAL ONLY (community mode, no BiVelio service key): every request is measured on this machine with the provider's usage and nothing is sent to BiVelio · per-request reports with x-bvsala-report
 ```
 

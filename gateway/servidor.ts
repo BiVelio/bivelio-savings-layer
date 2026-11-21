@@ -95,13 +95,26 @@ import { BV_SALA_VERSION } from "../src/version.js";
 
 /**
  * El aviso de la licencia Medir en la pasarela (una vez por proceso). En inglés
- * y ASCII, como todo lo que ve el cliente: qué hace y cómo se pasa a pago.
+ * y ASCII, como todo lo que ve el cliente.
+ *
+ * Hasta la 1.2.3 decía «Measure license: SHADOW mode…»: con el plan `measure` la
+ * pasarela era un paso limpio. Desde la 1.2.4 la licencia gratuita de la nube
+ * ahorra igual que el modo comunitario, y el cartel dice eso.
  */
 export const AVISO_GATEWAY_MEDIR =
-  "[bvsala gateway] Measure license: SHADOW mode. Requests are forwarded to the provider byte for byte " +
-  "(no levers, no coalescing, no usage injection) and your usage is measured; what a lever would have " +
-  "saved shows on your dashboard as an estimate, never billed. To turn the levers on, upgrade at " +
-  "https://savings.bivelio.com/dashboard/account - the gateway picks up the new license by itself.";
+  "[bvsala gateway] Measure license (free): the same levers as with no BiVelio keys apply, " +
+  "and your usage and real savings are metered to your dashboard. Measure never bills anything. " +
+  "To only observe without touching traffic, set BVSALA_GATEWAY_OBSERVE_ONLY=1.";
+
+/**
+ * El aviso del modo SOLO-OBSERVAR (`BVSALA_GATEWAY_OBSERVE_ONLY=1`), una vez por
+ * proceso. Es la sombra que hasta la 1.2.3 forzaba la licencia Medir, ahora
+ * opcional y en cualquier plan.
+ */
+export const AVISO_GATEWAY_SOLO_OBSERVAR =
+  "[bvsala gateway] OBSERVE-ONLY mode (BVSALA_GATEWAY_OBSERVE_ONLY=1). Requests are forwarded to the provider " +
+  "byte for byte (no levers, no coalescing, no usage injection) and your usage is measured; what a lever would " +
+  "have saved is reported separately as an estimate, never as a measured saving. Unset the variable to save.";
 import {
   VigiaDeDegradacion,
   degradacionDeCache,
@@ -170,6 +183,19 @@ export interface OpcionesGateway {
    * turno con la elisión encendida y lo emite como `basis:"shadow"`.
    */
   sombra?: boolean;
+  /**
+   * EL MODO SOLO-OBSERVAR (`BVSALA_GATEWAY_OBSERVE_ONLY=1`). APAGADO por defecto,
+   * en cualquier plan (comunitario, Medir o de pago). Con él la pasarela es un
+   * PASO LIMPIO: ninguna palanca (diales, modelo hermano, esfuerzo, TTL), ni
+   * coalescencia, ni inyección de usage — el cuerpo sale al upstream byte a byte
+   * como lo mandó el cliente, y lo que las palancas de precio habrían ahorrado
+   * se emite como registro `basis:"shadow"`.
+   *
+   * NO es `sombra` (BVSALA_GATEWAY_SHADOW), que solo ESTIMA la elisión mientras
+   * el resto de palancas actúa. Hasta la 1.2.3 este modo lo forzaba la licencia
+   * Medir; desde la 1.2.4 es solo una elección del operador.
+   */
+  soloObservar?: boolean;
   /**
    * S4a · el CANAL DE ENTITLEMENTS. Existe por defecto (`!== false`) siempre
    * que haya clave de servicio, porque de él cuelgan LAS DOS palancas: los
@@ -502,6 +528,12 @@ export async function arrancarGateway(opts: OpcionesGateway): Promise<GatewayArr
     ? buildLiveLicense(verificada, publicKey, revocation, now)
     : null;
   const planActual = (): string | undefined => live?.license.payload.plan;
+  // LA LICENCIA MEDIR AHORRA COMO EL MODO COMUNITARIO (1.2.4). Se pregunta por
+  // petición: la licencia se renueva en caliente (Medir ↔ de pago).
+  const esMedir = (): boolean => planActual() === "measure";
+  // El modo solo-observar es del OPERADOR y fijo para el proceso; ya no lo
+  // decide el plan.
+  const soloObservar = opts.soloObservar === true;
 
   let emisor: UsageEmitter | undefined;
   if (opts.serviceAccountKey) {
@@ -602,7 +634,7 @@ export async function arrancarGateway(opts: OpcionesGateway): Promise<GatewayArr
   // (sin clave no hay org que consultar). En modo comunitario el canal es
   // LOCAL y concede las palancas de la casa (context_elision, cache_ttl_tuning,
   // sibling_model_routing, per_turn_effort): open core = el ahorro entero.
-  const canal: FuenteDeEntitlements | null = opts.serviceAccountKey
+  const canalDeOrg: FuenteDeEntitlements | null = opts.serviceAccountKey
     ? new CanalDeEntitlements({
         url: baseLicencias
           ? `${baseLicencias}/api/org/entitlements`
@@ -615,13 +647,38 @@ export async function arrancarGateway(opts: OpcionesGateway): Promise<GatewayArr
     : comunidad
       ? new CanalComunitario()
       : null;
-  const palancasArmadas = canal !== null && opts.elision !== false;
+  // LA LICENCIA MEDIR CONCEDE LAS MISMAS PALANCAS QUE EL MODO COMUNITARIO (1.2.4).
+  //
+  // La nube sirve `features: []` para una org que solo tiene Medir (y así debe
+  // seguir: los clientes ≤ 1.2.3 las leen como sombra), de modo que el canal de
+  // org las negaría todas. Mientras el plan vigente sea `measure`, las palancas
+  // de la casa se conceden LOCALMENTE, como sin claves: ni más (las opcionales
+  // siguen pidiendo su bandera local) ni menos. Dos cosas NO cambian:
+  //  · el canal de org se sigue consultando en cada pregunta, porque de él sale
+  //    el `reason` con el que el control plane BLOQUEA una organización (y su
+  //    refresco en segundo plano cuelga de `tiene`);
+  //  · con cualquier otro plan manda la respuesta de la org, como siempre.
+  // Sin clave de servicio y con una Medir pegada a mano no hay org que consultar:
+  // se concede igual (antes de la 1.2.4 no había canal y nada actuaba).
+  const comunitario = new CanalComunitario();
+  const canal: FuenteDeEntitlements = {
+    tiene: (feature: string): boolean => {
+      const deLaOrg = canalDeOrg?.tiene(feature) ?? false;
+      return esMedir() ? comunitario.tiene() : deLaOrg;
+    },
+    blockReason: (): string | null => canalDeOrg?.blockReason() ?? null,
+  };
+  // ¿Hay canal del que cuelguen las palancas? Con claves de pago, solo con clave
+  // de servicio (como siempre); con Medir, siempre. Por petición: el plan cambia
+  // en caliente.
+  const hayCanal = (): boolean => canalDeOrg !== null || esMedir();
+  const palancasArmadas = (): boolean => hayCanal() && opts.elision !== false;
 
   // ── La verja por petición y sus transiciones ────────────────────────────
   const veredicto = (): Verdict =>
     comunidad
       ? { serve: true, state: "active" }
-      : licenseVerdict(live!.gate, canal?.blockReason() ?? null, live!.license.payload);
+      : licenseVerdict(live!.gate, canal.blockReason(), live!.license.payload);
   // El último estado ANUNCIADO: una línea por transición, nunca una por petición.
   let anunciado: GatewayLicenseState | null = null;
   if (!comunidad) {
@@ -768,7 +825,7 @@ export async function arrancarGateway(opts: OpcionesGateway): Promise<GatewayArr
      */
     sinCobro?: boolean,
     /**
-     * Licencia Medir · lo que la rebaja de TTL HABRÍA hecho con este cuerpo
+     * Modo solo-observar · lo que la rebaja de TTL HABRÍA hecho con este cuerpo
      * (marcas contadas, nada reescrito). Solo alimenta el registro `shadow`.
      */
     rebajaSombra?: RebajaAplicada | null,
@@ -825,11 +882,11 @@ export async function arrancarGateway(opts: OpcionesGateway): Promise<GatewayArr
           })
         : null;
       // EL NETO de la rebaja de TTL. Con la palanca APLICADA el fallo ocurrió
-      // y se observa en este usage; en SOMBRA (Medir) viajó intacto y es el
+      // y se observa en este usage; en SOMBRA (solo-observar) viajó intacto y es el
       // contrafactual del banco. En los dos casos el turno se cierra para que
       // el siguiente sepa qué quedó en riesgo. Una gemela no viajó: ni falla
       // ni deja nada cacheado.
-      const enSombraTtl = planActual() === "measure";
+      const enSombraTtl = soloObservar;
       let perdidosTtl = 0;
       if (turnoTtl && !coalescida) {
         perdidosTtl = enSombraTtl
@@ -915,7 +972,7 @@ export async function arrancarGateway(opts: OpcionesGateway): Promise<GatewayArr
       // S4 § 5). La cadena de simulación sí AVANZA (observar) — si no, el turno
       // siguiente compararía contra un previo viejo y su cifra saldría inflada.
       const borradoNuestro = elision?.atribuible === true && elision.tokensLimpiadosToolUses > 0;
-      // LICENCIA MEDIR: lo que las palancas de precio habrían ahorrado sobre ESTE
+      // MODO SOLO-OBSERVAR: lo que las palancas de precio habrían ahorrado sobre ESTE
       // usage, como UN registro `shadow` (la idempotencia es por requestId). Nada se
       // reescribió: es el hipotético. Solo contra el API oficial y con tráfico
       // facturado por token, que es donde la palanca cobraría. Dos piezas, con la
@@ -924,7 +981,7 @@ export async function arrancarGateway(opts: OpcionesGateway): Promise<GatewayArr
       //  · la rebaja de TTL: los tokens que el proveedor facturó como escritura de
       //    1h, a la prima de 5 min (`ahorroDeRebaja`), al precio del modelo que
       //    habría servido. Solo si la capa HABRÍA rebajado (`rebajaSombra`).
-      const enMedicionAhora = planActual() === "measure";
+      const enMedicionAhora = soloObservar;
       if (enMedicionAhora && !coalescida && path === "/v1/messages" && !suscripcion && upstreamOficial && sinCobro !== true) {
         try {
           const hipotesis = reescribirModelo(cuerpo, codificacion);
@@ -1080,14 +1137,16 @@ export async function arrancarGateway(opts: OpcionesGateway): Promise<GatewayArr
       return;
     }
 
-    // ── LA LICENCIA MEDIR · modo sombra ─────────────────────────────────────
-    // Con el plan `measure` la pasarela es un PASO LIMPIO: ninguna palanca
-    // (diales, modelo hermano, esfuerzo, TTL), ni coalescencia, ni inyección de
-    // usage, ni carril de elisión — el cuerpo sale al upstream byte a byte como
-    // lo mandó el cliente. Se decide POR PETICIÓN porque la licencia se renueva
-    // en caliente: al recoger la de pago, la siguiente petición ya las arma.
-    const enMedicion = planActual() === "measure";
-    if (enMedicion) avisarUnaVez("gateway-licencia-medir", AVISO_GATEWAY_MEDIR);
+    // ── EL MODO SOLO-OBSERVAR (BVSALA_GATEWAY_OBSERVE_ONLY=1) ───────────────
+    // Con él la pasarela es un PASO LIMPIO: ninguna palanca (diales, modelo
+    // hermano, esfuerzo, TTL), ni coalescencia, ni inyección de usage, ni carril
+    // de elisión — el cuerpo sale al upstream byte a byte como lo mandó el
+    // cliente. Hasta la 1.2.3 lo forzaba el plan `measure`; desde la 1.2.4 la
+    // licencia Medir ahorra como el modo comunitario y esto es solo una opción
+    // del operador, en cualquier plan.
+    const enMedicion = soloObservar;
+    if (enMedicion) avisarUnaVez("gateway-solo-observar", AVISO_GATEWAY_SOLO_OBSERVAR);
+    else if (esMedir()) avisarUnaVez("gateway-licencia-medir", AVISO_GATEWAY_MEDIR);
 
     // ── LAS RUTAS LOCALES (/_bvsala/v1/…) · informes-locales.ts ─────────────
     // Detrás de la verja de licencia, como todo, y jamás hacia el upstream.
@@ -1381,14 +1440,14 @@ export async function arrancarGateway(opts: OpcionesGateway): Promise<GatewayArr
       // reenvía el cuerpo intacto, jamás un error.
       let cuerpoSaliente = cuerpo;
       if (
-        palancasArmadas &&
+        palancasArmadas() &&
         !enMedicion &&
         // 2026-09-09 · cuarto interruptor, y el que manda: los diales quedan
         // APAGADOS salvo que alguien los arme a mano. Ver `dialesElision`.
         opts.dialesElision === true &&
         req.method === "POST" &&
         url.pathname === "/v1/messages" &&
-        canal!.tiene("context_elision")
+        canal.tiene("context_elision")
       ) {
         try {
           const ajustado = ajustarDiales(cuerpo, codificacion);
@@ -1436,21 +1495,21 @@ export async function arrancarGateway(opts: OpcionesGateway): Promise<GatewayArr
       }
 
       const quiereHermano =
-        palancasArmadas &&
+        palancasArmadas() &&
         !enMedicion &&
         opts.modeloHermano === true &&
         req.method === "POST" &&
         (url.pathname === "/v1/messages" || url.pathname === "/v1/messages/count_tokens");
       // La bandera puesta y la licencia sin el feature se dice UNA vez: sin
       // esto, quien paga y enciende C ve pasar el cuerpo intacto en silencio.
-      if (quiereHermano && !canal!.tiene("sibling_model_routing")) {
+      if (quiereHermano && !canal.tiene("sibling_model_routing")) {
         avisarUnaVez(
           "gateway-hermano-sin-feature",
           "[bvsala gateway] sibling model routing: the flag is set but your org's license does not include " +
             "sibling_model_routing; the request is forwarded unchanged (fail-closed).",
         );
       }
-      if (quiereHermano && canal!.tiene("sibling_model_routing")) {
+      if (quiereHermano && canal.tiene("sibling_model_routing")) {
         try {
           // Si los diales ya reescribieron, `cuerpoSaliente` es JSON plano.
           const cod = cuerpoSaliente === cuerpo ? codificacion : "identity";
@@ -1480,12 +1539,12 @@ export async function arrancarGateway(opts: OpcionesGateway): Promise<GatewayArr
       // reenvía lo que ya llevara `cuerpoSaliente`.
       let esfuerzoPuesto = false;
       if (
-        palancasArmadas &&
+        palancasArmadas() &&
         !enMedicion &&
         esNivel(opts.esfuerzo) &&
         req.method === "POST" &&
         url.pathname === "/v1/messages" &&
-        canal!.tiene("per_turn_effort")
+        canal.tiene("per_turn_effort")
       ) {
         try {
           const cod = cuerpoSaliente === cuerpo ? codificacion : "identity";
@@ -1512,7 +1571,7 @@ export async function arrancarGateway(opts: OpcionesGateway): Promise<GatewayArr
       let rebaja: RebajaAplicada | null = null;
       let turnoTtl: TurnoTtl | null = null;
       if (
-        palancasArmadas &&
+        palancasArmadas() &&
         !enMedicion &&
         req.method === "POST" &&
         url.pathname === "/v1/messages" &&
@@ -1520,7 +1579,7 @@ export async function arrancarGateway(opts: OpcionesGateway): Promise<GatewayArr
         // que ahorrar y a 5 min el contexto se reescribe tras cualquier pausa,
         // contra el límite del usuario. Viaja byte a byte como llegó.
         !suscripcion &&
-        canal!.tiene("cache_ttl_tuning")
+        canal.tiene("cache_ttl_tuning")
       ) {
         try {
           // La rebaja solo sabe leer cuerpos SIN comprimir; si los diales ya
@@ -1562,15 +1621,15 @@ export async function arrancarGateway(opts: OpcionesGateway): Promise<GatewayArr
         }
       }
 
-      // ── LA REBAJA DE TTL EN SOMBRA (licencia Medir) ─────────────────────
+      // ── LA REBAJA DE TTL EN SOMBRA (modo solo-observar) ─────────────────
       // La MISMA decisión que la palanca de arriba (memoria de prefijos por
       // hilo, fracción nueva, marcas de 1h que se rebajarían), sobre el cuerpo
       // del cliente y SIN reescribir nada: `cuerpoSaliente` no se toca y
       // `ttlReescrito` sigue en false. Solo anota QUÉ habría hecho la capa; el
       // dinero lo pone medir() con el usage medido (`rebajaSombra`), como
       // registro `shadow` — nunca aplicado, nunca cobrable. Sin mirar el canal
-      // de features: la Medir no trae ninguna, y la pregunta es qué haría la
-      // capa de pago, que lleva la rebaja encendida por defecto en Anthropic.
+      // de features: la pregunta es qué haría la capa con las palancas puestas,
+      // que lleva la rebaja encendida por defecto en Anthropic.
       let rebajaSombra: RebajaAplicada | null = null;
       if (enMedicion && !suscripcion && opts.elision !== false && req.method === "POST" && url.pathname === "/v1/messages") {
         try {

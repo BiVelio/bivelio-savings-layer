@@ -190,6 +190,13 @@ Environment:
   BVSALA_GATEWAY_SHADOW  =1 enables the shadow lane for context elision (experimental):
                          computes what the elision policy would have saved WITHOUT touching
                          traffic and reports it separately (never counted as a measured saving).
+                         Every other lever keeps acting; to turn them ALL off, see the next one.
+  BVSALA_GATEWAY_OBSERVE_ONLY
+                         =1 puts the gateway in OBSERVE-ONLY mode, on any plan: requests are
+                         forwarded byte for byte (no lever, no coalescing, no usage injection),
+                         usage is still metered, and what the price levers would have saved is
+                         reported separately as an estimate. Off by default: with no keys, with
+                         the free Measure license and with a paid one alike, the levers act.
   BVSALA_GATEWAY_ELISION =0 turns OFF the provider-side levers, which are on by default. With
                          no BiVelio keys (COMMUNITY mode) they are free and need no license.
                          Only with an organization license (BIVELIO_SERVICE_KEY) does that
@@ -594,6 +601,9 @@ try {
     // defecto.
     ...(process.env.BVSALA_GATEWAY_USAGE_INJECT === "1" ? { usageInject: true } : {}),
     ...(process.env.BVSALA_GATEWAY_SHADOW === "1" ? { sombra: true } : {}),
+    // El modo SOLO-OBSERVAR: paso limpio, en cualquier plan. No es
+    // BVSALA_GATEWAY_SHADOW (que solo estima la elisión con el resto actuando).
+    ...(process.env.BVSALA_GATEWAY_OBSERVE_ONLY === "1" ? { soloObservar: true } : {}),
     // S4a · el CANAL de entitlements, del que cuelgan las dos palancas. ARMADO
     // POR DEFECTO: el ahorro en el terminal tiene que funcionar SOLO. El gate
     // REAL son los features `context_elision` y `cache_ttl_tuning` en la licencia

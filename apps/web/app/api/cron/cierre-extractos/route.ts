@@ -4,7 +4,16 @@ import { NextResponse } from "next/server";
 import { cerrarPeriodo, periodoAnterior, resumenDelCierre, type UsoDeOrg } from "@/lib/billing/cierre";
 import type { FilaDiaria } from "@/lib/billing/extracto";
 import { obtenerFxCierre, type Fx } from "@/lib/billing/fx";
-import { idsSinComision, orgsSinComisionPorPlan, ESTADOS_CON_PLAN, type SuscripcionDeOrg } from "@/lib/billing/plan-de-la-org";
+import {
+  idsSinComision,
+  orgsExentasPorMedir,
+  orgsSinComisionPorPlan,
+  ESTADOS_CON_PLAN,
+  type LicenciaMedirDeOrg,
+  type SuscripcionConPrecio,
+  type SuscripcionDeOrg,
+} from "@/lib/billing/plan-de-la-org";
+import { PLAN_MEDIR } from "@/lib/license/medir";
 import { alertar } from "@/lib/observabilidad/alerta";
 import { preciosSinComision } from "@/lib/stripe/env";
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -203,6 +212,29 @@ export async function GET(req: Request): Promise<NextResponse> {
           .order("org_id", { ascending: true }),
       );
       for (const id of orgsSinComisionPorPlan(subs, precios)) exentas.add(id);
+    }
+    // LA LICENCIA GRATUITA MEDIR: cargo 0, SIEMPRE (lib/billing/plan-de-la-org.ts).
+    // Desde la 1.2.4 su ahorro medido se guarda para el panel, así que es aquí
+    // donde se garantiza que no se convierte en comisión. Quien tiene o tuvo la
+    // modalidad con comisión NO entra en esta exención (y su ingesta sigue
+    // neutralizada): su cierre es exactamente el de antes. Falla CERRADA con el
+    // resto del bloque: sin poder leerlo, el cierre se aplaza.
+    const medir = await leerTodo<LicenciaMedirDeOrg>(() =>
+      supabase
+        .schema("bvsala")
+        .from("licenses")
+        .select("id, org_id, issued_at")
+        .eq("plan", PLAN_MEDIR)
+        .lt("issued_at", `${hasta}T00:00:00Z`)
+        .order("id", { ascending: true }),
+    );
+    if (medir.some((l) => porOrg.has(String(l.org_id)))) {
+      // TODAS las suscripciones, en cualquier estado: una cancelada con comisión
+      // sigue contando como historia de comisión.
+      const todas = await leerTodo<SuscripcionConPrecio>(() =>
+        supabase.schema("bvsala").from("subscriptions").select("id, org_id, price_id").order("id", { ascending: true }),
+      );
+      for (const id of orgsExentasPorMedir(medir, todas, precios, hasta)) exentas.add(id);
     }
   } catch (error) {
     console.error("[cierre-extractos] la exención de comisión no se pudo leer:", error);

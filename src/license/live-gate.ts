@@ -23,7 +23,7 @@ export interface ResolvedGate extends LicenseGate {
    * branching does not change — but the advice given to the customer differs.
    */
   reason(): string | undefined;
-  /** The signed plan while the license grants (`"measure"` = shadow mode). */
+  /** The signed plan while the license grants (`"measure"` = the free cloud plan). */
   plan?(): string | undefined;
   /** Unix seconds after which the online status should be re-checked (poller anchor). */
   refreshAfter?(): number | undefined;
@@ -70,9 +70,20 @@ export function liveGateFromKey(
       ? verifyLicenseToken(key, publicKey)
       : { signatureValid: false as const, reason: shape };
   const payload: LicenseTokenPayload | undefined = v.signatureValid ? v.payload : undefined;
-  // Una licencia Medir («measure») no concede NINGÚN feature, lleve lo que lleve
-  // el token: el pipeline la corre en sombra y ninguna palanca se aplica.
-  const features = new Set<string>(payload?.plan === "measure" ? [] : (payload?.features ?? []));
+  // LA LICENCIA MEDIR («measure») CONCEDE LO MISMO QUE NO TRAER CLAVE (1.2.4).
+  //
+  // Hasta la 1.2.3 no concedía NINGÚN feature y el pipeline la corría en sombra:
+  // un resto del modelo cerrado anterior a la 1.0.0, cuando sin licencia no había
+  // capa. Desde el open core (#523) las palancas son gratis sin clave, así que la
+  // clave gratuita de la nube no puede dar MENOS que no poner ninguna. El token
+  // sigue saliendo con `features: []` (y los clientes ≤ 1.2.3 lo siguen leyendo
+  // como sombra): quien concede aquí es el PLAN, exactamente como el gate
+  // comunitario (license/community.ts), y solo mientras la licencia está viva.
+  // Lo de pago es la nube (asientos, volumen, panel de equipo), que se decide en
+  // el servidor: aquí no hay ningún feature que sea «solo de pago» y no esté ya
+  // abierto sin clave.
+  const comoComunidad = payload?.plan === "measure";
+  const features = new Set<string>(payload?.features ?? []);
 
   const status = (): LicenseStatus => {
     // Vacía tras normalizar = no hay clave. Es el mismo caso —y el mismo
@@ -128,7 +139,7 @@ export function liveGateFromKey(
   };
 
   return {
-    isEntitled: (feature: string) => granted() && features.has(feature),
+    isEntitled: (feature: string) => granted() && (comoComunidad || features.has(feature)),
     isActive: () => granted(),
     status,
     reason: () => (payload ? undefined : v.reason),
