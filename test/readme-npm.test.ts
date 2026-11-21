@@ -382,3 +382,39 @@ describe("el README dice la versión de Node del paquete y no habla de comisión
     expect(leer("docs/terminales/README.md")).not.toMatch(/commission/i);
   });
 });
+
+/**
+ * m27 · EL CHANGELOG Y LA FICHA DE PYPI (auditoría de medios).
+ *
+ * Las entradas 1.2.1 y 1.2.2 del CHANGELOG estaban en español entre entradas en
+ * inglés. En PyPI el paquete se declaraba «Beta» yendo por la 1.x, y el arranque
+ * del gateway empezaba con `export BIVELIO_SERVICE_KEY=…` como si la clave
+ * hiciera falta, unas líneas después de decir que no.
+ */
+describe("el CHANGELOG va en inglés y la ficha de PyPI no pide una clave ni se dice Beta", () => {
+  it("⛔ ninguna entrada del CHANGELOG lleva título ni cuerpo en español", () => {
+    const changelog = leer("CHANGELOG.md");
+    expect(changelog).toContain("## 1.2.2 — the three READMEs tell the same story");
+    expect(changelog).toContain("## 1.2.1 — README revised for the community, paper v2.3-r1 linked");
+    expect(changelog).not.toMatch(/[áéíóúñÁÉÍÓÚÑ¿¡«»]/);
+    expect(changelog).not.toMatch(/\b(Sin cambios de código|misma superficie|los tres READMEs|el README del)\b/);
+    // Las cifras son las mismas, con el punto decimal del resto del fichero.
+    expect(changelog).toContain("(0→95 % −82.76 %; 31.50 %/75.08 %)");
+  });
+
+  it("⛔ el paquete de Python no se declara Beta en una versión 1.x o posterior", () => {
+    const pyproject = leer("packages/python/pyproject.toml");
+    const estado = /"Development Status :: (\d) - ([^"]+)"/.exec(pyproject);
+    expect(estado).not.toBeNull();
+    const mayor = Number(/^version = "(\d+)\./m.exec(pyproject)?.[1] ?? /__version__ = "(\d+)\./.exec(leer("packages/python/src/bvsala/__init__.py"))?.[1]);
+    expect(Number.isInteger(mayor)).toBe(true);
+    if (mayor >= 1) expect(estado![0]).toBe('"Development Status :: 5 - Production/Stable"');
+  });
+
+  it("⛔ el README de PyPI no pone la clave de servicio como paso obligatorio para arrancar", () => {
+    const py = leer("packages/python/README.md");
+    expect(py).not.toMatch(/^export BIVELIO_SERVICE_KEY=/m);
+    expect(py).toContain("# export BIVELIO_SERVICE_KEY=…   # optional: adds the cloud dashboard");
+    expect(py).toMatch(/No keys required/);
+  });
+});

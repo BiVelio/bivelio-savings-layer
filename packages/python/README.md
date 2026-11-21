@@ -61,7 +61,7 @@ pip install ./packages/python
 One gateway per provider:
 
 ```bash
-export BIVELIO_SERVICE_KEY=…
+# export BIVELIO_SERVICE_KEY=…   # optional: adds the cloud dashboard
 npx -p @bivelio/savings-layer bvsala gateway                                 # Anthropic, on 8402
 npx -p @bivelio/savings-layer bvsala gateway --upstream openai --port 8403   # OpenAI, on 8403
 python -m bvsala --url http://127.0.0.1:8403 status                          # version, upstream, license
