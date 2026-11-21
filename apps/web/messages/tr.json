@@ -1254,11 +1254,11 @@
       "pasos": [
         {
           "title": "Yapay zekâ kelime başına ücret alır",
-          "body": "Yapay zekâya yapılan her istek, giren ve çıkan metne göre ödenir. Savings bu yolun ortasında durur: daha önce gördüğü ve doğruladığı bir istek, sağlayıcı yeniden çağrılmadan yanıtlanır; ödemeniz gerekmeyen de kavanozunuza düşer."
+          "body": "Yapay zekâya yapılan her istek, giren ve çıkan metne göre ödenir. Savings Layer bu yolun ortasında durur: daha önce gördüğü ve doğruladığı bir istek, sağlayıcı yeniden çağrılmadan yanıtlanır; ödemeniz gerekmeyen de kavanozunuza düşer."
         },
         {
           "title": "Aynı şey için iki kez ödemezsiniz",
-          "body": "Yapay zeka her turda ona daha önce gönderdiğiniz her şeyi yeniden okur — ve sağlayıcı bunu yeniden ücretlendirir. Savings her isteği, sağlayıcının tekrarlara indirimli fiyatını uygulayacağı şekilde hazırlar. İndirim sağlayıcınındır; bizim payımız onu doğru istemektir."
+          "body": "Yapay zeka her turda ona daha önce gönderdiğiniz her şeyi yeniden okur — ve sağlayıcı bunu yeniden ücretlendirir. Savings Layer her isteği, sağlayıcının tekrarlara indirimli fiyatını uygulayacağı şekilde hazırlar. İndirim sağlayıcınındır; bizim payımız onu doğru istemektir."
         },
         {
           "title": "Doğrulayabileceğiniz bir makbuz",
@@ -1451,7 +1451,7 @@
     },
     "cta15": {
       "titulo": "15 dakikalık görüşme isteyin",
-      "sub": "Kendi trafiğinde nasıl ölçeceğini ücretsiz olarak gösteririz.",
+      "sub": "Kendi trafiğinizde nasıl ölçeceğinizi ücretsiz olarak gösteririz.",
       "placeholder": "sen@sirket.com",
       "boton": "15 dakikalık görüşme isteyin",
       "enviando": "Gönderiliyor…",
@@ -1642,7 +1642,7 @@
         },
         {
           "q": "ChatGPT Plus gibi bir abonelikte işe yarar mı?",
-          "a": "Faturada tasarruf olarak hayır. Savings, kullanım başına ödenen bir API'ye yapılan çağrıları optimize eder ve ölçer; sabit ücretli bir abonelik optimize edilebilir bir API faturası değildir. Gateway üzerinden bu trafik ölçülür, ancak ona tasarruf yazılmaz. Abonelik limitleri için savings-mode skill'i vardır; etkisi henüz ölçülmemiş tamamlayıcı bir kaynaktır."
+          "a": "Faturada tasarruf olarak hayır. Savings Layer, kullanım başına ödenen bir API'ye yapılan çağrıları optimize eder ve ölçer; sabit ücretli bir abonelik optimize edilebilir bir API faturası değildir. Gateway üzerinden bu trafik ölçülür, ancak ona tasarruf yazılmaz. Abonelik limitleri için savings-mode skill'i vardır; etkisi henüz ölçülmemiş tamamlayıcı bir kaynaktır."
         },
         {
           "q": "Sağlayıcımı değiştirmem gerekir mi?",

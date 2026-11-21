@@ -1254,11 +1254,11 @@
       "pasos": [
         {
           "title": "L'IA se facture au mot",
-          "body": "Chaque requête à une IA se paie au texte qui entre et qui sort. Savings se place au milieu de ce chemin : une requête qu'il a déjà vue et vérifiée reçoit sa réponse sans rappeler le fournisseur, et ce que vous n'avez pas eu à payer tombe dans votre bocal."
+          "body": "Chaque requête à une IA se paie au texte qui entre et qui sort. Savings Layer se place au milieu de ce chemin : une requête qu'il a déjà vue et vérifiée reçoit sa réponse sans rappeler le fournisseur, et ce que vous n'avez pas eu à payer tombe dans votre bocal."
         },
         {
           "title": "Vous ne payez pas deux fois la même chose",
-          "body": "L'IA relit à chaque tour tout ce que vous lui aviez déjà envoyé — et le fournisseur le facture à nouveau. Savings prépare chaque requête pour que le fournisseur applique son tarif réduit aux répétitions. La remise vient du fournisseur ; notre rôle est de la demander correctement."
+          "body": "L'IA relit à chaque tour tout ce que vous lui aviez déjà envoyé — et le fournisseur le facture à nouveau. Savings Layer prépare chaque requête pour que le fournisseur applique son tarif réduit aux répétitions. La remise vient du fournisseur ; notre rôle est de la demander correctement."
         },
         {
           "title": "Un reçu que vous pouvez vérifier",
@@ -1642,7 +1642,7 @@
         },
         {
           "q": "Est-ce utile pour un abonnement comme ChatGPT Plus ?",
-          "a": "Pas comme économie sur une facture. Savings optimise et mesure des appels à une API payée à l’usage ; un abonnement forfaitaire n’est pas une facture d’API optimisable. Via le gateway, ce trafic est mesuré, mais aucune économie ne lui est créditée. Pour les plafonds d’un abonnement, il existe le skill savings-mode, une ressource complémentaire dont l’effet n’est pas encore mesuré."
+          "a": "Pas comme économie sur une facture. Savings Layer optimise et mesure des appels à une API payée à l’usage ; un abonnement forfaitaire n’est pas une facture d’API optimisable. Via le gateway, ce trafic est mesuré, mais aucune économie ne lui est créditée. Pour les plafonds d’un abonnement, il existe le skill savings-mode, une ressource complémentaire dont l’effet n’est pas encore mesuré."
         },
         {
           "q": "Dois-je changer de fournisseur ?",

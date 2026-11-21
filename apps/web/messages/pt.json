@@ -1254,11 +1254,11 @@
       "pasos": [
         {
           "title": "A IA cobra por palavras",
-          "body": "Cada pedido a uma IA paga-se pelo texto que entra e sai. O Savings põe-se no meio desse caminho: um pedido que já viu e verificou é respondido sem voltar a chamar o fornecedor, e o que não era preciso pagar cai no seu pote."
+          "body": "Cada pedido a uma IA paga-se pelo texto que entra e sai. O Savings Layer põe-se no meio desse caminho: um pedido que já viu e verificou é respondido sem voltar a chamar o fornecedor, e o que não era preciso pagar cai no seu pote."
         },
         {
           "title": "Não paga duas vezes pelo mesmo",
-          "body": "A IA relê em cada turno tudo o que já lhe tinhas enviado — e o fornecedor cobra-o outra vez. O Savings prepara cada pedido para que o fornecedor aplique o seu preço reduzido ao que se repete. O desconto é do fornecedor; a nossa parte é pedi-lo bem."
+          "body": "A IA relê em cada turno tudo o que já lhe tinhas enviado — e o fornecedor cobra-o outra vez. O Savings Layer prepara cada pedido para que o fornecedor aplique o seu preço reduzido ao que se repete. O desconto é do fornecedor; a nossa parte é pedi-lo bem."
         },
         {
           "title": "Um recibo que pode conferir",
@@ -1642,7 +1642,7 @@
         },
         {
           "q": "Serve para uma subscrição como o ChatGPT Plus?",
-          "a": "Não como poupança numa fatura. O Savings otimiza e mede chamadas a uma API paga por utilização; uma subscrição de tarifa fixa não é uma fatura de API otimizável. Através do gateway esse tráfego é medido, mas não lhe é creditada poupança. Para os limites de uma subscrição existe o skill savings-mode, um recurso complementar cujo efeito ainda não foi medido."
+          "a": "Não como poupança numa fatura. O Savings Layer otimiza e mede chamadas a uma API paga por utilização; uma subscrição de tarifa fixa não é uma fatura de API otimizável. Através do gateway esse tráfego é medido, mas não lhe é creditada poupança. Para os limites de uma subscrição existe o skill savings-mode, um recurso complementar cujo efeito ainda não foi medido."
         },
         {
           "q": "Tenho de mudar de fornecedor?",

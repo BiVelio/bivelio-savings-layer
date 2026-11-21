@@ -1254,11 +1254,11 @@
       "pasos": [
         {
           "title": "AI liczy sobie za słowa",
-          "body": "Każde zapytanie do AI opłaca się za tekst, który wchodzi i wychodzi. Savings staje na środku tej drogi: zapytanie, które już widział i zweryfikował, dostaje odpowiedź bez ponownego wywoływania dostawcy, a to, za co nie trzeba było płacić, wpada do Twojego słoika."
+          "body": "Każde zapytanie do AI opłaca się za tekst, który wchodzi i wychodzi. Savings Layer staje na środku tej drogi: zapytanie, które już widział i zweryfikował, dostaje odpowiedź bez ponownego wywoływania dostawcy, a to, za co nie trzeba było płacić, wpada do Twojego słoika."
         },
         {
           "title": "Nie płacisz dwa razy za to samo",
-          "body": "AI odczytuje w każdej turze wszystko, co już jej wysłałeś — a dostawca nalicza to ponownie. Savings przygotowuje każde zapytanie tak, aby dostawca zastosował obniżoną cenę do powtórzeń. Rabat daje dostawca; naszą rolą jest poprawnie o niego poprosić."
+          "body": "AI odczytuje w każdej turze wszystko, co już jej wysłałeś — a dostawca nalicza to ponownie. Savings Layer przygotowuje każde zapytanie tak, aby dostawca zastosował obniżoną cenę do powtórzeń. Rabat daje dostawca; naszą rolą jest poprawnie o niego poprosić."
         },
         {
           "title": "Rachunek, który możesz sprawdzić",
@@ -1451,7 +1451,7 @@
     },
     "cta15": {
       "titulo": "Poproś o 15-minutową rozmowę",
-      "sub": "Pokażemy ci, jak to zmierzyć na własnym ruchu, za darmo.",
+      "sub": "Pokażemy Ci, jak to zmierzyć na własnym ruchu, za darmo.",
       "placeholder": "ty@firma.com",
       "boton": "Poproś o 15-minutową rozmowę",
       "enviando": "Wysyłanie…",
@@ -1642,7 +1642,7 @@
         },
         {
           "q": "Czy to działa z subskrypcją taką jak ChatGPT Plus?",
-          "a": "Nie jako oszczędność na rachunku. Savings optymalizuje i mierzy wywołania API rozliczanego za użycie; subskrypcja ze stałą opłatą nie jest rachunkiem za API, który da się zoptymalizować. Przez gateway taki ruch jest mierzony, ale nie przypisuje się mu oszczędności. Do limitów subskrypcji służy skill savings-mode, zasób uzupełniający, którego efekt nie został jeszcze zmierzony."
+          "a": "Nie jako oszczędność na rachunku. Savings Layer optymalizuje i mierzy wywołania API rozliczanego za użycie; subskrypcja ze stałą opłatą nie jest rachunkiem za API, który da się zoptymalizować. Przez gateway taki ruch jest mierzony, ale nie przypisuje się mu oszczędności. Do limitów subskrypcji służy skill savings-mode, zasób uzupełniający, którego efekt nie został jeszcze zmierzony."
         },
         {
           "q": "Czy muszę zmienić dostawcę?",
