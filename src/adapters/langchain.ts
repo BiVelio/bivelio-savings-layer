@@ -301,9 +301,32 @@ function usoDe(msg: Registro, fiable: boolean): ProviderUsage {
   };
 }
 
+/**
+ * El motivo de parada del proveedor, en el vocabulario de Chat Completions.
+ *
+ * LA RESPONSES API (`createAgent({ model: "openai:…" })`, la receta de `init` y
+ * del README, va por ella): el AIMessage no trae `finish_reason`
+ * (@langchain/openai 1.6) o lo trae como "completed" (1.8); lo que dice cómo
+ * acabó es `status` ("completed" | "incomplete" | "failed"…) con
+ * `incomplete_details.reason`. Sin traducirlo, ninguna respuesta salía
+ * reutilizable y la misma pregunta repetida (o dos simultáneas) se pagaba dos
+ * veces (auditoría de lo gratis, 21-11-2026; ya fallaba en la 1.2.3).
+ */
+function paradaDeResponses(msg: Registro, rm: Registro, motivo: unknown): string | undefined {
+  const estado = typeof rm.status === "string" ? rm.status : motivo;
+  if (estado === "completed") return llamadasDe(msg).length > 0 ? "tool_calls" : "stop";
+  if (estado === "incomplete") {
+    const razon = esRegistro(rm.incomplete_details) ? rm.incomplete_details.reason : undefined;
+    if (razon === "max_output_tokens") return "length";
+    return typeof razon === "string" ? razon : "incomplete";
+  }
+  return typeof estado === "string" ? estado : undefined;
+}
+
 function paradaDe(msg: Registro): string | undefined {
   const rm = esRegistro(msg.response_metadata) ? msg.response_metadata : {};
   const motivo = rm.finish_reason ?? rm.stop_reason ?? rm.finishReason;
+  if (rm.object === "response" || motivo === "completed") return paradaDeResponses(msg, rm, motivo);
   switch (motivo) {
     case "end_turn":
     case "stop":
@@ -335,7 +358,9 @@ function reproducible(msg: Registro, parada: string | undefined): boolean {
     }
   }
   const extra = esRegistro(msg.additional_kwargs) ? msg.additional_kwargs : {};
-  return !("reasoning" in extra || "reasoning_content" in extra || "audio" in extra);
+  // `tool_outputs`: salidas de herramientas del propio proveedor (búsqueda web,
+  // intérprete de código… en la Responses API) que la capa no sabe devolver.
+  return !("reasoning" in extra || "reasoning_content" in extra || "audio" in extra || "tool_outputs" in extra);
 }
 
 function respuestaDe(msg: Registro, fiable: boolean): ProviderResponse {

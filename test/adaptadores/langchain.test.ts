@@ -24,6 +24,8 @@ interface Guion {
   tool_calls?: { id: string; name: string; args: Record<string, unknown> }[];
   additional_kwargs?: Record<string, unknown>;
   sinParada?: boolean;
+  /** `response_metadata` tal cual, en lugar del `finish_reason` de Chat Completions. */
+  metadatos?: Record<string, unknown>;
 }
 
 class ModeloDePrueba extends BaseChatModel {
@@ -60,7 +62,7 @@ class ModeloDePrueba extends BaseChatModel {
         input_token_details: { cache_read: 8 },
         output_token_details: { reasoning: 0 },
       },
-      response_metadata: r.sinParada ? {} : { finish_reason: r.tool_calls ? "tool_calls" : "stop" },
+      response_metadata: r.metadatos ?? (r.sinParada ? {} : { finish_reason: r.tool_calls ? "tool_calls" : "stop" }),
     });
     return { generations: [{ text: typeof r.content === "string" ? r.content : "", message }] };
   }
@@ -106,6 +108,40 @@ describe("savingsAgentMiddleware", () => {
     expect(getSavingsReportFromMessage(msg)?.cache.result).toBe("exact");
     expect(getSavingsReportFromMessage(msg)?.cost.basis).toBe("reference");
     expect(msg.usage_metadata?.input_tokens).toBe(0);
+    mw.close();
+  });
+
+  it.each([
+    ["@langchain/openai 1.6 (sin finish_reason)", { model_provider: "openai", object: "response", status: "completed", incomplete_details: null }],
+    ["@langchain/openai 1.8 (finish_reason «completed»)", { model_provider: "openai", object: "response", status: "completed", finish_reason: "completed" }],
+    ["solo finish_reason «completed»", { finish_reason: "completed" }],
+  ])("(b2) Responses API, %s: la repetición sale de la caché exacta sin llamar", async (_n, metadatos) => {
+    const m = new ModeloDePrueba();
+    m.guion = [{ content: [{ type: "text", text: "Blue", annotations: [] }], metadatos }];
+    const mw = savingsAgentMiddleware({ silenceWarnings: true });
+    const agente = createAgent({ model: m, tools: [], middleware: [mw], systemPrompt: "Be brief." });
+    await agente.invoke(PREGUNTA);
+    const r = await agente.invoke(PREGUNTA);
+    expect(m.llamadas).toBe(1);
+    expect(getSavingsReportFromMessage(ultimo(r))?.cache.result).toBe("exact");
+    mw.close();
+  });
+
+  it.each([
+    ["incompleta por max_output_tokens", { object: "response", status: "incomplete", incomplete_details: { reason: "max_output_tokens" } }],
+    ["fallida", { object: "response", status: "failed" }],
+    ["en curso", { object: "response", status: "in_progress" }],
+  ])("(b3) Responses API, %s: no se reutiliza", async (_n, metadatos) => {
+    const m = new ModeloDePrueba();
+    m.guion = [
+      { content: "Blu", metadatos },
+      { content: "Blu", metadatos },
+    ];
+    const mw = savingsAgentMiddleware({ silenceWarnings: true });
+    const agente = createAgent({ model: m, tools: [], middleware: [mw], systemPrompt: "Be brief." });
+    await agente.invoke(PREGUNTA);
+    await agente.invoke(PREGUNTA);
+    expect(m.llamadas).toBe(2);
     mw.close();
   });
 

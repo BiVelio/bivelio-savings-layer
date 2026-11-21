@@ -94,3 +94,113 @@ describe("LangChain con el modelo en cadena", () => {
     mw.close();
   });
 });
+
+/**
+ * LA RESPONSES API AHORRA (auditoría de lo gratis, 21-11-2026). Con
+ * `createAgent({ model: "openai:…" })` LangChain va por la Responses API, cuyo
+ * AIMessage no trae `finish_reason` (@langchain/openai 1.6, la fijada aquí) o lo
+ * trae como "completed" (1.8). El adaptador no lo traducía a "stop": la
+ * respuesta salía `replayable: false` y la misma pregunta repetida, o dos
+ * simultáneas, llegaban dos veces al proveedor. Ya fallaba en la 1.2.3.
+ */
+describe("LangChain con la Responses API: repetidas y simultáneas no se pagan dos veces", () => {
+  type Salida = Record<string, unknown>;
+  const texto = (t: string): Salida => ({
+    type: "message",
+    id: "msg_1",
+    status: "completed",
+    role: "assistant",
+    content: [{ type: "output_text", text: t, annotations: [] }],
+  });
+
+  /** Un `fetch` falso de la Responses API que cuenta las llamadas y contesta con `respuesta`. */
+  function responsesFalsa(respuesta: (n: number) => Salida) {
+    const original = globalThis.fetch;
+    let llamadas = 0;
+    globalThis.fetch = (async (entrada: unknown) => {
+      const url = typeof entrada === "string" ? entrada : entrada instanceof URL ? entrada.href : String((entrada as Request).url);
+      if (!url.endsWith("/responses")) throw new Error(`[test] red inesperada: ${url}`);
+      llamadas += 1;
+      const n = llamadas;
+      await new Promise((r) => setTimeout(r, 20));
+      return new Response(
+        JSON.stringify({
+          id: `resp_${n}`,
+          object: "response",
+          created_at: 1,
+          model: "gpt-4o-mini",
+          usage: {
+            input_tokens: 1000,
+            output_tokens: 500,
+            total_tokens: 1500,
+            input_tokens_details: { cached_tokens: 0 },
+            output_tokens_details: { reasoning_tokens: 0 },
+          },
+          ...respuesta(n),
+        }),
+        { status: 200, headers: { "content-type": "application/json" } },
+      );
+    }) as typeof fetch;
+    restaurar = () => {
+      globalThis.fetch = original;
+    };
+    return { llamadas: () => llamadas };
+  }
+
+  it("la misma pregunta repetida: UNA llamada, la segunda sale de la caché exacta", async () => {
+    vi.stubEnv("OPENAI_API_KEY", "placeholder-not-sent");
+    const red = responsesFalsa(() => ({ status: "completed", output: [texto("Blue")] }));
+    const mw = savingsAgentMiddleware({ silenceWarnings: true });
+    const agente = createAgent({ model: "openai:gpt-4o-mini", tools: [], middleware: [mw] });
+    const pregunta = { messages: [{ role: "user", content: "Name a colour." }] };
+    const primera = await agente.invoke(pregunta);
+    const segunda = await agente.invoke(pregunta);
+    expect(red.llamadas()).toBe(1);
+    expect(getSavingsReportFromMessage(primera.messages.at(-1))?.cost.basis).toBe("measured");
+    expect(segunda.messages.at(-1)?.text).toBe("Blue");
+    expect(getSavingsReportFromMessage(segunda.messages.at(-1))?.cache.result).toBe("exact");
+    mw.close();
+  });
+
+  it("dos preguntas idénticas a la vez: UNA llamada", async () => {
+    vi.stubEnv("OPENAI_API_KEY", "placeholder-not-sent");
+    const red = responsesFalsa(() => ({ status: "completed", output: [texto("Green")] }));
+    const mw = savingsAgentMiddleware({ silenceWarnings: true });
+    const agente = createAgent({ model: "openai:gpt-4o-mini", tools: [], middleware: [mw] });
+    const pregunta = { messages: [{ role: "user", content: "Name another colour." }] };
+    const [a, b] = await Promise.all([agente.invoke(pregunta), agente.invoke(pregunta)]);
+    expect(red.llamadas()).toBe(1);
+    expect(a.messages.at(-1)?.text).toBe("Green");
+    expect(b.messages.at(-1)?.text).toBe("Green");
+    mw.close();
+  });
+
+  it("una respuesta incompleta (max_output_tokens) no se reutiliza: la repetida vuelve a llamar", async () => {
+    vi.stubEnv("OPENAI_API_KEY", "placeholder-not-sent");
+    const red = responsesFalsa(() => ({ status: "incomplete", incomplete_details: { reason: "max_output_tokens" }, output: [texto("Blu")] }));
+    const mw = savingsAgentMiddleware({ silenceWarnings: true });
+    const agente = createAgent({ model: "openai:gpt-4o-mini", tools: [], middleware: [mw] });
+    const pregunta = { messages: [{ role: "user", content: "Name a third colour." }] };
+    const primera = await agente.invoke(pregunta);
+    await agente.invoke(pregunta);
+    expect(red.llamadas()).toBe(2);
+    const traza = getSavingsReportFromMessage(primera.messages.at(-1))?.traces.find((t) => t.stage === "cache-write");
+    expect(JSON.stringify(traza)).toMatch(/skipped/);
+    mw.close();
+  });
+
+  it("con salidas de herramientas del proveedor (búsqueda web) no se reutiliza", async () => {
+    vi.stubEnv("OPENAI_API_KEY", "placeholder-not-sent");
+    const red = responsesFalsa(() => ({
+      status: "completed",
+      output: [{ type: "web_search_call", id: "ws_1", status: "completed", action: { type: "search", query: "colour" } }, texto("Red")],
+    }));
+    const mw = savingsAgentMiddleware({ silenceWarnings: true });
+    const agente = createAgent({ model: "openai:gpt-4o-mini", tools: [], middleware: [mw] });
+    const pregunta = { messages: [{ role: "user", content: "Search a colour." }] };
+    await agente.invoke(pregunta);
+    await agente.invoke(pregunta);
+    expect(red.llamadas()).toBe(2);
+    mw.close();
+  });
+});
