@@ -15,9 +15,11 @@ import {
   huecoDeVolumen,
   inicioDeMes,
   LIMITES_MEDIR,
-  neutralizarParaMedir,
+  protegerIngestaDeMedir,
   URL_DE_PAGO_MEDIR,
 } from "@/lib/license/medir";
+import { tieneHistoriaDeComision, type SuscripcionConPrecio } from "@/lib/billing/plan-de-la-org";
+import { preciosSinComision } from "@/lib/stripe/env";
 import { alertar } from "@/lib/observabilidad/alerta";
 import { createAdminClient } from "@/lib/supabase/admin";
 
@@ -73,16 +75,20 @@ export async function POST(req: Request): Promise<NextResponse> {
   // ingest devolvía 402 a un cliente que paga. Ver `hasActiveSubscription`.
   const [{ data: licenses, error: licErr }, { data: subs, error: subErr }] = await Promise.all([
     supabase.from("licenses").select("revoked, expires_at, grace_days, plan").eq("org_id", orgId),
-    supabase.from("subscriptions").select("status, current_period_end").eq("org_id", orgId),
+    supabase.from("subscriptions").select("status, current_period_end, price_id").eq("org_id", orgId),
   ]);
-  // ¿Solo licencia Medir (gratuita, en sombra)? Entonces su uso entra para el
-  // panel, con topes y NEUTRALIZADO: jamás comisión ni referencia cobrable.
+  // ¿Solo licencia Medir (gratuita)? Entonces su uso entra para el panel, con
+  // topes y PROTEGIDO: jamás comisión ni referencia cobrable. Desde la 1.2.4 su
+  // ahorro real se guarda (ver `protegerIngestaDeMedir`); solo se neutraliza
+  // como antes si la organización tiene o tuvo la modalidad con comisión.
   let soloMedir = false;
+  let historiaDeComision = false;
   if (licErr || subErr) {
     console.error("[metering/usage] entitlement lookup failed (fail-open):", licErr ?? subErr);
   } else {
     const decision = decideEntitlement(licenses ?? [], subs ?? [], Date.now());
     soloMedir = decision.reason === "measure-license";
+    historiaDeComision = tieneHistoriaDeComision((subs ?? []) as SuscripcionConPrecio[], preciosSinComision());
     if (decision.blocked) {
       return NextResponse.json(
         {
@@ -105,7 +111,7 @@ export async function POST(req: Request): Promise<NextResponse> {
   }
   if (records.length === 0) return NextResponse.json({ ingested: 0 }, { status: 202 });
 
-  // ── LICENCIA MEDIR · topes y neutralización (antes de TODO lo demás) ────────
+  // ── LICENCIA MEDIR · topes y candado de cobro (antes de TODO lo demás) ──────
   let rechazadosPorAsiento = 0;
   if (soloMedir) {
     const ahora = Date.now();
@@ -129,7 +135,7 @@ export async function POST(req: Request): Promise<NextResponse> {
             reason: "measure-seat-limit",
             detail:
               `The free Measure plan measures up to ${LIMITES_MEDIR.asientos} seats per month and this one is over the limit. ` +
-              `Your layer keeps working unchanged; to measure every seat and turn the levers on, upgrade at ${URL_DE_PAGO_MEDIR}`,
+              `Your layer keeps working and saving unchanged; to measure every seat on your dashboard, upgrade at ${URL_DE_PAGO_MEDIR}`,
           },
           { status: 402 },
         );
@@ -155,7 +161,7 @@ export async function POST(req: Request): Promise<NextResponse> {
             reason: "measure-volume-limit",
             detail:
               `The free Measure plan measures up to ${LIMITES_MEDIR.peticionesDiarias} requests per day and today is full. ` +
-              `Your layer keeps working unchanged; to measure all your traffic, upgrade at ${URL_DE_PAGO_MEDIR}`,
+              `Your layer keeps working and saving unchanged; to measure all your traffic on your dashboard, upgrade at ${URL_DE_PAGO_MEDIR}`,
           },
           { status: 429 },
         );
@@ -166,11 +172,14 @@ export async function POST(req: Request): Promise<NextResponse> {
         records = records.filter((r) => !fuera.has(r.requestId) && !fuera.has(r.requestId.replace(/:shadow$/, "")));
       }
     }
-    const n = neutralizarParaMedir(records);
-    if (n.neutralizados > 0 || n.referencias > 0) {
-      // Con el SDK honrado nunca pasa: en sombra no hay palanca que ahorre. Si
-      // pasa, alguien corre palancas con una licencia gratuita.
-      console.warn("[metering/usage] measure: ahorro neutralizado en una org Medir", { org: orgId, ...n });
+    // EL CANDADO DE COBRO. Las referencias, siempre fuera; el ahorro medido se
+    // guarda salvo en una org con historia de comisión, que sigue neutralizada.
+    const n = protegerIngestaDeMedir(records, { historiaDeComision });
+    if (historiaDeComision && (n.neutralizados > 0 || n.referencias > 0)) {
+      console.warn("[metering/usage] measure: ahorro neutralizado en una org Medir con historia de comisión", {
+        org: orgId,
+        ...n,
+      });
     }
   }
 
