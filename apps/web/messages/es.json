@@ -1200,10 +1200,10 @@
     },
     "measurePlan": {
       "title": "O empieza gratis: la licencia Measure, sin tarjeta",
-      "body": "El plan gratuito de la nube para 1 organización y hasta {seats} asientos: la capa aplica las mismas palancas que sin clave, salvo que el recorte de resultados de herramientas sustituidos solo actúa dentro de un bucle de herramientas en Anthropic, y tu panel muestra el ahorro real. Nunca se factura, sin comisión.",
+      "body": "El plan gratuito de la nube para 1 organización y hasta {seats} asientos: la capa aplica exactamente las mismas palancas que sin clave y tu panel muestra el ahorro real. Nunca se factura, sin comisión.",
       "claim": "Obtener mi licencia Measure gratis",
       "claiming": "Emitiendo…",
-      "keyLabel": "Tu clave de licencia Measure (gratis: las mismas palancas que sin clave, con una excepción en el README)",
+      "keyLabel": "Tu clave de licencia Measure (gratis: exactamente las mismas palancas que sin clave)",
       "keyHint": "Úsala como BIVELIO_LICENSE_KEY, igual que una clave de pago. Si pasas a pago, la capa recoge sola la licencia de pago.",
       "errEmailNotVerified": "Confirma primero tu dirección de correo y vuelve a intentarlo.",
       "errDisposableEmail": "No aceptamos direcciones de correo desechables para la licencia Measure. Regístrate con un correo permanente (el de tu trabajo, por ejemplo) y vuelve a intentarlo.",
@@ -1225,7 +1225,7 @@
         "shadowTitle": "Lo que habrías ahorrado",
         "amount": "{amount} que no habrías gastado",
         "context": "Hipotético, y aparte de tu ahorro real. Viene de máquinas que solo observan (modo solo-observar o un cliente antiguo con una clave Measure), valorado con el contador de tu propio proveedor. Actualiza esas máquinas, o apaga el modo solo-observar, para ahorrarlo de verdad. No se factura nada.",
-        "empty": "Aún no hay ahorro: aparece en cuanto tu capa evita una llamada o la abarata. Measure aplica las mismas palancas que sin clave, salvo el recorte de resultados de herramientas sustituidos fuera de un bucle de herramientas en Anthropic.",
+        "empty": "Aún no hay ahorro: aparece en cuanto tu capa evita una llamada o la abarata. Measure aplica exactamente las mismas palancas que sin clave.",
         "limits": "Gratis para 1 organización, hasta {seats} asientos y {requests} peticiones al día.",
         "cta": "¿Necesitas más asientos o volumen? Ver planes"
       }

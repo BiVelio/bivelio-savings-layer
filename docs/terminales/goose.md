@@ -14,7 +14,7 @@ all in the shape of the URL.
 ## Wrapper: `bvsala goose`
 
 ```bash
-export BIVELIO_SERVICE_KEY=bvk_…  # OPTIONAL: only adds the cloud dashboard (without it: Community mode)
+# export BIVELIO_SERVICE_KEY=bvk_…  # OPTIONAL: only adds the cloud dashboard; uncomment it with your real key (without it: Community mode)
 bvsala goose                       # an exact mirror of `bvsala claude`
 ```
 

@@ -1,10 +1,13 @@
 import {
+  FRASE_ADAPTADOR_SIN_SOLO_OBSERVAR,
   FRASE_DEPENDENCIA_SDK,
   FRASE_LA_CLAVE_SOLO_ANADE,
+  FRASE_LA_CLAVE_SOLO_ANADE_ADAPTADOR,
   FRASE_PALANCAS_SDK,
   LO_QUE_ANADE_LA_NUBE,
   OPCION_SDK_SOLO_OBSERVAR,
   enLineas,
+  frasePalancasAdaptador,
 } from "./textos-publicos.js";
 import { dirname, join, posix } from "node:path";
 
@@ -712,13 +715,19 @@ export function textoDelPlan(plan: Plan, cabecera: string, invocacion: string, o
   out.push("", `${paso++} · Keys (checked by name in this shell; values are never read or shown)`);
   const ancho = Math.max(...plan.claves.map((k) => k.nombre.length));
   for (const k of plan.claves) out.push(`  ${k.nombre.padEnd(ancho)}  ${k.puesta ? "set    " : "not set"}  ${k.para}`);
+  // Los adaptadores de marco no reescriben la petición ni tienen modo de solo
+  // observar (`observeOnly` lo ignoran): su texto dice lo que hacen, no lo del SDK
+  // (auditoría de lo gratis, 21-11-2026).
+  const esAdaptador = plan.capa !== "sdk";
   out.push(
     "  OPEN CORE: no keys are required, and without them nothing is sent to BiVelio.",
-    ...enLineas(FRASE_PALANCAS_SDK, 112, "  "),
+    ...enLineas(esAdaptador ? frasePalancasAdaptador(plan.capa === "mastra") : FRASE_PALANCAS_SDK, 112, "  "),
     ...enLineas(
       `The BiVelio keys (https://savings.bivelio.com/dashboard/install) add ${LO_QUE_ANADE_LA_NUBE}. ` +
-        `${FRASE_LA_CLAVE_SOLO_ANADE} ${FRASE_DEPENDENCIA_SDK} ` +
-        `To only observe, without changing any request: \`${OPCION_SDK_SOLO_OBSERVAR}: true\`.`,
+        `${esAdaptador ? FRASE_LA_CLAVE_SOLO_ANADE_ADAPTADOR : FRASE_LA_CLAVE_SOLO_ANADE} ${FRASE_DEPENDENCIA_SDK} ` +
+        (esAdaptador
+          ? FRASE_ADAPTADOR_SIN_SOLO_OBSERVAR
+          : `To only observe, without changing any request: \`${OPCION_SDK_SOLO_OBSERVAR}: true\`.`),
       112,
       "  ",
     ),
