@@ -697,7 +697,7 @@
       "action": "Perbarui SDK ke {minima} atau lebih baru di mesin itu dan mulai ulang prosesnya:"
     },
     "migrar05": {
-      "note": "Memperbarui dari versi sebelum 0.5 membawa perubahan yang tidak kompatibel.",
+      "note": "Memperbarui dari versi sebelum 0.5? Versi 0.5 membawa perubahan yang tidak kompatibel.",
       "link": "Baca panduan migrasi sebelum memperbarui →"
     },
     "maquinas": {
@@ -902,7 +902,7 @@
       "graceTitle": "Lisensi kedaluwarsa — masih berjalan",
       "graceBody": "Lisensi Anda kedaluwarsa pada {date} dan masih berjalan {days, plural, other {# hari lagi}}. Perpanjang agar tidak terputus.",
       "expiredTitle": "Lisensi kedaluwarsa",
-      "expiredBody": "Lisensi Anda kedaluwarsa pada {date}. Savings Layer bersifat fail-closed, jadi SDK telah berhenti.",
+      "expiredBody": "Lisensi Anda kedaluwarsa pada {date}. BV-SALA bersifat fail-closed, jadi SDK telah berhenti.",
       "revokedTitle": "Lisensi dicabut",
       "revokedBody": "Lisensi ini telah dicabut. Hubungi support@bivelio.com jika menurut Anda ini keliru."
     },
@@ -1234,7 +1234,7 @@
       "sub": "Jalankan mesin open source di infrastruktur Anda sendiri. Hubungkan Savings Cloud untuk memusatkan pengukuran dan pengelolaan tim Anda, dengan paket bertarif tetap.",
       "ctaStart": "Mulai dengan Measure",
       "ctaBench": "Lihat hasil yang dapat direproduksi",
-      "panelAlt": "Dasbor Savings Cloud dengan data bangku uji publik: penghematan yang diukur dan pembagiannya per model.",
+      "panelAlt": "Dasbor Savings dengan data bangku uji publik: penghematan yang diukur dan pembagiannya per model.",
       "panelCaption": "Dasbor dengan data bangku uji publik",
       "medidoEnVivo": "Diukur langsung dengan penghitung milik setiap penyedia",
       "note": "Terpasang dalam hitungan menit. Pesan Anda tidak pernah melewati server kami.",

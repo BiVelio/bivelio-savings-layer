@@ -697,7 +697,7 @@
       "action": "Mettez à jour le SDK vers {minima} ou plus récent sur cette machine et redémarrez le processus :"
     },
     "migrar05": {
-      "note": "Mettre à jour depuis une version antérieure à la 0.5 entraîne des changements incompatibles.",
+      "note": "Vous mettez à jour depuis une version antérieure à la 0.5 ? La 0.5 comporte des changements incompatibles.",
       "link": "Lisez le guide de migration avant de mettre à jour →"
     },
     "maquinas": {
@@ -902,7 +902,7 @@
       "graceTitle": "Licence expirée — encore active",
       "graceBody": "Votre licence a expiré le {date} et fonctionne encore pendant {days, plural, one {# jour} other {# jours}}. Renouvelez-la pour éviter une interruption.",
       "expiredTitle": "Licence expirée",
-      "expiredBody": "Votre licence a expiré le {date}. Savings Layer est fail-closed : le SDK s'est arrêté.",
+      "expiredBody": "Votre licence a expiré le {date}. BV-SALA est fail-closed : le SDK s'est arrêté.",
       "revokedTitle": "Licence révoquée",
       "revokedBody": "Cette licence a été révoquée. Écrivez à support@bivelio.com si vous pensez qu'il s'agit d'une erreur."
     },
@@ -1234,7 +1234,7 @@
       "sub": "Exécutez le moteur open source sur votre infrastructure. Connectez Savings Cloud pour centraliser la mesure et la gestion de votre équipe, avec des formules à tarif fixe.",
       "ctaStart": "Commencer avec Measure",
       "ctaBench": "Voir les résultats reproductibles",
-      "panelAlt": "Le tableau de bord de Savings Cloud avec les données du banc public : l'économie mesurée et sa répartition par modèle.",
+      "panelAlt": "Le tableau de bord de Savings avec les données du banc public : l'économie mesurée et sa répartition par modèle.",
       "panelCaption": "Tableau de bord avec les données du banc public",
       "medidoEnVivo": "Mesuré en direct avec le compteur de chaque fournisseur",
       "note": "Installé en quelques minutes. Vos messages ne passent jamais par nos serveurs.",

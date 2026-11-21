@@ -697,7 +697,7 @@
       "action": "Actualitza l'SDK a {minima} o posterior en aquesta màquina i reinicia el procés:"
     },
     "migrar05": {
-      "note": "Actualitzar des d'una versió anterior a la 0.5 porta canvis incompatibles.",
+      "note": "Actualitzes des d'una versió anterior a la 0.5? La 0.5 porta canvis incompatibles.",
       "link": "Llegeix la guia de migració abans d'actualitzar →"
     },
     "maquinas": {
@@ -902,7 +902,7 @@
       "graceTitle": "Llicència caducada — encara funciona",
       "graceBody": "La teva llicència va caducar el {date} i continua funcionant {days, plural, one {# dia més} other {# dies més}}. Renova-la perquè no s'interrompi.",
       "expiredTitle": "Llicència caducada",
-      "expiredBody": "La teva llicència va caducar el {date}. Savings Layer falla tancat, així que l'SDK s'ha aturat.",
+      "expiredBody": "La teva llicència va caducar el {date}. BV-SALA falla tancat, així que l'SDK s'ha aturat.",
       "revokedTitle": "Llicència revocada",
       "revokedBody": "Aquesta llicència s'ha revocat. Escriu a support@bivelio.com si creus que és un error."
     },
@@ -1234,7 +1234,7 @@
       "sub": "Executa el motor open source a la teva infraestructura. Connecta Savings Cloud per centralitzar el mesurament i la gestió del teu equip, amb plans de quota fixa.",
       "ctaStart": "Comença amb Measure",
       "ctaBench": "Veure resultats reproduïbles",
-      "panelAlt": "El tauler de Savings Cloud amb les dades del banc públic: l'estalvi mesurat i el seu repartiment per model.",
+      "panelAlt": "El tauler de Savings amb les dades del banc públic: l'estalvi mesurat i el seu repartiment per model.",
       "panelCaption": "Tauler amb les dades del banc públic",
       "medidoEnVivo": "Mesurat en directe amb el comptador de cada proveïdor",
       "note": "S'instal·la en minuts. Els teus missatges no passen pels nostres servidors.",

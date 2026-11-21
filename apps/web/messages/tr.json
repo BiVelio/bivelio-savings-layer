@@ -697,7 +697,7 @@
       "action": "O makinede SDK'yı {minima} veya daha yeni bir sürüme güncelleyin ve işlemi yeniden başlatın:"
     },
     "migrar05": {
-      "note": "0.5'ten önceki bir sürümden güncellemek uyumsuz değişiklikler getirir.",
+      "note": "0.5'ten eski bir sürümden mi güncelliyorsunuz? 0.5 sürümü uyumsuz değişiklikler içerir.",
       "link": "Güncellemeden önce geçiş kılavuzunu okuyun →"
     },
     "maquinas": {
@@ -902,7 +902,7 @@
       "graceTitle": "Lisans doldu — hâlâ çalışıyor",
       "graceBody": "Lisansınız {date} tarihinde doldu ve {days, plural, other {# gün daha}} çalışmaya devam ediyor. Kesinti yaşamamak için yenileyin.",
       "expiredTitle": "Lisans doldu",
-      "expiredBody": "Lisansınız {date} tarihinde doldu. Savings Layer fail-closed çalışır, bu yüzden SDK durdu.",
+      "expiredBody": "Lisansınız {date} tarihinde doldu. BV-SALA fail-closed çalışır, bu yüzden SDK durdu.",
       "revokedTitle": "Lisans iptal edildi",
       "revokedBody": "Bu lisans iptal edildi. Bunun bir hata olduğunu düşünüyorsanız support@bivelio.com adresine yazın."
     },
@@ -1234,7 +1234,7 @@
       "sub": "Açık kaynak motoru kendi altyapınızda çalıştırın. Ekibinizin ölçümünü ve yönetimini tek yerde toplamak için Savings Cloud'u bağlayın, sabit ücretli planlarla.",
       "ctaStart": "Measure ile başlayın",
       "ctaBench": "Tekrarlanabilir sonuçları görün",
-      "panelAlt": "Herkese açık test tezgâhının verileriyle Savings Cloud paneli: ölçülen tasarruf ve modele göre dağılımı.",
+      "panelAlt": "Herkese açık test tezgâhının verileriyle Savings paneli: ölçülen tasarruf ve modele göre dağılımı.",
       "panelCaption": "Herkese açık test tezgâhının verileriyle panel",
       "medidoEnVivo": "Her sağlayıcının kendi sayacıyla canlı ölçüldü",
       "note": "Dakikalar içinde kurulur. Mesajlarınız asla bizim sunucularımızdan geçmez.",

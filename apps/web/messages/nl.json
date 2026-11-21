@@ -697,7 +697,7 @@
       "action": "Werk de SDK op die machine bij naar {minima} of nieuwer en herstart het proces:"
     },
     "migrar05": {
-      "note": "Bijwerken vanaf een versie vóór 0.5 brengt wijzigingen mee die niet compatibel zijn.",
+      "note": "Werk je bij vanaf een versie vóór 0.5? Versie 0.5 bevat wijzigingen die niet compatibel zijn.",
       "link": "Lees de migratiegids voordat je bijwerkt →"
     },
     "maquinas": {
@@ -902,7 +902,7 @@
       "graceTitle": "Licentie verlopen — werkt nog",
       "graceBody": "Je licentie is op {date} verlopen en werkt nog {days, plural, one {# dag} other {# dagen}}. Verleng hem om onderbreking te voorkomen.",
       "expiredTitle": "Licentie verlopen",
-      "expiredBody": "Je licentie is op {date} verlopen. Savings Layer is fail-closed, dus de SDK is gestopt.",
+      "expiredBody": "Je licentie is op {date} verlopen. BV-SALA is fail-closed, dus de SDK is gestopt.",
       "revokedTitle": "Licentie ingetrokken",
       "revokedBody": "Deze licentie is ingetrokken. Mail naar support@bivelio.com als je denkt dat dat een vergissing is."
     },
@@ -1234,7 +1234,7 @@
       "sub": "Draai de open-source-engine op je eigen infrastructuur. Koppel Savings Cloud om meting en beheer voor je team te centraliseren, met vaste tarieven.",
       "ctaStart": "Starten met Measure",
       "ctaBench": "Reproduceerbare resultaten bekijken",
-      "panelAlt": "Het Savings Cloud-dashboard met de gegevens van de publieke benchmark: de gemeten besparing en de verdeling per model.",
+      "panelAlt": "Het Savings-dashboard met de gegevens van de publieke benchmark: de gemeten besparing en de verdeling per model.",
       "panelCaption": "Dashboard met de gegevens van de publieke benchmark",
       "medidoEnVivo": "Live gemeten met de teller van elke provider",
       "note": "In minuten geïnstalleerd. Je berichten gaan nooit via onze servers.",

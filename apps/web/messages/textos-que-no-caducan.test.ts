@@ -52,7 +52,7 @@ describe("m27 · sin números de versión que caducan", () => {
 
   it("en: el aviso del panel es condicional y no dice que la 0.5 sea la última", () => {
     const d = cargar("en");
-    expect(d["dashboard.migrar05.note"]).toBe("Updating from a version before 0.5 brings breaking changes.");
+    expect(d["dashboard.migrar05.note"]).toBe("Updating from a version before 0.5? Version 0.5 has breaking changes.");
     expect(d["dashboard.migrar05.note"]).not.toMatch(/latest/i);
     expect(d["landing.footer.migrate"]).toBe("Migration guide");
   });

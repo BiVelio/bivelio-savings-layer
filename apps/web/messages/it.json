@@ -697,7 +697,7 @@
       "action": "Aggiorna l'SDK a {minima} o successivo su quella macchina e riavvia il processo:"
     },
     "migrar05": {
-      "note": "Aggiornare da una versione precedente alla 0.5 introduce modifiche incompatibili.",
+      "note": "Aggiorni da una versione precedente alla 0.5? La 0.5 introduce modifiche incompatibili.",
       "link": "Leggi la guida alla migrazione prima di aggiornare →"
     },
     "maquinas": {
@@ -902,7 +902,7 @@
       "graceTitle": "Licenza scaduta — ancora attiva",
       "graceBody": "La tua licenza è scaduta il {date} e continua a funzionare per {days, plural, one {un altro giorno} other {altri # giorni}}. Rinnovala per evitare interruzioni.",
       "expiredTitle": "Licenza scaduta",
-      "expiredBody": "La tua licenza è scaduta il {date}. Savings Layer è fail-closed, quindi l'SDK si è fermato.",
+      "expiredBody": "La tua licenza è scaduta il {date}. BV-SALA è fail-closed, quindi l'SDK si è fermato.",
       "revokedTitle": "Licenza revocata",
       "revokedBody": "Questa licenza è stata revocata. Scrivi a support@bivelio.com se pensi che sia un errore."
     },
@@ -1234,7 +1234,7 @@
       "sub": "Esegui il motore open source nella tua infrastruttura. Collega Savings Cloud per centralizzare la misurazione e la gestione del tuo team, con piani a canone fisso.",
       "ctaStart": "Inizia con Measure",
       "ctaBench": "Vedi i risultati riproducibili",
-      "panelAlt": "La dashboard di Savings Cloud con i dati del banco pubblico: il risparmio misurato e la sua ripartizione per modello.",
+      "panelAlt": "La dashboard di Savings con i dati del banco pubblico: il risparmio misurato e la sua ripartizione per modello.",
       "panelCaption": "Dashboard con i dati del banco pubblico",
       "medidoEnVivo": "Misurato dal vivo con il contatore di ogni fornitore",
       "note": "Si installa in pochi minuti. I tuoi messaggi non passano mai dai nostri server.",

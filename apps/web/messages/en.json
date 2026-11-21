@@ -697,7 +697,7 @@
       "action": "Update the SDK to {minima} or later on that machine and restart the process:"
     },
     "migrar05": {
-      "note": "Updating from a version before 0.5 brings breaking changes.",
+      "note": "Updating from a version before 0.5? Version 0.5 has breaking changes.",
       "link": "Read the migration guide before you update →"
     },
     "maquinas": {
@@ -902,7 +902,7 @@
       "graceTitle": "License expired — still running",
       "graceBody": "Your license expired on {date} and keeps working for {days, plural, one {# more day} other {# more days}}. Renew it to avoid an interruption.",
       "expiredTitle": "License expired",
-      "expiredBody": "Your license expired on {date}. Savings Layer is fail-closed, so the SDK has stopped.",
+      "expiredBody": "Your license expired on {date}. BV-SALA is fail-closed, so the SDK has stopped.",
       "revokedTitle": "License revoked",
       "revokedBody": "This license was revoked. Write to support@bivelio.com if you think that's a mistake."
     },
@@ -1234,7 +1234,7 @@
       "sub": "Run the open-source engine on your own infrastructure. Connect Savings Cloud to centralize measurement and management for your team, on flat-fee plans.",
       "ctaStart": "Start with Measure",
       "ctaBench": "See reproducible results",
-      "panelAlt": "The Savings Cloud dashboard with the public bench's data: the measured saving and its split by model.",
+      "panelAlt": "The Savings dashboard with the public bench's data: the measured saving and its split by model.",
       "panelCaption": "Dashboard with the public bench's data",
       "medidoEnVivo": "Measured live with each provider's own counter",
       "note": "Installs in minutes. Your messages never pass through our servers.",

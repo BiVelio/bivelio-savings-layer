@@ -697,7 +697,7 @@
       "action": "Hãy cập nhật SDK trên máy đó lên {minima} trở lên và khởi động lại tiến trình:"
     },
     "migrar05": {
-      "note": "Cập nhật từ một phiên bản trước 0.5 sẽ có các thay đổi không tương thích.",
+      "note": "Bạn cập nhật từ phiên bản trước 0.5? Phiên bản 0.5 có các thay đổi không tương thích.",
       "link": "Đọc hướng dẫn chuyển đổi trước khi cập nhật →"
     },
     "maquinas": {
@@ -902,7 +902,7 @@
       "graceTitle": "Giấy phép đã hết hạn — vẫn đang chạy",
       "graceBody": "Giấy phép của bạn đã hết hạn vào {date} và vẫn chạy thêm {days, plural, other {# ngày}}. Hãy gia hạn để tránh gián đoạn.",
       "expiredTitle": "Giấy phép đã hết hạn",
-      "expiredBody": "Giấy phép của bạn đã hết hạn vào {date}. Savings Layer hoạt động theo cơ chế fail-closed, nên SDK đã dừng.",
+      "expiredBody": "Giấy phép của bạn đã hết hạn vào {date}. BV-SALA hoạt động theo cơ chế fail-closed, nên SDK đã dừng.",
       "revokedTitle": "Giấy phép đã bị thu hồi",
       "revokedBody": "Giấy phép này đã bị thu hồi. Hãy viết thư tới support@bivelio.com nếu bạn cho rằng đây là nhầm lẫn."
     },
@@ -1234,7 +1234,7 @@
       "sub": "Chạy engine mã nguồn mở trên hạ tầng của chính bạn. Kết nối Savings Cloud để tập trung việc đo lường và quản lý cho cả nhóm, với các gói phí cố định.",
       "ctaStart": "Bắt đầu với Measure",
       "ctaBench": "Xem kết quả có thể tái lập",
-      "panelAlt": "Bảng điều khiển Savings Cloud với dữ liệu của băng thử công khai: khoản tiết kiệm đo được và phân bổ theo mô hình.",
+      "panelAlt": "Bảng điều khiển Savings với dữ liệu của băng thử công khai: khoản tiết kiệm đo được và phân bổ theo mô hình.",
       "panelCaption": "Bảng điều khiển với dữ liệu của băng thử công khai",
       "medidoEnVivo": "Đo trực tiếp bằng bộ đếm của từng nhà cung cấp",
       "note": "Cài đặt trong vài phút. Tin nhắn của bạn không bao giờ đi qua máy chủ của chúng tôi.",

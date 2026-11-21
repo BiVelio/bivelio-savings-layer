@@ -697,7 +697,7 @@
       "action": "Zaktualizuj SDK na tej maszynie do {minima} lub nowszego i uruchom proces ponownie:"
     },
     "migrar05": {
-      "note": "Aktualizacja z wersji starszej niż 0.5 wprowadza niezgodne zmiany.",
+      "note": "Aktualizujesz z wersji starszej niż 0.5? Wersja 0.5 wprowadza niezgodne zmiany.",
       "link": "Przed aktualizacją przeczytaj przewodnik migracji →"
     },
     "maquinas": {
@@ -902,7 +902,7 @@
       "graceTitle": "Licencja wygasła — nadal działa",
       "graceBody": "Twoja licencja wygasła {date} i działa jeszcze przez {days, plural, one {# dzień} few {# dni} many {# dni} other {# dnia}}. Odnów ją, aby uniknąć przerwy.",
       "expiredTitle": "Licencja wygasła",
-      "expiredBody": "Twoja licencja wygasła {date}. Savings Layer działa w trybie fail-closed, więc SDK się zatrzymał.",
+      "expiredBody": "Twoja licencja wygasła {date}. BV-SALA działa w trybie fail-closed, więc SDK się zatrzymał.",
       "revokedTitle": "Licencja unieważniona",
       "revokedBody": "Ta licencja została unieważniona. Napisz na support@bivelio.com, jeśli uważasz, że to pomyłka."
     },
@@ -1234,7 +1234,7 @@
       "sub": "Uruchom silnik open source we własnej infrastrukturze. Połącz Savings Cloud, aby scentralizować pomiary i zarządzanie zespołem – w planach o stałej opłacie.",
       "ctaStart": "Zacznij od Measure",
       "ctaBench": "Zobacz powtarzalne wyniki",
-      "panelAlt": "Panel Savings Cloud z danymi publicznego benchmarku: zmierzona oszczędność i jej podział według modelu.",
+      "panelAlt": "Panel Savings z danymi publicznego benchmarku: zmierzona oszczędność i jej podział według modelu.",
       "panelCaption": "Panel z danymi publicznego benchmarku",
       "medidoEnVivo": "Mierzone na żywo licznikiem każdego dostawcy",
       "note": "Instalacja w kilka minut. Twoje wiadomości nigdy nie przechodzą przez nasze serwery.",

@@ -697,7 +697,7 @@
       "action": "Aktualisiere das SDK auf dieser Maschine auf {minima} oder neuer und starte den Prozess neu:"
     },
     "migrar05": {
-      "note": "Ein Update von einer Version vor 0.5 bringt inkompatible Änderungen mit sich.",
+      "note": "Du aktualisierst von einer Version vor 0.5? Version 0.5 enthält inkompatible Änderungen.",
       "link": "Lies vor dem Update den Migrationsleitfaden →"
     },
     "maquinas": {
@@ -902,7 +902,7 @@
       "graceTitle": "Lizenz abgelaufen — läuft noch",
       "graceBody": "Deine Lizenz ist am {date} abgelaufen und läuft noch {days, plural, one {# Tag} other {# Tage}} weiter. Verlängere sie, um eine Unterbrechung zu vermeiden.",
       "expiredTitle": "Lizenz abgelaufen",
-      "expiredBody": "Deine Lizenz ist am {date} abgelaufen. Savings Layer ist fail-closed, das SDK hat sich beendet.",
+      "expiredBody": "Deine Lizenz ist am {date} abgelaufen. BV-SALA ist fail-closed, das SDK hat sich beendet.",
       "revokedTitle": "Lizenz widerrufen",
       "revokedBody": "Diese Lizenz wurde widerrufen. Schreib an support@bivelio.com, wenn das ein Fehler ist."
     },
@@ -1234,7 +1234,7 @@
       "sub": "Betreibe die Open-Source-Engine in deiner eigenen Infrastruktur. Verbinde Savings Cloud, um Messung und Verwaltung für dein Team zu bündeln – zu festen Gebühren.",
       "ctaStart": "Mit Measure starten",
       "ctaBench": "Reproduzierbare Ergebnisse ansehen",
-      "panelAlt": "Das Savings-Cloud-Dashboard mit den Daten des öffentlichen Benchmarks: die gemessene Einsparung und ihre Aufteilung nach Modell.",
+      "panelAlt": "Das Savings-Dashboard mit den Daten des öffentlichen Benchmarks: die gemessene Einsparung und ihre Aufteilung nach Modell.",
       "panelCaption": "Dashboard mit den Daten des öffentlichen Benchmarks",
       "medidoEnVivo": "Live gemessen mit dem Zähler jedes Anbieters",
       "note": "In Minuten installiert. Deine Nachrichten laufen nie über unsere Server.",
