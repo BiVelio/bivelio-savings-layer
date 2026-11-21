@@ -157,3 +157,186 @@ describe("la verja mide antes de juzgar", () => {
     }
   });
 });
+
+/**
+ * EL PREFIJO QUE CAMBIA EN CADA PETICIÓN (fecha y hora, UUID, epoch en el `system`).
+ *
+ * La huella lleva el texto del prefijo, así que cada petición trae una huella
+ * nueva y la exploración volvía a empezar en 0/8: 60 de 60 peticiones marcadas,
+ * 0 lecturas, +21,6 % de factura frente a no llevar capa (medido con un
+ * proveedor falso contra la 1.2.3). La clase —la huella sin el texto— es lo que
+ * acota ese experimento.
+ */
+describe("un prefijo que cambia en cada petición deja de marcarse", () => {
+  const ENTRADA = { totalTokens: T, stablePrefixTokens: P, tier: ANTHROPIC_CACHE_TIER };
+  const CLASE = "modelo+herramientas+cabecera";
+
+  /** Manda `n` peticiones con una huella distinta cada una; el proveedor solo escribe. */
+  function mandarDistintas(verja: VerjaDeCacheDePrefijo, n: number, desde = 0, conClase = true): boolean[] {
+    const clase = conClase ? CLASE : undefined;
+    const marcas: boolean[] = [];
+    for (let i = desde; i < desde + n; i++) {
+      const d = verja.decidir(`fecha-${i}`, ENTRADA, clase);
+      marcas.push(d.marcar);
+      if (d.marcar) verja.registrar(`fecha-${i}`, { cacheWriteInputTokens: P }, clase);
+    }
+    return marcas;
+  }
+
+  it("de 60 peticiones marca 8 y no 60: el fallo medido", () => {
+    const verja = new VerjaDeCacheDePrefijo();
+    const marcas = mandarDistintas(verja, 60);
+    expect(marcas.slice(0, 8)).toEqual(Array(8).fill(true));
+    expect(marcas.slice(8)).toEqual(Array(52).fill(false));
+    // El sobrecoste es el de UNA exploración, no un 25 % del prefijo para siempre.
+    const prima = marcas.filter(Boolean).length * 0.25 * P;
+    expect(prima).toBeCloseTo(verja.costeDeExploracion(P, ANTHROPIC_CACHE_TIER), 6);
+  });
+
+  it("la razón dice qué pasa y qué hará la capa", () => {
+    const verja = new VerjaDeCacheDePrefijo();
+    mandarDistintas(verja, 8);
+    const d = verja.decidir("fecha-nueva", ENTRADA, CLASE);
+    expect(d.marcar).toBe(false);
+    expect(d.observada).toBe(0);
+    expect(d.razon).toMatch(/differs on every request/);
+    expect(d.razon).toMatch(/re-probing in 63 requests/);
+  });
+
+  it("sin clase decide como siempre: cada huella nueva explora (la llave estable del catálogo de herramientas)", () => {
+    // Quien llama sin clase usa llaves que NO llevan el texto del prefijo; para
+    // ellas el comportamiento no cambia.
+    const verja = new VerjaDeCacheDePrefijo();
+    expect(mandarDistintas(verja, 60, 0, false)).toEqual(Array(60).fill(true));
+  });
+
+  it("vuelve a probar de vez en cuando, cada vez más espaciado", () => {
+    const verja = new VerjaDeCacheDePrefijo();
+    const marcas = mandarDistintas(verja, 2000);
+    const donde = marcas.flatMap((m, i) => (m ? [i] : []));
+    // 8 de exploración; 64 sin marcar y 8 de reintento; 128 y 8; 256 y 8; 512 y 8; 1024…
+    const esperado = [
+      ...Array.from({ length: 8 }, (_, k) => k),
+      ...Array.from({ length: 8 }, (_, k) => 8 + 64 + k),
+      ...Array.from({ length: 8 }, (_, k) => 80 + 128 + k),
+      ...Array.from({ length: 8 }, (_, k) => 216 + 256 + k),
+      ...Array.from({ length: 8 }, (_, k) => 480 + 512 + k),
+    ];
+    expect(donde).toEqual(esperado);
+    // 40 marcas de 2000: un 2 % de las peticiones paga la prima, no el 100 %.
+    expect(donde.length).toBe(40);
+  });
+
+  it("el intervalo de reintento tiene techo: a la larga, 8 marcas por cada 1024 sin marcar", () => {
+    const verja = new VerjaDeCacheDePrefijo();
+    mandarDistintas(verja, 5000);
+    expect(verja.estadoDeLaClase(CLASE)!.intervalo).toBe(1024);
+    const marcas = mandarDistintas(verja, 1032 * 3, 5000);
+    expect(marcas.filter(Boolean).length).toBe(24);
+  });
+
+  it("un prefijo que SÍ se repite se marca desde su segunda petición, aunque su clase esté apagada", () => {
+    const verja = new VerjaDeCacheDePrefijo();
+    mandarDistintas(verja, 20);
+    // Primera vez: huella nunca vista en una clase apagada. No se marca.
+    expect(verja.decidir("estable", ENTRADA, CLASE).marcar).toBe(false);
+    // Segunda: verla repetirse es la prueba que faltaba, y es gratis.
+    const d = verja.decidir("estable", ENTRADA, CLASE);
+    expect(d.marcar).toBe(true);
+    expect(d.razon).toMatch(/sent before/);
+    verja.registrar("estable", { cacheWriteInputTokens: P }, CLASE);
+    // A partir de aquí decide con su propio contador, como cualquier prefijo.
+    for (let i = 0; i < 30; i++) {
+      expect(verja.decidir("estable", ENTRADA, CLASE).marcar).toBe(true);
+      verja.registrar("estable", { cachedInputTokens: P }, CLASE);
+    }
+    expect(verja.estado("estable")!.tokensLeidos).toBe(30 * P);
+  });
+
+  it("un prefijo estable con mucho tráfico no tapa al que cambia en la misma clase", () => {
+    const verja = new VerjaDeCacheDePrefijo();
+    // 200 peticiones del estable: 1 escritura y 199 lecturas.
+    for (let i = 0; i < 200; i++) {
+      expect(verja.decidir("estable", ENTRADA, CLASE).marcar).toBe(true);
+      verja.registrar("estable", i === 0 ? { cacheWriteInputTokens: P } : { cachedInputTokens: P }, CLASE);
+    }
+    // Y ahora, en la misma clase, un system con fecha: se apaga igual de pronto.
+    // (8 escrituras sin lectura contra la única lectura que el estable aportó
+    // a la clase antes de dejar de contar: 1/10 < 21,7 %.)
+    const marcas = mandarDistintas(verja, 60);
+    expect(marcas.filter(Boolean).length).toBeLessThanOrEqual(8);
+    expect(marcas.slice(8)).toEqual(Array(52).fill(false));
+    // El estable sigue marcando y leyendo.
+    expect(verja.decidir("estable", ENTRADA, CLASE).marcar).toBe(true);
+  });
+
+  it("muchos prefijos estables distintos (un system por cliente) no apagan la clase", () => {
+    const verja = new VerjaDeCacheDePrefijo();
+    for (let c = 0; c < 200; c++) {
+      for (let i = 0; i < 5; i++) {
+        expect(verja.decidir(`cliente-${c}`, ENTRADA, CLASE).marcar).toBe(true);
+        verja.registrar(`cliente-${c}`, i === 0 ? { cacheWriteInputTokens: P } : { cachedInputTokens: P }, CLASE);
+      }
+    }
+  });
+
+  it("un historial que crece (huella nueva en cada paso, pero el paso lee lo anterior) sigue marcándose", () => {
+    const verja = new VerjaDeCacheDePrefijo();
+    const H = "modelo+herramientas+historial";
+    for (let paso = 0; paso < 200; paso++) {
+      const d = verja.decidir(`paso-${paso}`, ENTRADA, H);
+      expect(d.marcar).toBe(true);
+      // Cada paso lee el prefijo del anterior y escribe solo lo nuevo.
+      verja.registrar(`paso-${paso}`, paso === 0 ? { cacheWriteInputTokens: P } : { cachedInputTokens: P, cacheWriteInputTokens: 300 }, H);
+    }
+  });
+
+  it("si en un reintento las huellas nuevas vuelven a leerse, la clase se enciende otra vez", () => {
+    const verja = new VerjaDeCacheDePrefijo();
+    const H = "modelo+herramientas+historial";
+    // Una racha en la que nada se lee (p. ej. turnos separados más que el TTL).
+    for (let i = 0; i < 8 + 64; i++) {
+      const d = verja.decidir(`frio-${i}`, ENTRADA, H);
+      if (d.marcar) verja.registrar(`frio-${i}`, { cacheWriteInputTokens: P }, H);
+    }
+    // Toca reintento, y ahora cada paso lee el anterior.
+    for (let i = 0; i < 8; i++) {
+      const d = verja.decidir(`templado-${i}`, ENTRADA, H);
+      expect(d.marcar).toBe(true);
+      // La primera es de reintento; en cuanto la clase supera el equilibrio
+      // las siguientes ya son exploración normal.
+      if (i === 0) expect(d.razon).toMatch(/re-probing/);
+      verja.registrar(`templado-${i}`, { cachedInputTokens: P, cacheWriteInputTokens: 300 }, H);
+    }
+    for (let i = 0; i < 100; i++) {
+      const d = verja.decidir(`caliente-${i}`, ENTRADA, H);
+      expect(d.marcar).toBe(true);
+      verja.registrar(`caliente-${i}`, { cachedInputTokens: P, cacheWriteInputTokens: 300 }, H);
+    }
+    // Y el siguiente apagón, si llega, vuelve a empezar por el intervalo corto.
+    expect(verja.estadoDeLaClase(H)!.intervalo).toBe(64);
+  });
+
+  it("una clase no apaga a otra", () => {
+    const verja = new VerjaDeCacheDePrefijo();
+    mandarDistintas(verja, 60);
+    expect(verja.decidir("otra-huella", ENTRADA, "otro-modelo").marcar).toBe(true);
+  });
+
+  it("un proveedor que no reporta tokens de caché no dice nada de la clase", () => {
+    // Sin escritura no hay prima que evitar: esas respuestas no cuentan.
+    const verja = new VerjaDeCacheDePrefijo();
+    for (let i = 0; i < 60; i++) {
+      expect(verja.decidir(`mudo-${i}`, ENTRADA, CLASE).marcar).toBe(true);
+      verja.registrar(`mudo-${i}`, {}, CLASE);
+    }
+    expect(verja.estadoDeLaClase(CLASE)).toBeUndefined();
+  });
+
+  it("la memoria no crece con el número de peticiones", () => {
+    // Antes: una entrada por petición, para siempre.
+    const verja = new VerjaDeCacheDePrefijo({ maxHuellas: 100 });
+    mandarDistintas(verja, 5000);
+    expect(verja.huellasRecordadas).toBeLessThanOrEqual(200);
+  });
+});
