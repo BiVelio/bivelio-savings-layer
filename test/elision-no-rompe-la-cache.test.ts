@@ -25,7 +25,11 @@ import { signLicense, testPayload, TEST_KEYS } from "./helpers/test-license.js";
  *    "auto" con turnos a 70 min −73,5 % → −56,9 %. Así que se quitan, y con ellas
  *    sus mejoras: gpt-5 en un agente de 60 pasos sigue en +12,2 %, como en la
  *    1.2.3 (salida: `savings: { elision: false }`).
- *  · CON CLAVE (Measure, Pro, Team, Enterprise) solo recorta dentro del bucle de
+ *  · CON MEASURE (la licencia gratuita), EXACTAMENTE lo mismo que sin clave, en
+ *    todas las cargas (decisión del dueño, 21-11-2026, 21:45 UTC). Con la
+ *    excepción, Measure salía más caro que sin capa en 11 cargas (+21,9 % en un
+ *    chat de Sonnet con turnos a 6 min, que sin clave ahorra un 73 %).
+ *  · CON LICENCIA DE PAGO (Pro, Team, Enterprise) solo recorta dentro del bucle de
  *    herramientas en Anthropic con la colocación fija, nunca con
  *    `AnthropicProvider({ automaticCache: true })` ni con "auto", y solo los
  *    resultados posteriores al último turno del usuario (E1). En el resto no
@@ -38,7 +42,16 @@ import { signLicense, testPayload, TEST_KEYS } from "./helpers/test-license.js";
  */
 
 const PRO = ["semantic_cache", "learned_thresholds", "dashboards", "long_context_compression", "context_elision", "cache_ttl_tuning", "sibling_model_routing", "per_turn_effort", "priority_support"];
-const licenciaPro = () => ({ licenseKey: signLicense(testPayload({ plan: "pro", features: PRO })), licensePublicKey: TEST_KEYS.publicKey });
+const licenciaDe = (plan: string, features: string[]) => () => ({ licenseKey: signLicense(testPayload({ plan, features })), licensePublicKey: TEST_KEYS.publicKey });
+const licenciaPro = licenciaDe("pro", PRO);
+/** La licencia gratuita Measure, con el token tal cual se emite (sin features firmadas). */
+const licenciaMeasure = licenciaDe("measure", []);
+/** Las tres licencias de pago: la excepción del recorte es solo suya. */
+const DE_PAGO = [
+  ["Pro", licenciaPro],
+  ["Team", licenciaDe("team", PRO)],
+  ["Enterprise", licenciaDe("enterprise", PRO)],
+] as const;
 
 const fichero = (n: string, v: number): string =>
   Array.from({ length: 60 }, (_, i) => `${String(i + 1).padStart(3)}: export function ${n}_${i}(x) { return save("${n}", x, ${v}); }`).join("\n");
@@ -290,7 +303,129 @@ describe("sin clave, el recorte es exactamente el de la 1.2.3", () => {
   });
 });
 
-describe("con clave, el recorte solo actúa dentro del bucle de herramientas en Anthropic con la colocación fija", () => {
+describe("Measure (la licencia gratuita) manda EXACTAMENTE los mismos cuerpos que sin clave, en todas las cargas del recorte", () => {
+  /** Corre la misma carga sin clave y con Measure y compara cada cuerpo y cada traza. */
+  async function igualQueSinClave(
+    proveedor: (fetchImpl: typeof fetch) => AnthropicProvider | OpenAICompatibleProvider,
+    falso: () => { fetchImpl: typeof fetch; cuerpos: Record<string, unknown>[]; coste: () => number },
+    modelo: string,
+    peticiones: () => { peticiones: ChatMessage[][]; antesDeCada?: (k: number) => void },
+    config: Record<string, unknown> = {},
+  ) {
+    const c1 = peticiones();
+    const libre = falso();
+    const a = await correr(proveedor, libre, modelo, c1.peticiones, config, {}, c1.antesDeCada);
+    const c2 = peticiones();
+    const measure = falso();
+    const b = await correr(proveedor, measure, modelo, c2.peticiones, { ...config, ...licenciaMeasure() }, {}, c2.antesDeCada);
+    expect(measure.cuerpos.length).toBe(c2.peticiones.length);
+    expect(measure.cuerpos).toEqual(libre.cuerpos);
+    expect(b.trazas).toEqual(a.trazas);
+    expect(b.porCuerpo).toEqual(b.comoLa123);
+    expect(b.trazas.some((t) => /only acts inside a tool loop on Anthropic/.test(t) || t.startsWith("partial"))).toBe(false);
+    expect(measure.coste()).toBe(libre.coste());
+    return { libre, measure };
+  }
+
+  it("gpt-5, gpt-4.1, la serie o, gpt-4o, Gemini y DeepSeek, agente de 30 pasos: recorta como sin clave (no salta)", async () => {
+    for (const modelo of ["openai/gpt-5", "openai/gpt-4.1", "openai/o3", "openai/gpt-5-mini", "openai/gpt-4o", "openai/gpt-4o-mini", "google/gemini-2.5-flash", "gemini-2.5-flash", "google/gemini-2.5-pro", "deepseek/deepseek-chat"]) {
+      const { measure } = await igualQueSinClave(openai, openaiFalso, modelo, () => ({ peticiones: pasos(30) }));
+      expect(munones(measure.cuerpos)).toBeGreaterThan(0);
+    }
+  });
+
+  it("Claude por OpenAICompatibleProvider: recorta como sin clave", async () => {
+    for (const modelo of ["claude-sonnet-4-5", "anthropic/claude-sonnet-4-5"]) {
+      const { measure } = await igualQueSinClave(openai, openaiFalso, modelo, () => ({ peticiones: pasos(30) }));
+      expect(munones(measure.cuerpos)).toBeGreaterThan(0);
+    }
+  });
+
+  it("agente de Anthropic (Sonnet y Haiku) con la colocación fija: recorta como sin clave", async () => {
+    for (const modelo of ["anthropic/claude-sonnet-4-5", "anthropic/claude-haiku-4-5"]) {
+      const { measure } = await igualQueSinClave(anthropic, () => anthropicConCache(), modelo, () => ({ peticiones: pasos(30) }));
+      expect(munones(measure.cuerpos)).toBeGreaterThan(0);
+    }
+  });
+
+  it("AnthropicProvider({ automaticCache: true }): recorta como sin clave", async () => {
+    const { measure } = await igualQueSinClave(anthropicAuto, () => anthropicConCache(), "anthropic/claude-sonnet-4-5", () => ({ peticiones: pasos(30) }));
+    expect(munones(measure.cuerpos)).toBeGreaterThan(0);
+  });
+
+  it('cacheBreakpoints: "auto": recorta como sin clave', async () => {
+    const { measure } = await igualQueSinClave(anthropic, () => anthropicConCache(), "anthropic/claude-sonnet-4-5", () => ({ peticiones: pasos(30) }), {
+      cacheBreakpoints: "auto",
+    });
+    expect(munones(measure.cuerpos)).toBeGreaterThan(0);
+  });
+
+  it("chat con herramientas y turnos a 6 min (Sonnet y Haiku): recorta como sin clave, también delante del último turno, y sale igual de barato", async () => {
+    // El caso que motivó la decisión: con la excepción, Measure +21,9 % frente a
+    // sin capa en Sonnet; sin clave, −73 %.
+    for (const modelo of ["anthropic/claude-sonnet-4-5", "anthropic/claude-haiku-4-5"]) {
+      let reloj: () => number = () => 0;
+      const carga = () => {
+        const chat = chatConHueco(6 * 60_000);
+        reloj = chat.reloj;
+        return { peticiones: chat.peticiones, antesDeCada: chat.antesDeCada };
+      };
+      const { libre, measure } = await igualQueSinClave(anthropic, () => anthropicConCache(() => reloj()), modelo, carga);
+      expect(munones(measure.cuerpos)).toBeGreaterThan(0);
+      const chat2 = chatConHueco(6 * 60_000);
+      const apagado = anthropicConCache(chat2.reloj);
+      await correr(anthropic, apagado, modelo, chat2.peticiones, licenciaMeasure(), { savings: { elision: false } }, chat2.antesDeCada);
+      expect(measure.coste()).toBe(libre.coste());
+      expect(measure.coste()).toBeLessThan(0.8 * apagado.coste());
+    }
+  });
+
+  it("soporte de 12 turnos (Sonnet y Haiku): recorta también lo anterior al último turno del usuario, como sin clave (sin E1)", async () => {
+    for (const modelo of ["anthropic/claude-sonnet-4-5", "anthropic/claude-haiku-4-5"]) {
+      const { measure } = await igualQueSinClave(anthropic, () => anthropicConCache(), modelo, () => ({ peticiones: soporte12() }));
+      expect(munones(measure.cuerpos)).toBeGreaterThan(0);
+    }
+  });
+});
+
+describe("con licencia de pago, el recorte solo actúa dentro del bucle de herramientas en Anthropic con la colocación fija", () => {
+  it.each(DE_PAGO)("%s en gpt-5, Gemini y DeepSeek: no recorta (sin cambios respecto a ea72800e)", async (_n, licencia) => {
+    for (const modelo of ["openai/gpt-5", "google/gemini-2.5-flash", "deepseek/deepseek-chat"]) {
+      const f = openaiFalso();
+      const a = await correr(openai, f, modelo, pasos(30), licencia());
+      expect(munones(f.cuerpos)).toBe(0);
+      expect(historialSoloCrece(f.cuerpos)).toBe(true);
+      expect(a.trazas.some((t) => t.startsWith("skipped") && /with a paid license, trimming .* only acts inside a tool loop on Anthropic/.test(t))).toBe(true);
+    }
+  });
+
+  it.each(DE_PAGO)("%s con automaticCache y con \"auto\": no recorta; en el bucle de Anthropic, igual que sin clave", async (_n, licencia) => {
+    const auto = anthropicConCache();
+    await correr(anthropicAuto, auto, "anthropic/claude-sonnet-4-5", pasos(30), licencia());
+    expect(munones(auto.cuerpos)).toBe(0);
+    const puntos = anthropicConCache();
+    await correr(anthropic, puntos, "anthropic/claude-sonnet-4-5", pasos(30), { ...licencia(), cacheBreakpoints: "auto" });
+    expect(munones(puntos.cuerpos)).toBe(0);
+    const bucle = anthropicConCache();
+    await correr(anthropic, bucle, "anthropic/claude-sonnet-4-5", pasos(30), licencia());
+    const libre = anthropicConCache();
+    await correr(anthropic, libre, "anthropic/claude-sonnet-4-5", pasos(30), {});
+    expect(munones(bucle.cuerpos)).toBeGreaterThan(0);
+    expect(bucle.cuerpos).toEqual(libre.cuerpos);
+  });
+
+  it.each(DE_PAGO)("%s en soporte de 12 turnos y en el chat a 6 min: conserva lo anterior al último turno (E1)", async (_n, licencia) => {
+    const s = anthropicConCache();
+    const a = await correr(anthropic, s, "anthropic/claude-sonnet-4-5", soporte12(), licencia());
+    expect(munones(s.cuerpos)).toBe(0);
+    expect(a.trazas.some((t) => t.startsWith("partial"))).toBe(true);
+    const chat = chatConHueco(6 * 60_000);
+    const c = anthropicConCache(chat.reloj);
+    const b = await correr(anthropic, c, "anthropic/claude-sonnet-4-5", chat.peticiones, licencia(), {}, chat.antesDeCada);
+    expect(b.trazas.some((t) => t.startsWith("partial"))).toBe(true);
+    expect(munones(c.cuerpos)).toBeLessThan(b.comoLa123.reduce((x, y) => x + y, 0));
+  });
+
   it("Pro, agente de Anthropic (Sonnet y Haiku): recorta igual que sin clave, byte a byte, y la factura baja (0 % → −71,6 % medido)", async () => {
     for (const modelo of ["anthropic/claude-sonnet-4-5", "anthropic/claude-haiku-4-5"]) {
       const pro = anthropicConCache();

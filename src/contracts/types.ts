@@ -202,10 +202,11 @@ export interface SavingsToggles {
    * short stub when a newer call to the same tool with the same arguments
    * supersedes it; the newest result is never touched. The stub keeps the
    * message's `role:"tool"`, `toolCallId` and position, and results under 1 KB
-   * are left as they are. With a BiVelio key it only acts inside a tool loop on
-   * Anthropic (`AnthropicProvider` with the default cache placement, no
-   * `automaticCache`, and only results after your last user message); with no
-   * key it acts on every provider, as in 1.2.3.
+   * are left as they are. With no key and with the free Measure license it acts
+   * on every provider, as in 1.2.3. With a paid license (Pro, Team, Enterprise)
+   * it only acts inside a tool loop on Anthropic (`AnthropicProvider` with the
+   * default cache placement, no `automaticCache`, and only results after your
+   * last user message).
    *
    * IT ONLY RUNS WHEN THE POLICY ALLOWS IT. Like the semantic cache, it is
    * disabled for write/destructive tools, freshness-sensitive, personalized or
@@ -1552,9 +1553,8 @@ export interface SavingsReport {
    * config): what the levers would have saved on this request. Nothing was
    * applied — `cost` is this call's measured spend with no saving claimed.
    * (Up to 1.2.3 the free «Measure» license forced this mode; since 1.2.4 a
-   * Measure license applies the same levers as no key, except that with a key
-   * trimming of superseded tool results only acts inside a tool loop on
-   * Anthropic, and this block is absent unless you opt in.)
+   * Measure license applies exactly the same levers as no key, and this block is
+   * absent unless you opt in.)
    */
   measure?: MeasureReport;
 
@@ -1633,11 +1633,12 @@ export interface LicenseGate {
   /**
    * The plan of the license in force, when there is one (`"community"` with no
    * key, `"measure"` for the free «Measure» cloud license, or a paid plan).
-   * Since 1.2.4 a Measure license applies the same levers as no key, with one
-   * exception: when this returns a plan other than `"community"`, trimming of
-   * superseded tool results only acts inside a tool loop on Anthropic (default
-   * cache placement, no `automaticCache`). Optional because a gate is
-   * implemented by the caller; without it the layer trims as with no key.
+   * Since 1.2.4 a Measure license applies exactly the same levers as no key.
+   * The one exception is for paid plans: when this returns a plan other than
+   * `"community"` or `"measure"`, trimming of superseded tool results only acts
+   * inside a tool loop on Anthropic (default cache placement, no
+   * `automaticCache`). Optional because a gate is implemented by the caller;
+   * without it the layer trims as with no key.
    */
   plan?(): string | undefined;
 }
