@@ -1234,7 +1234,7 @@
       "ctaStart": "Starten met Measure",
       "ctaBench": "Reproduceerbare resultaten bekijken",
       "panelAlt": "Het Savings-dashboard met de gegevens van de publieke benchmark: de gemeten besparing en de verdeling per model.",
-      "panelCaption": "Dashboard met de gegevens van de publieke benchmark",
+      "panelCaption": "Demodashboard met de {bateria}-run van de publieke benchmark: {titular} geldt voor de vier modellen samen, zonder het cacheprijscontrast. De bon gaat alleen over {modelo}.",
       "medidoEnVivo": "Live gemeten met de teller van elke provider",
       "note": "In minuten geïnstalleerd. Je berichten gaan nooit via onze servers.",
       "proofTitle": "Gemeten tegen een echte provider",

@@ -1234,7 +1234,7 @@
       "ctaStart": "Bắt đầu với Measure",
       "ctaBench": "Xem kết quả có thể tái lập",
       "panelAlt": "Bảng điều khiển Savings với dữ liệu của băng thử công khai: khoản tiết kiệm đo được và phân bổ theo mô hình.",
-      "panelCaption": "Bảng điều khiển với dữ liệu của băng thử công khai",
+      "panelCaption": "Bảng điều khiển demo với lượt {bateria} của băng thử công khai: {titular} là của cả bốn mô hình gộp lại, không tính phần đối chiếu giá bộ nhớ đệm. Biên lai chỉ là của {modelo}.",
       "medidoEnVivo": "Đo trực tiếp bằng bộ đếm của từng nhà cung cấp",
       "note": "Cài đặt trong vài phút. Tin nhắn của bạn không bao giờ đi qua máy chủ của chúng tôi.",
       "proofTitle": "Đo với nhà cung cấp thật",

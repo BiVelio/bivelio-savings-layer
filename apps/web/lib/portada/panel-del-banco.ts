@@ -65,24 +65,46 @@ export const PANEL_DEL_BANCO = {
   dia: BANCO_EN_VIVO.fecha,
   bateria: BANCO_EN_VIVO.bateria,
   versionSdk: BANCO_EN_VIVO.versionSdk,
-  /** El nombre de la organización de demostración, tal como sale en la barra de la captura. */
-  organizacion: "Banco público · demo",
   /**
+   * LA CAPTURA SE HACE EN DOS IDIOMAS (auditoría m10, 2026-11-21). Hasta
+   * entonces solo había una, en español, y la portada la servía en los doce
+   * idiomas («Lo que ahorró Savings…», «Cerrar sesión»). Ahora la española la
+   * ven `es` y `ca`, y la inglesa los otros diez (`idiomaDeLaCaptura`). Las
+   * cifras son las mismas: solo cambian los rótulos y el idioma de la página
+   * que se captura.
+   *
    * Los rótulos que la captura pone donde el panel de un cliente diría «tu
    * factura», «últimos 30 días» o «live · tu organización»: aquí son UN día
    * del banco público en una organización de demostración, y se dice así.
    * `{peticiones}` y `{evitadas}` se rellenan con las filas de abajo, y
    * `{repeticiones}` con la condición del flujo (`BANCO_EN_VIVO.repeticiones`):
    * el ahorro solo vale para un tráfico que repite así, y la captura lo dice.
+   * «Menos coste a precios de lista» y no «menos factura»: A y B se valoran
+   * con el contador del proveedor a precios de lista versionados, como dice el
+   * recibo de al lado («no es una conciliación de factura»).
    */
   rotulos: {
-    antetituloPagina: "Banco público · demo",
-    tituloPagina: "Lo que ahorró Savings en el banco público",
-    antetitulo: "Medido en vivo contra el proveedor · GSM8K · 2026-09-28",
-    pastilla: "Banco público · demo",
-    pie: "menos factura · en un flujo con un {repeticiones} de peticiones repetidas · {peticiones} peticiones, {evitadas} respondidas sin llamar al proveedor",
-    columnaValor: "Peticiones",
-    columnaAhorro: "Ahorro",
+    es: {
+      /** El nombre de la organización de demostración, tal como sale en la barra de la captura. */
+      organizacion: "Banco público · demo",
+      antetituloPagina: "Banco público · demo",
+      tituloPagina: "Lo que ahorró Savings en el banco público",
+      antetitulo: "Medido en vivo contra el proveedor · GSM8K · 2026-09-28",
+      pastilla: "Banco público · demo",
+      pie: "menos coste a precios de lista · en un flujo con un {repeticiones} de peticiones repetidas · {peticiones} peticiones, {evitadas} respondidas sin llamar al proveedor",
+      columnaValor: "Peticiones",
+      columnaAhorro: "Ahorro",
+    },
+    en: {
+      organizacion: "Public bench · demo",
+      antetituloPagina: "Public bench · demo",
+      tituloPagina: "What Savings saved on the public bench",
+      antetitulo: "Measured against the provider · GSM8K · 2026-09-28",
+      pastilla: "Public bench · demo",
+      pie: "lower cost at list prices · in a stream with {repeticiones} repeated requests · {peticiones} requests, {evitadas} answered without calling the provider",
+      columnaValor: "Requests",
+      columnaAhorro: "Saving",
+    },
   },
   modelos: [
     {
@@ -199,13 +221,43 @@ export function ahorroPorModeloDelBanco(): Record<string, number> {
   return Object.fromEntries(PANEL_DEL_BANCO.modelos.map((m) => [m.nombre, 1 - costeRealDelPanel(m) / m.costeA]));
 }
 
+/** Los dos idiomas en que se captura el panel. */
+export const IDIOMAS_DE_LA_CAPTURA = ["es", "en"] as const;
+export type IdiomaDeLaCaptura = (typeof IDIOMAS_DE_LA_CAPTURA)[number];
+
+/** Qué captura ve cada idioma de la web: la española, `es` y `ca`; la inglesa, el resto. */
+export function idiomaDeLaCaptura(locale: string): IdiomaDeLaCaptura {
+  return locale === "es" || locale === "ca" ? "es" : "en";
+}
+
+/** Los rótulos de la captura en ese idioma de la web. */
+export function rotulosDeLaCaptura(locale: string) {
+  return PANEL_DEL_BANCO.rotulos[idiomaDeLaCaptura(locale)];
+}
+
+const FORMATO_DE_LA_CAPTURA: Record<IdiomaDeLaCaptura, string> = { es: "es-ES", en: "en-US" };
+
 /** El pie del titular de la captura, con sus dos recuentos sacados de las filas. */
-export function pieDelTitular(): string {
+export function pieDelTitular(locale: string): string {
+  const idioma = idiomaDeLaCaptura(locale);
+  const formato = FORMATO_DE_LA_CAPTURA[idioma];
   const d = filasDiariasDelBanco()[0]!;
-  return PANEL_DEL_BANCO.rotulos.pie
-    .replace("{repeticiones}", new Intl.NumberFormat("es-ES", { style: "percent", maximumFractionDigits: 0 }).format(BANCO_EN_VIVO.repeticiones))
-    .replace("{peticiones}", d.requests.toLocaleString("es-ES"))
-    .replace("{evitadas}", d.avoidedLlm.toLocaleString("es-ES"));
+  return PANEL_DEL_BANCO.rotulos[idioma].pie
+    .replace("{repeticiones}", new Intl.NumberFormat(formato, { style: "percent", maximumFractionDigits: 0 }).format(BANCO_EN_VIVO.repeticiones))
+    .replace("{peticiones}", d.requests.toLocaleString(formato))
+    .replace("{evitadas}", d.avoidedLlm.toLocaleString(formato));
+}
+
+/**
+ * El titular que pinta la captura (fracción): el ahorro de los CUATRO modelos
+ * juntos, sin el contraste de precios de caché de Claude Sonnet 5 — lo que
+ * `deriveVerdict` saca de `filasDiariasDelBanco()`. El pie de la portada lo
+ * cita para explicar por qué no es la cifra del recibo de al lado (que es un
+ * solo modelo, gpt-4o-mini).
+ */
+export function titularDelPanel(): number {
+  const d = filasDiariasDelBanco()[0]!;
+  return 1 - d.measuredActualCost / d.measuredBaselineCost;
 }
 
 /**

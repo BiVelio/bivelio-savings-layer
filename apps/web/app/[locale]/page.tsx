@@ -37,6 +37,9 @@ import { PALANCA_TTL } from "@/lib/portada/palanca-ttl";
 import { GradientText } from "@/vendor/affectui/gradient-text";
 import panelDelBanco from "@/assets/portada/panel-del-banco.png";
 import panelDelBancoMovil from "@/assets/portada/panel-del-banco-movil.png";
+import panelDelBancoEn from "@/assets/portada/panel-del-banco-en.png";
+import panelDelBancoMovilEn from "@/assets/portada/panel-del-banco-movil-en.png";
+import { idiomaDeLaCaptura, titularDelPanel } from "@/lib/portada/panel-del-banco";
 
 // La franja bajo la captura del héroe: los proveedores con los que el banco
 // mide EN VIVO, con el contador de cada uno (OpenAI y Anthropic con cifra de
@@ -165,16 +168,18 @@ export default async function LandingPage({ params }: { params: Promise<{ locale
 
   // La captura del panel del héroe (el LCP en escritorio): `priority` pone
   // carga inmediata y prioridad alta. Las dos tomas salen de la misma ruta con
-  // las mismas cifras (lib/portada/panel-del-banco.ts y su verja).
+  // las mismas cifras (lib/portada/panel-del-banco.ts y su verja). En español
+  // la ven `es` y `ca`; en inglés, los otros diez idiomas (auditoría m10).
+  const capturaEnEspanol = idiomaDeLaCaptura(locale) === "es";
   const comunes = { alt: "", quality: 80, priority: true } as const;
   const { props: panelEscritorio } = getImageProps({
     ...comunes,
-    src: panelDelBanco,
+    src: capturaEnEspanol ? panelDelBanco : panelDelBancoEn,
     sizes: "(max-width: 1240px) calc(100vw - 48px), 1160px",
   });
   const { props: panelMovil } = getImageProps({
     ...comunes,
-    src: panelDelBancoMovil,
+    src: capturaEnEspanol ? panelDelBancoMovil : panelDelBancoMovilEn,
     sizes: "calc(100vw - 32px)",
   });
 
@@ -331,8 +336,13 @@ export default async function LandingPage({ params }: { params: Promise<{ locale
                 />
               </div>
             </div>
+            {/* El pie dice por qué el titular de la captura no es la cifra del
+                recibo de al lado: son los cuatro modelos juntos (sin el
+                contraste de precios de caché), y el recibo es uno solo. */}
             <figcaption>
-              <Link href="/benchmarks">{t("hero.panelCaption")}</Link>
+              <Link href="/benchmarks">
+                {t("hero.panelCaption", { bateria: V.bateria, titular: pct1.format(titularDelPanel()), modelo: V.openai.modelo.split("/").pop() ?? "" })}
+              </Link>
             </figcaption>
           </figure>
 

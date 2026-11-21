@@ -9,13 +9,16 @@ import { agregarPorModelo } from "@/app/[locale]/dashboard/explorer-datos";
 
 import { BANCO_EN_VIVO } from "./banco-en-vivo";
 import {
+  IDIOMAS_DE_LA_CAPTURA,
   PANEL_DEL_BANCO,
   capturaDisponible,
   filasDiariasDelBanco,
   filasPorModeloDelBanco,
   huellaDelPanel,
+  idiomaDeLaCaptura,
   pieDelTitular,
   ahorroPorModeloDelBanco,
+  titularDelPanel,
 } from "./panel-del-banco";
 
 /**
@@ -108,6 +111,8 @@ describe("lo que la captura pinta es lo que el panel deriva de esas filas", () =
     expect(v.saved.toFixed(2)).toBe("0.27");
     // Conservador: por debajo del ahorro total del A/B, que incluye al proveedor.
     expect(v.net).toBeLessThan(1 - B / A);
+    // El pie de la portada cita este mismo titular (titularDelPanel).
+    cerca(titularDelPanel(), v.net, "titular del pie");
   });
 
   it("por modelo: el ahorro neto de cada uno, todos positivos, y ninguno inventado", () => {
@@ -137,11 +142,19 @@ describe("lo que la captura pinta es lo que el panel deriva de esas filas", () =
 });
 
 describe("la imagen y la ruta que la produce", () => {
-  it("las dos imágenes se capturaron con ESTAS cifras (si cambian, `node scripts/captura-panel.ts`)", () => {
+  // Las cuatro tomas: escritorio y móvil, en español (sin sufijo) y en inglés (`-en`).
+  const TOMAS = [
+    ["panel-del-banco.png", 2, "/es/captura-panel"],
+    ["panel-del-banco-movil.png", 3, "/es/captura-panel"],
+    ["panel-del-banco-en.png", 2, "/en/captura-panel"],
+    ["panel-del-banco-movil-en.png", 3, "/en/captura-panel"],
+  ] as const;
+
+  it("las cuatro imágenes se capturaron con ESTAS cifras (si cambian, `node scripts/captura-panel.ts`)", () => {
     const meta = JSON.parse(readFileSync(join(WEB, "assets", "portada", "panel-del-banco.json"), "utf8"));
     expect(meta.huella).toBe(huellaDelPanel());
-    expect(meta.ruta).toBe("/es/captura-panel");
-    for (const [fichero, densidad] of [["panel-del-banco.png", 2], ["panel-del-banco-movil.png", 3]] as const) {
+    for (const [fichero, densidad, ruta] of TOMAS) {
+      expect(meta[fichero]?.ruta, fichero).toBe(ruta);
       // Las dimensiones del PNG (cabecera IHDR) son las que dice su ficha.
       const png = readFileSync(join(WEB, "assets", "portada", fichero));
       expect([png.readUInt32BE(16), png.readUInt32BE(20)], fichero).toEqual([meta[fichero].ancho, meta[fichero].alto]);
@@ -150,24 +163,49 @@ describe("la imagen y la ruta que la produce", () => {
     }
   });
 
+  it("la captura española la ven es y ca; la inglesa, los otros diez idiomas (auditoría m10)", () => {
+    expect([...IDIOMAS_DE_LA_CAPTURA]).toEqual(["es", "en"]);
+    expect(idiomaDeLaCaptura("es")).toBe("es");
+    expect(idiomaDeLaCaptura("ca")).toBe("es");
+    for (const l of ["de", "en", "fr", "id", "it", "nl", "pl", "pt", "tr", "vi"]) expect(idiomaDeLaCaptura(l), l).toBe("en");
+    // Los dos juegos de rótulos tienen las mismas claves.
+    expect(Object.keys(P.rotulos.en).sort()).toEqual(Object.keys(P.rotulos.es).sort());
+  });
+
   it("los rótulos de la captura dicen lo que es: un día del banco, demo, sin «tu», sin «30 días», sin «live»", () => {
-    const R = P.rotulos;
-    const todos = Object.values(R).join(" | ");
-    expect(todos).not.toMatch(/\btu\b|\btus\b|30 días|últimos|live|en directo/i);
-    expect(R.pastilla).toMatch(/demo/i);
-    expect(R.antetitulo).toContain(P.dia);
-    expect(R.antetitulo).toContain(P.bateria);
-    expect(R.tituloPagina).toMatch(/banco público/);
-    // El pie no lleva dólares: los recuentos salen de las filas.
-    const pie = pieDelTitular();
-    expect(pie).not.toMatch(/\$/);
+    const PROHIBIDO = {
+      es: /\btu\b|\btus\b|30 días|últimos|live|en directo|factura/i,
+      en: /\byour\b|30 days|\blast\b|\blive\b|invoice|\bbill\b/i,
+    } as const;
+    const TITULO = { es: /banco público/, en: /public bench/ } as const;
     const d = filasDiariasDelBanco()[0]!;
-    expect(pie).toContain(`${d.requests} peticiones`);
-    expect(pie).toContain(`${d.avoidedLlm} respondidas sin llamar al proveedor`);
-    // El titular solo vale para un flujo que repite así: la condición va al lado de la cifra.
+    for (const idioma of IDIOMAS_DE_LA_CAPTURA) {
+      const R = P.rotulos[idioma];
+      const todos = Object.values(R).join(" | ");
+      expect(todos, idioma).not.toMatch(PROHIBIDO[idioma]);
+      expect(R.pastilla, idioma).toMatch(/demo/i);
+      expect(R.organizacion, idioma).toMatch(/demo/);
+      expect(R.antetitulo, idioma).toContain(P.dia);
+      expect(R.antetitulo, idioma).toContain(P.bateria);
+      expect(R.tituloPagina, idioma).toMatch(TITULO[idioma]);
+      // El pie no lleva dólares: los recuentos salen de las filas.
+      expect(pieDelTitular(idioma), idioma).not.toMatch(/\$/);
+    }
+    const es = pieDelTitular("es");
+    expect(es).toContain(`${d.requests} peticiones`);
+    expect(es).toContain(`${d.avoidedLlm} respondidas sin llamar al proveedor`);
+    const en = pieDelTitular("en");
+    expect(en).toContain(`${d.requests} requests`);
+    expect(en).toContain(`${d.avoidedLlm} answered without calling the provider`);
+    // El catalán ve la captura española.
+    expect(pieDelTitular("ca")).toBe(es);
+    // El titular solo vale para un flujo que repite así: la condición va al
+    // lado de la cifra. Y es coste a precios de lista, no una factura: lo que
+    // dice el recibo de al lado.
     expect(BANCO_EN_VIVO.repeticiones).toBe(0.3);
     for (const r of informes0()) expect(r).toBe(BANCO_EN_VIVO.repeticiones);
-    expect(pie).toMatch(/^menos factura · en un flujo con un 30\s%\sde peticiones repetidas · /);
+    expect(es).toMatch(/^menos coste a precios de lista · en un flujo con un 30\s%\sde peticiones repetidas · /);
+    expect(en).toMatch(/^lower cost at list prices · in a stream with 30% repeated requests · /);
   });
 
   it("el ahorro de cada modelo es el de las filas (sin el proveedor) y cuadra con el informe", () => {
@@ -185,7 +223,8 @@ describe("la imagen y la ruta que la produce", () => {
     const panel = readFileSync(join(WEB, "app", "[locale]", "dashboard", "page.tsx"), "utf8");
     expect(panel).not.toMatch(/rotulos=|presentacion=/);
     const captura = readFileSync(join(WEB, "app", "[locale]", "captura-panel", "page.tsx"), "utf8");
-    expect(captura).toMatch(/rotulos=\{\{ antetitulo: R\.antetitulo, pastilla: R\.pastilla, pie: pieDelTitular\(\) \}\}/);
+    expect(captura).toMatch(/rotulos=\{\{ antetitulo: R\.antetitulo, pastilla: R\.pastilla, pie: pieDelTitular\(locale\) \}\}/);
+    expect(captura).toContain("const R = rotulosDeLaCaptura(locale);");
     expect(captura).toContain('metrica: "peticiones"');
     expect(captura).toContain("sinControles: true");
   });
@@ -200,7 +239,6 @@ describe("la imagen y la ruta que la produce", () => {
     expect(src).toContain("const usage = filasDiariasDelBanco();");
     expect(src).toContain("const porModelo = filasPorModeloDelBanco();");
     expect(src).not.toMatch(/loadDashboard|createReadOnlyClient|supabase/);
-    expect(src).toMatch(/orgName=\{PANEL_DEL_BANCO\.organizacion\}/);
-    expect(P.organizacion).toMatch(/demo/);
+    expect(src).toMatch(/orgName=\{R\.organizacion\}/);
   });
 });

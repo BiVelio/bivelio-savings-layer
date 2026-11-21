@@ -1,15 +1,28 @@
 {
-  "ruta": "/es/captura-panel",
   "reloj": "2026-09-29T09:00:00.000Z",
   "panel-del-banco.png": {
+    "ruta": "/es/captura-panel",
     "ancho": 2720,
-    "alto": 1702,
+    "alto": 1694,
     "densidad": 2
   },
   "panel-del-banco-movil.png": {
+    "ruta": "/es/captura-panel",
     "ancho": 1278,
     "alto": 1857,
     "densidad": 3
   },
-  "huella": "52fc71791dc5dc1b"
+  "panel-del-banco-en.png": {
+    "ruta": "/en/captura-panel",
+    "ancho": 2720,
+    "alto": 1694,
+    "densidad": 2
+  },
+  "panel-del-banco-movil-en.png": {
+    "ruta": "/en/captura-panel",
+    "ancho": 1278,
+    "alto": 1857,
+    "densidad": 3
+  },
+  "huella": "08694e6892e55838"
 }
