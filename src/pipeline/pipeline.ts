@@ -44,7 +44,11 @@ import type {
 import { canonicalize, sha256, stableStringify } from "../canonicalization/canonicalize.js";
 import { buildExactKey, buildInflightKey } from "../canonicalization/keys.js";
 import type { CacheTier } from "../economics/cache-tier.js";
-import { VerjaDeCacheDePrefijo } from "../economics/prefix-cache-gate.js";
+import {
+  VerjaDeCacheDePrefijo,
+  type CabeceraDePeticion,
+  type VistazoDeCabecera,
+} from "../economics/prefix-cache-gate.js";
 import { ahorroNativo } from "../economics/ahorro-nativo.js";
 import {
   EspejoDeCache,
@@ -486,8 +490,10 @@ export class SavingsPipeline {
    * Vive en la instancia por la misma razón que `contratosQueIncumplen`: lo que
    * aprende es una MEDICIÓN (la tasa de aciertos real de un prefijo), y una
    * medición hay que acumularla entre peticiones o no se llega a tener nunca.
+   * Su reloj es el de la capa (`config.now`): la cabecera que no vuelve madura
+   * por el TTL de la caché, y eso se prueba sin esperar cinco minutos.
    */
-  private readonly verjaDeCache = new VerjaDeCacheDePrefijo();
+  private readonly verjaDeCache = new VerjaDeCacheDePrefijo({ ahora: () => this.now() });
 
   /**
    * El espejo de la caché de prefijo (`cacheBreakpoints: "auto"`): mide, sin
@@ -1109,6 +1115,19 @@ export class SavingsPipeline {
       });
       return nada;
     }
+    // LA CABECERA DE ESTA PETICIÓN (herramientas + `system`, sin historial), UNA
+    // vez por petición y antes de cualquier colocación: la verja aprende si las
+    // cabeceras de esta clase vuelven antes de caducar. Se apunta aunque luego no
+    // se marque nada, porque lo que mide es si la cabecera VUELVE, no si se leyó.
+    const cabecera = this.verjaDeCache.observarCabecera(
+      this.cabeceraDeLaPeticion(
+        modeloServido,
+        toolSelection.tools,
+        messages,
+        explicita ? "explicit" : this.config.cacheBreakpoints === "auto" ? "auto" : "fija",
+      ),
+    );
+
     // EL COLOCADOR (opt-in). Solo con la colocación automática y sin modo
     // explícito DECLARADO: lo que el cliente declara manda sobre lo que la capa
     // mide. Devuelve la decisión entera, o la observación a apuntar cuando la
@@ -1117,7 +1136,7 @@ export class SavingsPipeline {
     let observacion: ColocacionEnCurso | null = null;
     if (this.config.cacheBreakpoints === "auto" && !explicita) {
       const colocado = this.colocarConEspejo(
-        request, modeloServido, messages, toolSelection, mensajesDePrefijo, tier, trace, espejoCargado,
+        request, modeloServido, messages, toolSelection, mensajesDePrefijo, tier, trace, espejoCargado, cabecera,
       );
       if ("marcado" in colocado) return colocado.marcado;
       observacion = colocado.observacion;
@@ -1166,8 +1185,9 @@ export class SavingsPipeline {
           patrones: mutable.map((f) => f.patron),
           muestras: mutable.map((f) => f.muestra),
           razon:
-            "the system header carries per-request content (timestamp or UUID): the provider prompt " +
-            "cache can never hit on this prefix — set savings.cachePrefix: true or move it to the query tail",
+            "the system header carries a value that often changes on every request (timestamp or UUID); " +
+            "if it does, the provider prompt cache can never hit on this prefix — set savings.cachePrefix: true " +
+            "or move it to the query tail",
         });
         // Un aviso POR PATRÓN y por proceso (la clave es el patrón, no el texto,
         // que cambiaría en cada petición y haría saltar el aviso sin parar):
@@ -1175,10 +1195,11 @@ export class SavingsPipeline {
         for (const f of mutable) {
           this.avisar(
             `cache-audit:${f.patron}`,
-            `[bvsala] your system prompt carries per-request content (${f.patron}); a prompt that differs on ` +
-              "every request can never be read back from the provider prompt cache. The layer measures this on " +
-              "the first requests and then stops marking that prefix, so you pay the normal input price and get " +
-              "no cache discount. To get the discount, put the value on a line of its own and set " +
+            `[bvsala] your system prompt carries a value that often changes on every request (${f.patron}). ` +
+              "If it changes on every request, that prompt can never be read back from the provider prompt " +
+              "cache. The layer watches whether each system prompt is sent again before its cache entry " +
+              "expires; once most are not, it stops marking new ones, so you pay the normal input price and " +
+              "get no cache discount. To get the discount, put the value on a line of its own and set " +
               "savings.cachePrefix: true, or move it to the end of your prompt. (reported once per process)",
           );
         }
@@ -1209,19 +1230,10 @@ export class SavingsPipeline {
     );
 
     const claveDeVerja = explicita ? `${huella}|explicit` : huella;
-    // La forma separa la cabecera sola del historial, que se leen de manera
-    // distinta (ver `claseDeVerja`).
-    const claseDeVerja = this.systemCambiaEnCadaPeticion(messages, S)
-      ? this.claseDeVerja(
-          modeloServido,
-          toolSelection.tools,
-          `fija|${mensajesDePrefijo > S ? "historial" : "cabecera"}${explicita ? "|explicit" : ""}`,
-        )
-      : undefined;
     const decision = this.verjaDeCache.decidir(
       claveDeVerja,
       { totalTokens, stablePrefixTokens, tier: tramoExplicito ?? tier },
-      claseDeVerja,
+      cabecera,
     );
     trace.record("prefix-cache", decision.marcar ? "marked" : "skipped", {
       reason: decision.razon,
@@ -1235,7 +1247,6 @@ export class SavingsPipeline {
           marcar: true,
           huella,
           claveDeVerja,
-          ...(claseDeVerja != null ? { claseDeVerja } : {}),
           mensajesDePrefijo,
           cacheWriteMultiplier: tier.cacheWriteMultiplier,
           explicita,
@@ -1348,6 +1359,7 @@ export class SavingsPipeline {
     tier: CacheTier,
     trace: TraceCollector,
     espejoCargado: EspejoCargado | null = null,
+    cabecera?: VistazoDeCabecera,
   ): { marcado: MarcadoDeCache } | { observacion: ColocacionEnCurso | null } {
     const { tramoOpenAI, conPrima } = this.primasDelColocador(request, modeloServido, tier);
     if (!conPrima && !tramoOpenAI) return { observacion: null };
@@ -1403,13 +1415,12 @@ export class SavingsPipeline {
       const tipo: TipoDeTramo = frontera === S ? "S" : "H";
       const claveDeVerja = `${clase}|explicit|${tipo}`;
       // `clase` (la del espejo) lleva el texto del `system`: con uno que cambia
-      // en cada petición es nueva siempre, igual que la huella de la colocación
-      // fija. La clase de la verja no lo lleva.
-      const claseDeVerja = this.systemCambiaEnCadaPeticion(messages, S) ? this.claseDeVerja(modeloServido, toolSelection.tools, `colocador|explicit|${tipo}`) : undefined;
+      // en cada petición es nueva siempre. Lo que la verja mira para no pagar
+      // escrituras que nadie leerá es si la CABECERA vuelve (`cabecera`).
       const decision = this.verjaDeCache.decidir(
         claveDeVerja,
         { totalTokens: tokensHasta(T), stablePrefixTokens: tokensHasta(frontera), tier: tramoOpenAI },
-        claseDeVerja,
+        cabecera,
       );
       trace.record("prefix-cache", decision.marcar ? "marked" : "skipped", {
         reason: decision.razon,
@@ -1422,7 +1433,6 @@ export class SavingsPipeline {
           marcar: decision.marcar,
           huella: decision.marcar ? this.huellaDelPrefijo(modeloServido, toolSelection.tools, messages, frontera) : "",
           claveDeVerja: decision.marcar ? claveDeVerja : "",
-          ...(decision.marcar && claseDeVerja != null ? { claseDeVerja } : {}),
           mensajesDePrefijo: decision.marcar ? frontera : 0,
           cacheWriteMultiplier: 1,
           explicita: true,
@@ -1480,10 +1490,11 @@ export class SavingsPipeline {
       c.ttl === "1h" ? { ...tier, cacheWriteMultiplier: unaHora } : tier;
     const forma = `${frontera === 0 ? "-" : frontera === S ? "S" : "H"}${c.cola ? "+T" : ""}@${c.ttl}`;
     const claveDeVerja = `${clase}|${forma}`;
-    // Igual que arriba: la clase del espejo lleva el texto del `system`; la de
-    // la verja no, y es la que acota la exploración cuando ese texto cambia en
-    // cada petición (medido: con "auto" también eran 60 de 60).
-    const claseDeVerja = this.systemCambiaEnCadaPeticion(messages, S) ? this.claseDeVerja(modeloServido, toolSelection.tools, `colocador|${forma}`) : undefined;
+    // Igual que arriba: la clase del espejo lleva el texto del `system`, así que
+    // con uno que cambia en cada petición es nueva siempre (medido: con "auto"
+    // también eran 60 de 60). Si esta petición escribe a 1 h, su cabecera tarda
+    // una hora en contar como «no volvió».
+    if (c.ttl === "1h") cabecera?.conTtl(60 * 60_000);
     const decision = this.verjaDeCache.decidir(
       claveDeVerja,
       {
@@ -1491,7 +1502,7 @@ export class SavingsPipeline {
         stablePrefixTokens: c.cola ? tokens.T : frontera === S ? tokens.S : tokens.H,
         tier: tierDeLaForma,
       },
-      claseDeVerja,
+      cabecera,
     );
     trace.record("prefix-cache", decision.marcar ? "marked" : "skipped", {
       reason: decision.razon,
@@ -1512,7 +1523,6 @@ export class SavingsPipeline {
         marcar: true,
         huella: this.huellaDelPrefijo(modeloServido, toolSelection.tools, messages, frontera),
         claveDeVerja,
-        ...(claseDeVerja != null ? { claseDeVerja } : {}),
         mensajesDePrefijo: frontera,
         cacheWriteMultiplier: tier.cacheWriteMultiplier,
         explicita: false,
@@ -1783,19 +1793,32 @@ export class SavingsPipeline {
   }
 
   /**
-   * LA CLASE DE LA VERJA: modelo + herramientas + forma de colocar, SIN el texto
-   * del prefijo. La huella de un `system` con la hora de cada petición es nueva
-   * en cada llamada, y con ella sola la exploración volvía a empezar en 0/8
-   * siempre (60 de 60 marcadas, +21,6 % de factura). La clase sí se repite, y es
-   * donde la verja mide si un prefijo que no ha visto nunca llega a leerse.
+   * LA CABECERA DE UNA PETICIÓN, para la verja: su CLASE (modelo servido +
+   * herramientas + modo de colocar, SIN texto) y su HUELLA (lo mismo más el
+   * `system`, sin historial). La huella de un `system` con la hora de cada
+   * petición es nueva en cada llamada (60 de 60 marcadas, +21,6 % de factura en
+   * la 1.2.3); la clase sí se repite, y en ella la verja ve si las cabeceras
+   * vuelven antes de caducar. La clase NO separa la cabecera sola del historial
+   * ni la forma de colocar de cada petición: una conversación estrena su
+   * cabecera con una forma y la repite con otra, y separarlas la haría parecer
+   * de un solo uso.
    */
-  private systemCambiaEnCadaPeticion(messages: readonly ChatMessage[], S: number): boolean {
-    return S > 0 && detectarContenidoMutable(this.assemblePromptText(messages.slice(0, S))).length > 0;
+  private cabeceraDeLaPeticion(
+    modelo: string,
+    tools: SavingsRequest["tools"],
+    messages: readonly ChatMessage[],
+    modo: "fija" | "auto" | "explicit",
+  ): CabeceraDePeticion {
+    const ids = (tools ?? []).map((t) => t.id);
+    const S = cabeceraDeSistema(messages as ChatMessage[]);
+    return {
+      clase: sha256(stableStringify({ claseDeCabeceras: modo, model: modelo, tools: ids })),
+      huella: sha256(
+        stableStringify({ cabecera: modo, model: modelo, tools: ids, system: messages.slice(0, S).map((m) => `${m.role}:${m.content}`) }),
+      ),
+    };
   }
 
-  private claseDeVerja(modelo: string, tools: SavingsRequest["tools"], forma: string): string {
-    return sha256(stableStringify({ claseDeVerja: forma, model: modelo, tools: (tools ?? []).map((t) => t.id) }));
-  }
 
   /** La huella de un prefijo, la misma que la colocación fija (viaja como `prompt_cache_key`). */
   private huellaDelPrefijo(
@@ -4016,7 +4039,7 @@ export class SavingsPipeline {
       // petición escalada la traza publicaba 1800 tokens de acierto y la verja
       // apuntaba 0, o sea que se habría apagado sola por una lectura ajena.
       this.comprobarInterrupcion(testigo);
-      this.verjaDeCache.registrar(marcado.claveDeVerja, usoDeLaLlamadaMarcada, marcado.claseDeVerja);
+      this.verjaDeCache.registrar(marcado.claveDeVerja, usoDeLaLlamadaMarcada);
       trace.record("prefix-cache", "measured", {
         cacheRead: usoDeLaLlamadaMarcada.cachedInputTokens ?? 0,
         // La prima de escritura se publica en la traza JUNTO al descuento, no
@@ -7405,8 +7428,6 @@ interface MarcadoDeCache {
   marcar: boolean;
   huella: string;
   claveDeVerja: string;
-  /** La clase (sin texto del prefijo) donde la verja mide las huellas nuevas. Ausente con llaves que ya son estables. */
-  claseDeVerja?: string;
   mensajesDePrefijo: number;
   cacheWriteMultiplier: number;
   explicita: boolean;

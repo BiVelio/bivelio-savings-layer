@@ -11,23 +11,34 @@ import type { ChatMessage, SavingsRequest } from "../src/contracts/types.js";
 /**
  * LA CONFIGURACIÓN POR DEFECTO NO PUEDE SUBIR LA FACTURA.
  *
- * Con un `system` que lleva algo distinto en cada petición (fecha y hora, UUID,
- * epoch), la 1.2.3 ponía `cache_control` en TODAS las peticiones de Anthropic y
- * pagaba la prima de escritura (1,25×) sin leer nunca: 60 de 60 marcadas,
- * +21,6 % de factura frente a no llevar capa. La exploración «acotada a 8» se
- * contaba por la huella del prefijo, que lleva su texto y por tanto era nueva en
- * cada petición: la traza decía «exploring the prefix cache (0/8)» en la 1 y en
- * la 60.
+ * Con un `system` que lleva algo distinto en cada petición (la hora, un UUID, un
+ * id de petición), la 1.2.3 ponía `cache_control` en TODAS las peticiones de
+ * Anthropic y pagaba la prima de escritura (1,25×) sin leer nunca: 60 de 60
+ * marcadas, +21,6 % de factura frente a no llevar capa.
+ *
+ * La 1.2.4 lo adivinaba con un detector de «contenido por petición» y fallaba en
+ * los dos sentidos: valores ESTABLES (un UUID de sesión, la fecha del día, un
+ * número de cliente) apagaban la caché de chats que sí la leían (−40,8 % en la
+ * 1.2.3, +1,8 % con 8 chats a la vez), y valores que cambian de verdad («10:42
+ * AM», un UUID v7, un id de petición) no los veía. Ahora no se adivina nada: la
+ * verja mira si la CABECERA (herramientas + `system`) vuelve antes de que caduque
+ * su entrada de caché (ver `prefix-cache-gate.ts`).
  *
  * Aquí se fija, en el camino real (el adaptador de Anthropic de verdad contra
  * una API falsa EN PROCESO que simula su caché: solo cachea donde hay
- * `cache_control`, lee el prefijo más largo ya escrito, mínimo 1.024 tokens):
+ * `cache_control`, lee el prefijo más largo ya escrito, mínimo 1.024 tokens, y
+ * con reloj, caduca a los 5 minutos y una lectura renueva):
  *
- *   1. que ese caso marca 8 y no 60, y lo que cuesta de más;
- *   2. que NADA de lo que ya ahorraba cambia: system estable, `cachePrefix`,
+ *   1. los falsos negativos de la 1.2.4: con la hora en cualquier formato, un
+ *      UUID v7 o un id de petición, la factura baja en cuanto las primeras
+ *      cabeceras caducan sin volver;
+ *   2. los falsos positivos de la 1.2.4: un UUID de sesión, la fecha del día o
+ *      un número de cliente se marcan como en la 1.2.3;
+ *   3. que NADA de lo que ya ahorraba cambia: system estable, `cachePrefix`,
  *      conversación con historial, streaming y `cacheBreakpoints: "auto"`.
  *
- * Ningún byte sale del proceso: `fetchImpl` es una función local.
+ * Ningún byte sale del proceso: `fetchImpl` es una función local, y el reloj es
+ * el de la capa (`now`), compartido con la API falsa.
  */
 
 const MODELO = "anthropic/claude-sonnet-4-5";
@@ -44,9 +55,24 @@ interface Cuenta {
   marcas: boolean[];
 }
 
-/** API de Mensajes falsa con la caché de prompt de Anthropic (reglas públicas). */
-function anthropicFalso(): { fetchImpl: typeof fetch; cuenta: Cuenta } {
-  const cache = new Set<string>();
+/**
+ * API de Mensajes falsa con la caché de prompt de Anthropic (reglas públicas).
+ * Con `reloj`, cada entrada caduca a los 5 minutos de su última escritura o
+ * lectura; sin él, no caduca nunca.
+ */
+function anthropicFalso(reloj?: () => number): { fetchImpl: typeof fetch; cuenta: Cuenta } {
+  const hasta = new Map<string, number>();
+  const cache = {
+    has: (h: string): boolean => {
+      const t = hasta.get(h);
+      if (t == null) return false;
+      if (reloj == null) return true;
+      if (t <= reloj()) return false;
+      hasta.set(h, reloj() + 300_000); // leer renueva
+      return true;
+    },
+    add: (h: string): void => void hasta.set(h, reloj ? reloj() + 300_000 : Infinity),
+  };
   const cuenta: Cuenta = { llamadas: 0, marcadas: 0, plena: 0, leidos: 0, escritos: 0, marcas: [] };
   const fetchImpl = (async (_url: unknown, init: { body: string }) => {
     const body = JSON.parse(init.body) as Record<string, unknown>;
@@ -126,6 +152,12 @@ const coste = (c: Cuenta): number => c.plena + 0.1 * c.leidos + 1.25 * c.escrito
 /** Lo mismo sin capa: toda la entrada a 1×. */
 const sinCapa = (c: Cuenta): number => c.plena + c.leidos + c.escritos;
 
+/** Un reloj simulado que empieza en una hora fija y avanza a mano. */
+function relojSimulado(): { now: () => number; pasar: (ms: number) => void } {
+  let t = Date.UTC(2026, 10, 21, 10, 0, 0);
+  return { now: () => t, pasar: (ms) => void (t += ms) };
+}
+
 function capa(fetchImpl: typeof fetch, extra: Record<string, unknown> = {}): SavingsPipeline {
   return new SavingsPipeline({
     provider: new AnthropicProvider({ apiKey: "clave-inventada", fetchImpl }),
@@ -146,8 +178,8 @@ const ESTABLE = `${CABEZA}\n${REGLAS}`;
 const hora = (i: number): string => new Date(Date.UTC(2026, 10, 21, 10, 0, i)).toISOString();
 /** La hora en una línea propia. */
 const CON_HORA = (i: number): string => `${CABEZA}\nGenerated at ${hora(i)}.\n${REGLAS}`;
-/** La hora en la MISMA línea que todo lo demás (un system de una sola línea). */
-const CON_HORA_EN_LINEA = (i: number): string => `Current time: ${hora(i)}. ${ESTABLE.replace(/\n/g, " ")}`;
+/** La hora en la MISMA línea que todo lo demás (un system de una sola línea), según el reloj. */
+const CON_HORA_EN_LINEA = (ahora: number): string => `Current time: ${new Date(ahora).toISOString()}. ${ESTABLE.replace(/\n/g, " ")}`;
 
 const pregunta = (i: number): string =>
   `Customer question ${i + 1}: the device with serial ${1000 + i * 37} does not turn on after charging. What do I tell them?`;
@@ -171,69 +203,131 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
-describe("system con la fecha y la hora de cada petición (el caso que subía la factura)", () => {
-  it("de 60 peticiones se marcan 8, no 60, y el sobrecoste es el de esa exploración", async () => {
-    const f = anthropicFalso();
-    const layer = capa(f.fetchImpl);
-    const razones: string[] = [];
-    for (let i = 0; i < 60; i++) {
-      const r = await layer.generate(peticion(CON_HORA(i), i));
-      const t = r.report.traces.find((x) => x.stage === "prefix-cache" && x.outcome !== "measured");
-      razones.push(String(t?.detail?.["reason"]));
+/** Formatos de «ahora» y de ids por petición que el detector de la 1.2.4 no veía (o veía de más). */
+const p2 = (n: number): string => String(n).padStart(2, "0");
+const AMPM = (ms: number): string => {
+  const d = new Date(ms);
+  const h = d.getUTCHours();
+  return `${h % 12 || 12}:${p2(d.getUTCMinutes())} ${h < 12 ? "AM" : "PM"}`;
+};
+const UNO = ["twelve", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten", "eleven"];
+const MINUTOS = (m: number): string =>
+  m === 0 ? "o'clock" : m < 10 ? `oh ${m}` : `${["", "", "twenty", "thirty", "forty", "fifty"][Math.floor(m / 10)]}${m % 10 ? `-${m % 10}` : ""}`;
+const EN_PALABRAS = (ms: number): string => {
+  const d = new Date(ms);
+  return `It is ${UNO[d.getUTCHours() % 12]} ${MINUTOS(d.getUTCMinutes())} in the ${d.getUTCHours() < 12 ? "morning" : "afternoon"}`;
+};
+const hex = (s: string): string => createHash("sha256").update(s).digest("hex");
+const UUID_V7 = (ms: number, i: number): string => {
+  const t = Math.floor(ms).toString(16).padStart(12, "0");
+  const r = hex(`v7-${i}`);
+  return `${t.slice(0, 8)}-${t.slice(8, 12)}-7${r.slice(0, 3)}-8${r.slice(3, 6)}-${r.slice(6, 18)}`;
+};
+const ID_DE_PETICION = (i: number): string => `req_${hex(`req-${i}`).slice(0, 24)}`;
+const UUID_V4 = (s: string): string => {
+  const x = hex(s);
+  return `${x.slice(0, 8)}-${x.slice(8, 12)}-4${x.slice(13, 16)}-a${x.slice(17, 20)}-${x.slice(20, 32)}`;
+};
+
+/** `n` preguntas sueltas, `paso` ms entre una y otra, con la cabeza del system según el reloj. */
+async function sueltas(
+  n: number,
+  paso: number,
+  cabeza: (ahora: number, i: number) => string,
+  extra: Record<string, unknown> = {},
+  modo: "generate" | "stream" = "generate",
+): Promise<Cuenta> {
+  const reloj = relojSimulado();
+  const f = anthropicFalso(reloj.now);
+  const layer = capa(f.fetchImpl, { silenceWarnings: true, now: reloj.now, ...extra });
+  for (let i = 0; i < n; i++) {
+    const r = peticion(`${CABEZA}\n${cabeza(reloj.now(), i)}\n${REGLAS}`, i);
+    if (modo === "stream") await layer.generateStream(r).result;
+    else await layer.generate(r);
+    reloj.pasar(paso);
+  }
+  return f.cuenta;
+}
+
+describe("FALSOS NEGATIVOS de la 1.2.4: lo que cambia en cada petición deja de pagar la prima en cuanto se ve que no vuelve", () => {
+  // En la 1.2.3 todas estas cargas marcan 600 de 600 y no leen nada: +21 % de
+  // factura. Con el reloj simulado, a los 5 minutos la primera cabecera caduca
+  // sin haber vuelto; con 16 así, la clase es volátil y las nuevas dejan de
+  // marcarse. Hasta entonces se marca exactamente como en la 1.2.3.
+  const CASOS = [
+    ["la hora ISO con segundos, 2 s entre peticiones", 2000, (t: number) => `Now: ${new Date(t).toISOString()}`, 165, 0.07],
+    ["la hora RFC con segundos", 2000, (t: number) => `Date: ${new Date(t).toUTCString()}`, 165, 0.07],
+    ["«10:42 AM» (cambia cada minuto, 61 s entre peticiones)", 61_000, (t: number) => `The time is ${AMPM(t)}.`, 20, 0.01],
+    ["la hora en palabras", 61_000, (t: number) => `${EN_PALABRAS(t)}.`, 20, 0.01],
+    ["un UUID v7 por petición, 1 s entre peticiones", 1000, (t: number, i: number) => `Trace ${UUID_V7(t, i)}`, 315, 0.135],
+    ["un id de petición", 1000, (_t: number, i: number) => `Request id: ${ID_DE_PETICION(i)}`, 315, 0.135],
+  ] as const;
+
+  it.each(CASOS)("%s: 600 peticiones", async (_n, paso, cabeza, marcadas, techo) => {
+    const c = await sueltas(600, paso, cabeza);
+    expect(c.llamadas).toBe(600);
+    expect(c.leidos).toBe(0);
+    // Las primeras, como la 1.2.3 (todas marcadas); desde que la clase es
+    // volátil, ninguna.
+    expect(c.marcadas).toBe(marcadas);
+    expect(c.marcas.slice(0, marcadas)).toEqual(Array(marcadas).fill(true));
+    // El dinero: la 1.2.3 pagaba la prima en las 600 (+21 % con este system);
+    // aquí, solo la de las marcadas.
+    const sobrecoste = coste(c) / sinCapa(c) - 1;
+    const de123 = (0.25 * (c.escritos / marcadas) * 600) / sinCapa(c);
+    expect(de123).toBeGreaterThan(0.2);
+    expect(sobrecoste).toBeLessThan(techo);
+    expect(sobrecoste).toBeLessThan(de123 * (marcadas / 600) + 0.001);
+  });
+
+  it("también en streaming y con cacheBreakpoints: \"auto\"", async () => {
+    const hora = (t: number): string => `Now: ${new Date(t).toISOString()}`;
+    expect((await sueltas(600, 2000, hora, {}, "stream")).marcadas).toBe(165);
+    expect((await sueltas(600, 2000, hora, { cacheBreakpoints: "auto" })).marcadas).toBe(165);
+  });
+
+  it("un chat con la hora de cada turno en el system (10 chats × 60 turnos): de +24 % a cerca de 0", async () => {
+    const reloj = relojSimulado();
+    const f = anthropicFalso(reloj.now);
+    const layer = capa(f.fetchImpl, { silenceWarnings: true, now: reloj.now });
+    const historiales = new Map<number, ChatMessage[]>();
+    for (let t = 0; t < 60; t++) {
+      for (let chat = 0; chat < 10; chat++) {
+        const h = historiales.get(chat) ?? [];
+        const q: ChatMessage = { role: "user", content: `${pregunta(t)} (chat ${chat})` };
+        const r = await layer.generate({
+          model: MODELO,
+          messages: [{ role: "system", content: `${ESTABLE}\nNow: ${new Date(reloj.now()).toISOString()}` }, ...h, q],
+        } as SavingsRequest);
+        historiales.set(chat, [...h, q, { role: "assistant", content: `${r.text} Answer ${t}. `.repeat(6) }]);
+        reloj.pasar(2000);
+      }
     }
-    expect(f.cuenta.llamadas).toBe(60);
-    // Antes: 60 de 60.
-    expect(f.cuenta.marcadas).toBe(8);
-    expect(f.cuenta.marcas.slice(0, 8)).toEqual(Array(8).fill(true));
-    expect(f.cuenta.marcas.slice(8)).toEqual(Array(52).fill(false));
     expect(f.cuenta.leidos).toBe(0);
-    // La exploración AVANZA: antes decía «(0/8)» en la petición 1 y en la 60.
-    expect(razones[0]).toMatch(/exploring the prefix cache \(0\/8\)/);
-    expect(razones[59]).toMatch(/marking OFF for prefixes not seen before/);
-    // El dinero: antes +21,6 %; ahora la prima de 8 escrituras repartida en 60
-    // peticiones (≈ +2,9 %), y de ahí en adelante 0.
-    const sobrecoste = coste(f.cuenta) / sinCapa(f.cuenta) - 1;
-    expect(sobrecoste).toBeGreaterThan(0);
-    expect(sobrecoste).toBeLessThan(0.035);
-    // Y el recibo de la capa dice lo mismo que el contador del proveedor.
-    const ultima = await layer.generate(peticion(CON_HORA(60), 60));
-    expect(ultima.report.cost.actual).toBeCloseTo(ultima.report.cost.baselineEstimate, 9);
+    expect(f.cuenta.marcadas).toBe(165);
+    expect(coste(f.cuenta) / sinCapa(f.cuenta) - 1).toBeLessThan(0.06);
   });
 
-  it("a la larga el sobrecoste tiende a cero: 600 peticiones, 32 marcadas", async () => {
-    const f = anthropicFalso();
-    const layer = capa(f.fetchImpl, { silenceWarnings: true });
-    for (let i = 0; i < 600; i++) await layer.generate(peticion(CON_HORA(i), i));
-    // 8 de exploración + reintentos tras 64, 128 y 256 peticiones sin marcar.
-    expect(f.cuenta.marcadas).toBe(32);
-    expect(coste(f.cuenta) / sinCapa(f.cuenta) - 1).toBeLessThan(0.014);
-  });
-
-  it("también en streaming", async () => {
+  it("MIENTRAS NINGUNA HA PODIDO CADUCAR (60 peticiones seguidas, sin reloj que avance) decide exactamente como la 1.2.3: 60 de 60", async () => {
+    // Es el precio de no adivinar: hasta que pasa un TTL no hay prueba de que
+    // la cabecera no vuelva. Nunca peor que la 1.2.3.
     const f = anthropicFalso();
     const layer = capa(f.fetchImpl);
-    for (let i = 0; i < 60; i++) await layer.generateStream(peticion(CON_HORA(i), i)).result;
-    expect(f.cuenta.llamadas).toBe(60);
-    expect(f.cuenta.marcadas).toBe(8);
-  });
-
-  it('también con cacheBreakpoints: "auto"', async () => {
-    const f = anthropicFalso();
-    const layer = capa(f.fetchImpl, { cacheBreakpoints: "auto" });
     for (let i = 0; i < 60; i++) await layer.generate(peticion(CON_HORA(i), i));
-    expect(f.cuenta.marcadas).toBe(8);
+    expect(f.cuenta.marcadas).toBe(60);
+    expect(f.cuenta.leidos).toBe(0);
   });
 
-  it("el aviso dice lo que pasa ahora y nombra savings.cachePrefix", async () => {
+  it("el aviso no promete lo que no sabe: dice que la capa deja de marcar los que no vuelven, y nombra savings.cachePrefix", async () => {
     const f = anthropicFalso();
     const layer = capa(f.fetchImpl);
     for (let i = 0; i < 3; i++) await layer.generate(peticion(CON_HORA(i), i));
-    const delAudit = avisos.filter((a) => a.includes("per-request content"));
+    const delAudit = avisos.filter((a) => a.includes("prompt cache"));
     expect(delAudit).toHaveLength(1);
     expect(delAudit[0]).toContain("iso-timestamp");
-    expect(delAudit[0]).toContain("stops marking that prefix");
+    expect(delAudit[0]).toContain("If it changes on every request");
+    expect(delAudit[0]).toContain("stops marking new ones");
     expect(delAudit[0]).toContain("savings.cachePrefix: true");
-    // Ya no es verdad que «las lecturas se facturan como escrituras» para siempre.
     expect(delAudit[0]).not.toContain("billing as full writes");
   });
 
@@ -246,15 +340,95 @@ describe("system con la fecha y la hora de cada petición (el caso que subía la
     expect(coste(f.cuenta) / sinCapa(f.cuenta)).toBeLessThan(0.3);
   });
 
-  it("LÍMITE CONOCIDO: con la hora en la misma línea que el resto, cachePrefix no tiene nada estable que separar; ya no sube la factura, pero tampoco hay descuento", async () => {
+  it("LÍMITE CONOCIDO: con la hora en la misma línea que el resto, cachePrefix no tiene nada estable que separar; no hay descuento, pero la verja deja de pagar la prima", async () => {
     // `cachePrefix` mueve LÍNEAS enteras. Un system de una sola línea con la
     // hora dentro es todo él «línea mutable»: no queda prefijo estable.
-    // No se arregla aquí; queda fijado para que el día que se arregle se note.
-    const f = anthropicFalso();
-    const layer = capa(f.fetchImpl);
-    for (let i = 0; i < 60; i++) await layer.generate(peticion(CON_HORA_EN_LINEA(i), i, { cachePrefix: true }));
+    const reloj = relojSimulado();
+    const f = anthropicFalso(reloj.now);
+    const layer = capa(f.fetchImpl, { silenceWarnings: true, now: reloj.now });
+    for (let i = 0; i < 600; i++) {
+      await layer.generate(peticion(CON_HORA_EN_LINEA(reloj.now()), i, { cachePrefix: true }));
+      reloj.pasar(2000);
+    }
     expect(f.cuenta.leidos).toBe(0);
-    expect(f.cuenta.marcadas).toBe(8);
+    expect(f.cuenta.marcadas).toBe(165);
+  });
+});
+
+describe("FALSOS POSITIVOS de la 1.2.4: un valor estable en el system se marca como en la 1.2.3", () => {
+  // Medido con la 1.2.4 (proveedor falso): 8 chats a la vez con el UUID de
+  // sesión en el system pasaban de −40,8 % a +1,3 % (0 lecturas, y no se
+  // recuperaba). Aquí: ninguna decisión sale de la verja de cabeceras (todas
+  // son las de la 1.2.3), y desde el cuarto turno cada uno lee lo que escribió
+  // el anterior (el primero y el segundo, con este system corto, no escriben
+  // nada: el historial se marca desde el tercero).
+  const CORTO = "You are a support assistant for an invented shop. Be brief.";
+  const LARGO = (x: string): string => `Pasted background ${x}. `.repeat(120);
+  async function chatsALaVez(
+    chats: number,
+    turnos: number,
+    sistema: (c: number) => string,
+    paso = 0,
+  ): Promise<{ cuenta: Cuenta; leenDesdeElTurno4: boolean; deLaVerjaDeCabeceras: number }> {
+    const reloj = relojSimulado();
+    const f = anthropicFalso(paso > 0 ? reloj.now : undefined);
+    const layer = capa(f.fetchImpl, { silenceWarnings: true, ...(paso > 0 ? { now: reloj.now } : {}) });
+    const historiales = new Map<number, ChatMessage[]>();
+    let leenDesdeElTurno4 = true;
+    let deLaVerjaDeCabeceras = 0;
+    for (let t = 0; t < turnos; t++) {
+      for (let c = 0; c < chats; c++) {
+        const h = historiales.get(c) ?? [];
+        const q: ChatMessage = { role: "user", content: `Turn ${t + 1} of chat ${c}: ${LARGO(`${c}-${t}`)} what about order ${t}?` };
+        const antes = f.cuenta.leidos;
+        const r = await layer.generate({ model: MODELO, messages: [{ role: "system", content: sistema(c) }, ...h, q] } as SavingsRequest);
+        if (t >= 3 && f.cuenta.leidos === antes) leenDesdeElTurno4 = false;
+        for (const x of r.report.traces) if (/not seen before/.test(String(x.detail?.["reason"] ?? ""))) deLaVerjaDeCabeceras += 1;
+        historiales.set(c, [...h, q, { role: "assistant", content: `${r.text} Answer ${t + 1} for chat ${c}.` }]);
+        reloj.pasar(paso);
+      }
+    }
+    return { cuenta: f.cuenta, leenDesdeElTurno4, deLaVerjaDeCabeceras };
+  }
+
+  it.each([
+    ["8 chats a la vez con el UUID de sesión en el system", 8, (c: number) => `${CORTO} Session id: ${UUID_V4(`s${c}`)}.`],
+    ["20 chats a la vez con el UUID de sesión", 20, (c: number) => `${CORTO} Session id: ${UUID_V4(`s${c}`)}.`],
+    ["20 chats con la fecha RFC del día", 20, () => `${CORTO} Today is Sat, 21 Nov 2026.`],
+    ["20 chats con la ISO de medianoche", 20, () => `${CORTO} Current date: 2026-11-21T00:00:00Z.`],
+    ["20 chats con un número de cliente de 10 cifras", 20, (c: number) => `${CORTO} Customer account ${1734567890 + c * 7919}.`],
+  ] as const)("%s × 8 turnos: deciden como la 1.2.3 y leen caché desde el turno 4", async (_n, chats, sistema) => {
+    for (const paso of [0, 3000]) {
+      const { cuenta, leenDesdeElTurno4, deLaVerjaDeCabeceras } = await chatsALaVez(chats, 8, sistema, paso);
+      expect(deLaVerjaDeCabeceras).toBe(0);
+      expect(leenDesdeElTurno4).toBe(true);
+      // Con la 1.2.4: 0 lecturas y la entrada tan cara como sin capa.
+      expect(coste(cuenta)).toBeLessThan(0.7 * sinCapa(cuenta));
+    }
+  });
+
+  it("200 sesiones con su contrato y su UUID en el system, 20 a la vez, 2 preguntas: una escritura y una lectura por sesión, con y sin reloj", async () => {
+    for (const paso of [0, 1000]) {
+      const reloj = relojSimulado();
+      const f = anthropicFalso(paso > 0 ? reloj.now : undefined);
+      const layer = capa(f.fetchImpl, { silenceWarnings: true, ...(paso > 0 ? { now: reloj.now } : {}) });
+      for (let base = 0; base < 200; base += 20) {
+        for (let turno = 0; turno < 2; turno++) {
+          for (let s = base; s < base + 20; s++) {
+            await layer.generate({
+              model: MODELO,
+              messages: [
+                { role: "system", content: `${DOCUMENTO(`c${s}`)}\nSession ${UUID_V4(`c${s}`)}.` },
+                { role: "user", content: `Question ${turno + 1} of session ${s}: what happens with item ${turno + 3}?` },
+              ],
+            } as SavingsRequest);
+            reloj.pasar(paso);
+          }
+        }
+      }
+      expect(f.cuenta.marcadas).toBe(400);
+      expect(f.cuenta.leidos).toBe(f.cuenta.escritos);
+    }
   });
 });
 
@@ -268,7 +442,7 @@ describe("lo que ya ahorraba no cambia", () => {
     expect(P).toBeGreaterThan(3000);
     expect(f.cuenta.leidos).toBe(59 * P);
     expect(coste(f.cuenta) / sinCapa(f.cuenta)).toBeLessThan(0.3);
-    expect(avisos.filter((a) => a.includes("per-request content"))).toHaveLength(0);
+    expect(avisos.filter((a) => a.includes("prompt cache"))).toHaveLength(0);
   });
 
   it("system estable en streaming: igual", async () => {
@@ -288,46 +462,46 @@ describe("lo que ya ahorraba no cambia", () => {
   });
 
   it("un system estable no deja de marcarse porque otro, del mismo modelo, cambie en cada petición", async () => {
-    const f = anthropicFalso();
-    const layer = capa(f.fetchImpl);
+    const reloj = relojSimulado();
+    const f = anthropicFalso(reloj.now);
+    const layer = capa(f.fetchImpl, { silenceWarnings: true, now: reloj.now });
     const delEstable: boolean[] = [];
     const delQueCambia: boolean[] = [];
-    for (let i = 0; i < 60; i++) {
+    for (let i = 0; i < 300; i++) {
       await layer.generate(peticion(ESTABLE, i));
       delEstable.push(f.cuenta.marcas.at(-1)!);
-      await layer.generate(peticion(CON_HORA(i), i));
+      reloj.pasar(1000);
+      await layer.generate(peticion(`${CABEZA}\nGenerated at ${new Date(reloj.now()).toISOString()}.\n${REGLAS}`, i));
       delQueCambia.push(f.cuenta.marcas.at(-1)!);
+      reloj.pasar(1000);
     }
-    expect(delEstable).toEqual(Array(60).fill(true));
-    // Como mucho la exploración (aquí 6: las dos primeras muestras de la clase
-    // son la escritura y la lectura del estable).
-    expect(delQueCambia.filter(Boolean).length).toBeGreaterThan(0);
-    expect(delQueCambia.filter(Boolean).length).toBeLessThanOrEqual(8);
-    expect(delQueCambia.slice(8)).toEqual(Array(52).fill(false));
+    expect(delEstable).toEqual(Array(300).fill(true));
+    // Los que cambian: como la 1.2.3 hasta que caducan sin volver (5 min), y
+    // desde ahí ninguno.
+    expect(delQueCambia.slice(0, 150)).toEqual(Array(150).fill(true));
+    expect(delQueCambia.slice(200)).toEqual(Array(100).fill(false));
+    expect(f.cuenta.leidos).toBeGreaterThan(299 * 3000);
   });
 
-  it("un system estable que llega DESPUÉS de apagarse la clase se marca desde su PRIMERA petición, como en main", async () => {
-    // Antes de la revisión de #611 este test esperaba [false, true × 19]: la
-    // clase apagada por el system con hora frenaba también la primera petición
-    // del estable («se pierde una lectura, una vez»). Con una sola app era poco;
-    // con muchas sesiones, cada una con su system estable propio, esa primera
-    // petición sin marcar es la ESCRITURA que la segunda iba a leer, y la
-    // factura subía (ver «muchas sesiones a la vez», abajo).
-    //
-    // Ahora la clase solo se le pasa a la verja cuando el prefijo incluye
-    // historial o cuando el system lleva contenido por petición DETECTADO
-    // (fecha, UUID, epoch). Un system estable y sin nada de eso decide solo por
-    // su huella, igual que en main: se marca desde la primera.
-    const f = anthropicFalso();
-    const layer = capa(f.fetchImpl);
-    for (let i = 0; i < 20; i++) await layer.generate(peticion(CON_HORA(i), i));
-    expect(f.cuenta.marcas.slice(8)).toEqual(Array(12).fill(false)); // la clase está apagada
+  it("un system estable que llega cuando la clase ya es volátil pierde UNA escritura, la primera, y desde la segunda se marca y lee", async () => {
+    // Es la única diferencia con la 1.2.3 y solo existe en una clase donde al
+    // menos el 90 % de las cabeceras recientes no volvieron antes de caducar:
+    // ahí, marcar una cabecera nunca vista casi siempre era tirar la prima.
+    const reloj = relojSimulado();
+    const f = anthropicFalso(reloj.now);
+    const layer = capa(f.fetchImpl, { silenceWarnings: true, now: reloj.now });
+    for (let i = 0; i < 200; i++) {
+      await layer.generate(peticion(CON_HORA(i), i));
+      reloj.pasar(2000);
+    }
+    expect(f.cuenta.marcas.slice(170, 200)).toEqual(Array(30).fill(false)); // la clase es volátil
     const antes = f.cuenta.marcas.length;
-    for (let i = 0; i < 20; i++) await layer.generate(peticion(ESTABLE, i));
-    const marcas = f.cuenta.marcas.slice(antes);
-    expect(marcas).toEqual(Array(20).fill(true));
-    // 1 escritura y 19 lecturas: no se pierde ninguna.
-    expect(f.cuenta.leidos).toBeGreaterThan(19 * 3000);
+    for (let i = 0; i < 20; i++) {
+      await layer.generate(peticion(ESTABLE, i));
+      reloj.pasar(2000);
+    }
+    expect(f.cuenta.marcas.slice(antes)).toEqual([false, ...Array(19).fill(true)]);
+    expect(f.cuenta.leidos).toBeGreaterThan(18 * 3000);
   });
 
   it("una conversación con historial (huella nueva en cada turno) sigue marcando y leyendo", async () => {
@@ -475,10 +649,11 @@ describe("muchos chats a la vez con un system común y su propio historial: la r
   });
 });
 
-describe("y el caso de la fecha sigue acotado con el arreglo de la revisión", () => {
-  it("60 peticiones con la hora en el system: 8 marcadas, aunque antes hayan pasado 200 sesiones de system estable", async () => {
-    const f = anthropicFalso();
-    const layer = capa(f.fetchImpl, { silenceWarnings: true });
+describe("y el caso de la hora sigue acotado aunque antes haya mucho tráfico estable", () => {
+  it("600 peticiones con la hora en el system tras 200 sesiones de system estable: la clase se vuelve volátil igual", async () => {
+    const reloj = relojSimulado();
+    const f = anthropicFalso(reloj.now);
+    const layer = capa(f.fetchImpl, { silenceWarnings: true, now: reloj.now });
     // 200 sesiones × 2 turnos de system estable propio: todas marcadas.
     for (let s = 0; s < 200; s++) {
       for (let turno = 0; turno < 2; turno++) {
@@ -489,23 +664,29 @@ describe("y el caso de la fecha sigue acotado con el arreglo de la revisión", (
             { role: "user", content: `Question ${turno + 1}: what happens with item ${turno + 3}?` },
           ],
         } as SavingsRequest);
+        reloj.pasar(1000);
       }
     }
     expect(f.cuenta.marcadas).toBe(400);
     const antes = f.cuenta.marcas.length;
-    for (let i = 0; i < 60; i++) await layer.generate(peticion(CON_HORA(i), i));
+    for (let i = 0; i < 600; i++) {
+      await layer.generate(peticion(`${CABEZA}\nGenerated at ${new Date(reloj.now()).toISOString()}.\n${REGLAS}`, i));
+      reloj.pasar(2000);
+    }
     const marcas = f.cuenta.marcas.slice(antes);
-    expect(marcas.filter(Boolean)).toHaveLength(8);
-    expect(marcas.slice(8)).toEqual(Array(52).fill(false));
+    // Hasta que 32 cabeceras con hora han caducado sin volver (las 200 sesiones
+    // estables aún pesan en la memoria de la clase) se marca como la 1.2.3.
+    expect(marcas.slice(0, 150)).toEqual(Array(150).fill(true));
+    expect(marcas.slice(200)).toEqual(Array(400).fill(false));
   });
 
-  it("sesiones cuyo system propio lleva además la hora de cada petición: 8 de exploración y un reintento, no 120", async () => {
-    const f = anthropicFalso();
-    const layer = capa(f.fetchImpl, { silenceWarnings: true });
-    let n = 0;
+  it("sesiones cuyo system propio lleva además la hora de cada petición (600 sesiones × 2, 1 s): ninguna lectura posible y deja de marcarlas", async () => {
+    const reloj = relojSimulado();
+    const f = anthropicFalso(reloj.now);
+    const layer = capa(f.fetchImpl, { silenceWarnings: true, now: reloj.now });
     for (let turno = 0; turno < 2; turno++) {
-      for (let s = 0; s < 60; s++) {
-        const system = DOCUMENTO(`con-hora-${s}`).replace("\n", `\nGenerated at ${hora(n++)}.\n`);
+      for (let s = 0; s < 600; s++) {
+        const system = DOCUMENTO(`con-hora-${s}`).replace("\n", `\nGenerated at ${new Date(reloj.now()).toISOString()}.\n`);
         await layer.generate({
           model: MODELO,
           messages: [
@@ -513,15 +694,14 @@ describe("y el caso de la fecha sigue acotado con el arreglo de la revisión", (
             { role: "user", content: `Question ${turno + 1}: what happens with item ${turno + 3}?` },
           ],
         } as SavingsRequest);
+        reloj.pasar(1000);
       }
     }
-    expect(f.cuenta.llamadas).toBe(120);
-    // 8 de exploración; tras 64 sin marcar, un reintento de otras 8 (el mismo
-    // ritmo que «600 peticiones, 32 marcadas», arriba). Antes: 120 de 120.
-    expect(f.cuenta.marcas.slice(0, 8)).toEqual(Array(8).fill(true));
-    expect(f.cuenta.marcas.slice(8, 72)).toEqual(Array(64).fill(false));
-    expect(f.cuenta.marcadas).toBe(16);
+    expect(f.cuenta.llamadas).toBe(1200);
     expect(f.cuenta.leidos).toBe(0);
+    // 5 min a 1 s: 300 hasta la primera madura, 16 maduras y volátil. Antes: 1.200 de 1.200.
+    expect(f.cuenta.marcas.slice(0, 300)).toEqual(Array(300).fill(true));
+    expect(f.cuenta.marcadas).toBe(315);
   });
 });
 
