@@ -200,7 +200,7 @@ your savings. The prices are above, in [LICENSE-CLOUD.md](./LICENSE-CLOUD.md) §
 the Published Pricing it refers to,
 **[savings.bivelio.com/pricing](https://savings.bivelio.com/pricing)**. No trial. There is one free license,
 **Measure** — no card, one organization per verified account, up to 5 seats and 20,000
-requests a day: the layer applies every lever, exactly as it does with no key, and your
+requests a day: the layer applies the same levers as with no key, and your
 dashboard shows the real savings — never billed, never part of any commission. What a paid
 plan adds is the cloud beyond those limits (more seats, more volume, the team dashboard),
 not the saving. This is new in 1.2.4: up to 1.2.3 a Measure key ran the layer in shadow

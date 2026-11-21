@@ -1211,7 +1211,7 @@ export class SavingsPipeline {
     const claveDeVerja = explicita ? `${huella}|explicit` : huella;
     // La forma separa la cabecera sola del historial, que se leen de manera
     // distinta (ver `claseDeVerja`).
-    const claseDeVerja = mensajesDePrefijo > S || this.systemCambiaEnCadaPeticion(messages, S)
+    const claseDeVerja = this.systemCambiaEnCadaPeticion(messages, S)
       ? this.claseDeVerja(
           modeloServido,
           toolSelection.tools,
@@ -1405,7 +1405,7 @@ export class SavingsPipeline {
       // `clase` (la del espejo) lleva el texto del `system`: con uno que cambia
       // en cada petición es nueva siempre, igual que la huella de la colocación
       // fija. La clase de la verja no lo lleva.
-      const claseDeVerja = tipo === "H" || this.systemCambiaEnCadaPeticion(messages, S) ? this.claseDeVerja(modeloServido, toolSelection.tools, `colocador|explicit|${tipo}`) : undefined;
+      const claseDeVerja = this.systemCambiaEnCadaPeticion(messages, S) ? this.claseDeVerja(modeloServido, toolSelection.tools, `colocador|explicit|${tipo}`) : undefined;
       const decision = this.verjaDeCache.decidir(
         claveDeVerja,
         { totalTokens: tokensHasta(T), stablePrefixTokens: tokensHasta(frontera), tier: tramoOpenAI },
@@ -1483,7 +1483,7 @@ export class SavingsPipeline {
     // Igual que arriba: la clase del espejo lleva el texto del `system`; la de
     // la verja no, y es la que acota la exploración cuando ese texto cambia en
     // cada petición (medido: con "auto" también eran 60 de 60).
-    const claseDeVerja = frontera > S || this.systemCambiaEnCadaPeticion(messages, S) ? this.claseDeVerja(modeloServido, toolSelection.tools, `colocador|${forma}`) : undefined;
+    const claseDeVerja = this.systemCambiaEnCadaPeticion(messages, S) ? this.claseDeVerja(modeloServido, toolSelection.tools, `colocador|${forma}`) : undefined;
     const decision = this.verjaDeCache.decidir(
       claveDeVerja,
       {

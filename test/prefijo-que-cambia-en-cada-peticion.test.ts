@@ -524,3 +524,45 @@ describe("y el caso de la fecha sigue acotado con el arreglo de la revisión", (
     expect(f.cuenta.leidos).toBe(0);
   });
 });
+
+/**
+ * REVISIÓN FINAL DE LA 1.2.4 (bloqueante): conversaciones que EMPIEZAN A LA VEZ en
+ * un proceso recién arrancado, con un system por debajo del mínimo cacheable y
+ * turnos largos. Con la clase de la verja aplicada también a los prefijos con
+ * historial, las 8 primeras muestras de la clase eran primeros turnos de 8
+ * conversaciones distintas (solo escriben), la clase se apagaba y no volvía a
+ * leer: 20 chats × 20 turnos pasaban de −69,0 % (1.2.3) a +0,3 %. Ahora la clase
+ * solo se usa cuando el system lleva contenido por petición detectado, y un
+ * prefijo con historial decide como en la 1.2.3.
+ */
+describe("chats que empiezan a la vez con un system corto y turnos largos: siguen ahorrando como en la 1.2.3", () => {
+  const CORTO = "You are a support assistant for an invented shop. Be brief.";
+  const LARGO = (x: string): string => `Pasted background ${x}. `.repeat(120);
+  const enFrio = async (chats: number, turnos: number): Promise<Cuenta> => {
+    const f = anthropicFalso();
+    const layer = capa(f.fetchImpl, { silenceWarnings: true });
+    const historiales = new Map<string, ChatMessage[]>();
+    for (let t = 0; t < turnos; t++) {
+      for (let c = 0; c < chats; c++) {
+        const id = `frio-${chats}-${turnos}-${c}`;
+        const h = historiales.get(id) ?? [];
+        const q: ChatMessage = { role: "user", content: `Turn ${t + 1} of chat ${id}: ${LARGO(`${id}-${t}`)} what about order ${t}?` };
+        const r = await layer.generate({ model: MODELO, messages: [{ role: "system", content: CORTO }, ...h, q] } as SavingsRequest);
+        historiales.set(id, [...h, q, { role: "assistant", content: `${r.text} Answer ${t + 1} for chat ${id}.` }]);
+      }
+    }
+    return f.cuenta;
+  };
+
+  it.each([
+    [8, 8],
+    [20, 8],
+    [20, 20],
+  ] as const)("%i chats × %i turnos a la vez: leen de la caché y la entrada cuesta mucho menos que sin capa", async (chats, turnos) => {
+    const c = await enFrio(chats, turnos);
+    // Cada turno a partir del segundo lee lo que escribió el anterior.
+    expect(c.leidos).toBeGreaterThan(c.escritos);
+    // Con el fallo, la entrada costaba lo mismo o más que sin capa.
+    expect(coste(c)).toBeLessThan(0.7 * sinCapa(c));
+  });
+});
