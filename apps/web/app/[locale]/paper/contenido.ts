@@ -655,7 +655,7 @@ export const BLOQUES: Bloque[] = [
   },
   {
     "tipo": "p",
-    "texto": "The repository contains the offline recomputation code: the estimator in `benchmarks/stats.ts` and `resumir()` in `benchmarks/publicados/gsm8k/medir.ts`. Applied to the trials stored in the two historical GSM8K artifacts, it reproduces the published pooled points and interval endpoints exactly. New API experiments require credentials and execution costs and were not run for this revision."
+    "texto": "The repository contains the offline recomputation code. Applied to the trials stored in the two historical GSM8K artifacts, `resumir()` in `benchmarks/publicados/gsm8k/medir.ts`, which calls that estimator, reproduces the published pooled points and interval endpoints exactly. New API experiments require credentials and execution costs and were not run for this revision."
   },
   {
     "tipo": "h2",
