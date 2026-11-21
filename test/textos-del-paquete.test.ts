@@ -109,12 +109,17 @@ describe("m01 · la clave solo añade la nube; Measure ya no apaga nada; la somb
     expect(readme).not.toMatch(/it runs the layer in \*\*shadow mode\*\*/);
     expect(readme).not.toContain("a lower bound, never part of any commission");
     expect(readme).not.toMatch(/levers need a paid plan/);
-    expect(readme).toContain("Since 1.2.4 a Measure license **saves**");
-    expect(readme).toContain("A paid plan adds seats, the team dashboard and shared measurement — not levers.");
+    // Los dos párrafos de Measure son, palabra por palabra, los de la rama
+    // fix/measure-ahorra-de-verdad (para que las dos ramas se fusionen sin conflicto).
+    expect(readme).toContain("the layer saves exactly as it does with no key, and your dashboard shows the real savings");
+    expect(readme).toContain("What a paid plan adds is the cloud beyond those limits (more seats, more volume, the team dashboard), not the saving.");
+    expect(readme).toContain("a lower bound, shown apart from measured savings");
   });
 
   it("la sombra opcional se nombra con LA opción del SDK y LA variable del gateway (un solo sitio: textos-publicos.ts)", () => {
-    expect(readme).toContain(`set \`${OPCION_SDK_SOLO_OBSERVAR}: true\` in the SDK or \`${VARIABLE_GATEWAY_SOLO_OBSERVAR}=1\` in the gateway, on any plan`);
+    expect(readme).toContain(
+      `**observe-only mode** is an explicit option on any plan — \`${OPCION_SDK_SOLO_OBSERVAR}: true\` in the SDK, \`${VARIABLE_GATEWAY_SOLO_OBSERVAR}=1\` in the gateway.`,
+    );
     // En el README solo hay esas dos menciones literales: si los nombres cambian, se cambian aquí y allí.
     expect(readme.match(/observeOnly/g)).toHaveLength(1);
     expect(readme.match(/BVSALA_GATEWAY_OBSERVE_ONLY/g)).toHaveLength(1);

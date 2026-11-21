@@ -14,11 +14,11 @@
 // ── La sombra opcional: LOS DOS NOMBRES, EN UN SOLO SITIO ──────────────────
 //
 // Los pone la rama `fix/measure-ahorra-de-verdad` (la que hace que la licencia
-// Measure ahorre y deja el «solo observar» como opción). Al escribir esto esa
-// rama aún no estaba en origin: los nombres se leyeron de su árbol de trabajo
-// (`src/pipeline/config.ts` → `observeOnly`, `gateway/bin.ts` →
-// `BVSALA_GATEWAY_OBSERVE_ONLY`). Si cambian allí, se cambian AQUÍ y en las dos
-// menciones literales del README (el test las compara con estas constantes).
+// Measure ahorre y deja el «solo observar» como opción). Comprobados contra
+// origin/fix/measure-ahorra-de-verdad: `src/pipeline/config.ts` → `observeOnly`
+// y `gateway/bin.ts` → `BVSALA_GATEWAY_OBSERVE_ONLY`. Si cambian allí, se
+// cambian AQUÍ y en las dos menciones literales del README (el test las compara
+// con estas constantes).
 
 /** La opción del SDK que deja la capa en «solo observar» (no aplica ninguna palanca). */
 export const OPCION_SDK_SOLO_OBSERVAR = "observeOnly";

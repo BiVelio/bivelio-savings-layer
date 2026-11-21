@@ -47,15 +47,19 @@ describe("el README que viaja a npm dice lo mismo que el código", () => {
     expect(readme).toMatch(/first month carries no commission/i);
     expect(readme).toMatch(/never from estimates/i);
     expect(readme).toMatch(/No trial\./);
-    // La única licencia gratuita es Medir, y el README dice qué es. 1.2.4 · Medir
-    // AHORRA como sin clave y nunca factura; la sombra (solo observar) es una opción
-    // en cualquier plan, y el README sigue diciendo qué NO hace ese modo.
+    // La única licencia gratuita es Medir, y el README dice qué es y qué hace.
+    // (Hasta la 1.2.3 este test exigía «**shadow mode**»: Medir corría en sombra.
+    // Desde la 1.2.4 Medir ahorra igual que sin clave —decisión del dueño,
+    // 21-11-2026— y la sombra es el modo solo-observar, opcional y en cualquier
+    // plan. El README tiene que decir las dos cosas, y que Medir nunca comisiona.)
     expect(readme).toMatch(/free\s+\*\*Measure\*\* license/);
-    expect(readme).toMatch(/Since 1\.2\.4 a Measure license \*\*saves\*\*/);
-    expect(readme).toMatch(/Measure never bills anything\./);
-    expect(readme).toMatch(/\*\*Shadow mode is now a choice\.\*\*/);
+    expect(readme).toMatch(/applies every lever, exactly as it does with no key/);
+    expect(readme).not.toMatch(/runs the layer in\s+\*\*shadow mode\*\*/);
+    expect(readme).toMatch(/\*\*observe-only mode\*\*/);
+    expect(readme).toContain("observeOnly: true");
+    expect(readme).toContain("BVSALA_GATEWAY_OBSERVE_ONLY=1");
     expect(readme).toMatch(/nothing is served from any cache/);
-    expect(readme).not.toMatch(/a lower bound, never part of any commission/);
+    expect(readme).toMatch(/never part of any commission/);
     expect(readme).not.toMatch(/No free tier/);
   });
 
