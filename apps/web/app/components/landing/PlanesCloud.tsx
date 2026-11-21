@@ -5,6 +5,7 @@ import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { MAX_ASIENTOS } from "@/lib/billing/asientos";
 import type { terminosDeLosPlanes } from "@/lib/legal/precios-publicados";
+import { VERSION_MEDIR_AHORRA } from "@/lib/license/medir-publico";
 import { PricingPlans, type PricingPlan } from "@/vendor/affectui/pricing-plans";
 
 /**
@@ -74,7 +75,8 @@ export async function PlanesCloud({
       name: nombres.medir,
       price: { amount: c("free"), per: c("noCard") },
       unit: c("medir.unit"),
-      summary: c("medir.summary"),
+      // Desde qué versión ahorra Measure (las anteriores solo observan), por parámetro.
+      summary: c("medir.summary", { saves: VERSION_MEDIR_AHORRA }),
       limits: [
         { label: c("seats"), value: c("upTo", { n: medir.seats }) },
         { label: c("requestsDay"), value: c("upTo", { n: medir.requests }) },

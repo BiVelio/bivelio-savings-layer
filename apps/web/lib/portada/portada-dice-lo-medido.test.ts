@@ -587,8 +587,11 @@ describe("los textos nuevos se formatean en los 12 idiomas (ICU sin errores)", (
         seats: 5,
         requests: "20.000",
         version: "0.4.33",
+        // Desde la 1.2.4 Measure ahorra: las condiciones dicen desde qué versión (2026-11-21).
+        saves: "1.2.4",
       });
       expect(JSON.stringify(medir)).toContain("0.4.33");
+      expect(JSON.stringify(medir)).toContain("1.2.4");
     });
   }
 });

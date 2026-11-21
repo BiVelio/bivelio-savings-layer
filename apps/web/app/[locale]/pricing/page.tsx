@@ -12,7 +12,7 @@ import { URL_DEL_CODIGO } from "@/app/components/sitio";
 import { Link } from "@/i18n/navigation";
 import { absolute, languageAlternates, tarjetaSocial } from "@/i18n/site";
 import { terminosDeLosPlanes, terminosDePrecio } from "@/lib/legal/precios-publicados";
-import { LIMITES_MEDIR, VERSION_MINIMA_MEDIR } from "@/lib/license/medir-publico";
+import { LIMITES_MEDIR, VERSION_MEDIR_AHORRA, VERSION_MINIMA_MEDIR } from "@/lib/license/medir-publico";
 import { preciosDelPlan, tarifasDeLosPlanes } from "@/lib/stripe/pricing";
 import { Badge } from "@/vendor/affectui/badge-clean";
 import { DataTable } from "@/vendor/affectui/data-table-clean";
@@ -106,17 +106,21 @@ export default async function PricingPage({ params }: { params: Promise<{ locale
             </span>
           </h1>
           <p className="lede">{t("lede")}</p>
+          {/* Tres salidas (dueño, 21-11-2026): instalar gratis (lo que ahorra,
+              sin clave) es la principal; Measure, la segunda; el código, la
+              tercera. Cada posición conserva sus clases: solo cambian texto,
+              destino y orden. */}
           <div className="precios-acciones">
-            <Link className="btn" href="/signup">
+            <Link className="btn" href="/#sdk-install">
+              {t("access.install")}
+            </Link>
+            <Link className="btn ghost" href="/signup">
               {t("cards.medir.cta")}
             </Link>
-            <a className="btn ghost" href={URL_DEL_CODIGO} target="_blank" rel="noopener noreferrer">
+            <a className="btn btn-quiet" href={URL_DEL_CODIGO} target="_blank" rel="noopener noreferrer">
               {t("access.code")}
               <span className="sr-only"> {tn("newTab")}</span>
             </a>
-            <Link className="btn btn-quiet" href="/#sdk-install">
-              {t("access.install")}
-            </Link>
           </div>
           <p className="terms-governs">{t.rich("governs", etiquetasQueRigen(locale))}</p>
         </section>
@@ -195,6 +199,7 @@ export default async function PricingPage({ params }: { params: Promise<{ locale
                   seats: medir.seats,
                   requests: medir.requests,
                   version: medir.version,
+                  saves: VERSION_MEDIR_AHORRA,
                 })}
               </p>
 

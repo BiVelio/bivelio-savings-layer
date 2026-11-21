@@ -150,7 +150,7 @@
     "createAnAccount": "Create an account",
     "backToVerifier": "← Back to home",
     "createYourAccount": "Create your Cloud account",
-    "signupSubtitle": "One BiVelio account across the suite. Create yours to use the cloud: dashboard, shared caches and license management. The package itself needs no account — open core runs without a key.",
+    "signupSubtitle": "One BiVelio account across the suite. Create yours to use the cloud: team dashboard, shared measurement, seats and licences. The package itself needs no account — open core runs without a key.",
     "alreadyHaveAccount": "Already have a BiVelio account?",
     "signIn": "Sign in",
     "workEmail": "Work email",
@@ -194,7 +194,7 @@
       "network": "No connection. Check your network and try again.",
       "missingFields": "Enter your email and password."
     },
-    "signupMedir": "Or start free with Measure: the free cloud plan, no card, shadow mode, up to {seats} seats and {requests} requests a day. It works with the latest version of @bivelio/savings-layer.",
+    "signupMedir": "Or start free with Measure: the free cloud plan for small teams, no card, up to {seats} seats and {requests} requests a day, with the same levers as with no key and your real savings in the dashboard. It works with the latest version of @bivelio/savings-layer.",
     "signupPlanPro": "You chose {plan} — {price} per seat per month. Create your account, confirm your email, and you'll pay in your dashboard through Stripe.",
     "signupPlanTeam": "You chose {plan} — {price} per month, {seats} seats included. Create your account, confirm your email, and you'll pay in your dashboard through Stripe.",
     "openSourceQuestion": "Only want the open-source engine?",
@@ -1242,7 +1242,7 @@
       "proofTitle": "Measured against a real provider",
       "compatibleCon": "Compatible with",
       "compatibleNota": "Compatible is not measured. The SDK works with any endpoint compatible with the OpenAI API, plus the native Anthropic adapter and the native Gemini adapter (new in {gemini}). With a savings figure on the public bench, today only OpenAI and Anthropic models; Gemini has no savings figure. What is measured for Gemini: {flash}, through its native API, in the weekly live bench of {fecha} — all four batteries, with no layer failures and no refusal cached or credited as savings. That bench checks that the layer breaks nothing and does not overcharge; it does not measure a saving. Also measured: {pro}, through its native API, in two partial runs on {fechaPro} (its daily provider quota does not fit all four batteries in one day): all four batteries, again with no layer failures and no refusal cached or credited as savings.",
-      "ctaOss": "Install open source"
+      "ctaOss": "Install free"
     },
     "cascade": {
       "title": "Cheapest execution wins",
@@ -1267,7 +1267,7 @@
         },
         {
           "title": "Open core: it saves with no keys",
-          "body": "Install the package and the levers are on: COMMUNITY mode runs every local saving lever with zero telemetry, and a key that is set but invalid still fails closed. The cloud is optional: team dashboard, shared caches and license management for a fixed fee per seat, whether or not you save — and no commission on your savings."
+          "body": "Every lever is included and free, with no key. On by default: exact cache, in-flight deduplication, local resolvers, prompt-cache placement and trimming of superseded tool results. The rest you switch on, one line each. Two machines can share a cache for free with a store you run (Redis, for example). Zero telemetry, and a key that is set but invalid still fails closed. The cloud is optional: team dashboard, shared measurement, seats and licences for a fixed fee per seat, whether or not you save — and no commission on your savings."
         }
       ],
       "nota": "The animations illustrate the idea. The real numbers — measured against live providers — are right below."
@@ -1354,19 +1354,19 @@
     "pricing": {
       "eyebrow": "Plans",
       "title": "Open-source engine. Cloud control for your team.",
-      "body": "The package is Apache-2.0 open core: no key needed, every local lever on, zero telemetry. The cloud is optional — Measure is the free plan, Pro and Team are billed per seat, in {currency}, whether or not you save, and carry no commission on your savings.",
+      "body": "The package is Apache-2.0 open core: every lever included and free, with no key, and zero telemetry. The cloud is optional — Measure is the free plan, Pro and Team are billed per seat, in {currency}, whether or not you save, and carry no commission on your savings.",
       "amount": "{amount}",
       "per": "/ seat / month",
       "plans": {
         "medir": {
           "name": "Measure",
           "price": "Free",
-          "body": "Free, no card. The free CLOUD plan: shadow mode for one organization, up to {seats} seats and {requests} requests a day — nothing you send changes, nothing is served from cache, it is never part of any commission, and your dashboard shows what it would have saved. The local levers don't need it: open core runs without any key. It needs @bivelio/savings-layer {version} or later.",
+          "body": "Free, no card. The free CLOUD plan, for small teams: one organization, up to {seats} seats and {requests} requests a day. The same levers as the open core with no key, plus the dashboard with your real savings; never part of any commission. It needs @bivelio/savings-layer {version} or later and saves from the version its terms give; earlier ones only observe.",
           "cta": "Start free →"
         },
         "pro": {
           "name": "Pro",
-          "note": "Or <b>{yearly} / seat / year</b>. Every optimization, the per-request receipt and the dashboard. No commission.",
+          "note": "Or <b>{yearly} / seat / year</b>. Team dashboard, shared measurement, seats and licences. No commission.",
           "cta": "Choose Pro →"
         },
         "team": {
@@ -1384,7 +1384,7 @@
       "legacy": "Already on the earlier plan with a commission on measured savings? You keep it unchanged; its terms are on the <terms>pricing terms</terms> page.",
       "seatNote": "A seat is one <b>machine or service identity</b>, not a person. You pay for the seats your subscription covers; your dashboard shows how many were in use this month (active on at least {dias} days; CI and ephemeral runners don't count).",
       "features": [
-        "Every BV‑SALA optimization, uncapped",
+        "Team dashboard and shared measurement for every seat",
         "A receipt per request: SavingsReport with four ledgers, measured and estimated kept apart",
         "Savings dashboards & team analytics",
         "Your prompts don't pass through BiVelio's servers; they go to the provider you configure"
@@ -1639,7 +1639,7 @@
         },
         {
           "q": "How are Measure and Community different?",
-          "a": "Community is the open-source engine on your infrastructure: no account, no BiVelio key and no telemetry by default. Measure is the free Savings Cloud plan: it needs an account and runs in shadow mode, so it does not change your requests or serve responses from cache; your dashboard shows what would have been saved."
+          "a": "Community is the open-source engine on your infrastructure: no account, no BiVelio key and no telemetry by default. Measure is the free Savings Cloud plan for small teams: it needs an account, applies the same levers as Community and adds the dashboard with your real savings. Older versions of the package only observe with it; the minimum version is in its terms."
         },
         {
           "q": "Does it work with a subscription like ChatGPT Plus?",
@@ -1655,7 +1655,7 @@
         },
         {
           "q": "Do you guarantee savings?",
-          "a": "No. What you save depends on your traffic; for example, on how much of it repeats. We publish every measurement with its model, its sample and its interval, and Measure lets you see what would have been saved on your own traffic before you pay anything."
+          "a": "No. What you save depends on your traffic; for example, on how much of it repeats. We publish every measurement with its model, its sample and its interval, and the open core shows on your own traffic, request by request, what it saves before you pay anything."
         }
       ]
     },
@@ -1663,7 +1663,7 @@
       "title": "Measure first.",
       "titleAccent": "Decide later.",
       "titleMark": "later",
-      "sub": "Measure is free and asks for no card: it runs in shadow mode and shows what would have been saved on your own traffic. The engine is open source, and its code is in plain sight.",
+      "sub": "Measure is free and asks for no card: the same levers as the open-source engine, plus the dashboard with what you really save on your own traffic. The engine is open source, and its code is in plain sight.",
       "repo": "View the repository"
     },
     "layer": {
@@ -1682,7 +1682,7 @@
       "srcAgent": "Your agent",
       "srcAgentVia": "local gateway",
       "memoryLabel": "Memory of recent requests",
-      "compactLabel": "Data compaction",
+      "compactLabel": "Compact format",
       "providersLabel": "The provider you configure",
       "nativeAdapter": "native adapter",
       "compatName": "Any endpoint compatible with the OpenAI API",
@@ -1690,13 +1690,13 @@
       "step1Body": "It leaves your app or your agent without leaving your infrastructure.",
       "step2Title": "Repeated · answered without calling the provider",
       "step2Body": "The layer recognizes it in its memory and returns the stored response.",
-      "step3Title": "Data compacted · fewer tokens",
-      "step3Body": "A new request travels lighter to the provider you configure, and the response comes back through the layer.",
+      "step3Title": "New · lighter where it can be",
+      "step3Body": "A new request goes to the provider you configure: structured data in a compact format, superseded tool results trimmed. Compacting tool outputs is a lever you switch on. The response comes back through the layer.",
       "step4Title": "Counts and costs only · never prompts",
       "step4Body": "Savings Cloud is optional: if you connect it, it receives figures, not content.",
       "legendRepeat": "Repeated calls",
       "legendRepeatTo": "no provider call",
-      "legendData": "Compacted data",
+      "legendData": "Structured data",
       "legendDataTo": "fewer tokens",
       "legendCache": "Provider cache",
       "legendCacheTo": "cheaper input",
@@ -2135,7 +2135,7 @@
     "caseClaudeSub": "claude.ai, free or paid",
     "caseClaudeBody": "Flat subscription: no token invoice to meter — but there are caps (the five-hour window and the weekly one). That is exactly what the savings-mode skill is for: free, uploaded to claude.ai in a minute, attacking the two masses that burn cap. Its effect will be published once measured — never before.",
     "caseCodeSub": "terminal, with an API key",
-    "caseCodeBody": "On a subscription the fee is flat — but capped: the same skill installs with a single command and stretches the same weekly cap. With an API key there is a real token invoice — and the meter is already running: with no BiVelio key at all, “bvsala claude” launches Claude Code through the local gateway, without touching a line of code. The gateway meters what passes through it on your machine, with the usage your provider reports, and on exit tells you how many requests it metered, which ones it could not, and why. On Anthropic models it also moves cache writes from the one-hour TTL to the five-minute one only on turns where a large part of the prompt is new (a session's first turn, a compaction): a saving computed on your provider's own token count, never on an estimate. That needs Claude Code to ask for the one-hour cache, and on an API key it does not unless you set it: by default the gateway only measures. With a Savings Cloud key you see your spend in the dashboard as well, token by token.",
+    "caseCodeBody": "On a subscription the fee is flat, and the gateway changes nothing in your traffic: it measures each session's spend on your machine, free, at list price. For the caps there is the savings-mode skill, free, with its effect not measured yet. With an API key there is a real token invoice — and the meter is already running: with no BiVelio key at all, “bvsala claude” launches Claude Code through the local gateway, without touching a line of code. The gateway meters what passes through it on your machine, with the usage your provider reports, and on exit tells you how many requests it metered, which ones it could not, and why. On Anthropic models it also moves cache writes from the one-hour TTL to the five-minute one only on turns where a large part of the prompt is new (a session's first turn, a compaction): a saving computed on your provider's own token count, never on an estimate. That needs Claude Code to ask for the one-hour cache, and on an API key it does not unless you set it: by default the gateway only measures. With a Savings Cloud key you see your spend in the dashboard as well, token by token.",
     "caseAppName": "Your application",
     "caseAppSub": "your code + your API key",
     "caseAppBody": "The case Savings Layer exists for. Your app calls the API with your key, the provider bills every token, and the layer installs in two steps: package and wrapping the call. From the first request it returns a <b>SavingsReport</b> with the saving, split into measured and estimated.",
@@ -2149,7 +2149,7 @@
     "s3Sub": "The product has two different numbers, and they shouldn't be mixed.",
     "mBeforeK": "Before installing",
     "mBeforeV": "Estimate",
-    "mBeforeBody": "The free cloud plan runs the layer in shadow mode on your own traffic and shows what it would have saved, request by request. It changes nothing and applies nothing — that's why it carries the “estimate” tag. No plan at all? Open core: the local levers run with no key and zero telemetry.",
+    "mBeforeBody": "Before you install, any figure is an estimate: the public bench shows how each lever behaves on its own traffic, not on yours. No plan needed to start: in the open core every lever is free, with no key and zero telemetry; the free Measure plan adds the dashboard.",
     "mAfterK": "After installing",
     "mAfterV": "Real measurement",
     "mAfterBody": "Every call returns a SavingsReport: the calls you never paid for and the net saving per request. Auditable, request by request, on your own infrastructure.",
@@ -2254,7 +2254,7 @@
         "hint": "optional",
         "what": "Centralizes measurement and team management: organization, licenses and seats.",
         "where": "In Savings Cloud, hosted by BiVelio. It receives the data the privacy page defines.",
-        "account": "Yes. Measure is the free plan, in shadow mode."
+        "account": "Yes. Measure is the free plan, for small teams."
       },
       "evidence": {
         "name": "Evidence",
@@ -2286,12 +2286,12 @@
       "intro": "Four plans, from smallest to largest. Pro and Team are paid per seat and carry no commission.",
       "medir": {
         "name": "Measure",
-        "body": "<b>Free, no card.</b> The free CLOUD plan: the layer runs in shadow mode for one organization, for up to <b>{seats} seats</b> and <b>{requests} requests a day</b>: every request reaches your provider exactly as you built it, nothing is served from cache and no lever is applied. Your dashboard shows what it would have saved — an estimate that never carries a commission. It needs <b>@bivelio/savings-layer {version} or later</b>. The local levers need no plan at all: open core runs without a key; the cloud levers need Pro or Team."
+        "body": "<b>Free, no card.</b> The free CLOUD plan, for small teams: one organization, up to <b>{seats} seats</b> and <b>{requests} requests a day</b>. It applies the same levers as the open core with no key and adds the dashboard with your real savings, measured with your provider's own counter; it never carries a commission. It saves with <b>@bivelio/savings-layer {saves} or later</b>. Versions from {version} up to before {saves} only observe with a Measure key: shadow mode, no lever applied, and the dashboard shows what would have been saved. The levers themselves need no plan: open core runs without a key."
       },
       "pro": {
         "name": "Pro",
         "amount": "<b>{monthly}</b> per seat per month, or <b>{yearly}</b> per seat per year, in {currency}.",
-        "body": "Every optimization in the layer, the per-request receipt and the dashboard. <b>No commission</b> on savings: you pay for the seats, whether you save or not."
+        "body": "Everything in Measure, for more machines and requests: team dashboard, shared measurement, seats and licences. The engine and its levers stay free without a key. <b>No commission</b> on savings: you pay for the seats, whether you save or not."
       },
       "team": {
         "name": "Team",
@@ -2355,7 +2355,7 @@
     },
     "access": {
       "code": "View the code",
-      "install": "Install open source"
+      "install": "Install free"
     },
     "modes": {
       "title": "Community and Cloud are different things",
@@ -2367,7 +2367,7 @@
       "cloud": {
         "tag": "Optional · with plans",
         "name": "Savings Cloud",
-        "body": "The dashboard, shared measurement, the organization and licences. Measure is its free plan, in shadow mode; Pro and Team are paid as a flat fee per seat, with no commission on what you save."
+        "body": "The dashboard, shared measurement, the organization and licences. Measure is its free plan, for small teams; Pro and Team are paid as a flat fee per seat, with no commission on what you save."
       }
     },
     "cards": {
@@ -2400,13 +2400,13 @@
       "terms": "See terms",
       "provider": "The fee does not include your LLM provider's usage: you keep paying that yourself, on their terms. Amounts exclude VAT.",
       "medir": {
-        "unit": "Free cloud plan, in shadow mode.",
-        "summary": "Measure without changing anything: your requests reach your provider exactly as you build them, and the dashboard shows what would have been saved.",
+        "unit": "The free cloud plan, for small teams.",
+        "summary": "The dashboard with what you really save, and the same levers as with no key. Saves with @bivelio/savings-layer {saves} or later; older versions only observe.",
         "cta": "Start with Measure",
         "version": "Works with the latest version of @bivelio/savings-layer."
       },
       "pro": {
-        "summary": "Every optimization, the per-request receipt and the dashboard. A flat fee, due whether or not you save.",
+        "summary": "Everything in Measure, for more machines and requests: team dashboard, shared measurement, seats and licences. The engine and its levers stay free without a key. A flat fee, due whether or not you save.",
         "cta": "Choose Pro"
       },
       "team": {

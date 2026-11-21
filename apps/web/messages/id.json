@@ -150,7 +150,7 @@
     "createAnAccount": "Buat akun",
     "backToVerifier": "← Kembali ke beranda",
     "createYourAccount": "Buat akun Cloud Anda",
-    "signupSubtitle": "Satu akun BiVelio untuk seluruh suite. Buat untuk memakai cloud: dasbor, cache bersama, dan pengelolaan lisensi. Paketnya sendiri tidak butuh akun — open core berjalan tanpa kunci.",
+    "signupSubtitle": "Satu akun BiVelio untuk seluruh suite. Buat untuk memakai cloud: dasbor tim, pengukuran bersama, kursi, dan lisensi. Paketnya sendiri tidak butuh akun — open core berjalan tanpa kunci.",
     "alreadyHaveAccount": "Sudah punya akun BiVelio?",
     "signIn": "Masuk",
     "workEmail": "Email kerja",
@@ -194,7 +194,7 @@
       "network": "Tidak ada koneksi. Periksa jaringan Anda dan coba lagi.",
       "missingFields": "Masukkan email dan kata sandi Anda."
     },
-    "signupMedir": "Atau mulai gratis dengan Measure: paket cloud gratis, tanpa kartu, mode bayangan, hingga {seats} kursi dan {requests} permintaan per hari. Berfungsi dengan versi terbaru @bivelio/savings-layer.",
+    "signupMedir": "Atau mulai gratis dengan Measure: paket cloud gratis untuk tim kecil, tanpa kartu, hingga {seats} kursi dan {requests} permintaan per hari, dengan tuas yang sama seperti tanpa kunci dan penghematan nyata Anda di dasbor. Berfungsi dengan versi terbaru @bivelio/savings-layer.",
     "signupPlanPro": "Anda memilih {plan} — {price} per kursi per bulan. Buat akun Anda, konfirmasikan email Anda, lalu bayar di dasbor melalui Stripe.",
     "signupPlanTeam": "Anda memilih {plan} — {price} per bulan, termasuk {seats} kursi. Buat akun Anda, konfirmasikan email Anda, lalu bayar di dasbor melalui Stripe.",
     "openSourceQuestion": "Hanya ingin mesin open source?",
@@ -1242,7 +1242,7 @@
       "proofTitle": "Diukur terhadap penyedia nyata",
       "compatibleCon": "Kompatibel dengan",
       "compatibleNota": "Kompatibel tidak sama dengan terukur. SDK bekerja dengan endpoint apa pun yang kompatibel dengan API OpenAI, ditambah adaptor native Anthropic dan adaptor native Gemini (baru di {gemini}). Dengan angka penghematan di bangku uji publik, saat ini hanya model OpenAI dan Anthropic; Gemini tidak memiliki angka penghematan. Yang terukur untuk Gemini: {flash}, melalui API native-nya, di bench mingguan langsung {fecha} — keempat baterai, tanpa kegagalan lapisan dan tanpa penolakan yang di-cache atau dikreditkan sebagai penghematan. Bench itu memeriksa bahwa lapisan tidak merusak apa pun dan tidak menagih lebih; bench itu tidak mengukur penghematan. Juga terukur: {pro}, melalui API native-nya, dalam dua putaran parsial pada {fechaPro} (kuota harian penyedianya tidak cukup untuk keempat baterai dalam satu hari): keempat baterai, juga tanpa kegagalan lapisan dan tanpa penolakan yang di-cache atau dihitung sebagai penghematan.",
-      "ctaOss": "Pasang open source"
+      "ctaOss": "Pasang gratis"
     },
     "cascade": {
       "title": "Eksekusi termurah menang",
@@ -1267,7 +1267,7 @@
         },
         {
           "title": "Open core: hemat tanpa kunci",
-          "body": "Pasang paketnya dan tuasnya aktif: mode Community menjalankan setiap tuas lokal dengan nol telemetri, dan kunci yang diatur tetapi tidak valid tetap fail-closed. Cloud bersifat opsional: dasbor tim, cache bersama, dan pengelolaan lisensi dengan biaya tetap per kursi — tanpa komisi atas penghematan Anda."
+          "body": "Semua tuas sudah termasuk dan gratis, tanpa kunci. Aktif secara bawaan: cache persis, deduplikasi permintaan bersamaan, resolver lokal, penempatan cache prompt, dan pemangkasan hasil alat yang sudah tergantikan. Sisanya Anda aktifkan, masing-masing satu baris. Dua mesin bisa berbagi cache secara gratis dengan penyimpanan yang Anda jalankan (Redis, misalnya). Nol telemetri, dan kunci yang diatur tetapi tidak valid tetap fail-closed. Cloud bersifat opsional: dasbor tim, pengukuran bersama, kursi, dan lisensi dengan biaya tetap per kursi — tanpa komisi atas penghematan Anda."
         }
       ],
       "nota": "Animasi ini menggambarkan idenya. Angka sesungguhnya — diukur terhadap penyedia sungguhan — ada tepat di bawah."
@@ -1354,19 +1354,19 @@
     "pricing": {
       "eyebrow": "Paket",
       "title": "Mesin open source. Kendali cloud untuk tim Anda.",
-      "body": "Paketnya open core Apache-2.0: tanpa kunci, semua tuas lokal aktif, nol telemetri. Cloud bersifat opsional — Measure adalah paket gratis, Pro dan Team ditagih per kursi, dalam {currency}, tanpa komisi atas penghematan Anda.",
+      "body": "Paketnya open core Apache-2.0: semua tuas sudah termasuk dan gratis, tanpa kunci, dan nol telemetri. Cloud bersifat opsional — Measure adalah paket gratis, Pro dan Team ditagih per kursi, dalam {currency}, tanpa komisi atas penghematan Anda.",
       "amount": "{amount}",
       "per": "/ kursi / bulan",
       "plans": {
         "medir": {
           "name": "Measure",
           "price": "Gratis",
-          "body": "Gratis, tanpa kartu. Paket CLOUD gratis: mode bayangan untuk satu organisasi, hingga {seats} kursi dan {requests} permintaan per hari — tidak ada yang Anda kirim berubah, tidak ada yang dilayani dari cache, tidak pernah menjadi bagian komisi mana pun, dan dasbor Anda menunjukkan berapa yang akan dihemat. Tuas lokal tidak membutuhkannya: open core berjalan tanpa kunci apa pun. Butuh @bivelio/savings-layer {version} atau lebih baru.",
+          "body": "Gratis, tanpa kartu. Paket CLOUD gratis untuk tim kecil: satu organisasi, hingga {seats} kursi dan {requests} permintaan per hari. Tuas yang sama seperti open core tanpa kunci, ditambah dasbor dengan penghematan nyata Anda; tidak pernah dikenai komisi. Butuh @bivelio/savings-layer {version} atau lebih baru dan berhemat sejak versi yang disebut ketentuannya; versi sebelumnya hanya mengamati.",
           "cta": "Mulai gratis →"
         },
         "pro": {
           "name": "Pro",
-          "note": "Atau <b>{yearly} / kursi / tahun</b>. Semua optimasi, struk per permintaan, dan dasbor. Tanpa komisi.",
+          "note": "Atau <b>{yearly} / kursi / tahun</b>. Dasbor tim, pengukuran bersama, kursi, dan lisensi. Tanpa komisi.",
           "cta": "Pilih Pro →"
         },
         "team": {
@@ -1384,7 +1384,7 @@
       "legacy": "Sudah memakai model sebelumnya, dengan komisi atas penghematan terukur? Anda mempertahankannya tanpa perubahan; ketentuannya ada di <terms>ketentuan harga</terms>.",
       "seatNote": "Satu kursi adalah satu <b>mesin atau identitas layanan</b>, bukan orang. Kamu membayar kursi yang dicakup langgananmu; dasbormu menampilkan berapa yang terpakai bulan ini (aktif setidaknya {dias} hari; CI dan runner sementara tidak dihitung).",
       "features": [
-        "Setiap optimasi BV‑SALA, tanpa batas",
+        "Dasbor tim dan pengukuran bersama untuk setiap kursi",
         "Tanda terima per permintaan: SavingsReport dengan empat buku besar, terukur dan estimasi dipisah",
         "Dasbor penghematan & analitik tim",
         "Prompt Anda tidak melewati server BiVelio: prompt dikirim ke penyedia yang Anda konfigurasikan"
@@ -1639,7 +1639,7 @@
         },
         {
           "q": "Apa bedanya Measure dan Community?",
-          "a": "Community adalah mesin open source di infrastruktur Anda: tanpa akun, tanpa kunci BiVelio, dan tanpa telemetri secara bawaan. Measure adalah paket gratis Savings Cloud: memerlukan akun dan berjalan dalam mode bayangan, sehingga tidak mengubah permintaan Anda dan tidak menyajikan respons dari cache; dasbor Anda menunjukkan berapa yang seharusnya dihemat."
+          "a": "Community adalah mesin open source di infrastruktur Anda: tanpa akun, tanpa kunci BiVelio, dan tanpa telemetri secara bawaan. Measure adalah paket gratis Savings Cloud untuk tim kecil: butuh akun, menerapkan tuas yang sama seperti Community, dan menambahkan dasbor dengan penghematan nyata Anda. Dengan versi paket yang lama ia hanya mengamati; versi minimumnya ada di ketentuannya."
         },
         {
           "q": "Apakah berguna untuk langganan seperti ChatGPT Plus?",
@@ -1655,7 +1655,7 @@
         },
         {
           "q": "Apakah Anda menjamin penghematan?",
-          "a": "Tidak. Besarnya penghematan bergantung pada trafik Anda; misalnya, seberapa banyak yang berulang. Kami memublikasikan setiap pengukuran beserta model, sampel, dan intervalnya, dan Measure memungkinkan Anda melihat berapa yang seharusnya dihemat pada trafik Anda sendiri sebelum membayar apa pun."
+          "a": "Tidak. Penghematan Anda bergantung pada trafik Anda; misalnya, seberapa banyak yang berulang. Kami menerbitkan setiap pengukuran dengan modelnya, sampelnya, dan intervalnya, dan open core menunjukkan pada trafik Anda sendiri, permintaan demi permintaan, berapa yang dihemat sebelum Anda membayar apa pun."
         }
       ]
     },
@@ -1663,7 +1663,7 @@
       "title": "Ukur dulu.",
       "titleAccent": "Putuskan kemudian.",
       "titleMark": "kemudian",
-      "sub": "Measure gratis dan tidak meminta kartu: berjalan dalam mode bayangan dan menunjukkan berapa yang seharusnya dihemat pada trafik Anda sendiri. Mesinnya open source dan kodenya terbuka untuk dilihat.",
+      "sub": "Measure gratis dan tidak meminta kartu: tuas yang sama seperti mesin open source, ditambah dasbor dengan penghematan nyata pada trafik Anda sendiri. Mesinnya open source dan kodenya terbuka untuk dilihat.",
       "repo": "Lihat repositori"
     },
     "layer": {
@@ -1682,7 +1682,7 @@
       "srcAgent": "Agen Anda",
       "srcAgentVia": "gateway lokal",
       "memoryLabel": "Memori permintaan terbaru",
-      "compactLabel": "Pemadatan data",
+      "compactLabel": "Format ringkas",
       "providersLabel": "Penyedia yang Anda konfigurasikan",
       "nativeAdapter": "adaptor native",
       "compatName": "Endpoint apa pun yang kompatibel dengan API OpenAI",
@@ -1690,13 +1690,13 @@
       "step1Body": "Berangkat dari aplikasi atau agen Anda tanpa meninggalkan infrastruktur Anda.",
       "step2Title": "Berulang · dijawab tanpa memanggil penyedia",
       "step2Body": "Lapisan mengenalinya di memorinya dan mengembalikan respons yang tersimpan.",
-      "step3Title": "Data dipadatkan · token lebih sedikit",
-      "step3Body": "Permintaan baru melaju lebih ringan ke penyedia yang Anda konfigurasikan, dan responsnya kembali melalui lapisan.",
+      "step3Title": "Baru · lebih ringan bila memungkinkan",
+      "step3Body": "Permintaan baru menuju penyedia yang Anda konfigurasikan: data terstruktur dalam format ringkas, hasil alat yang sudah tergantikan dipangkas. Meringkas keluaran alat adalah tuas yang Anda aktifkan. Responsnya kembali lewat lapisan.",
       "step4Title": "Hanya hitungan dan biaya · tidak pernah prompt",
       "step4Body": "Savings Cloud bersifat opsional: jika dihubungkan, ia menerima angka, bukan konten.",
       "legendRepeat": "Berulang",
       "legendRepeatTo": "tanpa memanggil penyedia",
-      "legendData": "Data dipadatkan",
+      "legendData": "Data terstruktur",
       "legendDataTo": "token lebih sedikit",
       "legendCache": "Cache penyedia",
       "legendCacheTo": "input lebih murah",
@@ -2135,7 +2135,7 @@
     "caseClaudeSub": "claude.ai, gratis atau berbayar",
     "caseClaudeBody": "Langganan tetap: tidak ada tagihan token untuk diukur — tapi ada batas (jendela lima jam dan mingguan). Untuk itulah skill savings-mode: gratis, diunggah ke claude.ai dalam semenit, menyerang dua massa yang membakar batas. Efeknya akan dipublikasikan setelah diukur — tidak pernah sebelumnya.",
     "caseCodeSub": "terminal, dengan kunci API",
-    "caseCodeBody": "Dengan langganan, biayanya tetap — tapi berbatas: skill yang sama terpasang dengan satu perintah dan merenggangkan batas mingguan yang sama. Dengan API key ada tagihan token sungguhan — dan meterannya sudah berjalan: tanpa kunci BiVelio apa pun, “bvsala claude” meluncurkan Claude Code lewat gateway lokal, tanpa menyentuh satu baris kode. Gateway mengukur di mesin Anda apa yang melewatinya, dengan penggunaan yang dilaporkan penyedia Anda, dan saat keluar memberi tahu berapa permintaan yang berhasil diukur, mana yang tidak, dan alasannya. Pada model Anthropic, gateway juga memindahkan penulisan cache dari TTL satu jam ke TTL lima menit hanya pada giliran ketika porsi besar dari prompt masih baru (giliran pertama sebuah sesi, pemadatan): penghematan yang dihitung dari hitungan token penyedia Anda sendiri, tidak pernah dari estimasi. Untuk itu Claude Code harus meminta cache satu jam, dan dengan API key ia tidak melakukannya kecuali Anda mengaturnya: secara default gateway hanya mengukur. Dengan kunci Savings Cloud, Anda juga melihat pengeluaran Anda di dasbor, token demi token.",
+    "caseCodeBody": "Dengan langganan, biayanya tetap, dan gateway tidak mengubah apa pun pada trafik Anda: ia mengukur di mesin Anda, gratis, biaya setiap sesi dengan harga daftar. Untuk batasnya ada skill savings-mode, gratis, yang efeknya belum diukur. Dengan API key ada tagihan token sungguhan — dan meterannya sudah berjalan: tanpa kunci BiVelio apa pun, “bvsala claude” meluncurkan Claude Code lewat gateway lokal, tanpa menyentuh satu baris kode. Gateway mengukur di mesin Anda apa yang melewatinya, dengan penggunaan yang dilaporkan penyedia Anda, dan saat keluar memberi tahu berapa permintaan yang berhasil diukur, mana yang tidak, dan alasannya. Pada model Anthropic, gateway juga memindahkan penulisan cache dari TTL satu jam ke TTL lima menit hanya pada giliran ketika porsi besar dari prompt masih baru (giliran pertama sebuah sesi, pemadatan): penghematan yang dihitung dari hitungan token penyedia Anda sendiri, tidak pernah dari estimasi. Untuk itu Claude Code harus meminta cache satu jam, dan dengan API key ia tidak melakukannya kecuali Anda mengaturnya: secara default gateway hanya mengukur. Dengan kunci Savings Cloud, Anda juga melihat pengeluaran Anda di dasbor, token demi token.",
     "caseAppName": "Aplikasi kamu",
     "caseAppSub": "kode kamu + kunci API kamu",
     "caseAppBody": "Kasus yang menjadi alasan Savings Layer ada. Aplikasi Anda memanggil API dengan kunci Anda, penyedia menagih setiap token, dan lapisan terpasang dalam dua langkah: paket dan membungkus panggilan. Sejak permintaan pertama ia mengembalikan <b>SavingsReport</b> dengan penghematan, terpisah antara terukur dan terestimasi.",
@@ -2149,7 +2149,7 @@
     "s3Sub": "Produk ini punya dua angka berbeda dan sebaiknya tidak dicampur.",
     "mBeforeK": "Sebelum memasang",
     "mBeforeV": "Estimasi",
-    "mBeforeBody": "Paket cloud gratis menjalankan lapisan dalam mode bayangan di atas lalu lintas Anda sendiri dan menunjukkan berapa yang akan dihemat, permintaan demi permintaan. Ia tidak mengubah apa pun dan tidak menerapkan apa pun — karena itu ia membawa label «estimasi». Tidak ada paket sama sekali? Open core: tuas lokal berjalan tanpa kunci dan dengan nol telemetri.",
+    "mBeforeBody": "Sebelum memasang, angka apa pun adalah estimasi: bangku uji publik menunjukkan perilaku setiap tuas pada trafiknya, bukan pada trafik Anda. Tidak perlu paket untuk mulai: di open core setiap tuas gratis, tanpa kunci dan nol telemetri; paket gratis Measure menambahkan dasbor.",
     "mAfterK": "Setelah memasang",
     "mAfterV": "Pengukuran nyata",
     "mAfterBody": "Setiap panggilan mengembalikan SavingsReport: panggilan yang tidak pernah kamu bayar dan penghematan bersih per permintaan. Dapat diaudit, permintaan demi permintaan, di infrastrukturmu sendiri.",
@@ -2254,7 +2254,7 @@
         "hint": "opsional",
         "what": "Memusatkan pengukuran dan pengelolaan tim: organisasi, lisensi, dan seat.",
         "where": "Di Savings Cloud, di-hosting oleh BiVelio. Menerima data yang ditetapkan halaman privasi.",
-        "account": "Ya. Measure adalah paket gratis, dalam mode bayangan."
+        "account": "Ya. Measure adalah paket gratis, untuk tim kecil."
       },
       "evidence": {
         "name": "Bukti",
@@ -2286,12 +2286,12 @@
       "intro": "Empat paket, dari yang terkecil hingga terbesar. Pro dan Team dibayar per kursi dan tidak dikenai komisi.",
       "medir": {
         "name": "Measure",
-        "body": "<b>Gratis, tanpa kartu.</b> Paket CLOUD gratis: lapisan berjalan dalam mode bayangan untuk satu organisasi, hingga <b>{seats} kursi</b> dan <b>{requests} permintaan per hari</b>: setiap permintaan sampai ke penyedia Anda persis seperti yang Anda bangun, tidak ada yang dilayani dari cache, dan tidak ada tuas yang diterapkan. Dasbor Anda menunjukkan berapa yang akan dihemat — estimasi yang tidak pernah membawa komisi. Ia butuh <b>@bivelio/savings-layer {version} atau lebih baru</b>. Tuas lokal tidak butuh paket apa pun: open core berjalan tanpa kunci; tuas cloud butuh Pro atau Team."
+        "body": "<b>Gratis, tanpa kartu.</b> Paket CLOUD gratis untuk tim kecil: satu organisasi, hingga <b>{seats} kursi</b> dan <b>{requests} permintaan per hari</b>. Paket ini menerapkan tuas yang sama seperti open core tanpa kunci dan menambahkan dasbor dengan penghematan nyata Anda, diukur dengan penghitung penyedia Anda; tidak pernah membawa komisi. Berhemat dengan <b>@bivelio/savings-layer {saves} atau lebih baru</b>. Versi sejak {version} hingga sebelum {saves} hanya mengamati dengan kunci Measure: mode bayangan, tidak ada tuas yang diterapkan, dan dasbor menunjukkan berapa yang akan dihemat. Tuasnya sendiri tidak butuh paket apa pun: open core berjalan tanpa kunci."
       },
       "pro": {
         "name": "Pro",
         "amount": "<b>{monthly}</b> per kursi per bulan, atau <b>{yearly}</b> per kursi per tahun, dalam {currency}.",
-        "body": "Semua optimasi lapisan, tanda terima per permintaan, dan dasbor. <b>Tanpa komisi</b> atas penghematan: Anda membayar kursi, baik Anda berhemat maupun tidak."
+        "body": "Semua yang ada di Measure, untuk lebih banyak mesin dan permintaan: dasbor tim, pengukuran bersama, kursi, dan lisensi. Mesin dan tuasnya tetap gratis tanpa kunci. <b>Tanpa komisi</b> atas penghematan: Anda membayar kursi, baik Anda berhemat maupun tidak."
       },
       "team": {
         "name": "Team",
@@ -2355,7 +2355,7 @@
     },
     "access": {
       "code": "Lihat kodenya",
-      "install": "Pasang open source"
+      "install": "Pasang gratis"
     },
     "modes": {
       "title": "Community dan Cloud adalah dua hal berbeda",
@@ -2367,7 +2367,7 @@
       "cloud": {
         "tag": "Opsional · dengan paket",
         "name": "Savings Cloud",
-        "body": "Dasbor, pengukuran bersama, organisasi, dan lisensi. Measure adalah paket gratisnya, dalam mode bayangan; Pro dan Team dibayar dengan tarif tetap per kursi, tanpa komisi atas penghematan."
+        "body": "Dasbor, pengukuran bersama, organisasi, dan lisensi. Measure adalah paket gratisnya, untuk tim kecil; Pro dan Team dibayar dengan tarif tetap per kursi, tanpa komisi atas penghematan."
       }
     },
     "cards": {
@@ -2400,13 +2400,13 @@
       "terms": "Lihat ketentuan",
       "provider": "Tarif tidak mencakup pemakaian di penyedia LLM Anda: itu tetap Anda bayar sendiri, sesuai ketentuan mereka. Jumlah belum termasuk PPN.",
       "medir": {
-        "unit": "Paket cloud gratis, dalam mode bayangan.",
-        "summary": "Ukur tanpa mengubah apa pun: permintaan Anda sampai ke penyedia persis seperti yang Anda susun, dan dasbor menunjukkan berapa yang seharusnya dihemat.",
+        "unit": "Paket cloud gratis, untuk tim kecil.",
+        "summary": "Dasbor dengan penghematan Anda yang sebenarnya, dan tuas yang sama seperti tanpa kunci. Berhemat dengan @bivelio/savings-layer {saves} atau lebih baru; versi lama hanya mengamati.",
         "cta": "Mulai dengan Measure",
         "version": "Berfungsi dengan versi terbaru @bivelio/savings-layer."
       },
       "pro": {
-        "summary": "Semua optimasi, struk per permintaan, dan dasbor. Tarif tetap: dibayar baik ada penghematan maupun tidak.",
+        "summary": "Semua yang ada di Measure, untuk lebih banyak mesin dan permintaan: dasbor tim, pengukuran bersama, kursi, dan lisensi. Mesin dan tuasnya tetap gratis tanpa kunci. Tarif tetap: dibayar baik ada penghematan maupun tidak.",
         "cta": "Pilih Pro"
       },
       "team": {
