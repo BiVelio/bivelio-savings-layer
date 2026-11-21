@@ -20,20 +20,24 @@ import { signLicense, testPayload, TEST_KEYS } from "./helpers/test-license.js";
  * recorte pedía `tool_result_elision`, que no está en PRO_FEATURES ni en ningún
  * token emitido, mientras que el gate comunitario lo concede todo.
  *
- * La excepción (decisión del dueño, 21-11-2026): con cualquier clave (Measure,
- * Pro, Team, Enterprise) el recorte solo actúa dentro del bucle de herramientas
- * en Anthropic con la colocación fija, y solo sobre los resultados posteriores
- * al último turno del usuario. En el resto (gpt-4o, Gemini, DeepSeek...) no
- * recorta, como la 1.2.3 de pago: ahí un muñón a mitad del historial rompía la
- * caché automática del proveedor y una carga de pago costaba más que en la
- * 1.2.3 (verificación 3; ver elision-no-rompe-la-cache.test.ts).
+ * La excepción (decisión del dueño, 21-11-2026), SOLO PARA LAS LICENCIAS DE
+ * PAGO (Pro, Team, Enterprise): el recorte solo actúa dentro del bucle de
+ * herramientas en Anthropic con la colocación fija, y solo sobre los resultados
+ * posteriores al último turno del usuario. En el resto (gpt-4o, Gemini,
+ * DeepSeek...) no recorta, como la 1.2.3 de pago: ahí un muñón a mitad del
+ * historial rompía la caché automática del proveedor y una carga de pago costaba
+ * más que en la 1.2.3 (verificación 3; ver elision-no-rompe-la-cache.test.ts).
+ * La licencia gratuita Measure NO lleva la excepción (decisión del dueño, 21:45
+ * UTC): manda EXACTAMENTE lo mismo que sin clave en todas las cargas.
  *
  * Con un proveedor falso que guarda cada cuerpo que sale, este fichero fija:
  *   · sin clave no cambia nada;
- *   · en el bucle de herramientas de Anthropic, Measure, Pro, Team y Enterprise
- *     mandan EXACTAMENTE lo mismo que sin clave, con el token tal cual se emite;
- *   · en gpt-4o-mini, con cualquier clave, el cuerpo sale entero, como la 1.2.3
- *     de pago;
+ *   · Measure manda EXACTAMENTE lo mismo que sin clave, en Anthropic y en
+ *     gpt-4o-mini, también delante del último turno del usuario;
+ *   · en el bucle de herramientas de Anthropic, Pro, Team y Enterprise mandan
+ *     EXACTAMENTE lo mismo que sin clave, con el token tal cual se emite;
+ *   · en gpt-4o-mini, con una licencia de pago, el cuerpo sale entero, como la
+ *     1.2.3 de pago;
  *   · una licencia caducada o revocada sigue fallando cerrado: ni una llamada;
  *   · el opt-out por petición `savings: { elision: false }` sigue mandando.
  */
@@ -153,6 +157,21 @@ describe("SDK · el recorte de resultados sustituidos, por plan", () => {
     expect(r.munones).toBe(2);
   });
 
+  it.each(["gpt-4o-mini", "anthropic-bucle", "anthropic-pregunta"] as const)(
+    "MEASURE (%s): exactamente lo mismo que sin clave, byte a byte, sin la excepción de las licencias de pago",
+    async (destino) => {
+      const sinClave = await correr(destino, {});
+      const measure = await correr(destino, lic("measure", []));
+      expect(measure.llamadas).toBe(1);
+      expect(measure.traza).toBe("applied");
+      expect(measure.elididos).toBe(2);
+      expect(measure.munones).toBe(2);
+      expect(measure.resultadosEnteros).toBe(KEEP_TOOL_RESULTS + 2);
+      expect(measure.cuerpo).toBe(sinClave.cuerpo);
+      expect(measure.motivo).not.toMatch(/only acts inside a tool loop on Anthropic/);
+    },
+  );
+
   it.each(["measure", "pro", "team", "enterprise"])(
     "%s con el token que se emite hoy, en el bucle de herramientas de Anthropic: recorta igual que sin clave, byte a byte",
     async (plan) => {
@@ -167,10 +186,10 @@ describe("SDK · el recorte de resultados sustituidos, por plan", () => {
     },
   );
 
-  it.each(["measure", "pro", "team", "enterprise"])(
-    "%s en gpt-4o-mini (caché automática del proveedor): no recorta, el cuerpo sale entero como en la 1.2.3 de pago",
+  it.each(["pro", "team", "enterprise"])(
+    "%s (de pago) en gpt-4o-mini (caché automática del proveedor): no recorta, el cuerpo sale entero como en la 1.2.3 de pago",
     async (plan) => {
-      const r = await correr("gpt-4o-mini", lic(plan, plan === "measure" ? [] : PRO_EMITIDAS));
+      const r = await correr("gpt-4o-mini", lic(plan, PRO_EMITIDAS));
       expect(r.llamadas).toBe(1);
       expect(r.traza).toBe("skipped");
       expect(r.motivo).toMatch(/only acts inside a tool loop on Anthropic/);
@@ -179,8 +198,8 @@ describe("SDK · el recorte de resultados sustituidos, por plan", () => {
     },
   );
 
-  it("Pro en Anthropic con un turno nuevo del usuario: los resultados de delante se conservan (E1)", async () => {
-    const r = await correr("anthropic-pregunta", lic("pro", PRO_EMITIDAS));
+  it.each(["pro", "team", "enterprise"])("%s (de pago) en Anthropic con un turno nuevo del usuario: los resultados de delante se conservan (E1)", async (plan) => {
+    const r = await correr("anthropic-pregunta", lic(plan, PRO_EMITIDAS));
     expect(r.traza).toBe("partial");
     expect(r.munones).toBe(0);
     expect(r.resultadosEnteros).toBe(KEEP_TOOL_RESULTS + 4);

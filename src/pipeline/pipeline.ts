@@ -204,6 +204,13 @@ declare const __BV_SALA_DEMO_ONLY__: boolean | undefined;
 const ELISION_EN_VIVO: boolean = true;
 
 /**
+ * Los planes que recortan EXACTAMENTE como sin clave: el gate comunitario y la
+ * licencia gratuita Measure. Cualquier otro plan vivo (Pro, Team, Enterprise)
+ * es de pago y lleva la excepción del recorte (`elisionRompeLaCacheDelProveedor`).
+ */
+const PLANES_COMO_SIN_CLAVE: ReadonlySet<string> = new Set(["community", "measure"]);
+
+/**
  * The BV-SALA execution pipeline.
  *
  * Optimization order (cheapest first): avoid the call entirely -> avoid
@@ -408,8 +415,8 @@ function mensajeSinLicencia(): string {
     return (
       "BiVelio license required: none was configured. Pass { licenseKey } — the signed token " +
       "from your subscription, verified offline. This published package has no unlicensed mode. " +
-      "The free Measure license (no card) applies the same levers as no key, except trimming of superseded " +
-      "tool results outside an Anthropic tool loop, and adds the cloud dashboard. " +
+      "The free Measure license (no card) applies exactly the same levers as no key and adds the cloud " +
+      "dashboard. " +
       "Copy your key and a ready-to-paste snippet at " +
       "https://savings.bivelio.com/dashboard/install (license status: none)"
     );
@@ -1818,11 +1825,17 @@ export class SavingsPipeline {
     };
   }
 
-  /** Una licencia viva de cualquier plan (Measure, Pro, Team, Enterprise); sin clave, el gate comunitario. */
-  private conLicencia(): boolean {
+  /**
+   * Una licencia DE PAGO viva (Pro, Team, Enterprise). Sin clave (el gate
+   * comunitario) y con la licencia gratuita Measure, no: decisión del dueño
+   * (21-11-2026, 21:45 UTC), Measure aplica EXACTAMENTE las mismas palancas que
+   * sin clave, también el recorte de resultados de herramientas. La excepción
+   * del recorte queda solo para las licencias de pago.
+   */
+  private conLicenciaDePago(): boolean {
     try {
       const plan = this.config.licenseGate?.plan?.();
-      return plan != null && plan !== "community";
+      return plan != null && !PLANES_COMO_SIN_CLAVE.has(plan);
     } catch {
       return false;
     }
@@ -1832,10 +1845,12 @@ export class SavingsPipeline {
    * ¿Se aparta el recorte de resultados de herramientas sustituidos? Devuelve el
    * motivo, o null.
    *
-   *  · SIN CLAVE, nunca: recorta exactamente como en la 1.2.3. Cualquier guarda
-   *    nueva aquí hacía que alguna carga costara más que con la 1.2.3 (verificación
-   *    3: chats con herramientas y turnos a 6 min, −73,7 % → −53,5 %).
-   *  · CON CLAVE (la 1.2.3 de pago no recortaba): solo en Anthropic con la
+   *  · SIN CLAVE Y CON MEASURE, nunca: recorta exactamente como en la 1.2.3.
+   *    Cualquier guarda nueva aquí hacía que alguna carga costara más que con la
+   *    1.2.3 (verificación 3: chats con herramientas y turnos a 6 min, −73,7 % →
+   *    −53,5 %; con la excepción, Measure llegaba a +21,9 % frente a sin capa en
+   *    ese chat, cuando sin clave ahorra un 73 %).
+   *  · CON LICENCIA DE PAGO (la 1.2.3 de pago no recortaba): solo en Anthropic con la
    *    colocación fija, donde la capa pone todos los puntos de caché, y E1 (abajo)
    *    lo limita a los resultados posteriores al último turno del usuario, que esa
    *    colocación no marca. No con `cacheBreakpoints: "auto"` (marca dentro del
@@ -1847,15 +1862,15 @@ export class SavingsPipeline {
    *    declara `cachesWholePrompt`, y vale `false` sin `automaticCache`. Cualquier
    *    otro proveedor (también Claude por OpenAICompatibleProvider, OpenRouter o
    *    LiteLLM, que pueden cachear el prompt por su cuenta) no lo declara y no
-   *    recorta con clave, como la 1.2.3 de pago (verificación 4: un agente de 60
+   *    recorta con licencia de pago, como la 1.2.3 de pago (verificación 4: un agente de 60
    *    pasos con Sonnet por un endpoint compatible pasaba de 0 % a +12,7 %).
    */
   private elisionRompeLaCacheDelProveedor(modelo: string): string | null {
-    if (!this.conLicencia()) return null;
+    if (!this.conLicenciaDePago()) return null;
     const tramo = tramoDeCache(modelo, this.config.compressionEconomics);
     const proveedor = this.config.provider as { cachesWholePrompt?: boolean } | undefined;
     if (this.config.cacheBreakpoints === "auto" || !(tramo.cacheWriteMultiplier > 1) || proveedor?.cachesWholePrompt !== false) {
-      return "with a key, trimming of superseded tool results only acts inside a tool loop on Anthropic with the default cache placement (no automaticCache); elsewhere it stays off, as in 1.2.3";
+      return "with a paid license, trimming of superseded tool results only acts inside a tool loop on Anthropic with the default cache placement (no automaticCache); elsewhere it stays off, as in 1.2.3 with a paid license";
     }
     return null;
   }
@@ -3299,9 +3314,10 @@ export class SavingsPipeline {
     //     frescos, personalizado, estocástico o frescura de día);
     //   · `ELISION_EN_VIVO` (apagado, solo traza);
     //   · el opt-out explícito por petición: `savings: { elision: false }`;
-    //   · con clave, que no sea el bucle de herramientas de Anthropic con la
-    //     colocación fija (`elisionRompeLaCacheDelProveedor`): entonces no se
-    //     toca nada y la traza dice por qué. Sin clave, como en la 1.2.3.
+    //   · con licencia de pago, que no sea el bucle de herramientas de Anthropic
+    //     con la colocación fija (`elisionRompeLaCacheDelProveedor`): entonces no
+    //     se toca nada y la traza dice por qué. Sin clave y con Measure, como en
+    //     la 1.2.3.
     const elisionRompeCache = this.elisionRompeLaCacheDelProveedor(request.model);
     if (
       toggles.elision !== false &&
@@ -3316,14 +3332,14 @@ export class SavingsPipeline {
       this.entitled("tool_result_elision")
     ) {
       let eleccion = seleccionarSupersesion(messages);
-      // E1, solo con clave (sin clave, como en la 1.2.3): recortar un tool_result
+      // E1, solo con licencia de pago (sin clave y con Measure, como en la 1.2.3): recortar un tool_result
       // ANTERIOR al último turno del usuario cambia el historial que la
       // colocación fija marca, y `comprimioElPrefijo` deja la marca en el
       // `system` el resto de la conversación: el historial no se vuelve a leer de
       // la caché. Solo se recortan los posteriores (el bucle en curso). El último
       // turno se busca en `messages`, no en `finDelPrefijo`, que con
       // `cachePrefix` es 1.
-      const ultimoTurno = this.conLicencia() ? limiteDelPrefijoEstable(messages) : 0;
+      const ultimoTurno = this.conLicenciaDePago() ? limiteDelPrefijoEstable(messages) : 0;
       if (eleccion.indices.some((i) => i < ultimoTurno)) {
         const fuera = eleccionDesde(messages, eleccion, ultimoTurno);
         trace.record("elision", "partial", {
