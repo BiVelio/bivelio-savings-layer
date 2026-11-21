@@ -193,7 +193,7 @@
       "network": "Bağlantı yok. Ağınızı kontrol edip tekrar deneyin.",
       "missingFields": "E-postanızı ve şifrenizi girin."
     },
-    "signupMedir": "Ya da Measure ile ücretsiz başlayın: ücretsiz bulut planı, kartsız, gölge modu, günde {seats} koltuğa ve {requests} isteğe kadar. @bivelio/savings-layer {version} veya üzeri gerekir.",
+    "signupMedir": "Ya da Measure ile ücretsiz başlayın: ücretsiz bulut planı, kartsız, gölge modu, günde {seats} koltuğa ve {requests} isteğe kadar. @bivelio/savings-layer'ın en son sürümüyle çalışır.",
     "openSourceQuestion": "Yalnızca açık kaynak motoru mu istiyorsunuz?",
     "openSourceLink": "Hesap açmadan kurun",
     "showPassword": "Parolayı göster",
@@ -674,7 +674,7 @@
       "colRequests": "İstekler",
       "colTokens": "Token",
       "colCost": "Maliyet",
-      "hint": "Kod terminallerinin oturumları ve alt ajanları (opak kimlikler — asla bir kişi değil). 0.4.7 ve sonrası ağ geçidi gerektirir."
+      "hint": "Kod terminallerinin oturumları ve alt ajanları (opak kimlikler — asla bir kişi değil)."
     },
     "gatewayVersion": {
       "title": "Bazı makineler son 7 günde ölçülen tasarruf üretmedi",
@@ -695,7 +695,7 @@
       "action": "O makinede SDK'yı {minima} veya daha yeni bir sürüme güncelleyin ve işlemi yeniden başlatın:"
     },
     "migrar05": {
-      "note": "En son sürüm 0.5'tir ve uyumsuz değişiklikler içerir.",
+      "note": "0.5'ten önceki bir sürümden güncellemek uyumsuz değişiklikler getirir.",
       "link": "Güncellemeden önce geçiş kılavuzunu okuyun →"
     },
     "maquinas": {
@@ -744,7 +744,7 @@
       "gatewayNote": "<b>Uygulama yerine kod ajanı mı?</b> Aynı paket yerel bir ölçüm ağ geçidi getirir: <code>bvsala claude</code> Claude Code'u onun üzerinden başlatır ve bu panel harcamayı token token gösterir. Hiçbir anahtar olmadan başlar (Community modu); 2. adımdaki isteğe bağlı servis anahtarı bu paneli ve kuruluş yetkilerini ekler.",
       "doctorComment": "diğer ajanlar ve SDK'lar: her biri için tam yapılandırma",
       "agentsNote": "Her sarmalayıcı, aracısını yalnızca o oturum için hazırlar — yapılandırmasında hiçbir şey değişmez — ve çıkışta kaç isteği ölçtüğünü, hangilerini ölçemediğini ve nedenini söyler. <code>bvsala copilot</code> kendi Anthropic anahtarınızı gerektirir (BYOK): GitHub'da barındırılan modeller asla bir taban URL'den geçmez, bu yüzden ölçülecek bir şey yoktur. VS Code'daki Crush, Droid, Cline, Continue veya Copilot için <code>bvsala doctor</code> tam yapılandırmayı yazdırır. <b>Cursor (BYOK)</b>: kendi anahtarınızla OpenAI taban URL geçersiz kılması üzerinden çalışır; kendi modelleri makinenizdeki bir ağ geçidine asla ulaşmaz. <b>Gemini CLI</b>: <code>bvsala gemini</code> ile başlatın.",
-      "pythonNote": "<b>Python mı?</b> Python için <code>bvsala</code> istemcisi, resmi OpenAI ve Anthropic SDK'larını bu aynı ağ geçidinden geçirir (<code>bvsala gateway</code>) ve her isteğin raporunu kodunuza geri verir — bu panelin aldığı rakamların aynısı. 0.4.26 veya sonraki bir ağ geçidi ve Python 3.10 veya üstü gerekir. PyPI'dan <code>pip install bivelio-savings-layer</code> ile kurulur; kodunuzda <code>import bvsala</code>.",
+      "pythonNote": "<b>Python mı?</b> Python için <code>bvsala</code> istemcisi, resmi OpenAI ve Anthropic SDK'larını bu aynı ağ geçidinden geçirir (<code>bvsala gateway</code>) ve her isteğin raporunu kodunuza geri verir — bu panelin aldığı rakamların aynısı. Python 3.10 veya üstü gerekir. PyPI'dan <code>pip install bivelio-savings-layer</code> ile kurulur; kodunuzda <code>import bvsala</code>.",
       "finalNote": "Hepsi bu. Ayarlı ama geçersiz bir anahtar → <code>generate()</code> reddeder. Planınız iptal edilirse SDK, <code>licenseServerUrl</code> aracılığıyla ~15 dakika içinde durur — yeniden başlatma gerekmez ve bize ulaşılamıyorsa üretim ortamınızı asla işlevsiz bırakmaz.",
       "terminal": "Terminal",
       "sdkEyebrow": "Uygulama",
@@ -1412,7 +1412,7 @@
     },
     "footer": {
       "ctaTitle": "Kendi trafiğinde ölç",
-      "ctaSub": "Kurulduktan sonra her çağrı SavingsReport'unu döndürür; ölçülen ve tahmin edilen ayrı tutulur. Açık çekirdek anahtar gerektirmez: kollar yerelde sıfır telemetriyle çalışır. İsteğe bağlı bulut Measure ile ücretsiz başlar ve koltuk başına, tasarrufunuz üzerinden komisyonsuz faturalanır (@bivelio/savings-layer {version} veya üzeri).",
+      "ctaSub": "Kurulduktan sonra her çağrı SavingsReport'unu döndürür; ölçülen ve tahmin edilen ayrı tutulur. Açık çekirdek anahtar gerektirmez: kollar yerelde sıfır telemetriyle çalışır. İsteğe bağlı bulut Measure ile ücretsiz başlar ve koltuk başına, tasarrufunuz üzerinden komisyonsuz faturalanır.",
       "ctaStart": "Başla",
       "tagline": "İşletmeniz için işletim sistemi. Bu, BiVelio'nun sağlayıcıdan bağımsız LLM maliyet optimizasyonu <b>BV‑SALA</b> — ölçülen her rakam sağlayıcının kendi sayacına göre ölçülür; tahminler ve simülasyonlar ayrı gösterilir, öyle oldukları belirtilir ve asla faturalanmaz.",
       "badge": "BV‑SALA · Savings Layer",
@@ -1421,7 +1421,7 @@
       "colLegal": "Yasal",
       "measured": "Ölçülen sonuçlar",
       "benchmarks": "Açık benchmark",
-      "migrate": "0.5 sürümüne geçiş",
+      "migrate": "Geçiş kılavuzu",
       "pricing": "Fiyatlandırma",
       "home": "Ana sayfa",
       "docs": "Dokümantasyon",
@@ -2400,7 +2400,7 @@
         "unit": "Gölge modunda ücretsiz bulut planı.",
         "summary": "Hiçbir şeyi değiştirmeden ölçün: istekleriniz sağlayıcınıza tam oluşturduğunuz gibi ulaşır ve panel ne kadar tasarruf edilmiş olacağını gösterir.",
         "cta": "Measure ile başlayın",
-        "version": "@bivelio/savings-layer {version} veya üzeri gerekir."
+        "version": "@bivelio/savings-layer'ın en son sürümüyle çalışır."
       },
       "pro": {
         "summary": "Tüm optimizasyonlar, istek başına fiş ve panel. Sabit ücret: tasarruf olsun ya da olmasın ödenir.",

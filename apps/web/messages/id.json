@@ -193,7 +193,7 @@
       "network": "Tidak ada koneksi. Periksa jaringan Anda dan coba lagi.",
       "missingFields": "Masukkan email dan kata sandi Anda."
     },
-    "signupMedir": "Atau mulai gratis dengan Measure: paket cloud gratis, tanpa kartu, mode bayangan, hingga {seats} kursi dan {requests} permintaan per hari. Butuh @bivelio/savings-layer {version} atau lebih baru.",
+    "signupMedir": "Atau mulai gratis dengan Measure: paket cloud gratis, tanpa kartu, mode bayangan, hingga {seats} kursi dan {requests} permintaan per hari. Berfungsi dengan versi terbaru @bivelio/savings-layer.",
     "openSourceQuestion": "Hanya ingin mesin open source?",
     "openSourceLink": "Pasang tanpa akun",
     "showPassword": "Tampilkan kata sandi",
@@ -674,7 +674,7 @@
       "colRequests": "Permintaan",
       "colTokens": "Token",
       "colCost": "Biaya",
-      "hint": "Sesi dan subagen dari terminal pemrogramanmu (id buram — tidak pernah seseorang). Memerlukan gateway mulai 0.4.7."
+      "hint": "Sesi dan subagen dari terminal pemrogramanmu (id buram — tidak pernah seseorang)."
     },
     "gatewayVersion": {
       "title": "Beberapa mesin tidak menghasilkan penghematan terukur dalam 7 hari terakhir",
@@ -695,7 +695,7 @@
       "action": "Perbarui SDK ke {minima} atau lebih baru di mesin itu dan mulai ulang prosesnya:"
     },
     "migrar05": {
-      "note": "Versi terbaru adalah 0.5, yang membawa perubahan yang tidak kompatibel.",
+      "note": "Memperbarui dari versi sebelum 0.5 membawa perubahan yang tidak kompatibel.",
       "link": "Baca panduan migrasi sebelum memperbarui →"
     },
     "maquinas": {
@@ -744,7 +744,7 @@
       "gatewayNote": "<b>Agen pemrograman alih-alih aplikasi?</b> Paket yang sama membawa gateway pengukur lokal: <code>bvsala claude</code> menjalankan Claude Code melaluinya dan panel ini menampilkan pengeluaran, token demi token. Ia berjalan tanpa kunci apa pun (mode Community); kunci layanan opsional dari langkah 2 menambahkan dasbor ini dan hak organisasi.",
       "doctorComment": "agen dan SDK lain: konfigurasi persis untuk masing-masing",
       "agentsNote": "Setiap pembungkus menyiapkan agennya hanya untuk sesi itu — tidak ada yang berubah dalam konfigurasinya — dan saat keluar memberi tahu berapa permintaan yang diukurnya, mana yang tidak bisa diukur, dan mengapa. <code>bvsala copilot</code> memerlukan kunci Anthropic Anda sendiri (BYOK): model yang dihosting GitHub tidak pernah lewat URL dasar, jadi tidak ada yang perlu diukur. Untuk Crush, Droid, Cline, Continue, atau Copilot di VS Code, <code>bvsala doctor</code> mencetak konfigurasi persisnya. <b>Cursor (BYOK)</b>: bekerja lewat penggantian URL dasar OpenAI dengan kunci Anda sendiri; modelnya sendiri tidak pernah mencapai gateway di mesin Anda. <b>Gemini CLI</b>: jalankan dengan <code>bvsala gemini</code>.",
-      "pythonNote": "<b>Python?</b> Klien <code>bvsala</code> untuk Python mengarahkan SDK resmi OpenAI dan Anthropic melalui gateway yang sama ini (<code>bvsala gateway</code>) dan mengembalikan laporan setiap permintaan ke kode Anda — angka yang sama dengan yang diterima panel ini. Klien ini memerlukan gateway 0.4.26 atau lebih baru dan Python 3.10 atau lebih baru. Pasang dari PyPI dengan <code>pip install bivelio-savings-layer</code>; di kode Anda, <code>import bvsala</code>.",
+      "pythonNote": "<b>Python?</b> Klien <code>bvsala</code> untuk Python mengarahkan SDK resmi OpenAI dan Anthropic melalui gateway yang sama ini (<code>bvsala gateway</code>) dan mengembalikan laporan setiap permintaan ke kode Anda — angka yang sama dengan yang diterima panel ini. Klien ini memerlukan Python 3.10 atau lebih baru. Pasang dari PyPI dengan <code>pip install bivelio-savings-layer</code>; di kode Anda, <code>import bvsala</code>.",
       "finalNote": "Selesai. Kunci yang diatur tetapi tidak valid → <code>generate()</code> menolak. Jika paket Anda dibatalkan, SDK berhenti dalam ~15 mnt melalui <code>licenseServerUrl</code> — tanpa restart, dan tidak pernah melumpuhkan produksi Anda jika kami tidak dapat dihubungi.",
       "terminal": "Terminal",
       "sdkEyebrow": "Aplikasi",
@@ -1412,7 +1412,7 @@
     },
     "footer": {
       "ctaTitle": "Ukur dengan trafik Anda sendiri",
-      "ctaSub": "Setelah terpasang, setiap panggilan mengembalikan SavingsReport-nya, terukur dan terestimasi terpisah. Open core tidak butuh kunci: tuasnya berjalan lokal dengan nol telemetri. Cloud opsional mulai gratis dengan Measure dan ditagih per kursi, tanpa komisi atas penghematan Anda (@bivelio/savings-layer {version} atau lebih baru).",
+      "ctaSub": "Setelah terpasang, setiap panggilan mengembalikan SavingsReport-nya, terukur dan terestimasi terpisah. Open core tidak butuh kunci: tuasnya berjalan lokal dengan nol telemetri. Cloud opsional mulai gratis dengan Measure dan ditagih per kursi, tanpa komisi atas penghematan Anda.",
       "ctaStart": "Mulai",
       "tagline": "Sistem operasi untuk bisnis Anda. Inilah <b>BV‑SALA</b>, pengoptimal biaya LLM BiVelio yang netral terhadap penyedia — setiap angka terukur diukur terhadap penghitung penyedia; estimasi dan simulasi ditampilkan terpisah, disebut apa adanya, dan tidak pernah ditagih.",
       "badge": "BV‑SALA · Savings Layer",
@@ -1421,7 +1421,7 @@
       "colLegal": "Hukum",
       "measured": "Hasil terukur",
       "benchmarks": "Benchmark publik",
-      "migrate": "Migrasi ke 0.5",
+      "migrate": "Panduan migrasi",
       "pricing": "Harga",
       "home": "Beranda",
       "docs": "Dokumentasi",
@@ -2400,7 +2400,7 @@
         "unit": "Paket cloud gratis, dalam mode bayangan.",
         "summary": "Ukur tanpa mengubah apa pun: permintaan Anda sampai ke penyedia persis seperti yang Anda susun, dan dasbor menunjukkan berapa yang seharusnya dihemat.",
         "cta": "Mulai dengan Measure",
-        "version": "Memerlukan @bivelio/savings-layer {version} atau yang lebih baru."
+        "version": "Berfungsi dengan versi terbaru @bivelio/savings-layer."
       },
       "pro": {
         "summary": "Semua optimasi, struk per permintaan, dan dasbor. Tarif tetap: dibayar baik ada penghematan maupun tidak.",

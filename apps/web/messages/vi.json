@@ -193,7 +193,7 @@
       "network": "Không có kết nối. Kiểm tra mạng và thử lại.",
       "missingFields": "Nhập email và mật khẩu của bạn."
     },
-    "signupMedir": "Hoặc bắt đầu miễn phí với Measure: gói cloud miễn phí, không cần thẻ, chế độ bóng, tối đa {seats} chỗ và {requests} yêu cầu mỗi ngày. Cần @bivelio/savings-layer {version} trở lên.",
+    "signupMedir": "Hoặc bắt đầu miễn phí với Measure: gói cloud miễn phí, không cần thẻ, chế độ bóng, tối đa {seats} chỗ và {requests} yêu cầu mỗi ngày. Hoạt động với phiên bản mới nhất của @bivelio/savings-layer.",
     "openSourceQuestion": "Chỉ muốn dùng engine mã nguồn mở?",
     "openSourceLink": "Cài đặt không cần tài khoản",
     "showPassword": "Hiện mật khẩu",
@@ -674,7 +674,7 @@
       "colRequests": "Yêu cầu",
       "colTokens": "Token",
       "colCost": "Chi phí",
-      "hint": "Các phiên và agent con từ terminal lập trình của bạn (id ẩn danh — không bao giờ là một người). Cần gateway từ bản 0.4.7."
+      "hint": "Các phiên và agent con từ terminal lập trình của bạn (id ẩn danh — không bao giờ là một người)."
     },
     "gatewayVersion": {
       "title": "Một số máy không tạo ra tiết kiệm đo được trong 7 ngày qua",
@@ -695,7 +695,7 @@
       "action": "Hãy cập nhật SDK trên máy đó lên {minima} trở lên và khởi động lại tiến trình:"
     },
     "migrar05": {
-      "note": "Phiên bản mới nhất là 0.5, có các thay đổi không tương thích.",
+      "note": "Cập nhật từ một phiên bản trước 0.5 sẽ có các thay đổi không tương thích.",
       "link": "Đọc hướng dẫn chuyển đổi trước khi cập nhật →"
     },
     "maquinas": {
@@ -744,7 +744,7 @@
       "gatewayNote": "<b>Agent lập trình thay vì một ứng dụng?</b> Cùng gói này có sẵn một gateway đo cục bộ: <code>bvsala claude</code> chạy Claude Code qua nó và bảng điều khiển này hiển thị chi tiêu, từng token một. Nó khởi động mà không cần khóa nào (chế độ Community); khóa dịch vụ tùy chọn ở bước 2 thêm bảng điều khiển này và quyền của tổ chức.",
       "doctorComment": "agent và SDK khác: cấu hình chính xác cho từng loại",
       "agentsNote": "Mỗi wrapper chuẩn bị agent chỉ cho phiên đó — không có gì trong cấu hình thay đổi — và khi thoát sẽ cho biết đã đo bao nhiêu yêu cầu, yêu cầu nào không đo được và vì sao. <code>bvsala copilot</code> cần khóa Anthropic của riêng bạn (BYOK): các mô hình do GitHub lưu trữ không bao giờ đi qua URL cơ sở, nên không có gì để đo. Với Crush, Droid, Cline, Continue hoặc Copilot trong VS Code, <code>bvsala doctor</code> in cấu hình chính xác. <b>Cursor (BYOK)</b>: hoạt động qua ghi đè URL cơ sở OpenAI bằng khóa của riêng bạn; các mô hình của nó không bao giờ đến được gateway trên máy bạn. <b>Gemini CLI</b>: chạy nó bằng <code>bvsala gemini</code>.",
-      "pythonNote": "<b>Python?</b> Client <code>bvsala</code> cho Python đưa các SDK chính thức của OpenAI và Anthropic đi qua chính gateway này (<code>bvsala gateway</code>) và trả về cho mã của bạn báo cáo của từng yêu cầu — cùng những con số mà bảng điều khiển này nhận được. Client cần gateway 0.4.26 trở lên và Python 3.10 trở lên. Cài từ PyPI bằng <code>pip install bivelio-savings-layer</code>; trong mã của bạn, <code>import bvsala</code>.",
+      "pythonNote": "<b>Python?</b> Client <code>bvsala</code> cho Python đưa các SDK chính thức của OpenAI và Anthropic đi qua chính gateway này (<code>bvsala gateway</code>) và trả về cho mã của bạn báo cáo của từng yêu cầu — cùng những con số mà bảng điều khiển này nhận được. Client cần Python 3.10 trở lên. Cài từ PyPI bằng <code>pip install bivelio-savings-layer</code>; trong mã của bạn, <code>import bvsala</code>.",
       "finalNote": "Chỉ vậy thôi. Khóa được đặt nhưng không hợp lệ → <code>generate()</code> sẽ từ chối. Nếu gói của bạn bị hủy, SDK sẽ dừng trong khoảng 15 phút thông qua <code>licenseServerUrl</code> — không cần khởi động lại, và nó không bao giờ làm hỏng môi trường sản xuất của bạn nếu chúng tôi không thể kết nối được.",
       "terminal": "Terminal",
       "sdkEyebrow": "Ứng dụng",
@@ -1412,7 +1412,7 @@
     },
     "footer": {
       "ctaTitle": "Đo trên chính lưu lượng của bạn",
-      "ctaSub": "Sau khi cài, mỗi lời gọi trả về SavingsReport, tách riêng phần đo được và ước tính. Open core không cần khóa: các đòn bẩy chạy cục bộ với zero telemetry. Cloud tùy chọn bắt đầu miễn phí với Measure và tính phí theo chỗ, không hoa hồng trên khoản tiết kiệm của bạn (@bivelio/savings-layer {version} trở lên).",
+      "ctaSub": "Sau khi cài, mỗi lời gọi trả về SavingsReport, tách riêng phần đo được và ước tính. Open core không cần khóa: các đòn bẩy chạy cục bộ với zero telemetry. Cloud tùy chọn bắt đầu miễn phí với Measure và tính phí theo chỗ, không hoa hồng trên khoản tiết kiệm của bạn.",
       "ctaStart": "Bắt đầu",
       "tagline": "Hệ điều hành cho doanh nghiệp của bạn. Đây là <b>BV‑SALA</b>, bộ tối ưu chi phí LLM trung lập với nhà cung cấp của BiVelio — mọi con số đo được đều đo theo bộ đếm của chính nhà cung cấp; ước tính và mô phỏng được hiển thị riêng, nói rõ là như vậy, và không bao giờ tính phí.",
       "badge": "BV‑SALA · Savings Layer",
@@ -1421,7 +1421,7 @@
       "colLegal": "Pháp lý",
       "measured": "Kết quả đo được",
       "benchmarks": "Bộ đo công khai",
-      "migrate": "Chuyển lên 0.5",
+      "migrate": "Hướng dẫn chuyển đổi",
       "pricing": "Giá",
       "home": "Trang chủ",
       "docs": "Tài liệu",
@@ -2400,7 +2400,7 @@
         "unit": "Gói cloud miễn phí, chạy ở chế độ bóng.",
         "summary": "Đo mà không thay đổi gì: yêu cầu của bạn tới nhà cung cấp đúng như bạn tạo ra, và bảng điều khiển cho thấy lẽ ra đã tiết kiệm được bao nhiêu.",
         "cta": "Bắt đầu với Measure",
-        "version": "Cần @bivelio/savings-layer {version} trở lên."
+        "version": "Hoạt động với phiên bản mới nhất của @bivelio/savings-layer."
       },
       "pro": {
         "summary": "Mọi tối ưu, biên lai cho từng yêu cầu và bảng điều khiển. Phí cố định: trả dù có tiết kiệm hay không.",

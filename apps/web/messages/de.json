@@ -193,7 +193,7 @@
       "network": "Keine Verbindung. Prüf dein Netzwerk und versuch es noch mal.",
       "missingFields": "Gib deine E-Mail und dein Passwort ein."
     },
-    "signupMedir": "Oder starte gratis mit Measure: der kostenlose Cloud-Plan, ohne Karte, Schattenmodus, bis zu {seats} Sitze und {requests} Anfragen pro Tag. Er braucht @bivelio/savings-layer {version} oder neuer.",
+    "signupMedir": "Oder starte gratis mit Measure: der kostenlose Cloud-Plan, ohne Karte, Schattenmodus, bis zu {seats} Sitze und {requests} Anfragen pro Tag. Er funktioniert mit der neuesten Version von @bivelio/savings-layer.",
     "openSourceQuestion": "Du willst nur die Open-Source-Engine?",
     "openSourceLink": "Installiere sie ohne Konto",
     "showPassword": "Passwort anzeigen",
@@ -674,7 +674,7 @@
       "colRequests": "Anfragen",
       "colTokens": "Tokens",
       "colCost": "Kosten",
-      "hint": "Sitzungen und Subagenten deiner Coding-Terminals (opake Ids — nie eine Person). Erfordert das Gateway ab 0.4.7."
+      "hint": "Sitzungen und Subagenten deiner Coding-Terminals (opake Ids — nie eine Person)."
     },
     "gatewayVersion": {
       "title": "Einige Maschinen haben in den letzten 7 Tagen keine gemessene Ersparnis erzeugt",
@@ -695,7 +695,7 @@
       "action": "Aktualisiere das SDK auf dieser Maschine auf {minima} oder neuer und starte den Prozess neu:"
     },
     "migrar05": {
-      "note": "Die neueste Version ist 0.5 und enthält inkompatible Änderungen.",
+      "note": "Ein Update von einer Version vor 0.5 bringt inkompatible Änderungen mit sich.",
       "link": "Lies vor dem Update den Migrationsleitfaden →"
     },
     "maquinas": {
@@ -744,7 +744,7 @@
       "gatewayNote": "<b>Coding-Agent statt App?</b> Dasselbe Paket bringt ein lokales Mess-Gateway mit: <code>bvsala claude</code> startet Claude Code darüber und dieses Panel zeigt die Ausgaben, Token für Token. Es startet ganz ohne Schlüssel (Community-Modus); der optionale Service-Schlüssel aus Schritt 2 ergänzt dieses Dashboard und die Org-Berechtigungen.",
       "doctorComment": "weitere Agents und SDKs: die genaue Konfiguration für jeden",
       "agentsNote": "Jeder Wrapper richtet seinen Agenten nur für diese Sitzung ein — nichts an seiner Konfiguration ändert sich — und sagt dir beim Beenden, wie viele Anfragen er gemessen hat, welche er nicht messen konnte und warum. <code>bvsala copilot</code> braucht deinen eigenen Anthropic-Schlüssel (BYOK): GitHub-gehostete Modelle laufen nie über eine Basis-URL, also gibt es nichts zu messen. Für Crush, Droid, Cline, Continue oder Copilot in VS Code gibt <code>bvsala doctor</code> die genaue Konfiguration aus. <b>Cursor (BYOK)</b>: funktioniert über die OpenAI-Basis-URL-Überschreibung mit deinem eigenen Schlüssel; seine eigenen Modelle erreichen nie ein Gateway auf deinem Rechner. <b>Gemini CLI</b>: starte sie mit <code>bvsala gemini</code>.",
-      "pythonNote": "<b>Python?</b> Der Python-Client <code>bvsala</code> leitet die offiziellen SDKs von OpenAI und Anthropic über dasselbe Gateway (<code>bvsala gateway</code>) und gibt deinem Code den Bericht jeder Anfrage zurück — dieselben Zahlen, die dieses Panel erhält. Er braucht ein Gateway ab Version 0.4.26 und Python ab 3.10. Installiert wird er von PyPI mit <code>pip install bivelio-savings-layer</code>; im Code dann <code>import bvsala</code>.",
+      "pythonNote": "<b>Python?</b> Der Python-Client <code>bvsala</code> leitet die offiziellen SDKs von OpenAI und Anthropic über dasselbe Gateway (<code>bvsala gateway</code>) und gibt deinem Code den Bericht jeder Anfrage zurück — dieselben Zahlen, die dieses Panel erhält. Er braucht Python ab 3.10. Installiert wird er von PyPI mit <code>pip install bivelio-savings-layer</code>; im Code dann <code>import bvsala</code>.",
       "finalNote": "Das war's. Ein gesetzter, aber ungültiger Schlüssel → <code>generate()</code> verweigert. Wenn dein Plan gekündigt wird, stoppt das SDK innerhalb von ~15 Min über <code>licenseServerUrl</code> — ohne Neustart, und es legt niemals deine Produktion lahm, falls wir nicht erreichbar sind.",
       "terminal": "Terminal",
       "sdkEyebrow": "Anwendung",
@@ -1412,7 +1412,7 @@
     },
     "footer": {
       "ctaTitle": "Messen Sie es an Ihrem eigenen Traffic",
-      "ctaSub": "Einmal installiert, liefert jeder Aufruf seinen SavingsReport, mit Gemessenem und Geschätztem getrennt. Open Core braucht keinen Schlüssel: Die Hebel laufen lokal mit null Telemetrie. Die optionale Cloud startet gratis mit Measure und wird pro Sitz abgerechnet, ohne Provision auf deine Ersparnis (@bivelio/savings-layer {version} oder neuer).",
+      "ctaSub": "Einmal installiert, liefert jeder Aufruf seinen SavingsReport, mit Gemessenem und Geschätztem getrennt. Open Core braucht keinen Schlüssel: Die Hebel laufen lokal mit null Telemetrie. Die optionale Cloud startet gratis mit Measure und wird pro Sitz abgerechnet, ohne Provision auf deine Ersparnis.",
       "ctaStart": "Loslegen",
       "tagline": "Das Betriebssystem für Ihr Unternehmen. Das ist <b>BV‑SALA</b>, BiVelios anbieterneutraler LLM-Kostenoptimierer — jede gemessene Zahl ist gegen den Zähler des Anbieters gemessen; Schätzungen und Simulationen werden getrennt gezeigt, als solche benannt, und nie berechnet.",
       "badge": "BV‑SALA · Savings Layer",
@@ -1421,7 +1421,7 @@
       "colLegal": "Rechtliches",
       "measured": "Gemessene Ergebnisse",
       "benchmarks": "Offener Benchmark",
-      "migrate": "Auf 0.5 migrieren",
+      "migrate": "Migrationsleitfaden",
       "pricing": "Preise",
       "home": "Startseite",
       "docs": "Dokumentation",
@@ -2400,7 +2400,7 @@
         "unit": "Kostenloser Cloud-Tarif im Schattenmodus.",
         "summary": "Messen, ohne etwas zu ändern: Deine Anfragen erreichen deinen Anbieter genau so, wie du sie baust, und das Dashboard zeigt, was gespart worden wäre.",
         "cta": "Mit Measure starten",
-        "version": "Erfordert @bivelio/savings-layer {version} oder neuer."
+        "version": "Funktioniert mit der neuesten Version von @bivelio/savings-layer."
       },
       "pro": {
         "summary": "Alle Optimierungen, der Beleg pro Anfrage und das Dashboard. Feste Gebühr, fällig, ob du sparst oder nicht.",

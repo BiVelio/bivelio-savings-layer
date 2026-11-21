@@ -193,7 +193,7 @@
       "network": "Pas de connexion. Vérifiez votre réseau et réessayez.",
       "missingFields": "Saisissez votre e-mail et votre mot de passe."
     },
-    "signupMedir": "Ou démarrez gratuitement avec Measure : le plan cloud gratuit, sans carte, mode fantôme, jusqu'à {seats} sièges et {requests} requêtes par jour. Il faut @bivelio/savings-layer {version} ou plus récent.",
+    "signupMedir": "Ou démarrez gratuitement avec Measure : le plan cloud gratuit, sans carte, mode fantôme, jusqu'à {seats} sièges et {requests} requêtes par jour. Il fonctionne avec la dernière version de @bivelio/savings-layer.",
     "openSourceQuestion": "Vous voulez seulement le moteur open source ?",
     "openSourceLink": "Installez-le sans compte",
     "showPassword": "Afficher le mot de passe",
@@ -674,7 +674,7 @@
       "colRequests": "Requêtes",
       "colTokens": "Tokens",
       "colCost": "Coût",
-      "hint": "Sessions et sous-agents de vos terminaux de code (ids opaques — jamais une personne). Nécessite la passerelle à partir de la 0.4.7."
+      "hint": "Sessions et sous-agents de vos terminaux de code (ids opaques — jamais une personne)."
     },
     "gatewayVersion": {
       "title": "Certaines machines n'ont produit aucune économie mesurée ces 7 derniers jours",
@@ -695,7 +695,7 @@
       "action": "Mettez à jour le SDK vers {minima} ou plus récent sur cette machine et redémarrez le processus :"
     },
     "migrar05": {
-      "note": "La dernière version est la 0.5, qui comporte des changements incompatibles.",
+      "note": "Mettre à jour depuis une version antérieure à la 0.5 entraîne des changements incompatibles.",
       "link": "Lisez le guide de migration avant de mettre à jour →"
     },
     "maquinas": {
@@ -744,7 +744,7 @@
       "gatewayNote": "<b>Un agent de code plutôt qu'une app ?</b> Le même paquet embarque une passerelle de mesure locale : <code>bvsala claude</code> lance Claude Code à travers elle et ce panneau affiche la dépense, token par token. Elle démarre sans aucune clé (mode Community) ; la clé de service facultative de l'étape 2 ajoute ce tableau de bord et les droits de l'org.",
       "doctorComment": "autres agents et SDK : la configuration exacte de chacun",
       "agentsNote": "Chaque enveloppe configure son agent pour cette session uniquement — rien dans sa configuration ne change — et vous dit en sortant combien de requêtes elle a mesurées, lesquelles elle n'a pas pu mesurer et pourquoi. <code>bvsala copilot</code> a besoin de votre propre clé Anthropic (BYOK) : les modèles hébergés par GitHub ne passent jamais par une URL de base, il n'y a donc rien à mesurer. Pour Crush, Droid, Cline, Continue ou Copilot dans VS Code, <code>bvsala doctor</code> imprime la configuration exacte. <b>Cursor (BYOK)</b> : il fonctionne via la substitution d'URL de base OpenAI avec votre propre clé ; ses propres modèles n'atteignent jamais une passerelle sur votre machine. <b>Gemini CLI</b> : lancez-la avec <code>bvsala gemini</code>.",
-      "pythonNote": "<b>Python ?</b> Le client <code>bvsala</code> pour Python fait passer les SDK officiels d'OpenAI et d'Anthropic par cette même passerelle (<code>bvsala gateway</code>) et renvoie à votre code le rapport de chaque requête — les mêmes chiffres que reçoit ce panneau. Il lui faut une passerelle 0.4.26 ou ultérieure et Python 3.10 ou ultérieur. Il s'installe depuis PyPI avec <code>pip install bivelio-savings-layer</code> ; dans votre code, <code>import bvsala</code>.",
+      "pythonNote": "<b>Python ?</b> Le client <code>bvsala</code> pour Python fait passer les SDK officiels d'OpenAI et d'Anthropic par cette même passerelle (<code>bvsala gateway</code>) et renvoie à votre code le rapport de chaque requête — les mêmes chiffres que reçoit ce panneau. Il lui faut Python 3.10 ou ultérieur. Il s'installe depuis PyPI avec <code>pip install bivelio-savings-layer</code> ; dans votre code, <code>import bvsala</code>.",
       "finalNote": "C'est tout. Une clé définie mais invalide → <code>generate()</code> refuse. Si votre forfait est annulé, le SDK s'arrête en ~15 min via <code>licenseServerUrl</code> — sans redémarrage, et il ne bloque jamais votre production si nous sommes injoignables.",
       "terminal": "Terminal",
       "sdkEyebrow": "Application",
@@ -1412,7 +1412,7 @@
     },
     "footer": {
       "ctaTitle": "Mesurez-le sur votre propre trafic",
-      "ctaSub": "Une fois installé, chaque appel renvoie son SavingsReport, mesuré et estimé séparés. L'open core n'a besoin d'aucune clé : les leviers tournent en local avec zéro télémétrie. Le cloud optionnel démarre gratuitement avec Measure et se facture par siège, sans commission sur vos économies (@bivelio/savings-layer {version} ou plus récent).",
+      "ctaSub": "Une fois installé, chaque appel renvoie son SavingsReport, mesuré et estimé séparés. L'open core n'a besoin d'aucune clé : les leviers tournent en local avec zéro télémétrie. Le cloud optionnel démarre gratuitement avec Measure et se facture par siège, sans commission sur vos économies.",
       "ctaStart": "Commencer",
       "tagline": "Le système d'exploitation de votre entreprise. Voici <b>BV‑SALA</b>, l'optimiseur de coût LLM neutre vis-à-vis du fournisseur de BiVelio — chaque chiffre mesuré l'est contre le compteur du fournisseur ; les estimations et les simulations sont montrées à part, présentées comme telles, et jamais facturées.",
       "badge": "BV‑SALA · Savings Layer",
@@ -1421,7 +1421,7 @@
       "colLegal": "Mentions légales",
       "measured": "Résultats mesurés",
       "benchmarks": "Banc d’essai public",
-      "migrate": "Migrer vers la 0.5",
+      "migrate": "Guide de migration",
       "pricing": "Tarifs",
       "home": "Accueil",
       "docs": "Documentation",
@@ -2400,7 +2400,7 @@
         "unit": "Formule cloud gratuite, en mode fantôme.",
         "summary": "Mesurez sans rien changer : vos requêtes parviennent à votre fournisseur telles que vous les construisez, et le tableau de bord montre ce qui aurait été économisé.",
         "cta": "Commencer avec Measure",
-        "version": "Nécessite @bivelio/savings-layer {version} ou une version ultérieure."
+        "version": "Fonctionne avec la dernière version de @bivelio/savings-layer."
       },
       "pro": {
         "summary": "Toutes les optimisations, le reçu par requête et le tableau de bord. Tarif fixe, dû qu’il y ait des économies ou non.",

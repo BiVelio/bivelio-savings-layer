@@ -503,25 +503,35 @@ describe("Gemini: compatible ≠ medido; lo medido, con su informe", () => {
   });
 });
 
-describe("Medir: sus límites y su versión mínima, donde se ofrece", () => {
+describe("Medir: sus límites donde se ofrece, y su versión mínima en sus condiciones", () => {
   it("las constantes públicas son las de la ingesta y las del protocolo", () => {
     expect(LIMITES_MEDIR.asientos).toBe(MEASURE_LIMITS.seats);
     expect(LIMITES_MEDIR.peticionesDiarias).toBe(MEASURE_LIMITS.dailyRequests);
     expect(VERSION_MINIMA_MEDIR).toBe("0.4.33");
   });
 
-  const CLAVES = ["landing.pricing.plans.medir.body", "pricingPage.plans.medir.body", "auth.signupMedir"];
+  // La versión mínima (VERSION_MINIMA_MEDIR) es una CONDICIÓN de Measure y se
+  // queda en sus condiciones (/pricing#medir). Donde Measure se ofrece —la
+  // tarjeta, el alta y la banda final— se dice «la última versión del paquete»,
+  // que no caduca con cada release (m27, 2026-11-21).
+  const CON_VERSION = ["landing.pricing.plans.medir.body", "pricingPage.plans.medir.body"];
+  const SIN_VERSION = ["auth.signupMedir", "pricingPage.cards.medir.version", "landing.footer.ctaSub"];
   for (const loc of LOCALES) {
-    it(`${loc}: la tarjeta de la portada, /pricing y /signup llevan asientos, peticiones al día y versión mínima`, () => {
+    it(`${loc}: /pricing y /signup llevan asientos y peticiones al día; la versión mínima solo en las condiciones`, () => {
       const d = cargar(loc);
-      for (const k of CLAVES) {
+      for (const k of [...CON_VERSION, "auth.signupMedir"]) {
         const v = d[k];
         expect(v, `${loc} ${k}`).toBeTruthy();
-        for (const p of ["{seats}", "{requests}", "{version}", "@bivelio/savings-layer"]) expect(v, `${loc} ${k}`).toContain(p);
+        for (const p of ["{seats}", "{requests}", "@bivelio/savings-layer"]) expect(v, `${loc} ${k}`).toContain(p);
         // Los números llegan por parámetro, nunca escritos a mano.
         expect(v, `${loc} ${k}`).not.toMatch(/[0-9]/);
       }
-      expect(d["landing.footer.ctaSub"], loc).toContain("{version}");
+      for (const k of CON_VERSION) expect(d[k], `${loc} ${k}`).toContain("{version}");
+      for (const k of SIN_VERSION) {
+        expect(d[k], `${loc} ${k}`).toBeTruthy();
+        expect(d[k], `${loc} ${k}`).not.toContain("{version}");
+        expect(d[k], `${loc} ${k}`).not.toMatch(/[0-9]/);
+      }
     });
   }
 
@@ -530,9 +540,9 @@ describe("Medir: sus límites y su versión mínima, donde se ofrece", () => {
       const src = codigo(rel);
       expect(src, rel).toContain("LIMITES_MEDIR.asientos");
       expect(src, rel).toContain("LIMITES_MEDIR.peticionesDiarias");
-      expect(src, rel).toContain("VERSION_MINIMA_MEDIR");
     }
-    expect(codigo("app/components/Footer.tsx")).toContain('t("footer.ctaSub", { version: VERSION_MINIMA_MEDIR })');
+    expect(codigo("app/[locale]/pricing/page.tsx")).toContain("version: VERSION_MINIMA_MEDIR");
+    expect(codigo("app/components/Footer.tsx")).toContain('t("footer.ctaSub")');
   });
 });
 
@@ -546,10 +556,10 @@ describe("los textos nuevos se formatean en los 12 idiomas (ICU sin errores)", (
     "landing.ledgersHead.providerNote": { fecha: "2026-09-28" },
     "landing.hero.compatibleNota": { gemini: "0.4.33", flash: "Gemini 3.8 Flash", pro: "Gemini 3.1 Pro", fecha: "1 October 2026", fechaPro: "1–2 October 2026" },
     "landing.pricing.plans.medir.body": { seats: 5, requests: "20.000", version: "0.4.33" },
-    "landing.footer.ctaSub": { version: "0.4.33" },
+    "landing.footer.ctaSub": {},
     "howItWorks.billWith": {},
     "howItWorks.billDepends": {},
-    "auth.signupMedir": { seats: 5, requests: "20.000", version: "0.4.33" },
+    "auth.signupMedir": { seats: 5, requests: "20.000" },
   };
   for (const loc of LOCALES) {
     it(`${loc}`, () => {
