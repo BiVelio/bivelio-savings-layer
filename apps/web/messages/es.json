@@ -83,7 +83,7 @@
       "step": "Paso {n} de {total}",
       "steps": {
         "welcome": {
-          "title": "Bienvenido a BiVelio Savings",
+          "title": "Bienvenido a BiVelio Savings Layer",
           "body": "Este panel enseña lo que gastas en LLM y lo que ahorra la capa, medido con tu propio tráfico. Lo que no se ha medido se dice con palabras, nunca con un cero."
         },
         "nav": {
@@ -163,7 +163,7 @@
     "existingAccountLoginLink": "Este correo ya tiene una cuenta. Te hemos enviado un enlace para entrar directamente: revísalo (y la carpeta de spam) y entra sin contraseña.",
     "signupSsoNote": "¿Ya usas BiVelio Shield, Privacy o la app de BiVelio? La misma cuenta te sirve aquí: inicia sesión en vez de crear otra.",
     "successTitle": "Cuenta verificada",
-    "successBody": "Tu correo está confirmado y tu cuenta de Savings queda lista. Bienvenido — el medidor te espera.",
+    "successBody": "Tu correo está confirmado y tu cuenta de Savings Cloud queda lista. Bienvenido — el medidor te espera.",
     "successCta": "Ir al panel",
     "somethingWrong": "Algo salió mal.",
     "forgotPassword": "¿Olvidaste tu contraseña?",
@@ -317,7 +317,7 @@
       "tecnicaSub": "Batería sintética: enseña el mecanismo de cada palanca. No promete ninguna cifra.",
       "diagramRequest": "Tu petición",
       "diagramA": "Brazo A: se envía tal cual, sin la capa",
-      "diagramB": "Brazo B: la misma petición, a través de Savings",
+      "diagramB": "Brazo B: la misma petición, a través de Savings Layer",
       "diagramMeter": "El contador de uso de tu proveedor mide los dos"
     },
     "verify": {
@@ -419,7 +419,7 @@
         "armA": "Copia sin optimizar",
         "armAHint": "Referencia: lo que cobra tu proveedor sin la capa",
         "armAValue": "Base",
-        "armB": "Con Savings",
+        "armB": "Con Savings Layer",
         "armBHint": "La misma petición, servida por la capa",
         "armBValue": "{change} de coste · estimación puntual",
         "factSample": "Muestra",
@@ -444,7 +444,7 @@
       "metaTitle": "Instalar · BiVelio Savings Layer",
       "eyebrow": "Integra",
       "title": "Instala y conecta el SDK",
-      "intro": "Coloca BV-SALA delante de tu proveedor. Tus prompts no pasan por los servidores de BiVelio; se envían al proveedor que configures.",
+      "intro": "Coloca Savings Layer delante de tu proveedor. Tus prompts no pasan por los servidores de BiVelio; se envían al proveedor que configures.",
       "irACuenta": "¿Todavía sin plan, o quieres cambiar los asientos? Se hace en Cuenta →",
       "trackerTitle": "Tu puesta en marcha",
       "trackerNote": "Estos hitos los mide el producto: pulsar uno abre su instrucción, no lo marca como hecho. Son los de la conexión Cloud; el motor abierto funciona sin ellos.",
@@ -900,7 +900,7 @@
       "graceTitle": "Licencia caducada — aún funcionando",
       "graceBody": "Tu licencia caducó el {date} y sigue funcionando {days, plural, one {# día más} other {# días más}}. Renuévala para que no se interrumpa.",
       "expiredTitle": "Licencia caducada",
-      "expiredBody": "Tu licencia caducó el {date}. BV-SALA falla cerrado, así que el SDK se ha detenido.",
+      "expiredBody": "Tu licencia caducó el {date}. Savings Layer falla cerrado, así que el SDK se ha detenido.",
       "revokedTitle": "Licencia revocada",
       "revokedBody": "Esta licencia ha sido revocada. Escribe a support@bivelio.com si crees que es un error."
     },
@@ -1232,7 +1232,7 @@
       "sub": "Ejecuta el motor open source en tu infraestructura. Conecta Savings Cloud para centralizar la medición y la gestión de tu equipo, con planes de cuota fija.",
       "ctaStart": "Empezar con Measure",
       "ctaBench": "Ver resultados reproducibles",
-      "panelAlt": "El panel de Savings con los datos del banco público: el ahorro medido y su reparto por modelo.",
+      "panelAlt": "El panel de Savings Cloud con los datos del banco público: el ahorro medido y su reparto por modelo.",
       "panelCaption": "Panel con los datos del banco público",
       "medidoEnVivo": "Medido en vivo con el contador de cada proveedor",
       "note": "Se instala en minutos. Tus mensajes no pasan por nuestros servidores.",
@@ -1272,8 +1272,8 @@
     "step2": {
       "eyebrow": "Sin promesas: mediciones",
       "title": "¿Cómo sabemos que ahorra? Lo medimos — y publicamos los ensayos, uno por uno.",
-      "body": "Cada escenario del SDK se ejecuta dos veces contra el proveedor real: tal cual, y con Savings delante. Los dos brazos se valoran con el uso reportado por el proveedor a precios de lista versionados, sin conciliación con facturas. Esto es lo que salió, con su margen de error:",
-      "videoCaption": "La prueba es un experimento justo: la misma tarea dos veces — sin Savings y con Savings — y el mismo contador del proveedor midiendo las dos.",
+      "body": "Cada escenario del SDK se ejecuta dos veces contra el proveedor real: tal cual, y con Savings Layer delante. Los dos brazos se valoran con el uso reportado por el proveedor a precios de lista versionados, sin conciliación con facturas. Esto es lo que salió, con su margen de error:",
+      "videoCaption": "La prueba es un experimento justo: la misma tarea dos veces — sin Savings Layer y con Savings Layer — y el mismo contador del proveedor midiendo las dos.",
       "plainTitle": "Traducción, sin jerga",
       "plain": "En un flujo donde el {rep} de las peticiones se repiten exactas, la factura bajó un {punto}: entre {bajo} y {alto} con un 95 % de confianza. Lo que ahorres depende de cuánto repita tu tráfico.",
       "plainNote": "Un porcentaje no significa nada sin su intervalo, su modelo y su tráfico: publicamos los tres.",
@@ -1414,7 +1414,7 @@
       "ctaTitle": "Mídelo con tu propio tráfico",
       "ctaSub": "Una vez instalado, cada llamada devuelve su SavingsReport, con lo medido y lo estimado separados. El open core no necesita claves: las palancas corren en local con cero telemetría. La nube opcional empieza gratis con Measure y se factura por asiento, sin comisión sobre tu ahorro.",
       "ctaStart": "Empezar",
-      "tagline": "El sistema operativo para tu negocio. Esto es <b>BV‑SALA</b>, el optimizador de coste de LLM neutral respecto al proveedor de BiVelio — cada cifra medida lo está contra el contador del proveedor; lo estimado y lo simulado se enseñan aparte, dichos como tales, y nunca se facturan.",
+      "tagline": "<b>BiVelio Savings Layer</b> es un optimizador de coste de LLM neutral respecto al proveedor — cada cifra medida lo está contra el contador del proveedor; lo estimado y lo simulado se enseñan aparte, dichos como tales, y nunca se facturan.",
       "badge": "BV‑SALA · Savings Layer",
       "colSavings": "Savings Layer",
       "colBivelio": "BiVelio",
@@ -1562,7 +1562,7 @@
     },
     "ways": {
       "eyebrow": "Motor abierto, Cloud opcional",
-      "title": "Dos maneras de usar Savings.",
+      "title": "Dos maneras de usar Savings Layer.",
       "sub": "El motor es el mismo. Cambia dónde se gestiona y qué sale de tu infraestructura.",
       "q": {
         "runs": "Dónde se ejecuta",
@@ -1590,7 +1590,7 @@
         "tag": "Opcional · empieza gratis",
         "lede": "El panel para centralizar la medición y la gestión de tu equipo.",
         "runs": "El motor sigue en tu infraestructura. Cloud añade el panel.",
-        "account": "Una cuenta de Savings y una clave de servicio.",
+        "account": "Una cuenta de Savings Cloud y una clave de servicio.",
         "telemetry": "Recuentos y coste, según tu plan. Tus prompts no pasan por los servidores de BiVelio.",
         "manage": "Panel de equipo, organización y licencias.",
         "plans": "Ver planes",
@@ -1632,7 +1632,7 @@
         },
         {
           "q": "¿Qué es un asiento?",
-          "a": "Una máquina o una identidad de servicio que ejecuta Savings. No es una persona: las personas de tu equipo se gestionan aparte, en el panel. Los ejecutores de CI y los efímeros no cuentan como asientos."
+          "a": "Una máquina o una identidad de servicio que ejecuta Savings Layer. No es una persona: las personas de tu equipo se gestionan aparte, en el panel. Los ejecutores de CI y los efímeros no cuentan como asientos."
         },
         {
           "q": "¿En qué se diferencian Measure y Community?",
@@ -1748,7 +1748,7 @@
     "labelFor": "Para",
     "panelTitle": "Un equipo, <em>un panel</em>.",
     "panelBody": "Al aceptar, entra en el panel de la organización con su propia cuenta. Los asientos de la suscripción cuentan máquinas o identidades de servicio, no personas.",
-    "arteAlt": "Ilustración: una organización y su panel de Savings ya conectados, y un tercer círculo que entra en el hueco libre."
+    "arteAlt": "Ilustración: una organización y su panel de Savings Cloud ya conectados, y un tercer círculo que entra en el hueco libre."
   },
   "benchmarksPage": {
     "metaTitle": "Banco público A/B: mídenos | BiVelio Savings Layer",
@@ -2105,16 +2105,16 @@
   },
   "howItWorks": {
     "metaTitle": "¿Dónde se instala el ahorro? · BiVelio Savings Layer",
-    "metaDescription": "Savings corre en tu infraestructura, como SDK o gateway local. Motor open source y Savings Cloud opcional: qué ahorra, dónde no aplica y cómo se mide.",
+    "metaDescription": "BiVelio Savings Layer corre en tu infraestructura, como SDK o gateway local. Motor open source y Savings Cloud opcional: qué ahorra, dónde no aplica y cómo se mide.",
     "eyebrow": "La capa, explicada · sin jerga",
     "title": "¿Dónde se instala",
     "titleAccent": "el ahorro?",
     "titleMark": "ahorro",
-    "lede": "BV‑SALA no es una app, ni una extensión, ni un ajuste de ChatGPT. Es una pieza de código que un desarrollador coloca dentro de su propia aplicación, justo donde esa aplicación llama a la API de tu proveedor. Solo puede ahorrar donde existe una factura por tokens — y solo puede medirlo donde ve pasar cada petición.",
+    "lede": "BiVelio Savings Layer no es una app, ni una extensión, ni un ajuste de ChatGPT. Es una pieza de código que un desarrollador coloca dentro de su propia aplicación, justo donde esa aplicación llama a la API de tu proveedor. Solo puede ahorrar donde existe una factura por tokens — y solo puede medirlo donde ve pasar cada petición.",
     "s1Title": "La capa vive dentro de tu código",
-    "s1Sub": "La misma llamada, con y sin la capa. El tráfico siempre viaja directo de tu aplicación al proveedor — BV‑SALA no es un servidor intermedio ni ve tus datos desde fuera.",
-    "flowWithout": "Sin BV‑SALA",
-    "flowWith": "Con BV‑SALA",
+    "s1Sub": "La misma llamada, con y sin la capa. El tráfico siempre viaja directo de tu aplicación al proveedor — Savings Layer no es un servidor intermedio ni ve tus datos desde fuera.",
+    "flowWithout": "Sin Savings Layer",
+    "flowWith": "Con Savings Layer",
     "nodeApp": "Tu aplicación",
     "nodeAppSubBefore": "cada petición sale entera",
     "nodeAppSubAfter": "mismo código de negocio",
@@ -2126,16 +2126,16 @@
     "billReport": "+ SavingsReport",
     "s1Note": "Ese recuadro verde es un paquete npm dentro del código de la aplicación. Por eso la pregunta clave nunca es «¿qué instalo?» sino <b>«¿quién escribió el código que llama a la API?»</b> — esa persona es quien puede instalarlo. Las excepciones son un terminal de codificación como Claude Code y una app en cualquier lenguaje que use el SDK oficial de OpenAI o de Anthropic y deje fijar su base URL: ahí el gateway de bvsala se pone delante sin tocar ni una línea de código. Ese tráfico se mide para los modelos con precio de lista; las palancas de ahorro del paquete npm no corren ahí, y las del propio gateway solo se aplican al tráfico de Anthropic, gratis y sin clave.",
     "s2Title": "Tu caso, en 10 segundos",
-    "s2Sub": "Cuatro maneras de usar IA, y qué puede hacer BV‑SALA en cada una.",
+    "s2Sub": "Cuatro maneras de usar IA, y qué puede hacer Savings Layer en cada una.",
     "caseChatSub": "app o web, gratis o de pago",
-    "caseChatBody": "Pagas una cuota fija (o nada): no existe una factura por tokens que reducir, y es un producto cerrado en el que nadie puede colocar software entre la app y sus modelos. El ahorro de BV‑SALA no aplica aquí — y ningún producto puede prometerlo ahí con honestidad.",
+    "caseChatBody": "Pagas una cuota fija (o nada): no existe una factura por tokens que reducir, y es un producto cerrado en el que nadie puede colocar software entre la app y sus modelos. El ahorro de Savings Layer no aplica aquí — y ningún producto puede prometerlo ahí con honestidad.",
     "caseClaudeSub": "claude.ai, gratis o de pago",
     "caseClaudeBody": "Suscripción fija: sin factura de tokens que medir — pero con topes (la ventana de cinco horas y el semanal). Justo para eso está el skill savings-mode: gratis, se sube a claude.ai en un minuto y ataca las dos masas que queman tope. Su efecto se publicará cuando esté medido — nunca antes.",
     "caseCodeSub": "terminal, con clave de API",
     "caseCodeBody": "Con suscripción hay cuota fija — y topes: el mismo skill se instala con un solo comando y estira el mismo tope semanal. Con clave de API hay una factura por tokens real — y el medidor ya está en marcha: sin ninguna clave de BiVelio, «bvsala claude» lanza Claude Code a través del gateway local, sin tocar una línea de código. El gateway mide en tu máquina lo que pasa por él, con el uso que declara tu proveedor, y al salir te dice cuántas peticiones ha medido, cuáles no y por qué. En modelos de Anthropic pasa además las escrituras de caché del TTL de una hora al de cinco minutos solo en los turnos en que una parte grande del prompt es nueva (el primero de una sesión, una compactación): un ahorro calculado sobre el conteo de tokens de tu propio proveedor, nunca sobre una estimación. Para eso Claude Code tiene que pedir la caché de una hora, y con clave de API no la pide si no lo configuras: por defecto el gateway solo mide. Con una clave de Savings Cloud ves también tu gasto en el panel, token a token.",
     "caseAppName": "Tu aplicación",
     "caseAppSub": "tu código + tu clave de API",
-    "caseAppBody": "El caso para el que existe BV‑SALA. Tu app llama a la API con tu clave, el proveedor factura cada token, y la capa se instala en dos pasos: el paquete y envolver la llamada. Desde la primera petición devuelve un <b>SavingsReport</b> con el ahorro, separado en medido y estimado.",
+    "caseAppBody": "El caso para el que existe Savings Layer. Tu app llama a la API con tu clave, el proveedor factura cada token, y la capa se instala en dos pasos: el paquete y envolver la llamada. Desde la primera petición devuelve un <b>SavingsReport</b> con el ahorro, separado en medido y estimado.",
     "verdictNothing": "Nada que instalar",
     "verdictSkill": "Skill disponible",
     "verdictMeasures": "Ya mide",
@@ -2169,7 +2169,7 @@
       "eyebrow": "Arquitectura",
       "title": "De tu código",
       "accent": "a tu proveedor",
-      "lede": "Savings corre dentro de tu infraestructura: como SDK en el proceso de tu aplicación o como gateway local delante de ella. El contenido de cada petición viaja al proveedor que tú configures; no pasa por los servidores de BiVelio.",
+      "lede": "Savings Layer corre dentro de tu infraestructura: como SDK en el proceso de tu aplicación o como gateway local delante de ella. El contenido de cada petición viaja al proveedor que tú configures; no pasa por los servidores de BiVelio.",
       "app": "Tu aplicación",
       "appSub": "tu código y tu clave de API",
       "agent": "Tu agente de código",
@@ -2219,9 +2219,9 @@
     },
     "pieces": {
       "eyebrow": "Mapa",
-      "title": "Las piezas de Savings",
+      "title": "Las piezas de Savings Layer",
       "lede": "Un mapa de piezas, no cinco etapas por las que pase cada petición. Elige una para ver qué hace, dónde vive y si necesita cuenta.",
-      "tablist": "Piezas de Savings",
+      "tablist": "Piezas de Savings Layer",
       "what": "Qué hace",
       "where": "Dónde vive",
       "account": "Cuenta",

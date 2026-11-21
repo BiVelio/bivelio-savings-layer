@@ -83,7 +83,7 @@
       "step": "Bước {n} trên {total}",
       "steps": {
         "welcome": {
-          "title": "Chào mừng đến với BiVelio Savings",
+          "title": "Chào mừng đến với BiVelio Savings Layer",
           "body": "Bảng điều khiển này cho thấy bạn chi bao nhiêu cho LLM và lớp tiết kiệm được bao nhiêu, đo trên chính lưu lượng của bạn. Những gì chưa đo được sẽ được nói bằng lời, không bao giờ hiển thị thành số không."
         },
         "nav": {
@@ -163,7 +163,7 @@
     "existingAccountLoginLink": "Email này đã có tài khoản. Chúng tôi đã gửi bạn một liên kết để đăng nhập trực tiếp: hãy kiểm tra hộp thư (và thư rác) rồi vào mà không cần mật khẩu.",
     "signupSsoNote": "Bạn đã dùng BiVelio Shield, Privacy hoặc ứng dụng BiVelio? Cùng một tài khoản dùng được ở đây: hãy đăng nhập thay vì tạo tài khoản mới.",
     "successTitle": "Tài khoản đã xác minh",
-    "successBody": "Email của bạn đã được xác nhận và tài khoản Savings đã sẵn sàng. Chào mừng — bộ đo đang chờ bạn.",
+    "successBody": "Email của bạn đã được xác nhận và tài khoản Savings Cloud đã sẵn sàng. Chào mừng — bộ đo đang chờ bạn.",
     "successCta": "Vào bảng điều khiển",
     "somethingWrong": "Đã xảy ra lỗi.",
     "forgotPassword": "Quên mật khẩu?",
@@ -317,7 +317,7 @@
       "tecnicaSub": "Bộ thử tổng hợp: cho thấy cơ chế của từng đòn bẩy. Không hứa hẹn con số nào.",
       "diagramRequest": "Yêu cầu của bạn",
       "diagramA": "Nhánh A: gửi nguyên trạng, không qua lớp",
-      "diagramB": "Nhánh B: cùng yêu cầu đó, đi qua Savings",
+      "diagramB": "Nhánh B: cùng yêu cầu đó, đi qua Savings Layer",
       "diagramMeter": "Bộ đếm mức dùng của nhà cung cấp đo cả hai"
     },
     "verify": {
@@ -419,7 +419,7 @@
         "armA": "Bản sao chưa tối ưu",
         "armAHint": "Mốc so sánh: mức nhà cung cấp tính khi không có lớp",
         "armAValue": "Cơ sở",
-        "armB": "Có Savings",
+        "armB": "Có Savings Layer",
         "armBHint": "Cùng yêu cầu đó, do lớp phục vụ",
         "armBValue": "{change} chi phí · ước lượng điểm",
         "factSample": "Mẫu",
@@ -444,7 +444,7 @@
       "metaTitle": "Cài đặt · BiVelio Savings Layer",
       "eyebrow": "Tích hợp",
       "title": "Cài đặt và kết nối SDK",
-      "intro": "Đặt BV-SALA trước nhà cung cấp của bạn. Prompt của bạn không đi qua máy chủ của BiVelio; chúng được gửi đến nhà cung cấp mà bạn cấu hình.",
+      "intro": "Đặt Savings Layer trước nhà cung cấp của bạn. Prompt của bạn không đi qua máy chủ của BiVelio; chúng được gửi đến nhà cung cấp mà bạn cấu hình.",
       "irACuenta": "Chưa có gói, hoặc muốn thay đổi số ghế? Bạn làm việc đó trong Tài khoản →",
       "trackerTitle": "Quá trình thiết lập của bạn",
       "trackerNote": "Các mốc này do sản phẩm đo: chọn một mốc sẽ mở hướng dẫn của nó chứ không đánh dấu là xong. Chúng thuộc về kết nối Cloud; engine mở vẫn chạy mà không cần chúng.",
@@ -900,7 +900,7 @@
       "graceTitle": "Giấy phép đã hết hạn — vẫn đang chạy",
       "graceBody": "Giấy phép của bạn đã hết hạn vào {date} và vẫn chạy thêm {days, plural, other {# ngày}}. Hãy gia hạn để tránh gián đoạn.",
       "expiredTitle": "Giấy phép đã hết hạn",
-      "expiredBody": "Giấy phép của bạn đã hết hạn vào {date}. BV-SALA hoạt động theo cơ chế fail-closed, nên SDK đã dừng.",
+      "expiredBody": "Giấy phép của bạn đã hết hạn vào {date}. Savings Layer hoạt động theo cơ chế fail-closed, nên SDK đã dừng.",
       "revokedTitle": "Giấy phép đã bị thu hồi",
       "revokedBody": "Giấy phép này đã bị thu hồi. Hãy viết thư tới support@bivelio.com nếu bạn cho rằng đây là nhầm lẫn."
     },
@@ -1232,7 +1232,7 @@
       "sub": "Chạy engine mã nguồn mở trên hạ tầng của chính bạn. Kết nối Savings Cloud để tập trung việc đo lường và quản lý cho cả nhóm, với các gói phí cố định.",
       "ctaStart": "Bắt đầu với Measure",
       "ctaBench": "Xem kết quả có thể tái lập",
-      "panelAlt": "Bảng điều khiển Savings với dữ liệu của băng thử công khai: khoản tiết kiệm đo được và phân bổ theo mô hình.",
+      "panelAlt": "Bảng điều khiển Savings Cloud với dữ liệu của băng thử công khai: khoản tiết kiệm đo được và phân bổ theo mô hình.",
       "panelCaption": "Bảng điều khiển với dữ liệu của băng thử công khai",
       "medidoEnVivo": "Đo trực tiếp bằng bộ đếm của từng nhà cung cấp",
       "note": "Cài đặt trong vài phút. Tin nhắn của bạn không bao giờ đi qua máy chủ của chúng tôi.",
@@ -1272,8 +1272,8 @@
     "step2": {
       "eyebrow": "Không hứa hẹn: đo lường",
       "title": "Làm sao chúng tôi biết nó tiết kiệm? Chúng tôi đo — và chúng tôi công bố từng lượt thử một.",
-      "body": "Mỗi kịch bản SDK chạy hai lần với nhà cung cấp thật: nguyên trạng, và có Savings đứng trước. Cả hai nhánh được định giá từ mức sử dụng do nhà cung cấp báo cáo theo giá niêm yết có phiên bản, không đối chiếu với hóa đơn. Đây là kết quả, kèm biên độ sai số:",
-      "videoCaption": "Bài kiểm tra là một thí nghiệm công bằng: cùng một nhiệm vụ chạy hai lần — không có Savings và có Savings — và cùng một bộ đếm của nhà cung cấp đo cả hai.",
+      "body": "Mỗi kịch bản SDK chạy hai lần với nhà cung cấp thật: nguyên trạng, và có Savings Layer đứng trước. Cả hai nhánh được định giá từ mức sử dụng do nhà cung cấp báo cáo theo giá niêm yết có phiên bản, không đối chiếu với hóa đơn. Đây là kết quả, kèm biên độ sai số:",
+      "videoCaption": "Bài kiểm tra là một thí nghiệm công bằng: cùng một nhiệm vụ chạy hai lần — không có Savings Layer và có Savings Layer — và cùng một bộ đếm của nhà cung cấp đo cả hai.",
       "plainTitle": "Diễn giải, không thuật ngữ",
       "plain": "Trên một luồng mà {rep} số yêu cầu lặp lại y hệt, hóa đơn giảm {punto} — trong khoảng {bajo} đến {alto} với độ tin cậy 95%. Bạn tiết kiệm bao nhiêu tùy vào mức độ lặp lại của lưu lượng của bạn.",
       "plainNote": "Một tỷ lệ phần trăm không có ý nghĩa gì nếu thiếu khoảng tin cậy, mô hình và lưu lượng của nó: chúng tôi công bố cả ba.",
@@ -1414,7 +1414,7 @@
       "ctaTitle": "Đo trên chính lưu lượng của bạn",
       "ctaSub": "Sau khi cài, mỗi lời gọi trả về SavingsReport, tách riêng phần đo được và ước tính. Open core không cần khóa: các đòn bẩy chạy cục bộ với zero telemetry. Cloud tùy chọn bắt đầu miễn phí với Measure và tính phí theo chỗ, không hoa hồng trên khoản tiết kiệm của bạn.",
       "ctaStart": "Bắt đầu",
-      "tagline": "Hệ điều hành cho doanh nghiệp của bạn. Đây là <b>BV‑SALA</b>, bộ tối ưu chi phí LLM trung lập với nhà cung cấp của BiVelio — mọi con số đo được đều đo theo bộ đếm của chính nhà cung cấp; ước tính và mô phỏng được hiển thị riêng, nói rõ là như vậy, và không bao giờ tính phí.",
+      "tagline": "<b>BiVelio Savings Layer</b> là bộ tối ưu chi phí LLM trung lập với nhà cung cấp — mọi con số đo được đều đo theo bộ đếm của chính nhà cung cấp; ước tính và mô phỏng được hiển thị riêng, nói rõ là như vậy, và không bao giờ tính phí.",
       "badge": "BV‑SALA · Savings Layer",
       "colSavings": "Savings Layer",
       "colBivelio": "BiVelio",
@@ -1562,7 +1562,7 @@
     },
     "ways": {
       "eyebrow": "Engine mở, Cloud tùy chọn",
-      "title": "Hai cách dùng Savings.",
+      "title": "Hai cách dùng Savings Layer.",
       "sub": "Engine vẫn là một. Điều thay đổi là nơi bạn quản lý nó và những gì rời khỏi hạ tầng của bạn.",
       "q": {
         "runs": "Chạy ở đâu",
@@ -1590,7 +1590,7 @@
         "tag": "Tùy chọn · bắt đầu miễn phí",
         "lede": "Bảng điều khiển để tập trung việc đo lường và quản lý cho nhóm của bạn.",
         "runs": "Engine vẫn nằm trên hạ tầng của bạn. Cloud bổ sung bảng điều khiển.",
-        "account": "Một tài khoản Savings và một khóa dịch vụ.",
+        "account": "Một tài khoản Savings Cloud và một khóa dịch vụ.",
         "telemetry": "Số đếm và chi phí, tùy theo gói của bạn. Prompt của bạn không đi qua máy chủ của BiVelio.",
         "manage": "Bảng điều khiển nhóm, tổ chức và giấy phép.",
         "plans": "Xem các gói",
@@ -1632,7 +1632,7 @@
         },
         {
           "q": "Ghế là gì?",
-          "a": "Là một máy hoặc một danh tính dịch vụ chạy Savings. Không phải là một người: thành viên trong nhóm của bạn được quản lý riêng trong bảng điều khiển. Các runner CI và runner tạm thời không được tính là ghế."
+          "a": "Là một máy hoặc một danh tính dịch vụ chạy Savings Layer. Không phải là một người: thành viên trong nhóm của bạn được quản lý riêng trong bảng điều khiển. Các runner CI và runner tạm thời không được tính là ghế."
         },
         {
           "q": "Measure và Community khác nhau thế nào?",
@@ -1748,7 +1748,7 @@
     "labelFor": "Gửi tới",
     "panelTitle": "Một nhóm, <em>một bảng điều khiển</em>.",
     "panelBody": "Khi chấp nhận, quý vị vào bảng điều khiển của tổ chức bằng tài khoản của riêng mình. Số ghế của gói đăng ký tính theo máy hoặc danh tính dịch vụ, không tính theo người.",
-    "arteAlt": "Hình minh họa: một tổ chức và bảng điều khiển Savings đã kết nối, cùng một vòng tròn thứ ba đi vào ô trống."
+    "arteAlt": "Hình minh họa: một tổ chức và bảng điều khiển Savings Cloud đã kết nối, cùng một vòng tròn thứ ba đi vào ô trống."
   },
   "benchmarksPage": {
     "metaTitle": "Bài kiểm tra A/B công khai: hãy đo chúng tôi | BiVelio Savings Layer",
@@ -2105,16 +2105,16 @@
   },
   "howItWorks": {
     "metaTitle": "Khoản tiết kiệm được cài ở đâu? · BiVelio Savings Layer",
-    "metaDescription": "Savings chạy trong hạ tầng của bạn, dưới dạng SDK hoặc gateway cục bộ. Động cơ mã nguồn mở, Savings Cloud tùy chọn: tiết kiệm gì, ở đâu không, đo ra sao.",
+    "metaDescription": "BiVelio Savings Layer chạy trong hạ tầng của bạn, dưới dạng SDK hoặc gateway cục bộ. Động cơ mã nguồn mở, Savings Cloud tùy chọn: tiết kiệm gì, ở đâu không, đo ra sao.",
     "eyebrow": "Lớp tiết kiệm, giải thích · không thuật ngữ",
     "title": "Khoản tiết kiệm",
     "titleAccent": "được cài ở đâu?",
     "titleMark": "ở đâu",
-    "lede": "BV‑SALA không phải là ứng dụng, không phải tiện ích mở rộng, cũng không phải một cài đặt của ChatGPT. Nó là một đoạn mã mà lập trình viên đặt vào bên trong ứng dụng của chính họ, ngay tại nơi ứng dụng đó gọi API của nhà cung cấp. Nó chỉ có thể tiết kiệm ở nơi tồn tại hóa đơn theo token — và chỉ có thể đo ở nơi nó thấy từng yêu cầu đi qua.",
+    "lede": "BiVelio Savings Layer không phải là ứng dụng, không phải tiện ích mở rộng, cũng không phải một cài đặt của ChatGPT. Nó là một đoạn mã mà lập trình viên đặt vào bên trong ứng dụng của chính họ, ngay tại nơi ứng dụng đó gọi API của nhà cung cấp. Nó chỉ có thể tiết kiệm ở nơi tồn tại hóa đơn theo token — và chỉ có thể đo ở nơi nó thấy từng yêu cầu đi qua.",
     "s1Title": "Lớp này sống bên trong mã của bạn",
-    "s1Sub": "Cùng một lệnh gọi, có và không có lớp. Lưu lượng luôn đi thẳng từ ứng dụng của bạn đến nhà cung cấp — BV‑SALA không phải máy chủ trung gian và không bao giờ thấy dữ liệu của bạn từ bên ngoài.",
-    "flowWithout": "Không có BV‑SALA",
-    "flowWith": "Có BV‑SALA",
+    "s1Sub": "Cùng một lệnh gọi, có và không có lớp. Lưu lượng luôn đi thẳng từ ứng dụng của bạn đến nhà cung cấp — Savings Layer không phải máy chủ trung gian và không bao giờ thấy dữ liệu của bạn từ bên ngoài.",
+    "flowWithout": "Không có Savings Layer",
+    "flowWith": "Có Savings Layer",
     "nodeApp": "Ứng dụng của bạn",
     "nodeAppSubBefore": "mỗi yêu cầu đi ra nguyên vẹn",
     "nodeAppSubAfter": "cùng mã nghiệp vụ",
@@ -2126,16 +2126,16 @@
     "billReport": "+ SavingsReport",
     "s1Note": "Ô màu xanh lá đó là một gói npm bên trong mã của ứng dụng. Vì vậy câu hỏi then chốt không bao giờ là «tôi cài gì?» mà là <b>«ai đã viết đoạn mã gọi API?»</b> — người đó chính là người có thể cài nó. Các ngoại lệ là một terminal lập trình như Claude Code và một ứng dụng viết bằng bất kỳ ngôn ngữ nào dùng SDK chính thức của OpenAI hoặc Anthropic và cho phép đặt base URL của nó: ở đó gateway bvsala đứng chắn phía trước mà không chạm vào một dòng mã nào. Lưu lượng đó được đo với các mô hình có giá niêm yết; các đòn bẩy tiết kiệm của gói npm không chạy ở đó, và đòn bẩy của chính gateway chỉ áp dụng cho lưu lượng Anthropic, miễn phí và không cần khóa.",
     "s2Title": "Trường hợp của bạn, trong 10 giây",
-    "s2Sub": "Bốn cách dùng AI, và BV‑SALA có thể làm gì trong từng trường hợp.",
+    "s2Sub": "Bốn cách dùng AI, và Savings Layer có thể làm gì trong từng trường hợp.",
     "caseChatSub": "ứng dụng hoặc web, miễn phí hoặc trả phí",
-    "caseChatBody": "Bạn trả phí cố định (hoặc không trả gì): không có hóa đơn theo token để giảm, và đây là sản phẩm đóng — không ai có thể đặt phần mềm vào giữa ứng dụng và các mô hình của nó. Khoản tiết kiệm của BV‑SALA đơn giản là không áp dụng ở đây — và không sản phẩm nào có thể hứa điều đó một cách trung thực.",
+    "caseChatBody": "Bạn trả phí cố định (hoặc không trả gì): không có hóa đơn theo token để giảm, và đây là sản phẩm đóng — không ai có thể đặt phần mềm vào giữa ứng dụng và các mô hình của nó. Khoản tiết kiệm của Savings Layer đơn giản là không áp dụng ở đây — và không sản phẩm nào có thể hứa điều đó một cách trung thực.",
     "caseClaudeSub": "claude.ai, miễn phí hoặc trả phí",
     "caseClaudeBody": "Thuê bao cố định: không có hóa đơn token để đo — nhưng có giới hạn (cửa sổ năm giờ và giới hạn tuần). Skill savings-mode sinh ra đúng cho việc đó: miễn phí, tải lên claude.ai trong một phút, tấn công hai khối đốt giới hạn. Hiệu quả của nó sẽ được công bố khi đo xong — không bao giờ trước đó.",
     "caseCodeSub": "terminal, với khóa API",
     "caseCodeBody": "Với thuê bao, phí cố định — nhưng có giới hạn: cùng skill đó cài bằng một lệnh duy nhất và kéo giãn chính giới hạn tuần ấy. Với API key có hóa đơn token thật — và bộ đo đã chạy: không cần khóa BiVelio nào, «bvsala claude» khởi chạy Claude Code qua gateway cục bộ, không đụng một dòng mã. Gateway đo ngay trên máy của bạn những gì đi qua nó, bằng mức sử dụng do nhà cung cấp của bạn báo cáo, và khi thoát sẽ cho bạn biết đã đo được bao nhiêu yêu cầu, yêu cầu nào không đo được và vì sao. Trên các mô hình Anthropic, nó còn chuyển các lần ghi bộ nhớ đệm từ TTL một giờ sang TTL năm phút, chỉ ở những lượt mà một phần lớn prompt là mới (lượt đầu tiên của một phiên, sau khi nén ngữ cảnh): khoản tiết kiệm được tính trên chính số token do nhà cung cấp của bạn đếm, không bao giờ dựa trên ước tính. Muốn vậy, Claude Code phải yêu cầu bộ nhớ đệm một giờ, và với API key nó không làm vậy nếu bạn không cấu hình: mặc định gateway chỉ đo. Với khóa Savings Cloud, bạn cũng thấy chi tiêu của mình trong bảng điều khiển, từng token một.",
     "caseAppName": "Ứng dụng của bạn",
     "caseAppSub": "mã của bạn + khóa API của bạn",
-    "caseAppBody": "Trường hợp BV‑SALA tồn tại. Ứng dụng của bạn gọi API bằng khóa của bạn, nhà cung cấp tính phí từng token, và tầng cài đặt trong hai bước: gói và bọc lời gọi. Từ yêu cầu đầu tiên nó trả về <b>SavingsReport</b> với khoản tiết kiệm, tách giữa đo được và ước tính.",
+    "caseAppBody": "Trường hợp Savings Layer tồn tại. Ứng dụng của bạn gọi API bằng khóa của bạn, nhà cung cấp tính phí từng token, và tầng cài đặt trong hai bước: gói và bọc lời gọi. Từ yêu cầu đầu tiên nó trả về <b>SavingsReport</b> với khoản tiết kiệm, tách giữa đo được và ước tính.",
     "verdictNothing": "Không có gì để cài",
     "verdictSkill": "Có skill",
     "verdictMeasures": "Đã đo",
@@ -2169,7 +2169,7 @@
       "eyebrow": "Kiến trúc",
       "title": "Từ mã của bạn",
       "accent": "đến nhà cung cấp",
-      "lede": "Savings chạy bên trong hạ tầng của bạn: dưới dạng SDK trong tiến trình của ứng dụng hoặc dưới dạng gateway cục bộ đặt phía trước ứng dụng. Nội dung của mỗi yêu cầu đi đến nhà cung cấp mà bạn cấu hình; không đi qua máy chủ của BiVelio.",
+      "lede": "Savings Layer chạy bên trong hạ tầng của bạn: dưới dạng SDK trong tiến trình của ứng dụng hoặc dưới dạng gateway cục bộ đặt phía trước ứng dụng. Nội dung của mỗi yêu cầu đi đến nhà cung cấp mà bạn cấu hình; không đi qua máy chủ của BiVelio.",
       "app": "Ứng dụng của bạn",
       "appSub": "mã và khóa API của bạn",
       "agent": "Tác tử lập trình của bạn",
@@ -2219,9 +2219,9 @@
     },
     "pieces": {
       "eyebrow": "Sơ đồ",
-      "title": "Các thành phần của Savings",
+      "title": "Các thành phần của Savings Layer",
       "lede": "Một sơ đồ các thành phần, không phải năm bước mà mọi yêu cầu phải đi qua. Chọn một thành phần để xem nó làm gì, chạy ở đâu và có cần tài khoản không.",
-      "tablist": "Các thành phần của Savings",
+      "tablist": "Các thành phần của Savings Layer",
       "what": "Nó làm gì",
       "where": "Chạy ở đâu",
       "account": "Tài khoản",

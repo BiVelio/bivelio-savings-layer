@@ -83,7 +83,7 @@
       "step": "Pas {n} de {total}",
       "steps": {
         "welcome": {
-          "title": "Benvingut a BiVelio Savings",
+          "title": "Benvingut a BiVelio Savings Layer",
           "body": "Aquest panell mostra el que gastes en LLM i el que estalvia la capa, mesurat amb el teu propi trànsit. El que no s'ha mesurat es diu amb paraules, mai amb un zero."
         },
         "nav": {
@@ -163,7 +163,7 @@
     "existingAccountLoginLink": "Aquest correu ja té un compte. T'hem enviat un enllaç per entrar-hi directament: revisa'l (i la carpeta de correu brossa) i entra sense contrasenya.",
     "signupSsoNote": "Ja fas servir BiVelio Shield, Privacy o l'app de BiVelio? El mateix compte et serveix aquí: inicia sessió en lloc de crear-ne un altre.",
     "successTitle": "Compte verificat",
-    "successBody": "El teu correu està confirmat i el teu compte de Savings queda llest. Benvingut — el mesurador t'espera.",
+    "successBody": "El teu correu està confirmat i el teu compte de Savings Cloud queda llest. Benvingut — el mesurador t'espera.",
     "successCta": "Anar al panell",
     "somethingWrong": "Alguna cosa ha anat malament.",
     "forgotPassword": "Has oblidat la contrasenya?",
@@ -317,7 +317,7 @@
       "tecnicaSub": "Bateria sintètica: ensenya el mecanisme de cada palanca. No promet cap xifra.",
       "diagramRequest": "La teva petició",
       "diagramA": "Braç A: s'envia tal qual, sense la capa",
-      "diagramB": "Braç B: la mateixa petició, a través de Savings",
+      "diagramB": "Braç B: la mateixa petició, a través de Savings Layer",
       "diagramMeter": "El comptador d'ús del teu proveïdor mesura tots dos"
     },
     "verify": {
@@ -419,7 +419,7 @@
         "armA": "Còpia sense optimitzar",
         "armAHint": "Referència: el que cobra el teu proveïdor sense la capa",
         "armAValue": "Base",
-        "armB": "Amb Savings",
+        "armB": "Amb Savings Layer",
         "armBHint": "La mateixa petició, servida per la capa",
         "armBValue": "{change} de cost · estimació puntual",
         "factSample": "Mostra",
@@ -444,7 +444,7 @@
       "metaTitle": "Instal·la · BiVelio Savings Layer",
       "eyebrow": "Integra",
       "title": "Instal·la i connecta el SDK",
-      "intro": "Col·loca BV-SALA davant del teu proveïdor. Els teus prompts no passen pels servidors de BiVelio; s'envien al proveïdor que configuris.",
+      "intro": "Col·loca Savings Layer davant del teu proveïdor. Els teus prompts no passen pels servidors de BiVelio; s'envien al proveïdor que configuris.",
       "irACuenta": "Encara sense pla, o vols canviar els seients? Es fa a Compte →",
       "trackerTitle": "La teva posada en marxa",
       "trackerNote": "Aquestes fites les mesura el producte: prémer-ne una n'obre la instrucció, no la marca com a feta. Són les de la connexió Cloud; el motor obert funciona sense elles.",
@@ -900,7 +900,7 @@
       "graceTitle": "Llicència caducada — encara funciona",
       "graceBody": "La teva llicència va caducar el {date} i continua funcionant {days, plural, one {# dia més} other {# dies més}}. Renova-la perquè no s'interrompi.",
       "expiredTitle": "Llicència caducada",
-      "expiredBody": "La teva llicència va caducar el {date}. BV-SALA falla tancat, així que l'SDK s'ha aturat.",
+      "expiredBody": "La teva llicència va caducar el {date}. Savings Layer falla tancat, així que l'SDK s'ha aturat.",
       "revokedTitle": "Llicència revocada",
       "revokedBody": "Aquesta llicència s'ha revocat. Escriu a support@bivelio.com si creus que és un error."
     },
@@ -1232,7 +1232,7 @@
       "sub": "Executa el motor open source a la teva infraestructura. Connecta Savings Cloud per centralitzar el mesurament i la gestió del teu equip, amb plans de quota fixa.",
       "ctaStart": "Comença amb Measure",
       "ctaBench": "Veure resultats reproduïbles",
-      "panelAlt": "El tauler de Savings amb les dades del banc públic: l'estalvi mesurat i el seu repartiment per model.",
+      "panelAlt": "El tauler de Savings Cloud amb les dades del banc públic: l'estalvi mesurat i el seu repartiment per model.",
       "panelCaption": "Tauler amb les dades del banc públic",
       "medidoEnVivo": "Mesurat en directe amb el comptador de cada proveïdor",
       "note": "S'instal·la en minuts. Els teus missatges no passen pels nostres servidors.",
@@ -1272,8 +1272,8 @@
     "step2": {
       "eyebrow": "Sense promeses: mesuraments",
       "title": "Com sabem que estalvia? Ho mesurem — i publiquem els assaigs, un per un.",
-      "body": "Cada escenari de l'SDK s'executa dues vegades contra el proveïdor real: tal qual, i amb Savings al davant. Els dos braços es valoren amb l'ús reportat pel proveïdor a preus de llista versionats, sense conciliació amb factures. Això és el que va sortir, amb el seu marge d'error:",
-      "videoCaption": "La prova és un experiment just: la mateixa tasca dues vegades — sense Savings i amb Savings — amb el mateix comptador del proveïdor mesurant totes dues.",
+      "body": "Cada escenari de l'SDK s'executa dues vegades contra el proveïdor real: tal qual, i amb Savings Layer al davant. Els dos braços es valoren amb l'ús reportat pel proveïdor a preus de llista versionats, sense conciliació amb factures. Això és el que va sortir, amb el seu marge d'error:",
+      "videoCaption": "La prova és un experiment just: la mateixa tasca dues vegades — sense Savings Layer i amb Savings Layer — amb el mateix comptador del proveïdor mesurant totes dues.",
       "plainTitle": "Traducció, sense argot",
       "plain": "En un flux on el {rep} de les peticions es repeteixen exactes, la factura va baixar un {punto}: entre {bajo} i {alto} amb un 95 % de confiança. El que estalviïs depèn de quant es repeteixi el teu trànsit.",
       "plainNote": "Un percentatge no vol dir res sense el seu interval, el seu model i el seu trànsit: publiquem tots tres.",
@@ -1414,7 +1414,7 @@
       "ctaTitle": "Mesura-ho amb el teu propi trànsit",
       "ctaSub": "Un cop instal·lat, cada trucada retorna el seu SavingsReport, amb el mesurat i l'estimat separats. L'open core no necessita claus: les palanques corren en local amb zero telemetria. El núvol opcional comença gratis amb Measure i es factura per seient, sense comissió sobre el teu estalvi.",
       "ctaStart": "Comença",
-      "tagline": "El sistema operatiu per al teu negoci. Això és <b>BV‑SALA</b>, l'optimitzador de cost de LLM neutral respecte al proveïdor de BiVelio — cada xifra mesurada ho és contra el comptador del proveïdor; l'estimat i el simulat es mostren a part, dits com a tals, i mai no es facturen.",
+      "tagline": "<b>BiVelio Savings Layer</b> és un optimitzador de cost de LLM neutral respecte al proveïdor — cada xifra mesurada ho és contra el comptador del proveïdor; l'estimat i el simulat es mostren a part, dits com a tals, i mai no es facturen.",
       "badge": "BV‑SALA · Savings Layer",
       "colSavings": "Savings Layer",
       "colBivelio": "BiVelio",
@@ -1562,7 +1562,7 @@
     },
     "ways": {
       "eyebrow": "Motor obert, Cloud opcional",
-      "title": "Dues maneres de fer servir Savings.",
+      "title": "Dues maneres de fer servir Savings Layer.",
       "sub": "El motor és el mateix. Canvia on es gestiona i què surt de la teva infraestructura.",
       "q": {
         "runs": "On s’executa",
@@ -1590,7 +1590,7 @@
         "tag": "Opcional · comença gratis",
         "lede": "El tauler per centralitzar el mesurament i la gestió del teu equip.",
         "runs": "El motor continua a la teva infraestructura. Cloud hi afegeix el tauler.",
-        "account": "Un compte de Savings i una clau de servei.",
+        "account": "Un compte de Savings Cloud i una clau de servei.",
         "telemetry": "Recomptes i cost, segons el teu pla. Els teus prompts no passen pels servidors de BiVelio.",
         "manage": "Tauler d’equip, organització i llicències.",
         "plans": "Veure plans",
@@ -1632,7 +1632,7 @@
         },
         {
           "q": "Què és un seient?",
-          "a": "Una màquina o una identitat de servei que executa Savings. No és una persona: les persones del teu equip es gestionen a part, al tauler. Els executors de CI i els efímers no compten com a seients."
+          "a": "Una màquina o una identitat de servei que executa Savings Layer. No és una persona: les persones del teu equip es gestionen a part, al tauler. Els executors de CI i els efímers no compten com a seients."
         },
         {
           "q": "En què es diferencien Measure i Community?",
@@ -1748,7 +1748,7 @@
     "labelFor": "Per a",
     "panelTitle": "Un equip, <em>un tauler</em>.",
     "panelBody": "En acceptar, entreu al tauler de l'organització amb el vostre propi compte. Els seients de la subscripció compten màquines o identitats de servei, no persones.",
-    "arteAlt": "Il·lustració: una organització i el seu tauler de Savings ja connectats, i un tercer cercle que entra a l'espai lliure."
+    "arteAlt": "Il·lustració: una organització i el seu tauler de Savings Cloud ja connectats, i un tercer cercle que entra a l'espai lliure."
   },
   "benchmarksPage": {
     "metaTitle": "Banc públic A/B: mesura'ns | BiVelio Savings Layer",
@@ -2105,16 +2105,16 @@
   },
   "howItWorks": {
     "metaTitle": "On s'instal·la l'estalvi? · BiVelio Savings Layer",
-    "metaDescription": "Savings s'executa a la teva infraestructura, com a SDK o gateway local. Motor open source i Savings Cloud opcional: què estalvia, on no i com es mesura.",
+    "metaDescription": "BiVelio Savings Layer s'executa a la teva infraestructura, com a SDK o gateway local. Motor open source i Savings Cloud opcional: què estalvia, on no i com es mesura.",
     "eyebrow": "La capa, explicada · sense argot",
     "title": "On s'instal·la",
     "titleAccent": "l'estalvi?",
     "titleMark": "l'estalvi",
-    "lede": "BV‑SALA no és una app, ni una extensió, ni un ajust de ChatGPT. És una peça de codi que un desenvolupador col·loca dins de la seva pròpia aplicació, just on aquesta aplicació crida l'API del teu proveïdor. Només pot estalviar on existeix una factura per tokens — i només pot mesurar-ho on veu passar cada petició.",
+    "lede": "BiVelio Savings Layer no és una app, ni una extensió, ni un ajust de ChatGPT. És una peça de codi que un desenvolupador col·loca dins de la seva pròpia aplicació, just on aquesta aplicació crida l'API del teu proveïdor. Només pot estalviar on existeix una factura per tokens — i només pot mesurar-ho on veu passar cada petició.",
     "s1Title": "La capa viu dins del teu codi",
-    "s1Sub": "La mateixa crida, amb la capa i sense. El trànsit sempre viatja directe de la teva aplicació al proveïdor — BV‑SALA no és un servidor intermedi ni veu les teves dades des de fora.",
-    "flowWithout": "Sense BV‑SALA",
-    "flowWith": "Amb BV‑SALA",
+    "s1Sub": "La mateixa crida, amb la capa i sense. El trànsit sempre viatja directe de la teva aplicació al proveïdor — Savings Layer no és un servidor intermedi ni veu les teves dades des de fora.",
+    "flowWithout": "Sense Savings Layer",
+    "flowWith": "Amb Savings Layer",
     "nodeApp": "La teva aplicació",
     "nodeAppSubBefore": "cada petició surt sencera",
     "nodeAppSubAfter": "mateix codi de negoci",
@@ -2126,16 +2126,16 @@
     "billReport": "+ SavingsReport",
     "s1Note": "Aquest requadre verd és un paquet npm dins del codi de l'aplicació. Per això la pregunta clau mai no és «què instal·lo?» sinó <b>«qui va escriure el codi que crida l'API?»</b> — aquesta persona és qui pot instal·lar-lo. Les excepcions són un terminal de codificació com Claude Code i una app en qualsevol llenguatge que faci servir l'SDK oficial d'OpenAI o d'Anthropic i deixi fixar el seu base URL: allà el gateway de bvsala es posa al davant sense tocar ni una línia de codi. Aquest trànsit es mesura per als models amb preu de llista; les palanques d'estalvi del paquet npm no hi corren, i les del mateix gateway només s'apliquen al trànsit d'Anthropic, de franc i sense clau.",
     "s2Title": "El teu cas, en 10 segons",
-    "s2Sub": "Quatre maneres d'usar IA, i què pot fer BV‑SALA en cadascuna.",
+    "s2Sub": "Quatre maneres d'usar IA, i què pot fer Savings Layer en cadascuna.",
     "caseChatSub": "app o web, gratis o de pagament",
-    "caseChatBody": "Pagues una quota fixa (o res): no existeix una factura per tokens a reduir, i és un producte tancat on ningú no pot col·locar programari entre l'app i els seus models. L'estalvi de BV‑SALA no aplica aquí — i cap producte pot prometre-ho allà amb honestedat.",
+    "caseChatBody": "Pagues una quota fixa (o res): no existeix una factura per tokens a reduir, i és un producte tancat on ningú no pot col·locar programari entre l'app i els seus models. L'estalvi de Savings Layer no aplica aquí — i cap producte pot prometre-ho allà amb honestedat.",
     "caseClaudeSub": "claude.ai, gratis o de pagament",
     "caseClaudeBody": "Subscripció fixa: sense factura de tokens a mesurar — però amb topalls (la finestra de cinc hores i el setmanal). Justament per a això hi ha l'skill savings-mode: gratuït, es puja a claude.ai en un minut i ataca les dues masses que cremen topall. El seu efecte es publicarà quan estigui mesurat — mai abans.",
     "caseCodeSub": "terminal, amb clau d'API",
     "caseCodeBody": "Amb subscripció la quota és fixa — però amb topalls: el mateix skill s'instal·la amb una sola ordre i estira el mateix topall setmanal. Amb clau d'API hi ha una factura per tokens real — i el mesurador ja està en marxa: sense cap clau de BiVelio, «bvsala claude» llança Claude Code a través del gateway local, sense tocar una línia de codi. El gateway mesura a la teva màquina el que hi passa, amb l'ús que declara el teu proveïdor, i en sortir et diu quantes peticions ha mesurat, quines no i per què. En models d'Anthropic passa a més les escriptures de la memòria cau del TTL d'una hora al de cinc minuts només en els torns en què una part gran del prompt és nova (el primer d'una sessió, una compactació): un estalvi calculat sobre el recompte de tokens del teu propi proveïdor, mai sobre una estimació. Per a això Claude Code ha de demanar la memòria cau d'una hora, i amb clau d'API no la demana si no ho configures: per defecte el gateway només mesura. Amb una clau de Savings Cloud veus també la teva despesa al tauler, token a token.",
     "caseAppName": "La teva aplicació",
     "caseAppSub": "el teu codi + la teva clau d'API",
-    "caseAppBody": "El cas per al qual existeix BV‑SALA. La teva app crida l'API amb la teva clau, el proveïdor factura cada token, i la capa s'instal·la en dos passos: el paquet i embolicar la trucada. Des de la primera petició retorna un <b>SavingsReport</b> amb l'estalvi, separat en mesurat i estimat.",
+    "caseAppBody": "El cas per al qual existeix Savings Layer. La teva app crida l'API amb la teva clau, el proveïdor factura cada token, i la capa s'instal·la en dos passos: el paquet i embolicar la trucada. Des de la primera petició retorna un <b>SavingsReport</b> amb l'estalvi, separat en mesurat i estimat.",
     "verdictNothing": "Res a instal·lar",
     "verdictSkill": "Skill disponible",
     "verdictMeasures": "Ja mesura",
@@ -2169,7 +2169,7 @@
       "eyebrow": "Arquitectura",
       "title": "Del teu codi",
       "accent": "al teu proveïdor",
-      "lede": "Savings s'executa dins la teva infraestructura: com a SDK en el procés de la teva aplicació o com a gateway local davant seu. El contingut de cada petició viatja al proveïdor que tu configuris; no passa pels servidors de BiVelio.",
+      "lede": "Savings Layer s'executa dins la teva infraestructura: com a SDK en el procés de la teva aplicació o com a gateway local davant seu. El contingut de cada petició viatja al proveïdor que tu configuris; no passa pels servidors de BiVelio.",
       "app": "La teva aplicació",
       "appSub": "el teu codi i la teva clau d'API",
       "agent": "El teu agent de codi",
@@ -2219,9 +2219,9 @@
     },
     "pieces": {
       "eyebrow": "Mapa",
-      "title": "Les peces de Savings",
+      "title": "Les peces de Savings Layer",
       "lede": "Un mapa de peces, no cinc etapes per les quals passi cada petició. Tria'n una per veure què fa, on viu i si necessita compte.",
-      "tablist": "Peces de Savings",
+      "tablist": "Peces de Savings Layer",
       "what": "Què fa",
       "where": "On viu",
       "account": "Compte",

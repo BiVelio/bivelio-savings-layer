@@ -83,7 +83,7 @@
       "step": "Adım {n} / {total}",
       "steps": {
         "welcome": {
-          "title": "BiVelio Savings'e hoş geldiniz",
+          "title": "BiVelio Savings Layer'a hoş geldiniz",
           "body": "Bu panel, LLM'lere ne harcadığınızı ve katmanın ne kadar tasarruf sağladığını kendi trafiğinizle ölçülmüş olarak gösterir. Ölçülmeyen şey sözle söylenir, asla sıfır olarak gösterilmez."
         },
         "nav": {
@@ -163,7 +163,7 @@
     "existingAccountLoginLink": "Bu e-posta zaten bir hesaba sahip. Doğrudan giriş yapman için bir bağlantı gönderdik: gelen kutunu (ve spam'i) kontrol et ve şifresiz gir.",
     "signupSsoNote": "BiVelio Shield, Privacy veya BiVelio uygulamasını zaten kullanıyor musun? Aynı hesap burada da çalışır: yeni hesap oluşturmak yerine giriş yap.",
     "successTitle": "Hesap doğrulandı",
-    "successBody": "E-postan doğrulandı ve Savings hesabın hazır. Hoş geldin — sayaç seni bekliyor.",
+    "successBody": "E-postan doğrulandı ve Savings Cloud hesabın hazır. Hoş geldin — sayaç seni bekliyor.",
     "successCta": "Panele git",
     "somethingWrong": "Bir şeyler ters gitti.",
     "forgotPassword": "Şifreni mi unuttun?",
@@ -317,7 +317,7 @@
       "tecnicaSub": "Sentetik test dizisi: her kaldıracın nasıl çalıştığını gösterir. Hiçbir rakam vaat etmez.",
       "diagramRequest": "İsteğiniz",
       "diagramA": "A kolu: olduğu gibi, katman olmadan gönderilir",
-      "diagramB": "B kolu: aynı istek, Savings üzerinden",
+      "diagramB": "B kolu: aynı istek, Savings Layer üzerinden",
       "diagramMeter": "Sağlayıcınızın kullanım sayacı ikisini de ölçer"
     },
     "verify": {
@@ -419,7 +419,7 @@
         "armA": "Optimize edilmemiş kopya",
         "armAHint": "Referans: katman olmadan sağlayıcınızın ücreti",
         "armAValue": "Taban",
-        "armB": "Savings ile",
+        "armB": "Savings Layer ile",
         "armBHint": "Aynı istek, katman tarafından sunuldu",
         "armBValue": "{change} maliyet · nokta tahmini",
         "factSample": "Örneklem",
@@ -444,7 +444,7 @@
       "metaTitle": "Kur · BiVelio Savings Layer",
       "eyebrow": "Entegre et",
       "title": "SDK'yı kurun ve bağlayın",
-      "intro": "BV-SALA'yı sağlayıcınızın önüne yerleştirin. Prompt'larınız BiVelio sunucularından geçmez; yapılandırdığınız sağlayıcıya gönderilir.",
+      "intro": "Savings Layer'ı sağlayıcınızın önüne yerleştirin. Prompt'larınız BiVelio sunucularından geçmez; yapılandırdığınız sağlayıcıya gönderilir.",
       "irACuenta": "Henüz planınız yok mu ya da koltukları değiştirmek mi istiyorsunuz? Bunu Hesap bölümünden yaparsınız →",
       "trackerTitle": "Kurulumunuz",
       "trackerNote": "Bu aşamaları ürün ölçer: birini seçmek talimatını açar, onu tamamlandı olarak işaretlemez. Bunlar Cloud bağlantısına aittir; açık motor onlar olmadan da çalışır.",
@@ -900,7 +900,7 @@
       "graceTitle": "Lisans doldu — hâlâ çalışıyor",
       "graceBody": "Lisansınız {date} tarihinde doldu ve {days, plural, other {# gün daha}} çalışmaya devam ediyor. Kesinti yaşamamak için yenileyin.",
       "expiredTitle": "Lisans doldu",
-      "expiredBody": "Lisansınız {date} tarihinde doldu. BV-SALA fail-closed çalışır, bu yüzden SDK durdu.",
+      "expiredBody": "Lisansınız {date} tarihinde doldu. Savings Layer fail-closed çalışır, bu yüzden SDK durdu.",
       "revokedTitle": "Lisans iptal edildi",
       "revokedBody": "Bu lisans iptal edildi. Bunun bir hata olduğunu düşünüyorsanız support@bivelio.com adresine yazın."
     },
@@ -1232,7 +1232,7 @@
       "sub": "Açık kaynak motoru kendi altyapınızda çalıştırın. Ekibinizin ölçümünü ve yönetimini tek yerde toplamak için Savings Cloud'u bağlayın, sabit ücretli planlarla.",
       "ctaStart": "Measure ile başlayın",
       "ctaBench": "Tekrarlanabilir sonuçları görün",
-      "panelAlt": "Herkese açık test tezgâhının verileriyle Savings paneli: ölçülen tasarruf ve modele göre dağılımı.",
+      "panelAlt": "Herkese açık test tezgâhının verileriyle Savings Cloud paneli: ölçülen tasarruf ve modele göre dağılımı.",
       "panelCaption": "Herkese açık test tezgâhının verileriyle panel",
       "medidoEnVivo": "Her sağlayıcının kendi sayacıyla canlı ölçüldü",
       "note": "Dakikalar içinde kurulur. Mesajlarınız asla bizim sunucularımızdan geçmez.",
@@ -1272,8 +1272,8 @@
     "step2": {
       "eyebrow": "Vaat yok: ölçümler",
       "title": "Tasarruf ettirdiğini nereden biliyoruz? Ölçüyoruz — ve her denemeyi tek tek yayımlıyoruz.",
-      "body": "Her SDK senaryosu gerçek sağlayıcıya karşı iki kez çalışır: olduğu gibi ve önünde Savings ile. İki kol da sağlayıcının bildirdiği kullanımdan sürümlenmiş liste fiyatlarıyla değerlenir, faturayla mutabık hale getirilmez. İşte hata payıyla birlikte çıkan sonuç:",
-      "videoCaption": "Test adil bir deneydir: aynı görev iki kez — Savings olmadan ve Savings ile — ve ikisini de sağlayıcının aynı sayacı ölçer.",
+      "body": "Her SDK senaryosu gerçek sağlayıcıya karşı iki kez çalışır: olduğu gibi ve önünde Savings Layer ile. İki kol da sağlayıcının bildirdiği kullanımdan sürümlenmiş liste fiyatlarıyla değerlenir, faturayla mutabık hale getirilmez. İşte hata payıyla birlikte çıkan sonuç:",
+      "videoCaption": "Test adil bir deneydir: aynı görev iki kez — Savings Layer olmadan ve Savings Layer ile — ve ikisini de sağlayıcının aynı sayacı ölçer.",
       "plainTitle": "Jargonsuz çevirisi",
       "plain": "İsteklerin {rep} kadarının birebir tekrarlandığı bir akışta fatura {punto} düştü — %95 güvenle {bajo} ile {alto} arasında. Ne kadar tasarruf edeceğiniz, trafiğinizin ne kadar tekrarlandığına bağlıdır.",
       "plainNote": "Bir yüzde; aralığı, modeli ve trafiği olmadan hiçbir şey ifade etmez: üçünü de yayımlıyoruz.",
@@ -1414,7 +1414,7 @@
       "ctaTitle": "Kendi trafiğinde ölç",
       "ctaSub": "Kurulduktan sonra her çağrı SavingsReport'unu döndürür; ölçülen ve tahmin edilen ayrı tutulur. Açık çekirdek anahtar gerektirmez: kollar yerelde sıfır telemetriyle çalışır. İsteğe bağlı bulut Measure ile ücretsiz başlar ve koltuk başına, tasarrufunuz üzerinden komisyonsuz faturalanır.",
       "ctaStart": "Başla",
-      "tagline": "İşletmeniz için işletim sistemi. Bu, BiVelio'nun sağlayıcıdan bağımsız LLM maliyet optimizasyonu <b>BV‑SALA</b> — ölçülen her rakam sağlayıcının kendi sayacına göre ölçülür; tahminler ve simülasyonlar ayrı gösterilir, öyle oldukları belirtilir ve asla faturalanmaz.",
+      "tagline": "<b>BiVelio Savings Layer</b>, sağlayıcıdan bağımsız bir LLM maliyet optimizasyon aracıdır — ölçülen her rakam sağlayıcının kendi sayacına göre ölçülür; tahminler ve simülasyonlar ayrı gösterilir, öyle oldukları belirtilir ve asla faturalanmaz.",
       "badge": "BV‑SALA · Savings Layer",
       "colSavings": "Savings Layer",
       "colBivelio": "BiVelio",
@@ -1562,7 +1562,7 @@
     },
     "ways": {
       "eyebrow": "Açık motor, isteğe bağlı bulut",
-      "title": "Savings'i kullanmanın iki yolu.",
+      "title": "Savings Layer'ı kullanmanın iki yolu.",
       "sub": "Motor aynıdır. Değişen, onu nerede yönettiğiniz ve altyapınızdan neyin çıktığıdır.",
       "q": {
         "runs": "Nerede çalışır",
@@ -1590,7 +1590,7 @@
         "tag": "İsteğe bağlı · ücretsiz başlar",
         "lede": "Ekibinizin ölçümünü ve yönetimini tek yerde toplayan panel.",
         "runs": "Motor altyapınızda kalır. Cloud paneli ekler.",
-        "account": "Bir Savings hesabı ve bir servis anahtarı.",
+        "account": "Bir Savings Cloud hesabı ve bir servis anahtarı.",
         "telemetry": "Planınıza göre sayımlar ve maliyet. Prompt'larınız BiVelio sunucularından geçmez.",
         "manage": "Ekip paneli, organizasyon ve lisanslar.",
         "plans": "Planları görün",
@@ -1632,7 +1632,7 @@
         },
         {
           "q": "Koltuk nedir?",
-          "a": "Savings'i çalıştıran bir makine ya da servis kimliğidir. Bir kişi değildir: ekibinizdeki kişiler panelde ayrıca yönetilir. CI çalıştırıcıları ve geçici çalıştırıcılar koltuk sayılmaz."
+          "a": "Savings Layer'ı çalıştıran bir makine ya da servis kimliğidir. Bir kişi değildir: ekibinizdeki kişiler panelde ayrıca yönetilir. CI çalıştırıcıları ve geçici çalıştırıcılar koltuk sayılmaz."
         },
         {
           "q": "Measure ile Community arasındaki fark nedir?",
@@ -1748,7 +1748,7 @@
     "labelFor": "Kime",
     "panelTitle": "Tek ekip, <em>tek panel</em>.",
     "panelBody": "Kabul ettiğinizde kuruluşun paneline kendi hesabınızla erişirsiniz. Aboneliğin koltukları kişileri değil, makineleri veya servis kimliklerini sayar.",
-    "arteAlt": "İllüstrasyon: zaten bağlı bir kuruluş ve Savings paneli ile boş yuvaya giren üçüncü bir daire."
+    "arteAlt": "İllüstrasyon: zaten bağlı bir kuruluş ve Savings Cloud paneli ile boş yuvaya giren üçüncü bir daire."
   },
   "benchmarksPage": {
     "metaTitle": "Herkese açık A/B testi: bizi ölçün | BiVelio Savings Layer",
@@ -2105,16 +2105,16 @@
   },
   "howItWorks": {
     "metaTitle": "Tasarruf nereye kurulur? · BiVelio Savings Layer",
-    "metaDescription": "Savings, altyapınızda SDK veya yerel gateway olarak çalışır. Açık kaynak motor, isteğe bağlı Savings Cloud: ne tasarruf eder, nerede etmez, nasıl ölçülür.",
+    "metaDescription": "BiVelio Savings Layer, altyapınızda SDK veya yerel gateway olarak çalışır. Açık kaynak motor, isteğe bağlı Savings Cloud: ne tasarruf eder, nerede etmez, nasıl ölçülür.",
     "eyebrow": "Katman, açıklandı · jargonsuz",
     "title": "Tasarruf",
     "titleAccent": "nereye kurulur?",
     "titleMark": "kurulur",
-    "lede": "BV‑SALA bir uygulama, bir eklenti veya bir ChatGPT ayarı değildir. Bir geliştiricinin kendi uygulamasının içine — o uygulamanın sağlayıcınızın API'sini çağırdığı yere — yerleştirdiği bir kod parçasıdır. Yalnızca token faturasının var olduğu yerde tasarruf edebilir — ve yalnızca her isteğin geçtiğini gördüğü yerde ölçebilir.",
+    "lede": "BiVelio Savings Layer bir uygulama, bir eklenti veya bir ChatGPT ayarı değildir. Bir geliştiricinin kendi uygulamasının içine — o uygulamanın sağlayıcınızın API'sini çağırdığı yere — yerleştirdiği bir kod parçasıdır. Yalnızca token faturasının var olduğu yerde tasarruf edebilir — ve yalnızca her isteğin geçtiğini gördüğü yerde ölçebilir.",
     "s1Title": "Katman senin kodunun içinde yaşar",
-    "s1Sub": "Aynı çağrı, katmanla ve katmansız. Trafik her zaman uygulamandan sağlayıcıya doğrudan gider — BV‑SALA aracı bir sunucu değildir ve verini asla dışarıdan görmez.",
-    "flowWithout": "BV‑SALA olmadan",
-    "flowWith": "BV‑SALA ile",
+    "s1Sub": "Aynı çağrı, katmanla ve katmansız. Trafik her zaman uygulamandan sağlayıcıya doğrudan gider — Savings Layer aracı bir sunucu değildir ve verini asla dışarıdan görmez.",
+    "flowWithout": "Savings Layer olmadan",
+    "flowWith": "Savings Layer ile",
     "nodeApp": "Senin uygulaman",
     "nodeAppSubBefore": "her istek olduğu gibi çıkar",
     "nodeAppSubAfter": "aynı iş kodu",
@@ -2126,16 +2126,16 @@
     "billReport": "+ SavingsReport",
     "s1Note": "O yeşil kutu, uygulamanın kodundaki bir npm paketidir. Bu yüzden kilit soru asla «ne kurayım?» değil, <b>«API'yi çağıran kodu kim yazdı?»</b> sorusudur — onu kurabilecek kişi o kişidir. İstisnalar, Claude Code gibi bir kodlama terminali ve resmi OpenAI veya Anthropic SDK'sını kullanan ve base URL'sini ayarlamaya izin veren herhangi bir dildeki bir uygulamadır: orada bvsala ağ geçidi tek satır koda bile dokunmadan öne geçer. Bu trafik, liste fiyatı olan modeller için ölçülür; npm paketinin tasarruf kaldıraçları orada çalışmaz, ağ geçidinin kendi kaldıraçları ise yalnızca Anthropic trafiğine, ücretsiz ve anahtarsız uygulanır.",
     "s2Title": "Senin durumun, 10 saniyede",
-    "s2Sub": "Yapay zekâyı kullanmanın dört yolu ve BV‑SALA'nın her birinde ne yapabileceği.",
+    "s2Sub": "Yapay zekâyı kullanmanın dört yolu ve Savings Layer'ın her birinde ne yapabileceği.",
     "caseChatSub": "uygulama veya web, ücretsiz ya da ücretli",
-    "caseChatBody": "Sabit bir ücret ödersin (ya da hiç): azaltılacak bir token faturası yoktur ve kimsenin uygulama ile modelleri arasına yazılım koyamayacağı kapalı bir üründür. BV‑SALA'nın tasarrufu burada geçerli değildir — ve hiçbir ürün bunu orada dürüstçe vaat edemez.",
+    "caseChatBody": "Sabit bir ücret ödersin (ya da hiç): azaltılacak bir token faturası yoktur ve kimsenin uygulama ile modelleri arasına yazılım koyamayacağı kapalı bir üründür. Savings Layer'ın tasarrufu burada geçerli değildir — ve hiçbir ürün bunu orada dürüstçe vaat edemez.",
     "caseClaudeSub": "claude.ai, ücretsiz ya da ücretli",
     "caseClaudeBody": "Sabit abonelik: ölçülecek token faturası yok — ama limitler var (beş saatlik pencere ve haftalık). savings-mode skill'i tam bunun için: ücretsiz, bir dakikada claude.ai'ye yüklenir ve limiti yakan iki kütleye saldırır. Etkisi ölçüldüğünde yayımlanacak — asla öncesinde değil.",
     "caseCodeSub": "terminal, API anahtarıyla",
     "caseCodeBody": "Abonelikte ücret sabittir — ama limitlidir: aynı skill tek komutla kurulur ve aynı haftalık limiti esnetir. API anahtarıyla gerçek bir token faturası vardır — ve sayaç zaten çalışıyor: hiçbir BiVelio anahtarı olmadan “bvsala claude” Claude Code'u yerel gateway üzerinden, tek satır koda dokunmadan başlatır. Gateway, içinden geçenleri sağlayıcınızın bildirdiği kullanımla kendi makinenizde ölçer ve çıkışta kaç isteği ölçtüğünü, hangilerini ölçemediğini ve nedenini söyler. Anthropic modellerinde ayrıca önbellek yazmalarını bir saatlik TTL'den beş dakikalık TTL'ye yalnızca prompt'un büyük bir kısmının yeni olduğu turlarda taşır (bir oturumun ilk turu, bir sıkıştırma): kendi sağlayıcınızın token sayımı üzerinden hesaplanan bir tasarruf, asla bir tahmin üzerinden değil. Bunun için Claude Code'un bir saatlik önbelleği istemesi gerekir ve API anahtarıyla siz ayarlamadıkça bunu yapmaz: varsayılan olarak gateway yalnızca ölçer. Bir Savings Cloud anahtarıyla harcamanızı panelde de token token görürsünüz.",
     "caseAppName": "Senin uygulaman",
     "caseAppSub": "senin kodun + senin API anahtarın",
-    "caseAppBody": "BV‑SALA'nın var olma sebebi. Uygulamanız API'yi kendi anahtarınızla çağırır, sağlayıcı her token'ı faturalar ve katman iki adımda kurulur: paket ve çağrıyı sarmak. İlk istekten itibaren, tasarrufu ölçülen ve tahmin edilen olarak ayrılmış bir <b>SavingsReport</b> döndürür.",
+    "caseAppBody": "Savings Layer'ın var olma sebebi. Uygulamanız API'yi kendi anahtarınızla çağırır, sağlayıcı her token'ı faturalar ve katman iki adımda kurulur: paket ve çağrıyı sarmak. İlk istekten itibaren, tasarrufu ölçülen ve tahmin edilen olarak ayrılmış bir <b>SavingsReport</b> döndürür.",
     "verdictNothing": "Kurulacak bir şey yok",
     "verdictSkill": "Skill mevcut",
     "verdictMeasures": "Artık ölçüyor",
@@ -2169,7 +2169,7 @@
       "eyebrow": "Mimari",
       "title": "Kodunuzdan",
       "accent": "sağlayıcınıza",
-      "lede": "Savings kendi altyapınızın içinde çalışır: uygulamanızın sürecinde bir SDK olarak ya da önünde yerel bir gateway olarak. Her isteğin içeriği sizin yapılandırdığınız sağlayıcıya gider; BiVelio sunucularından geçmez.",
+      "lede": "Savings Layer kendi altyapınızın içinde çalışır: uygulamanızın sürecinde bir SDK olarak ya da önünde yerel bir gateway olarak. Her isteğin içeriği sizin yapılandırdığınız sağlayıcıya gider; BiVelio sunucularından geçmez.",
       "app": "Uygulamanız",
       "appSub": "kodunuz ve API anahtarınız",
       "agent": "Kodlama ajanınız",
@@ -2219,9 +2219,9 @@
     },
     "pieces": {
       "eyebrow": "Harita",
-      "title": "Savings'in parçaları",
+      "title": "Savings Layer'ın parçaları",
       "lede": "Bir parça haritası; her isteğin geçtiği beş aşama değil. Ne yaptığını, nerede çalıştığını ve hesap gerektirip gerektirmediğini görmek için birini seçin.",
-      "tablist": "Savings'in parçaları",
+      "tablist": "Savings Layer'ın parçaları",
       "what": "Ne yapar",
       "where": "Nerede çalışır",
       "account": "Hesap",
