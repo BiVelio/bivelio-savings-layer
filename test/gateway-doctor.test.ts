@@ -290,6 +290,66 @@ describe("bvsala doctor — los agentes de 2026 (docs/investigacion/2026-09-27/a
   });
 });
 
+describe("bvsala doctor — cada comprobación es la de su terminal, y todo el informe va en inglés", () => {
+  /** La línea `check:` de una sección, o null si no lleva. */
+  function comprobacion(texto: string, id: string): string | null {
+    return seccion(texto, id).split("\n").find((l) => l.trimStart().startsWith("check:")) ?? null;
+  }
+
+  it("⛔ el informe no mezcla español: ni tildes ni palabras sueltas (auditoría de medios, m30)", async () => {
+    // «Claude Desktop (MCP: estado y coste de la sesión)» salía así en un
+    // informe que es inglés de la primera línea a la última.
+    const { texto } = await doctor(PUERTO, { home: HOME, path: "/bin", existe: () => true });
+    expect(texto).not.toMatch(/[áéíóúñÁÉÍÓÚÑ¿¡]/);
+    expect(texto).not.toMatch(/\b(estado|coste|sesión|sesion|terminales? instalad|comprobar|receta|clave|medid[oa]s?)\b/i);
+    expect(seccion(texto, "claude-desktop")).toContain("Claude Desktop (MCP: session status and cost)");
+  });
+
+  it("⛔ Claude Desktop (solo MCP) no lleva línea de comprobación: no manda inferencia por el gateway", async () => {
+    const { texto } = await vacio();
+    expect(comprobacion(texto, "claude-desktop")).toBeNull();
+    expect(seccion(texto, "claude-desktop")).not.toContain("POST /v1/messages");
+  });
+
+  it("⛔ los que hablan Chat Completions se comprueban con /v1/chat/completions, nunca con /v1/messages", async () => {
+    const { texto } = await vacio();
+    for (const id of ["ollama-local", "openai-compat-cn", "python-openai", "cursor"]) {
+      const c = comprobacion(texto, id);
+      expect(c, id).not.toBeNull();
+      expect(c, id).toContain("POST /v1/chat/completions");
+      expect(c, id).not.toContain("/v1/messages");
+    }
+    // Un modelo local no tiene precio de lista: la línea que hay que buscar es
+    // la que el gateway escribe de verdad, con su motivo.
+    expect(comprobacion(texto, "ollama-local")).toContain('not metered: model "…" has no list price in the catalog');
+  });
+
+  it("Gemini CLI se comprueba con la ruta de su protocolo", async () => {
+    const c = comprobacion((await vacio()).texto, "gemini");
+    expect(c).toContain("/v1beta/models/<model>:streamGenerateContent");
+    expect(c).not.toContain("/v1/messages");
+  });
+
+  it("Aider nombra las dos rutas (Anthropic por defecto, OpenAI con su upstream) y Claude Code con DeepSeek la de Messages", async () => {
+    const { texto } = await vacio();
+    expect(comprobacion(texto, "aider")).toContain("POST /v1/chat/completions");
+    expect(comprobacion(texto, "claude-via-deepseek")).toContain("`[gateway] POST /v1/messages …`");
+  });
+
+  it("ninguna sección lleva más de una línea de comprobación, y solo Claude Desktop va sin ella", async () => {
+    const { texto } = await vacio();
+    const ids = texto.split(/^» /m).slice(1).map((t) => t.slice(0, t.indexOf(":")));
+    expect(ids.length).toBeGreaterThanOrEqual(20);
+    const sin: string[] = [];
+    for (const id of ids) {
+      const n = seccion(texto, id).split("\n").filter((l) => l.trimStart().startsWith("check:")).length;
+      expect(n, id).toBeLessThanOrEqual(1);
+      if (n === 0) sin.push(id);
+    }
+    expect(sin).toEqual(["claude-desktop"]);
+  });
+});
+
 describe("bvsala doctor — jamás contenido, solo rutas", () => {
   it("aunque todo exista, el informe no lleva nada que no sea una ruta", async () => {
     // `existe` responde que sí a todo: el doctor debe listar rutas y nada más.
