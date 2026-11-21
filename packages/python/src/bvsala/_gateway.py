@@ -116,7 +116,8 @@ class Gateway:
             raise GatewayUnavailable(
                 f"no bvsala gateway answered at {self.url} ({getattr(e, 'reason', e)}). Start one with "
                 "`bvsala gateway` (Anthropic, port 8402) or `bvsala gateway --upstream openai --port 8403` "
-                "(the gateway ships in the npm package @bivelio/savings-layer and needs BIVELIO_SERVICE_KEY)."
+                "(the gateway ships in the npm package @bivelio/savings-layer and needs no key: with none it runs "
+                "free in COMMUNITY mode)."
             ) from e
 
     @staticmethod
