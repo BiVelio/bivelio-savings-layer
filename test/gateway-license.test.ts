@@ -119,15 +119,29 @@ describe("resolveStartupLicense — el arranque, en orden estricto", () => {
     expect(malo).toMatchObject({ ok: false, code: "license-invalid" });
   });
 
+  it.each(["bvk_…", "<your key>", "bvk_ abc", "bvk_ключ"])(
+    "E1 · el marcador de un ejemplo (%s) → service-key-malformed sin red, no «network error … ByteString»",
+    async (clave) => {
+      const f = responde(200);
+      const r = await arrancar({ serviceAccountKey: clave, fetchImpl: f as unknown as typeof fetch });
+      expect(r).toMatchObject({ ok: false, code: "service-key-malformed" });
+      expect(!r.ok && r.message).toContain("start with bvk_");
+      expect(!r.ok && r.message).toContain(SALIDA_GRATUITA);
+      expect(!r.ok && r.message).not.toMatch(/network|ByteString|connection/i);
+      expect(llamadas(f)).toHaveLength(0);
+    },
+  );
+
   it("E1 · una clave que no es bvk_ → service-key-malformed; si es un token de licencia, lo dice", async () => {
     const f = responde(200);
     const r = await arrancar({ serviceAccountKey: "sk-ant-abc", fetchImpl: f as unknown as typeof fetch });
     expect(r).toMatchObject({ ok: false, code: "service-key-malformed" });
     expect(!r.ok && r.message).toContain("start with bvk_");
-    expect(!r.ok && r.message).not.toContain("BIVELIO_LICENSE_KEY");
+    // No la confunde con una licencia (la salida gratuita sí nombra las dos variables).
+    expect(!r.ok && r.message).not.toContain("goes in BIVELIO_LICENSE_KEY");
     const cruzada = await arrancar({ serviceAccountKey: activo(), fetchImpl: f as unknown as typeof fetch });
     expect(cruzada).toMatchObject({ ok: false, code: "service-key-malformed" });
-    expect(!cruzada.ok && cruzada.message).toContain("BIVELIO_LICENSE_KEY");
+    expect(!cruzada.ok && cruzada.message).toContain("It looks like a license key: that one goes in BIVELIO_LICENSE_KEY.");
     expect(llamadas(f)).toHaveLength(0);
   });
 
@@ -470,8 +484,47 @@ describe("refusalBody — el 402 que enseñan Claude Code y Codex", () => {
     expect(startupFailureMessage("no-license")).toContain(SALIDA_GRATUITA);
     expect(startupFailureMessage("license-expired", { expiresAt: 1_800_000_000, graceDays: 21 })).toContain(SALIDA_GRATUITA);
     expect(startupFailureMessage("unreachable", { cause: "timed out after 10 s" })).toContain(SALIDA_GRATUITA);
-    // Una clave mal pegada no se arregla quitándola a ciegas: ahí no.
-    expect(startupFailureMessage("license-invalid", { reason: "bad signature" })).not.toContain(SALIDA_GRATUITA);
+  });
+
+  // Auditoría de lo gratis (21-11-2026): con una clave PRESENTE pero mal pegada
+  // (`BIVELIO_SERVICE_KEY='<your key>'`, el marcador de un ejemplo) el mensaje
+  // solo mandaba a crear otra clave; ahora dice primero cómo arreglarla y después
+  // que quitándola sigue gratis.
+  it("una clave presente pero mala también dice la salida gratuita, después del arreglo", () => {
+    const casos = [
+      startupFailureMessage("service-key-malformed"),
+      startupFailureMessage("service-key-malformed", { keyLooksLikeLicense: true }),
+      startupFailureMessage("service-key-not-recognised"),
+      startupFailureMessage("license-invalid", { reason: "bad signature" }),
+      startupFailureMessage("license-invalid", { tokenSource: "BIVELIO_LICENSE_KEY", shape: "malformed" }),
+      startupFailureMessage("license-invalid", { tokenSource: "savings.bivelio.com", reason: "bad signature" }),
+    ];
+    for (const m of casos) {
+      expect(m).toContain(SALIDA_GRATUITA);
+      expect(m.indexOf(SALIDA_GRATUITA)).toBeGreaterThan(0);
+      expect(m).toMatch(/^[\x20-\x7E]+$/);
+    }
+  });
+
+  it("la guía de terminales dice la salida gratis en cada fallo de arranque por una clave", () => {
+    const guia = readFileSync(fileURLToPath(new URL("../docs/terminales/README.md", import.meta.url)), "utf8");
+    for (const mensaje of [
+      "BIVELIO_SERVICE_KEY does not look like a service key",
+      "BIVELIO_SERVICE_KEY is not recognised",
+      "your organization has no active BiVelio license",
+      "your BiVelio license expired on …",
+      "could not collect your license from savings.bivelio.com",
+    ]) {
+      const fila = guia.split("\n").find((l) => l.startsWith(`| \`${mensaje}\``));
+      expect(fila, mensaje).toBeDefined();
+      expect(fila, mensaje).toContain("unset the keys and relaunch, free");
+    }
+  });
+
+  it("⛔ el texto falso de «service-key-missing» ya no está en el gateway", () => {
+    const fuente = readFileSync(fileURLToPath(new URL("../gateway/license.ts", import.meta.url)), "utf8");
+    expect(fuente).not.toContain("The gateway needs two things and does not start without them");
+    expect(fuente).not.toContain('case "service-key-missing"');
   });
 });
 

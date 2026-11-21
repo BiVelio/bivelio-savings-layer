@@ -271,7 +271,6 @@ export async function collectLicense(opts: {
 
 export type StartupFailureCode =
   | "no-public-key"
-  | "service-key-missing"
   | "service-key-malformed"
   | "service-key-not-recognised"
   | "no-license"
@@ -345,22 +344,23 @@ export function startupFailureMessage(code: StartupFailureCode, ctx: FailureCont
         "this build has no embedded BiVelio verification key (it is running from source): install the published " +
         "package (npm i -g @bivelio/savings-layer) or run pnpm build first."
       );
-    case "service-key-missing":
-      return (
-        "BIVELIO_SERVICE_KEY is not set. The gateway needs two things and does not start without them: an active " +
-        `BiVelio subscription (${ACCOUNT_URL}) and its service key (bvk_..., created at ${INSTALL_URL}, step 2). ` +
-        "Export the key and relaunch: the license is collected with it automatically."
-      );
+    // Sin «service-key-missing»: desde el open core, sin clave el gateway arranca
+    // en modo comunitario, y su texto («The gateway needs two things and does not
+    // start without them…») era falso y seguía dentro del bundle (auditoría de lo
+    // gratis, 21-11-2026). Cada fallo por una clave PRESENTE dice además la salida
+    // gratis: quitar las claves y relanzar.
     case "service-key-malformed":
       return (
-        "BIVELIO_SERVICE_KEY does not look like a service key (service keys start with bvk_)." +
+        "BIVELIO_SERVICE_KEY does not look like a service key (service keys start with bvk_ and are plain ASCII; " +
+        "a placeholder such as bvk_... copied from an example is not one)." +
         (ctx.keyLooksLikeLicense ? " It looks like a license key: that one goes in BIVELIO_LICENSE_KEY." : "") +
-        ` Create a service key at ${INSTALL_URL} (step 2), export it and relaunch.`
+        ` Create a service key at ${INSTALL_URL} (step 2), export it and relaunch. ${SALIDA_GRATUITA}`
       );
     case "service-key-not-recognised":
       return (
         "BIVELIO_SERVICE_KEY is not recognised by savings.bivelio.com (HTTP 401): it was deleted or rotated, or it " +
-        `was copied incompletely. Create a new one at ${INSTALL_URL} (step 2), export it and relaunch.`
+        `was copied incompletely. Create a new one at ${INSTALL_URL} (step 2), export it and relaunch. ` +
+        SALIDA_GRATUITA
       );
     case "no-license":
       return (
@@ -386,7 +386,7 @@ export function startupFailureMessage(code: StartupFailureCode, ctx: FailureCont
         return (
           `the license served by savings.bivelio.com does not verify against this build's BiVelio key (${reason}). ` +
           "Update @bivelio/savings-layer (npm i -g @bivelio/savings-layer); if it persists, write to " +
-          "support@bivelio.com."
+          `support@bivelio.com. ${SALIDA_GRATUITA}`
         );
       }
       if (ctx.shape === "malformed") {
@@ -394,13 +394,13 @@ export function startupFailureMessage(code: StartupFailureCode, ctx: FailureCont
           "BIVELIO_LICENSE_KEY is not a license key: a license key has three dot-separated parts and several " +
           "hundred characters. Did you paste the bvk_ service key by mistake? That one goes in " +
           `BIVELIO_SERVICE_KEY; the license key is the other value on ${INSTALL_URL}. Or unset ` +
-          "BIVELIO_LICENSE_KEY: the gateway collects the license online by itself."
+          `BIVELIO_LICENSE_KEY: the gateway collects the license online by itself. ${SALIDA_GRATUITA}`
         );
       }
       return (
         `BIVELIO_LICENSE_KEY does not verify against this build's BiVelio key (${reason}). Copy the WHOLE key ` +
         `again from ${INSTALL_URL}, or unset BIVELIO_LICENSE_KEY to collect it online; if it persists, update ` +
-        "@bivelio/savings-layer or write to support@bivelio.com."
+        `@bivelio/savings-layer or write to support@bivelio.com. ${SALIDA_GRATUITA}`
       );
     }
     case "unreachable":
@@ -497,7 +497,10 @@ export async function resolveStartupLicense(input: StartupInput): Promise<Startu
       warnings: [],
     };
   }
-  if (!key.startsWith("bvk_")) {
+  // Solo ASCII visible: un marcador pegado de un ejemplo (`bvk_…`) no es una
+  // clave, y como cabecera HTTP fallaba como «network error: Cannot convert
+  // argument to a ByteString…» y mandaba a revisar la conexión.
+  if (!key.startsWith("bvk_") || !/^[\x21-\x7e]+$/.test(key)) {
     return fallo("service-key-malformed", {
       keyLooksLikeLicense: licenseKeyShape(normalizeLicenseKey(key)) === "token",
     });
