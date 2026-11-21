@@ -122,8 +122,8 @@ console.log(report.cost.basis);               // "estimated": nothing ran, so th
 `npx @bivelio/savings-layer init` prints the exact three steps for your stack
 (Next.js, Express, Vercel AI SDK, Mastra, LangChain.js, Anthropic/OpenAI SDK) and
 `npx @bivelio/savings-layer doctor` prints the exact configuration for every
-installed coding agent. The published benchmark, trial by trial, with the raw CSV,
-is at **[savings.bivelio.com/en/benchmarks](https://savings.bivelio.com/en/benchmarks)**.
+installed coding agent. The published benchmark, run by run, with the raw JSON
+reports, is at **[savings.bivelio.com/en/benchmarks](https://savings.bivelio.com/en/benchmarks)**.
 
 ### Community vs Cloud
 
@@ -325,7 +325,7 @@ provider, and a request without it is not changed at all:
 ## Check it before you install
 
 What you can check before installing is what we have measured: the published
-benchmark, trial by trial, with the raw CSV linked, at
+benchmark, run by run, with the raw JSON reports linked, at
 **[savings.bivelio.com/en/benchmarks](https://savings.bivelio.com/en/benchmarks)**.
 With no keys at all, the layer runs the full savings stack locally on your own
 traffic and reports per request — nothing leaves your machine.
