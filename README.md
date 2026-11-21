@@ -36,7 +36,8 @@ npx @bivelio/savings-layer claude    # or meter Claude Code through the local ga
 - **The cloud is the optional part.** A BiVelio key adds the team dashboard, shared
   measurement, seats and license management: free on Measure, a fixed subscription on
   Pro and Team, and never a commission on what you save. A key only adds the cloud
-  (with one exception for trimming of superseded tool results), and it ties the layer
+  (with two exceptions: trimming of superseded tool results in the SDK, and paid
+  licenses in the gateway, which work as in 1.2.3), and it ties the layer
   to savings.bivelio.com (see [Community vs Cloud](#community-vs-cloud)). Prices below.
 - **The evidence is public.** [The paper](https://savings.bivelio.com/paper) (v2.3-r1,
   revised after an external pre-publication review) gives the method, the results and
@@ -165,7 +166,7 @@ reports, is at **[savings.bivelio.com/en/benchmarks](https://savings.bivelio.com
 | Team dashboard, shared measurement, seats and license management | — | ✅ |
 | Anything sent to BiVelio | **Nothing** | Per-request usage only (counts, cost, model id, opaque ids — [LICENSE-CLOUD.md](https://github.com/BiVelio/bivelio-savings-layer/blob/main/LICENSE-CLOUD.md) §5), never prompts or keys |
 
-Both columns have the same levers. A BiVelio key only adds the cloud: the free Measure license and a paid one apply the same levers as no key, except trimming of superseded tool results, which with a key only acts inside a tool loop on Anthropic.
+Both columns have the same levers. In the SDK, a BiVelio key only adds the cloud: the free Measure license and a paid one apply the same levers as no key, except trimming of superseded tool results, which with a key only acts inside a tool loop on Anthropic.
 With a key, that trimming acts with `AnthropicProvider` and the default cache placement, never with `cacheBreakpoints: "auto"` or `AnthropicProvider({ automaticCache: true })`, and only on results after your last user message; with any other provider (Claude through an OpenAI-compatible endpoint included) it stays off, as in 1.2.3 with a paid key. With no key that trimming runs as in 1.2.3: on a long agent loop on gpt-5, Gemini, DeepSeek or Qwen, or with `cacheBreakpoints: "auto"` or `automaticCache`, or on Anthropic in a chat that re-reads the same tool output on every user turn, compare with `savings: { elision: false }`.
 In the `bvsala` gateway the free Measure license applies the same levers as no key, and a paid license works as in 1.2.3: each lever also needs your organization's license to include it, checked fail-closed.
 One dependency comes with a key, the free Measure key included: with `licenseServerUrl` set (as in the recipe your dashboard and `init` print), a layer that goes 72 hours without an answer from savings.bivelio.com fails closed with `LicenseError` on every call until it gets one or you remove the key. With no key there is no such dependency.

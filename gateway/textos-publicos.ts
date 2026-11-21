@@ -54,7 +54,7 @@ export const LO_QUE_ANADE_LA_NUBE = "the team dashboard, shared measurement, sea
  * PyPI e `init`.
  */
 export const FRASE_LA_CLAVE_SOLO_ANADE =
-  "A BiVelio key only adds the cloud: the free Measure license and a paid one apply the same levers as no key, " +
+  "In the SDK, a BiVelio key only adds the cloud: the free Measure license and a paid one apply the same levers as no key, " +
   "except trimming of superseded tool results, which with a key only acts inside a tool loop on Anthropic.";
 
 /**

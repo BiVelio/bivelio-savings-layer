@@ -399,7 +399,7 @@ describe("verificación final 1.2.4 · la clave trae una dependencia, y se dice"
     expect(leer("SECURITY.md")).toMatch(/^## Availability: what happens if our servers do not respond$/m);
     // El resumen de arriba no promete «solo añade» sin el matiz.
     expect(readme).toContain(
-      "A key only adds the cloud (with one exception for trimming of superseded tool results), and it ties the layer to savings.bivelio.com",
+      "A key only adds the cloud (with two exceptions: trimming of superseded tool results in the SDK, and paid licenses in the gateway, which work as in 1.2.3), and it ties the layer to savings.bivelio.com",
     );
     expect(readme).not.toContain("Take it and nothing is switched off either");
   });
