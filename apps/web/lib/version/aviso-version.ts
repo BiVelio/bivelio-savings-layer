@@ -27,8 +27,12 @@
  *       sinPalanca      → ≥ mínima y 0 €. Las causas comprobables (feature
  *                         cache_ttl_tuning en la licencia, BVSALA_GATEWAY_ELISION,
  *                         tipo de tráfico: escritura de caché 1h) son cosa
- *                         NUESTRA: al cliente el panel solo le dice que la
- *                         palanca no ha actuado y a quién escribir (2026-09-12).
+ *                         NUESTRA: al cliente el panel le dice que la máquina
+ *                         no midió ahorro y cuándo es lo esperado (caché de
+ *                         cinco minutos, máquina que solo mide, suscripción).
+ *                         Hasta el 2026-11-21 le mandaba escribir a soporte, y
+ *                         ese es el caso NORMAL de Claude Code tal como viene
+ *                         (auditoría de medios, m15).
  *   · Si todo produce dinero, null: un panel que grita sin motivo enseña a
  *     ignorarlo (misma regla que BillingStateBanner).
  */

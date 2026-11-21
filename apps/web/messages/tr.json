@@ -156,6 +156,7 @@
     "workEmail": "İş e-postası",
     "password": "Parola",
     "createAccountCta": "Hesap oluştur →",
+    "signupLegal": "Hesap oluşturarak <terms>Savings Cloud koşullarını</terms> ve <privacy>gizlilik politikasını</privacy> kabul etmiş olursun.",
     "signInCta": "Giriş yap →",
     "loadingEllipsis": "…",
     "notWired": "Giriş henüz yapılandırılmadı — dağıtımda NEXT_PUBLIC_SUPABASE_ANON_KEY değerini ayarlayın.",
@@ -614,7 +615,7 @@
       "advanced": "Gelişmiş ayarlar",
       "projFriendly": "Faturan {baseline} yerine {opt} olurdu — %{pct} daha az.",
       "onlyChatTitle": "Yalnızca ChatGPT veya Claude mu kullanıyorsun?",
-      "onlyChatBody": "ChatGPT gerçekten kapalı: sabit ücret, kesilecek token faturası veya limiti yok. Ama Claude kullanıyorsan sana zaten tasarruf ettiriyoruz: savings-mode skill'i (ücretsiz, ana sayfada) abonelik limitlerini esnetir. API anahtarıyla uygulama geliştiriyorsan, BV-SALA gerçek harcamayı orada ölçer ve azaltır.",
+      "onlyChatBody": "ChatGPT gerçekten kapalı: sabit ücret, kesilecek token faturası veya limiti yok. Ama Claude kullanıyorsan savings-mode skill'i (ücretsiz, ana sayfada) abonelik limitlerini esnetmek için tasarlandı; etkisi henüz ölçülmedi. API anahtarıyla uygulama geliştiriyorsan, BV-SALA gerçek harcamayı orada ölçer ve azaltır.",
       "onlyChatCta": "Uygulama mı geliştiriyorsun? Kuruluma git",
       "notInvoice": "Tahmin, fatura değil",
       "notInvoiceBody": "Soldaki varsayımlardan gelir, trafiğinizden değil. Gerçekte ne kadar tasarruf ettiğiniz Genel bakış bölümünde ölçülür.",
@@ -632,7 +633,7 @@
       "errPaymentPending": "Ödemeniz hâlâ onaylanıyor. Onaylanır onaylanmaz lisans anahtarınız burada görünecek; yeniden ödeme yapmanıza gerek yok.",
       "keyLabel": "lisans anahtarınız{suffix} — yalnızca bir kez gösterilir, şimdi kopyalayın",
       "validUntil": " · {date} tarihine kadar geçerli",
-      "pasteHint": "SDK'yı açmak için <code></code> içine yapıştırın. Faturalandırma döneminin sonunda süresi dolar: aşağıdan bir servis hesabı anahtarı ekleyin, SDK onu kendi başına yenilesin.",
+      "pasteHint": "SDK'yı Cloud planınıza bağlamak için <code></code> içine yapıştırın. Faturalandırma döneminin sonunda süresi dolar: aşağıdan bir servis hesabı anahtarı ekleyin, SDK onu kendi başına yenilesin.",
       "issuing": "Veriliyor…",
       "getKey": "Lisans anahtarınızı alın →",
       "priceNote": "Koltuk başına aylık {monthly} veya koltuk başına yıllık {yearly}. Bu hesapta henüz abonelik yok mu? Hesap'tan başlatın."
@@ -677,12 +678,12 @@
       "hint": "Kod terminallerinin oturumları ve alt ajanları (opak kimlikler — asla bir kişi değil). 0.4.7 ve sonrası ağ geçidi gerektirir."
     },
     "gatewayVersion": {
-      "title": "Bazı makineler son 7 günde ölçülen tasarruf üretmedi",
+      "title": "Bazı makineler son 7 günde harcama ölçtü ama tasarruf ölçmedi",
       "summary": "Son 7 günde etkin olan {total} gateway makinesinden (veya bildirilmemiş) {n} tanesi ölçülmüş tasarruf üretmedi.",
       "outdated": "{n, plural, other {# makine}}, tarife kolunu taşıyan ilk sürüm olan {minima} sürümünden eski bir gateway çalıştırıyor: güncelleyin.",
       "undeclared": "{n, plural, other {# makine}} sürüm bildirmiyor (sürüm kanalından eski gateway). {minima} sürümünden eskiyse tarife kolu yoktur.",
-      "noLever": "{n, plural, one {# makine güncel} other {# makine güncel}}, ancak tarife kolu orada devreye girmedi. Güncellemeden sonra aynı kalırsa support@bivelio.com adresine yazın.",
-      "action": "O makinede @bivelio/savings-layer paketini güncelleyin ve terminali yeniden başlatın; aşağıdaki makine tablosu her birinin ne bildirdiğini gösterir."
+      "noLever": "{n, plural, one {# makine güncel ve tasarruf ölçmedi} other {# makine güncel ve tasarruf ölçmedi}}. İstemci beş dakikalık önbelleği istediğinde (API anahtarıyla Claude Code'un varsayılanı), makine yalnızca ölçüm yaptığında ya da bir Claude veya ChatGPT aboneliğinde beklenen budur.",
+      "action": "Bir makine güncel değilse, o makinede @bivelio/savings-layer paketini güncelleyin ve terminali yeniden başlatın; aşağıdaki makine tablosu her birinin ne bildirdiğini gösterir."
     },
     "gatewayBruto": {
       "title": "Bazı makinelerin tasarrufu hâlâ brüt olarak bildiriliyor",
@@ -695,7 +696,7 @@
       "action": "O makinede SDK'yı {minima} veya daha yeni bir sürüme güncelleyin ve işlemi yeniden başlatın:"
     },
     "migrar05": {
-      "note": "En son sürüm 0.5'tir ve uyumsuz değişiklikler içerir.",
+      "note": "0.5'ten eski bir sürümden mi güncelliyorsunuz? 0.5 sürümü uyumsuz değişiklikler içerir.",
       "link": "Güncellemeden önce geçiş kılavuzunu okuyun →"
     },
     "maquinas": {
@@ -745,7 +746,7 @@
       "doctorComment": "diğer ajanlar ve SDK'lar: her biri için tam yapılandırma",
       "agentsNote": "Her sarmalayıcı, aracısını yalnızca o oturum için hazırlar — yapılandırmasında hiçbir şey değişmez — ve çıkışta kaç isteği ölçtüğünü, hangilerini ölçemediğini ve nedenini söyler. <code>bvsala copilot</code> kendi Anthropic anahtarınızı gerektirir (BYOK): GitHub'da barındırılan modeller asla bir taban URL'den geçmez, bu yüzden ölçülecek bir şey yoktur. VS Code'daki Crush, Droid, Cline, Continue veya Copilot için <code>bvsala doctor</code> tam yapılandırmayı yazdırır. <b>Cursor (BYOK)</b>: kendi anahtarınızla OpenAI taban URL geçersiz kılması üzerinden çalışır; kendi modelleri makinenizdeki bir ağ geçidine asla ulaşmaz. <b>Gemini CLI</b>: <code>bvsala gemini</code> ile başlatın.",
       "pythonNote": "<b>Python mı?</b> Python için <code>bvsala</code> istemcisi, resmi OpenAI ve Anthropic SDK'larını bu aynı ağ geçidinden geçirir (<code>bvsala gateway</code>) ve her isteğin raporunu kodunuza geri verir — bu panelin aldığı rakamların aynısı. 0.4.26 veya sonraki bir ağ geçidi ve Python 3.10 veya üstü gerekir. PyPI'dan <code>pip install bivelio-savings-layer</code> ile kurulur; kodunuzda <code>import bvsala</code>.",
-      "finalNote": "Hepsi bu. Ayarlı ama geçersiz bir anahtar → <code>generate()</code> reddeder. Planınız iptal edilirse SDK, <code>licenseServerUrl</code> aracılığıyla ~15 dakika içinde durur — yeniden başlatma gerekmez ve bize ulaşılamıyorsa üretim ortamınızı asla işlevsiz bırakmaz.",
+      "finalNote": "Hepsi bu. Ayarlı ama geçersiz bir anahtar → <code>generate()</code> reddeder. Planınız iptal edilirse SDK, <code>licenseServerUrl</code> aracılığıyla ~15 dakika içinde durur — yeniden başlatma gerekmez ve bize ulaşılamıyorsa üretim ortamınızı asla işlevsiz bırakmaz. Anahtarları kaldırın; katman yeniden Community modunda çalışır.",
       "terminal": "Terminal",
       "sdkEyebrow": "Uygulama",
       "sdkTitle": "Bir uygulamayı entegre et (SDK)",
@@ -900,7 +901,7 @@
       "graceTitle": "Lisans doldu — hâlâ çalışıyor",
       "graceBody": "Lisansınız {date} tarihinde doldu ve {days, plural, other {# gün daha}} çalışmaya devam ediyor. Kesinti yaşamamak için yenileyin.",
       "expiredTitle": "Lisans doldu",
-      "expiredBody": "Lisansınız {date} tarihinde doldu. BV-SALA fail-closed çalışır, bu yüzden SDK durdu.",
+      "expiredBody": "Lisansınız {date} tarihinde doldu. Bu lisans anahtarıyla başlatılan bir katman artık istekleri reddediyor. Lisansı yenileyin ya da Community modunda çalışmaya devam etmek için BiVelio anahtarlarını kaldırın (ücretsiz, panel yok).",
       "revokedTitle": "Lisans iptal edildi",
       "revokedBody": "Bu lisans iptal edildi. Bunun bir hata olduğunu düşünüyorsanız support@bivelio.com adresine yazın."
     },
@@ -1309,8 +1310,8 @@
     ],
     "skill": {
       "eyebrow": "savings-mode · ücretsiz skill",
-      "title": "Abonelik limitlerini esneten skill",
-      "body": "Fatura yok diye acı da yok değil: beş saatlik pencere ve haftalık limit. savings-mode saf talimatlardan oluşan bir skill — proxy yok, trafiğin el değmeden kalır — limiti gerçekten yakan iki kütleyi keser: model çıktısı ve araç sonuçları. Ücretsizdir; Savings ile ödediğin şey, sana ne kadar kazandırdığını bilmektir.",
+      "title": "Abonelik limitlerini esnetmek için tasarlanmış skill — etkisi henüz ölçülmedi",
+      "body": "Fatura yok diye acı da yok değil: beş saatlik pencere ve haftalık limit. savings-mode saf talimatlardan oluşan bir skill — proxy yok, trafiğin el değmeden kalır — limiti gerçekten yakan iki kütleyi hedefler: model çıktısı ve araç sonuçları. Ücretsizdir.",
       "mLectura": "önbellek okumaları",
       "mLecturaDesc": "Bağlamın tamamı her turda yeniden okunur — bu yüzden onu yalın tutmak önemlidir.",
       "mEscritura": "önbellek yazmaları (bir saat)",
@@ -1337,7 +1338,7 @@
     "gateway": {
       "eyebrow": "Gateway · kod terminalleri",
       "title": "API anahtarıyla Claude Code mu? Gerçek harcamayı token token gör.",
-      "body": "Tek bir komut, kodunuza dokunmadan terminalinizin önüne yerel bir sayaç koyar: servis anahtarınızı dışa aktarır ve ajanınızı bvsala üzerinden başlatırsınız. Prompt'larınız BiVelio sunucularından geçmez: yapılandırdığınız sağlayıcıya gider ve panelinize yalnızca sayımlar ve maliyet ulaşır.",
+      "body": "Tek bir komut, kodunuza dokunmadan ve anahtar olmadan terminalinizin önüne yerel bir sayaç koyar: ajanınızı bvsala üzerinden başlatırsınız. Servis anahtarını yalnızca harcamayı Savings Cloud panelinizde görmek istiyorsanız ekleyin. Prompt'larınız BiVelio sunucularından geçmez: yapılandırdığınız sağlayıcıya gider ve panelinize yalnızca sayımlar ve maliyet ulaşır.",
       "note": "Ağ geçidi, sağlayıcınızın kullanımını bildirdiği her isteği sağlayıcının kendi sayacıyla ölçer (fiyat kataloğumuzdaki modeller için) ve SDK gibi hiçbir anahtar olmadan başlar (Community modu): isteğe bağlı bir servis anahtarı paneli ve kuruluş yetkilerini ekler. Anthropic modellerinde, lisans ya da hesap olmadan, varsayılan olarak bir kaldıraç da uygular: önbellek yazmalarını bir saatlik TTL'den beş dakikalık TTL'ye yalnızca prompt'un büyük bir kısmının yeni olduğu turlarda taşır — bir oturumun ilk turu ya da bir sıkıştırma gibi — ve ardışık turlara dokunmaz. Bu fiyatı değiştirir, modelin okuduğu içeriği asla. Düşürecek bir şey yalnızca istemciniz token başına ödüyor ve bir saatlik önbellek istiyorsa olur: API anahtarıyla Claude Code, siz değiştirmedikçe beş dakikalık önbelleği ister ve o zaman ağ geçidi yalnızca ölçer. Diğer kaldıraçlar siz açana kadar kapalı kalır. savings-mode becerisi limitleriniz için mevcut, etkisi henüz ölçülmedi. Ağ geçidi Codex CLI, Goose, Qwen Code, opencode, Kilo, Aider ve kendi Anthropic anahtarınızla GitHub Copilot CLI ile de çalışır; Cline veya Continue gibi diğerleri için bvsala doctor tam yapılandırmayı yazdırır. Cursor ölçülemez, Gemini CLI ise henüz ölçülmüyor.",
       "pythonNote": "Python ya da başka bir dil mi? Resmi OpenAI veya Anthropic SDK'sını ağ geçidine yönlendirin; sağlayıcının kullanımını bildirdiği ve liste fiyatı olan bir modele ait her istek bu panele o fiyatla kaydedilir, ölçülmeyen bir istek olduğunda ağ geçidinin günlüğü bunu belirtir. bvsala doctor her SDK için base URL'yi yazdırır. OpenAI ile streaming'de kullanımı istekte talep edin (stream_options.include_usage).",
       "cta": "Nasıl çalıştığını gör →"
@@ -2276,7 +2277,7 @@
     "title": "Açık kaynak motor.",
     "titleAccent": "Ekibiniz için bulut kontrolü.",
     "titleMark": "bulut kontrolü",
-    "governs": "Bu sayfa hizmetin bugün nasıl işlediğini anlatır; bağlayıcı metinler <license>LICENSE</license> ve <terms>BiVelio Koşulları</terms> olarak kalır.",
+    "governs": "Bu sayfa hizmetin bugün nasıl işlediğini anlatır; bağlayıcı metinler <license>Savings Cloud koşulları (LICENSE-CLOUD.md)</license> ve <terms>BiVelio Koşulları</terms> olarak kalır.",
     "lede": "Motor açık kaynaktır: anahtar gerekmez. Bu sayfa isteğe bağlı bulut olan Savings Cloud'u fiyatlandırır — Measure ücretsiz, sonra koltuk başına Pro veya bir Team planı, tasarrufunuz üzerinden komisyonsuz. Buradaki her rakam sizi faturalayan kodun aynısından gelir ve fiyat değişince değişir.",
     "plans": {
       "title": "Planlar",
@@ -2430,7 +2431,7 @@
     "metaDescription": "SDK'nın ve yerel gateway'in BiVelio'ya gönderdiklerinin, asla göndermediklerinin ve BiVelio'nun bunları ne kadar sakladığının tam listesi.",
     "eyebrow": "Gizlilik",
     "title": "Altyapından ne çıkar",
-    "governs": "Bu sayfa hizmetin bugün nasıl işlediğini anlatır; bağlayıcı metinler <license>LICENSE</license> ve <terms>BiVelio Koşulları</terms> olarak kalır.",
+    "governs": "Bu sayfa hizmetin bugün nasıl işlediğini anlatır; bağlayıcı metinler <license>Savings Cloud koşulları (LICENSE-CLOUD.md)</license> ve <terms>BiVelio Koşulları</terms> olarak kalır.",
     "lede": "Yazılımın (SDK ve yerel gateway) BiVelio'ya ne gönderdiği, neyi asla göndermediği ve BiVelio'nun bunları ne kadar sakladığı.",
     "never": {
       "title": "BiVelio'ya asla gönderilmeyenler",
@@ -2440,7 +2441,7 @@
     },
     "usage": {
       "title": "Kullanım kayıtları",
-      "when": "SDK kullanım kayıtlarını yalnızca bir lisans sunucusu ya da ölçüm URL'si yapılandırdığında gönderir; yerel gateway ise her zaman gönderir. Her toplu gönderim, kuruluşunu tanımlayan BiVelio servis hesabı anahtarını ve Yazılımın yüzeyini ve sürümünü <b>{header}</b> başlığında taşır.",
+      "when": "SDK kullanım kayıtlarını yalnızca bir lisans sunucusu ya da ölçüm URL'si yapılandırdığında gönderir; yerel gateway ise yalnızca bir servis hesabı anahtarı yapılandırdığında. Hiçbir BiVelio anahtarı yoksa ikisi de BiVelio'ya hiçbir şey göndermez. Her toplu gönderim, kuruluşunu tanımlayan BiVelio servis hesabı anahtarını ve Yazılımın yüzeyini ve sürümünü <b>{header}</b> başlığında taşır.",
       "limit": "Her kayıt aşağıdaki alanlarla sınırlıdır. <b>BiVelio'nun alım hizmeti bu listede olmayan bir alan taşıyan her kaydı reddeder.</b>",
       "groups": {
         "ids": {

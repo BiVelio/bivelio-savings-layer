@@ -156,6 +156,7 @@
     "workEmail": "Zakelijk e-mailadres",
     "password": "Wachtwoord",
     "createAccountCta": "Account aanmaken →",
+    "signupLegal": "Door een account aan te maken ga je akkoord met de <terms>voorwaarden van Savings Cloud</terms> en het <privacy>privacybeleid</privacy>.",
     "signInCta": "Inloggen →",
     "loadingEllipsis": "…",
     "notWired": "Inloggen is nog niet gekoppeld — stel NEXT_PUBLIC_SUPABASE_ANON_KEY in bij de deploy.",
@@ -614,7 +615,7 @@
       "advanced": "Geavanceerde instellingen",
       "projFriendly": "Je rekening zou van {baseline} naar {opt} gaan — {pct}% minder.",
       "onlyChatTitle": "Gebruik je alleen ChatGPT of Claude?",
-      "onlyChatBody": "ChatGPT is echt gesloten: vast tarief, geen tokenfactuur of limiet om te trimmen. Maar gebruik je Claude, dan helpen we je al besparen: de savings-mode-skill (gratis, op de homepage) rekt je abonnementslimieten op. En bouw je een app met een API-sleutel, dáár meet en verlaagt BV-SALA echte uitgaven.",
+      "onlyChatBody": "ChatGPT is echt gesloten: vast tarief, geen tokenfactuur of limiet om te trimmen. Maar gebruik je Claude, dan is de savings-mode-skill (gratis, op de homepage) bedoeld om je abonnementslimieten op te rekken; het effect is nog niet gemeten. En bouw je een app met een API-sleutel, dáár meet en verlaagt BV-SALA echte uitgaven.",
       "onlyChatCta": "Bouw je een app? Ga naar Installeren",
       "notInvoice": "Schatting, geen factuur",
       "notInvoiceBody": "Het volgt uit de aannames links, niet uit je verkeer. Wat je echt bespaart, wordt gemeten in je Overzicht.",
@@ -632,7 +633,7 @@
       "errPaymentPending": "Je betaling wordt nog verwerkt. Zodra dat klaar is, verschijnt je licentiesleutel hier; je hoeft niet opnieuw te betalen.",
       "keyLabel": "je licentiesleutel{suffix} — eenmalig getoond, kopieer hem nu",
       "validUntil": " · geldig tot {date}",
-      "pasteHint": "Plak hem in <code></code> om de SDK te ontgrendelen. Hij verloopt aan het einde van de facturatieperiode: voeg hieronder een service-account-sleutel toe, dan vernieuwt de SDK hem zelf.",
+      "pasteHint": "Plak hem in <code></code> om de SDK aan je Cloud-abonnement te koppelen. Hij verloopt aan het einde van de facturatieperiode: voeg hieronder een service-account-sleutel toe, dan vernieuwt de SDK hem zelf.",
       "issuing": "Uitgeven…",
       "getKey": "Haal je licentiesleutel op →",
       "priceNote": "{monthly} per seat per maand of {yearly} per seat per jaar. Nog geen abonnement op dit account? Start er een via Account."
@@ -677,12 +678,12 @@
       "hint": "Sessies en subagenten van je codeterminals (opake ids — nooit een persoon). Vereist de gateway vanaf 0.4.7."
     },
     "gatewayVersion": {
-      "title": "Sommige machines hebben de laatste 7 dagen geen gemeten besparing opgeleverd",
+      "title": "Sommige machines hebben de laatste 7 dagen uitgaven gemeten, maar geen besparing",
       "summary": "{n} van {total} gateway-machines (of niet-gedeclareerd) die de laatste 7 dagen actief waren, hebben geen gemeten besparing opgeleverd.",
       "outdated": "{n, plural, one {# machine draait} other {# machines draaien}} een gateway ouder dan {minima}, de eerste versie met de tariefhefboom: werk die bij.",
       "undeclared": "{n, plural, one {# machine meldt} other {# machines melden}} geen versie (gateway ouder dan het versiekanaal). Is die ouder dan {minima}, dan heeft die geen tariefhefboom.",
-      "noLever": "{n, plural, one {# machine is bijgewerkt} other {# machines zijn bijgewerkt}}, maar de hefboom heeft daar niet gewerkt. Blijft het zo na het bijwerken, mail dan naar support@bivelio.com.",
-      "action": "Werk @bivelio/savings-layer op die machine bij en herstart de terminal; de machinetabel hieronder toont wat elke machine meldt."
+      "noLever": "{n, plural, one {# machine is bijgewerkt en heeft geen besparing gemeten} other {# machines zijn bijgewerkt en hebben geen besparing gemeten}}. Dat is te verwachten wanneer de client om de cache van vijf minuten vraagt (de standaard van Claude Code met een API-sleutel), wanneer de machine alleen meet of bij een Claude- of ChatGPT-abonnement.",
+      "action": "Is een machine verouderd, werk dan @bivelio/savings-layer op die machine bij en herstart de terminal; de machinetabel hieronder toont wat elke machine meldt."
     },
     "gatewayBruto": {
       "title": "De besparing van sommige machines wordt nog bruto gemeld",
@@ -695,7 +696,7 @@
       "action": "Werk de SDK op die machine bij naar {minima} of nieuwer en herstart het proces:"
     },
     "migrar05": {
-      "note": "De nieuwste versie is 0.5, met wijzigingen die niet compatibel zijn.",
+      "note": "Werk je bij vanaf een versie vóór 0.5? Versie 0.5 bevat wijzigingen die niet compatibel zijn.",
       "link": "Lees de migratiegids voordat je bijwerkt →"
     },
     "maquinas": {
@@ -745,7 +746,7 @@
       "doctorComment": "andere agents en SDK's: de exacte configuratie voor elk",
       "agentsNote": "Elke wrapper zet zijn agent alleen voor die sessie klaar — er verandert niets aan de configuratie — en vertelt je bij het afsluiten hoeveel verzoeken hij heeft gemeten, welke hij niet kon meten en waarom. <code>bvsala copilot</code> heeft je eigen Anthropic-sleutel nodig (BYOK): door GitHub gehoste modellen gaan nooit via een basis-URL, dus valt er niets te meten. Voor Crush, Droid, Cline, Continue of Copilot in VS Code drukt <code>bvsala doctor</code> de exacte configuratie af. <b>Cursor (BYOK)</b>: werkt via de OpenAI-basis-URL-override met je eigen sleutel; zijn eigen modellen bereiken nooit een gateway op je machine. <b>Gemini CLI</b>: start hem met <code>bvsala gemini</code>.",
       "pythonNote": "<b>Python?</b> De Python-client <code>bvsala</code> leidt de officiële SDK's van OpenAI en Anthropic via deze zelfde gateway (<code>bvsala gateway</code>) en geeft je code het rapport van elk verzoek terug — dezelfde cijfers die dit paneel ontvangt. Hij heeft een gateway vanaf versie 0.4.26 nodig en Python 3.10 of nieuwer. Je installeert hem vanaf PyPI met <code>pip install bivelio-savings-layer</code>; in je code: <code>import bvsala</code>.",
-      "finalNote": "Dat is alles. Een ingestelde maar ongeldige sleutel → <code>generate()</code> weigert. Als je abonnement wordt opgezegd, stopt de SDK binnen ~15 min via <code>licenseServerUrl</code> — geen herstart, en hij legt je productie nooit plat als wij onbereikbaar zijn.",
+      "finalNote": "Dat is alles. Een ingestelde maar ongeldige sleutel → <code>generate()</code> weigert. Als je abonnement wordt opgezegd, stopt de SDK binnen ~15 min via <code>licenseServerUrl</code> — geen herstart, en hij legt je productie nooit plat als wij onbereikbaar zijn. Verwijder de sleutels en de laag draait weer in Community-modus.",
       "terminal": "Terminal",
       "sdkEyebrow": "Applicatie",
       "sdkTitle": "Een applicatie integreren (SDK)",
@@ -900,7 +901,7 @@
       "graceTitle": "Licentie verlopen — werkt nog",
       "graceBody": "Je licentie is op {date} verlopen en werkt nog {days, plural, one {# dag} other {# dagen}}. Verleng hem om onderbreking te voorkomen.",
       "expiredTitle": "Licentie verlopen",
-      "expiredBody": "Je licentie is op {date} verlopen. BV-SALA is fail-closed, dus de SDK is gestopt.",
+      "expiredBody": "Je licentie is op {date} verlopen. Een laag die met die licentiesleutel is gestart, weigert nu verzoeken. Verleng hem, of verwijder de BiVelio-sleutels om in Community-modus door te draaien (gratis, zonder dashboard).",
       "revokedTitle": "Licentie ingetrokken",
       "revokedBody": "Deze licentie is ingetrokken. Mail naar support@bivelio.com als je denkt dat dat een vergissing is."
     },
@@ -1309,8 +1310,8 @@
     ],
     "skill": {
       "eyebrow": "savings-mode · gratis skill",
-      "title": "De skill die je abonnementslimieten oprekt",
-      "body": "Geen factuur betekent niet geen pijn: het venster van vijf uur en de weeklimiet. savings-mode is een skill van pure instructies — geen proxy, je verkeer onaangeraakt — die de twee massa's snijdt die echt limiet verbranden: modeloutput en toolresultaten. Hij is gratis; waar je Savings voor betaalt is weten hoeveel hij je bespaart.",
+      "title": "Een skill die je abonnementslimieten moet oprekken — effect nog niet gemeten",
+      "body": "Geen factuur betekent niet geen pijn: het venster van vijf uur en de weeklimiet. savings-mode is een skill van pure instructies — geen proxy, je verkeer onaangeraakt — die zich richt op de twee massa's die echt limiet verbranden: modeloutput en toolresultaten. Hij is gratis.",
       "mLectura": "cache-lezingen",
       "mLecturaDesc": "De hele context wordt elke beurt opnieuw gelezen — daarom telt hem slank houden.",
       "mEscritura": "cache-schrijven (één uur)",
@@ -1337,7 +1338,7 @@
     "gateway": {
       "eyebrow": "Gateway · codeterminals",
       "title": "Claude Code met een API-sleutel? Zie de echte uitgaven, token voor token.",
-      "body": "Eén commando zet een lokale meter vóór je terminal, zonder je code aan te raken: je exporteert je service-sleutel en start je agent via bvsala. Je prompts gaan niet via de servers van BiVelio: ze gaan naar de provider die je instelt, en alleen aantallen en kosten bereiken je dashboard.",
+      "body": "Eén commando zet een lokale meter vóór je terminal, zonder je code aan te raken en zonder sleutel: je start je agent via bvsala. Voeg alleen een service-sleutel toe als je de uitgaven in je Savings Cloud-dashboard wilt zien. Je prompts gaan niet via de servers van BiVelio: ze gaan naar de provider die je instelt, en alleen aantallen en kosten bereiken je dashboard.",
       "note": "De gateway meet met de teller van je aanbieder elk verzoek waarvan die het gebruik meldt (voor de modellen in onze prijscatalogus) en draait, net als de SDK, start hij zonder sleutels (Community-modus): een optionele service-sleutel voegt het dashboard en de org-rechten toe. Op Anthropic-modellen past hij standaard ook één hefboom toe, zonder licentie of account: hij zet cache-schrijfacties om van de TTL van een uur naar die van vijf minuten, alleen in beurten waarin een groot deel van de prompt nieuw is — zoals de eerste beurt van een sessie of een compactie — en laat de aaneengeschakelde beurten zoals ze zijn. Dat verandert de prijs, nooit de inhoud die het model leest. Hij heeft alleen iets te verlagen als je client per token betaalt en om de cache van een uur vraagt: Claude Code met een API-sleutel vraagt om die van vijf minuten zolang je dat niet verandert, en dan meet de gateway alleen. De overige hefbomen blijven uit tot je ze inschakelt. De skill savings-mode is beschikbaar voor je limieten, met een effect dat nog gemeten moet worden. De gateway werkt ook met Codex CLI, Goose, Qwen Code, opencode, Kilo, Aider en, met je eigen Anthropic-sleutel, GitHub Copilot CLI; voor andere, zoals Cline of Continue, drukt bvsala doctor de exacte configuratie af. Cursor werkt via de OpenAI-base-URL-override met je eigen sleutel, en de Gemini CLI start met bvsala gemini.",
       "pythonNote": "Python of een andere taal? Richt de officiële SDK van OpenAI of Anthropic op de gateway en elk verzoek waarvan de aanbieder het gebruik rapporteert, wordt voor een model met een lijstprijs in dit paneel tegen die prijs vastgelegd; het log van de gateway meldt het wanneer een verzoek niet wordt gemeten. bvsala doctor toont de base-URL voor elke SDK. Vraag bij streaming met OpenAI het gebruik op in het verzoek (stream_options.include_usage).",
       "cta": "Zo werkt het →"
@@ -2276,7 +2277,7 @@
     "title": "Open-source-engine.",
     "titleAccent": "Cloudcontrole voor je team.",
     "titleMark": "team",
-    "governs": "Deze pagina beschrijft hoe de dienst vandaag werkt; de <license>LICENSE</license> en de <terms>BiVelio-voorwaarden</terms> zijn leidend.",
+    "governs": "Deze pagina beschrijft hoe de dienst vandaag werkt; de <license>voorwaarden van Savings Cloud (LICENSE-CLOUD.md)</license> en de <terms>BiVelio-voorwaarden</terms> zijn leidend.",
     "lede": "De engine is open source: geen sleutel nodig. Deze pagina prijst Savings Cloud, de optionele cloud — Measure gratis, daarna Pro per seat of een Team-plan, zonder commissie op je besparing. Elk cijfer hier komt uit dezelfde code die je factureert, en verandert als de prijs verandert.",
     "plans": {
       "title": "Plannen",
@@ -2430,7 +2431,7 @@
     "metaDescription": "De exacte lijst van wat de SDK en de lokale gateway naar BiVelio sturen, wat ze nooit sturen en hoe lang BiVelio het bewaart.",
     "eyebrow": "Privacy",
     "title": "Wat je infrastructuur verlaat",
-    "governs": "Deze pagina beschrijft hoe de dienst vandaag werkt; de <license>LICENSE</license> en de <terms>BiVelio-voorwaarden</terms> zijn leidend.",
+    "governs": "Deze pagina beschrijft hoe de dienst vandaag werkt; de <license>voorwaarden van Savings Cloud (LICENSE-CLOUD.md)</license> en de <terms>BiVelio-voorwaarden</terms> zijn leidend.",
     "lede": "Wat de Software (de SDK en de lokale gateway) naar BiVelio stuurt, wat ze nooit stuurt en hoe lang BiVelio het bewaart.",
     "never": {
       "title": "Wat nooit naar BiVelio gaat",
@@ -2440,7 +2441,7 @@
     },
     "usage": {
       "title": "Gebruiksrecords",
-      "when": "De SDK stuurt alleen gebruiksrecords als je een licentieserver of meet-URL configureert; de lokale gateway doet dat altijd. Elke batch bevat je BiVelio-serviceaccountsleutel, die je organisatie identificeert, en het oppervlak en de versie van de Software in de header <b>{header}</b>.",
+      "when": "De SDK stuurt alleen gebruiksrecords als je een licentieserver of meet-URL configureert; de lokale gateway alleen als je een serviceaccountsleutel configureert. Zonder BiVelio-sleutel stuurt geen van beide iets naar BiVelio. Elke batch bevat je BiVelio-serviceaccountsleutel, die je organisatie identificeert, en het oppervlak en de versie van de Software in de header <b>{header}</b>.",
       "limit": "Elk record is beperkt tot de velden hieronder. <b>De ingest van BiVelio weigert elk record met een veld dat niet op deze lijst staat.</b>",
       "groups": {
         "ids": {
