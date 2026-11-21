@@ -154,6 +154,7 @@
     "alreadyHaveAccount": "Zaten bir BiVelio hesabınız var mı?",
     "signIn": "Giriş yap",
     "workEmail": "İş e-postası",
+    "emailPlaceholder": "sen@sirket.com",
     "password": "Parola",
     "createAccountCta": "Hesap oluştur →",
     "signupLegal": "Hesap oluşturarak <terms>Savings Cloud koşullarını</terms> ve <privacy>gizlilik politikasını</privacy> kabul etmiş olursun.",
@@ -1267,7 +1268,7 @@
         },
         {
           "title": "Açık çekirdek: anahtarsız tasarruf",
-          "body": "Tüm kollar dahil ve ücretsizdir, anahtarsız. Varsayılan olarak açık: birebir önbellek, eşzamanlı isteklerin tekilleştirilmesi, yerel çözücüler, prompt önbelleğinin yerleşimi ve yerini yenisine bırakmış araç sonuçlarının kırpılması. Gerisini her biri için tek satırla açarsınız. İki makine, sizin işlettiğiniz bir depoyla (örneğin Redis) önbelleği ücretsiz paylaşabilir. Sıfır telemetri ve ayarlanmış ama geçersiz bir anahtar yine de fail-closed kalır. Bulut isteğe bağlıdır: ekip paneli, ortak ölçüm, koltuklar ve lisanslar koltuk başına sabit ücretle — tasarrufunuz üzerinden komisyonsuz."
+          "body": "Tüm kollar dahil ve ücretsizdir, anahtarsız. Varsayılan olarak açık: birebir önbellek, eşzamanlı isteklerin tekilleştirilmesi, yerel çözücüler, prompt önbelleğinin yerleşimi, yerini yenisine bırakmış araç sonuçlarının kırpılması ve ilettiğiniz yapılandırılmış verilerin kompakt serileştirilmesi. Gerisini her biri için tek satırla açarsınız. İki makine, sizin işlettiğiniz bir depoyla (örneğin Redis) önbelleği ücretsiz paylaşabilir. Sıfır telemetri ve ayarlanmış ama geçersiz bir anahtar yine de fail-closed kalır. Bulut isteğe bağlıdır: ekip paneli, ortak ölçüm, koltuklar ve lisanslar koltuk başına sabit ücretle — tasarrufunuz üzerinden komisyonsuz."
         }
       ],
       "nota": "Animasyonlar fikri anlatır. Gerçek rakamlar — gerçek sağlayıcılara karşı ölçülmüş — hemen aşağıda."
@@ -1361,7 +1362,7 @@
         "medir": {
           "name": "Measure",
           "price": "Ücretsiz",
-          "body": "Ücretsiz, kartsız. Küçük ekipler için ücretsiz BULUT planı: bir kuruluş, {seats} koltuğa ve günde {requests} isteğe kadar. Anahtarsız açık çekirdekle aynı kollar ve gerçek tasarrufunuzu gösteren panel; asla bir komisyona dahil olmaz. @bivelio/savings-layer {version} veya üzeri gerekir ve koşullarında belirtilen sürümden itibaren tasarruf eder; öncekiler yalnızca gözlemler.",
+          "body": "Ücretsiz, kartsız. Küçük ekipler için ücretsiz BULUT planı: bir kuruluş, {seats} koltuğa ve günde {requests} isteğe kadar. Anahtarsız açık çekirdekle aynı kollar ve gerçek tasarrufunuzu gösteren panel; asla bir komisyona dahil olmaz. @bivelio/savings-layer {saves} veya üzeri ile tasarruf eder; {version} sürümünden {saves} öncesine kadarki sürümler yalnızca gözlemler.",
           "cta": "Ücretsiz başlayın →"
         },
         "pro": {
@@ -1639,7 +1640,7 @@
         },
         {
           "q": "Measure ile Community arasındaki fark nedir?",
-          "a": "Community, altyapınızdaki açık kaynak motordur: hesap yok, BiVelio anahtarı yok ve varsayılan olarak telemetri yok. Measure, küçük ekipler için ücretsiz Savings Cloud planıdır: hesap gerektirir, Community ile aynı kolları uygular ve gerçek tasarrufunuzu gösteren paneli ekler. Paketin eski sürümleriyle yalnızca gözlemler; en düşük sürüm koşullarında yazar."
+          "a": "Community, altyapınızdaki açık kaynak motordur: hesap yok, BiVelio anahtarı yok ve varsayılan olarak telemetri yok. Measure, küçük ekipler için ücretsiz Savings Cloud planıdır: hesap gerektirir, Community ile aynı kolları uygular ve gerçek tasarrufunuzu gösteren paneli ekler. Paketin eski sürümleriyle yalnızca gözlemler; hangi sürümden itibaren tasarruf ettiği fiyatlandırma sayfasında yazar."
         },
         {
           "q": "ChatGPT Plus gibi bir abonelikte işe yarar mı?",
@@ -2135,7 +2136,7 @@
     "caseClaudeSub": "claude.ai, ücretsiz ya da ücretli",
     "caseClaudeBody": "Sabit abonelik: ölçülecek token faturası yok — ama limitler var (beş saatlik pencere ve haftalık). savings-mode skill'i tam bunun için: ücretsiz, bir dakikada claude.ai'ye yüklenir ve limiti yakan iki kütleye saldırır. Etkisi ölçüldüğünde yayımlanacak — asla öncesinde değil.",
     "caseCodeSub": "terminal, API anahtarıyla",
-    "caseCodeBody": "Abonelikte ücret sabittir ve gateway trafiğinizde hiçbir şeyi değiştirmez: her oturumun liste fiyatıyla harcamasını kendi makinenizde ücretsiz ölçer. Limitler için savings-mode skill'i var; ücretsizdir ve etkisi henüz ölçülmedi. API anahtarıyla gerçek bir token faturası vardır — ve sayaç zaten çalışıyor: hiçbir BiVelio anahtarı olmadan “bvsala claude” Claude Code'u yerel gateway üzerinden, tek satır koda dokunmadan başlatır. Gateway, içinden geçenleri sağlayıcınızın bildirdiği kullanımla kendi makinenizde ölçer ve çıkışta kaç isteği ölçtüğünü, hangilerini ölçemediğini ve nedenini söyler. Anthropic modellerinde ayrıca önbellek yazmalarını bir saatlik TTL'den beş dakikalık TTL'ye yalnızca prompt'un büyük bir kısmının yeni olduğu turlarda taşır (bir oturumun ilk turu, bir sıkıştırma): kendi sağlayıcınızın token sayımı üzerinden hesaplanan bir tasarruf, asla bir tahmin üzerinden değil. Bunun için Claude Code'un bir saatlik önbelleği istemesi gerekir ve API anahtarıyla siz ayarlamadıkça bunu yapmaz: varsayılan olarak gateway yalnızca ölçer. Bir Savings Cloud anahtarıyla harcamanızı panelde de token token görürsünüz.",
+    "caseCodeBody": "Abonelikte ücret sabittir ve varsayılan ayarlarla gateway trafiğinizde hiçbir şeyi değiştirmez: her oturumun liste fiyatıyla harcamasını kendi makinenizde ücretsiz ölçer. Limitler için savings-mode skill'i var; ücretsizdir ve etkisi henüz ölçülmedi. API anahtarıyla gerçek bir token faturası vardır — ve sayaç zaten çalışıyor: hiçbir BiVelio anahtarı olmadan “bvsala claude” Claude Code'u yerel gateway üzerinden, tek satır koda dokunmadan başlatır. Gateway, içinden geçenleri sağlayıcınızın bildirdiği kullanımla kendi makinenizde ölçer ve çıkışta liste fiyatıyla ne harcandığını, temeliyle birlikte ne tasarruf edildiğini (ölçülen veya tahmini), kaç isteği ölçtüğünü, hangilerini ölçemediğini ve nedenini söyler. Anthropic modellerinde ayrıca önbellek yazmalarını bir saatlik TTL'den beş dakikalık TTL'ye yalnızca prompt'un büyük bir kısmının yeni olduğu turlarda taşır (bir oturumun ilk turu, bir sıkıştırma): kendi sağlayıcınızın token sayımı üzerinden hesaplanan bir tasarruf, asla bir tahmin üzerinden değil. Bunun için Claude Code'un bir saatlik önbelleği istemesi gerekir ve API anahtarıyla siz ayarlamadıkça bunu yapmaz: varsayılan olarak gateway yalnızca ölçer. Bir Savings Cloud anahtarıyla harcamanızı panelde de token token görürsünüz.",
     "caseAppName": "Senin uygulaman",
     "caseAppSub": "senin kodun + senin API anahtarın",
     "caseAppBody": "Savings Layer'ın var olma sebebi. Uygulamanız API'yi kendi anahtarınızla çağırır, sağlayıcı her token'ı faturalar ve katman iki adımda kurulur: paket ve çağrıyı sarmak. İlk istekten itibaren, tasarrufu ölçülen ve tahmin edilen olarak ayrılmış bir <b>SavingsReport</b> döndürür.",
@@ -2165,7 +2166,7 @@
     "billWith": "Duruma göre",
     "billDepends": "trafiğinizin ne kadar tekrarlandığına",
     "hero": {
-      "ctaInstall": "Açık kaynağı kur",
+      "ctaInstall": "Ücretsiz kurun",
       "ctaResults": "Yeniden üretilebilir sonuçları gör"
     },
     "beam": {

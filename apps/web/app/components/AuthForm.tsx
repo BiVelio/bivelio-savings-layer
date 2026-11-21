@@ -216,7 +216,7 @@ export default function AuthForm({ mode }: { mode: "signup" | "login" }) {
         required
         value={email}
         onChange={(e) => setEmail(e.target.value)}
-        placeholder="you@company.com"
+        placeholder={t("emailPlaceholder")}
         invalid={conError}
         aria-describedby={conError ? "auth-aviso" : undefined}
       />

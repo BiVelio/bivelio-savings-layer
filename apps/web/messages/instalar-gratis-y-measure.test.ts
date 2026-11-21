@@ -80,6 +80,10 @@ const CAMBIADAS = [
   "landing.layer.compactLabel",
   "landing.layer.legendData",
   "howItWorks.caseCodeBody",
+  // Verificación final de la 1.2.4 (#614): el botón principal de /how-it-works y
+  // el correo de ejemplo del alta, que estaba escrito a mano en inglés.
+  "howItWorks.hero.ctaInstall",
+  "auth.emailPlaceholder",
 ] as const;
 
 describe("los botones: instalar gratis primero, Measure después, mismas clases", () => {
@@ -281,7 +285,11 @@ describe("qué va encendido por defecto (m17) y la compactación (m16)", () => {
   it("en/es: la tarjeta de open core dice cuáles van por defecto y que el resto se enciende", () => {
     const en = cargar("en")["landing.explica.pasos.3.body"]!;
     expect(en).toContain("Every lever is included and free, with no key.");
-    expect(en).toContain("On by default: exact cache, in-flight deduplication, local resolvers, prompt-cache placement and trimming of superseded tool results.");
+    // La serialización compacta también va encendida (pipeline.ts, `toggles.serialization !== false`),
+    // y el README la nombra: la lista pública es la misma en los dos sitios (verificación final, #614).
+    expect(en).toContain(
+      "On by default: exact cache, in-flight deduplication, local resolvers, prompt-cache placement, trimming of superseded tool results and compact serialization of the structured data you pass.",
+    );
     expect(en).toContain("The rest you switch on, one line each.");
     const es = cargar("es")["landing.explica.pasos.3.body"]!;
     expect(es).toContain("Todas las palancas vienen incluidas y gratis, sin clave.");
@@ -322,9 +330,12 @@ describe("Claude Code: con suscripción el gateway no toca el tráfico y el skil
     });
   }
 
-  it("en/es: con suscripción, el gateway no cambia el tráfico y mide en local, gratis", () => {
-    expect(cargar("en")["howItWorks.caseCodeBody"]).toMatch(/^On a subscription the fee is flat, and the gateway changes nothing in your traffic: it measures each session's spend on your machine, free, at list price\. For the caps there is the savings-mode skill, free, with its effect not measured yet\. /);
-    expect(cargar("es")["howItWorks.caseCodeBody"]).toMatch(/^Con suscripción la cuota es fija, y el gateway no cambia nada de tu tráfico: mide en tu máquina, gratis, lo que gasta cada sesión a precio de lista\. /);
+  it("en/es: con suscripción, el gateway no cambia el tráfico (con lo que trae por defecto) y mide en local, gratis", () => {
+    // «Con lo que trae por defecto»: con una palanca opcional (modelo hermano,
+    // esfuerzo) el gateway sí reescribe peticiones de suscripción; el cartel y el
+    // resumen al salir de la 1.2.4 ya lo dicen así (verificación final, #614).
+    expect(cargar("en")["howItWorks.caseCodeBody"]).toMatch(/^On a subscription the fee is flat, and with the defaults the gateway changes nothing in your traffic: it measures each session's spend on your machine, free, at list price\. For the caps there is the savings-mode skill, free, with its effect not measured yet\. /);
+    expect(cargar("es")["howItWorks.caseCodeBody"]).toMatch(/^Con suscripción la cuota es fija, y por defecto el gateway no cambia nada de tu tráfico: mide en tu máquina, gratis, lo que gasta cada sesión a precio de lista\. /);
   });
 });
 
@@ -337,4 +348,167 @@ describe("los 12 idiomas", () => {
       if (loc !== "en") expect(CAMBIADAS.filter((k) => d[k] === en[k])).toEqual([]);
     });
   }
+});
+
+/**
+ * VERIFICACIÓN FINAL DE LA 1.2.4 (#614, 2026-11-21): lo que aún quedaba en la web.
+ *
+ *   · BLOQUEANTE: el botón principal del héroe de /how-it-works seguía diciendo
+ *     «Install open source» en los 12 idiomas, mientras la portada y /pricing ya
+ *     decían «Install free». Ahora es el mismo texto que el de la portada.
+ *   · La tarjeta de Claude Code: «con lo que trae por defecto» el gateway no
+ *     cambia el tráfico de una suscripción (con una palanca opcional sí), y al
+ *     salir la 1.2.4 dice también el gasto a precio de lista y el ahorro por base.
+ *   · La tarjeta de open core nombra las seis palancas que van por defecto, como
+ *     el README: faltaba la serialización compacta.
+ *   · La FAQ y la clave de Measure de la portada remitían a unas «condiciones»
+ *     que no dan ninguna versión; ahora dicen desde cuál ahorra (por parámetro
+ *     donde se puede formatear, y la página de precios en la FAQ, que va en crudo).
+ *   · de: «Seats» en todo lo público, como las tarjetas (antes «5 Sitze»).
+ *   · El correo de ejemplo del alta estaba escrito a mano en inglés.
+ */
+describe("verificación final de la 1.2.4 (#614): lo que quedaba en la web", () => {
+  /** El texto del botón de la portada en cada idioma (landing.hero.ctaOss). */
+  const GRATIS: Record<Loc, string> = {
+    ca: "Instal·lar gratis",
+    de: "Kostenlos installieren",
+    en: "Install free",
+    es: "Instalar gratis",
+    fr: "Installer gratuitement",
+    id: "Pasang gratis",
+    it: "Installa gratis",
+    nl: "Gratis installeren",
+    pl: "Zainstaluj za darmo",
+    pt: "Instalar grátis",
+    tr: "Ücretsiz kurun",
+    vi: "Cài miễn phí",
+  };
+  /** Lo que decía el botón de /how-it-works hasta hoy. */
+  const OPEN_SOURCE: Record<Loc, string> = {
+    ca: "Instal·lar open source",
+    de: "Open Source installieren",
+    en: "Install open source",
+    es: "Instalar open source",
+    fr: "Installer l'open source",
+    id: "Pasang open source",
+    it: "Installa l'open source",
+    nl: "Open source installeren",
+    pl: "Zainstaluj open source",
+    pt: "Instalar open source",
+    tr: "Açık kaynağı kur",
+    vi: "Cài đặt mã nguồn mở",
+  };
+  /** La base del ahorro, con las palabras de landing.devs.cards.1.body en cada idioma. */
+  const BASE: Record<Loc, string> = {
+    ca: "(mesurat o estimat)",
+    de: "(gemessen oder geschätzt)",
+    en: "(measured or estimated)",
+    es: "(medido o estimado)",
+    fr: "(mesuré ou estimé)",
+    id: "(terukur atau estimasi)",
+    it: "(misurato o stimato)",
+    nl: "(gemeten of geschat)",
+    pl: "(zmierzone lub szacowane)",
+    pt: "(medido ou estimado)",
+    tr: "(ölçülen veya tahmini)",
+    vi: "(đo được hay ước tính)",
+  };
+  /** La sexta palanca por defecto, la serialización compacta. */
+  const SERIALIZACION: Record<Loc, RegExp> = {
+    ca: /serialització compacta/,
+    de: /kompakte Serialisierung/,
+    en: /compact serialization/,
+    es: /serialización compacta/,
+    fr: /sérialisation compacte/,
+    id: /serialisasi ringkas/,
+    it: /serializzazione compatta/,
+    nl: /compacte serialisatie/,
+    pl: /zwarta serializacja/,
+    pt: /serialização compacta/,
+    tr: /kompakt serileştirilmesi/,
+    vi: /tuần tự hóa gọn/,
+  };
+  /** La FAQ remitía a sus «condiciones» para la versión, y no dan ninguna. */
+  const FAQ_VIEJA: Record<Loc, string> = {
+    ca: "la versió mínima és a les seves condicions",
+    de: "die Mindestversion steht in seinen Bedingungen",
+    en: "the minimum version is in its terms",
+    es: "la versión mínima está en sus condiciones",
+    fr: "la version minimale figure dans ses conditions",
+    id: "versi minimumnya ada di ketentuannya",
+    it: "la versione minima è nelle sue condizioni",
+    nl: "de minimale versie staat in de voorwaarden",
+    pl: "minimalna wersja jest w jego warunkach",
+    pt: "a versão mínima está nas suas condições",
+    tr: "en düşük sürüm koşullarında yazar",
+    vi: "phiên bản tối thiểu có trong điều khoản",
+  };
+
+  it("/how-it-works: el primer botón del héroe lleva a la instalación con hero.ctaInstall", () => {
+    const src = codigo("app/[locale]/how-it-works/page.tsx");
+    const acciones = src.slice(src.indexOf("acciones={"), src.indexOf("</GridBackground>"));
+    expect(acciones).toMatch(/^acciones=\{\s*<>\s*<a className="btn btn-lg" href="#install-sdk">\s*\{t\("hero\.ctaInstall"\)\}\s*<\/a>/);
+  });
+
+  for (const loc of LOCALES) {
+    it(`${loc}: el botón de /how-it-works dice lo mismo que el de la portada y /pricing`, () => {
+      const d = cargar(loc);
+      expect(d["landing.hero.ctaOss"]).toBe(GRATIS[loc]);
+      expect(d["howItWorks.hero.ctaInstall"]).toBe(d["landing.hero.ctaOss"]);
+      expect(d["howItWorks.hero.ctaInstall"]).toBe(d["pricingPage.access.install"]);
+      expect(publicas(d).filter(([, v]) => v === OPEN_SOURCE[loc]).map(([k]) => k)).toEqual([]);
+    });
+
+    it(`${loc}: Claude Code — «por defecto» no cambia el tráfico, y al salir da el ahorro por base`, () => {
+      const t = cargar(loc)["howItWorks.caseCodeBody"]!;
+      expect(t).toContain(BASE[loc]);
+      // La frase de la suscripción es la primera; «por defecto» va dentro de ella.
+      const primera = t.slice(0, t.indexOf(":"));
+      expect(primera, loc).toMatch(/defaults|por defecto|per defecte|Standardeinstellungen|par défaut|pengaturan bawaan|impostazioni predefinite|standaardinstellingen|ustawieniach domyślnych|por defeito|varsayılan ayarlarla|cấu hình mặc định/);
+    });
+
+    it(`${loc}: la tarjeta de open core nombra la serialización compacta entre las que van por defecto`, () => {
+      expect(cargar(loc)["landing.explica.pasos.3.body"]).toMatch(SERIALIZACION[loc]);
+    });
+
+    it(`${loc}: la FAQ y la clave de Measure de la portada dicen desde qué versión ahorra`, () => {
+      const d = cargar(loc);
+      const faq = d["landing.faq.items.2.a"]!;
+      expect(faq).not.toContain(FAQ_VIEJA[loc]);
+      expect(faq).not.toMatch(/[0-9]/);
+      const medir = d["landing.pricing.plans.medir.body"]!;
+      expect(medir).toContain("@bivelio/savings-layer {saves}");
+      const t = createTranslator({ locale: loc, messages: crudo(loc), onError: (e) => { throw e; } });
+      const pintado = (t as unknown as (k: string, p: object) => string)("landing.pricing.plans.medir.body", {
+        seats: 5,
+        requests: "20.000",
+        version: VERSION_MINIMA_MEDIR,
+        saves: VERSION_MEDIR_AHORRA,
+      });
+      expect(pintado).toContain("@bivelio/savings-layer 1.2.4");
+      expect(pintado).toContain("0.4.33");
+    });
+
+    it(`${loc}: el correo de ejemplo del alta está traducido, igual que el de la llamada de 15 min`, () => {
+      const d = cargar(loc);
+      expect(d["auth.emailPlaceholder"]).toBe(d["landing.cta15.placeholder"]);
+      expect(d["auth.emailPlaceholder"]).toMatch(/^[^@\s]+@[^@\s]+\.[a-z]+$/);
+    });
+  }
+
+  it("en/es: el texto exacto del cierre de la FAQ de Measure", () => {
+    expect(cargar("en")["landing.faq.items.2.a"]).toMatch(/ Older versions of the package only observe with it; the pricing page says from which version it saves\.$/);
+    expect(cargar("es")["landing.faq.items.2.a"]).toMatch(/ Con versiones antiguas del paquete solo observa; la página de precios dice desde qué versión ahorra\.$/);
+  });
+
+  it("AuthForm pide el correo de ejemplo a los mensajes, no en inglés a mano", () => {
+    const src = codigo("app/components/AuthForm.tsx");
+    expect(src).toContain('placeholder={t("emailPlaceholder")}');
+    expect(src).not.toContain("you@company.com");
+  });
+
+  it("de: «Seats» en todo lo público, como en las tarjetas; ningún «Sitz»/«Sitze»", () => {
+    expect(publicas(cargar("de")).filter(([, v]) => /\bSitze?\b/.test(v)).map(([k]) => k)).toEqual([]);
+    expect(cargar("de")["pricingPage.plans.medir.body"]).toContain("<b>{seats} Seats</b>");
+  });
 });

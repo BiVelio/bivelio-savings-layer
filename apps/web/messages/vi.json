@@ -154,6 +154,7 @@
     "alreadyHaveAccount": "Đã có tài khoản BiVelio?",
     "signIn": "Đăng nhập",
     "workEmail": "Email công việc",
+    "emailPlaceholder": "ban@congty.com",
     "password": "Mật khẩu",
     "createAccountCta": "Tạo tài khoản →",
     "signupLegal": "Khi tạo tài khoản, bạn chấp nhận <terms>điều khoản của Savings Cloud</terms> và <privacy>chính sách quyền riêng tư</privacy>.",
@@ -1267,7 +1268,7 @@
         },
         {
           "title": "Open core: tiết kiệm không cần khóa",
-          "body": "Mọi đòn bẩy đều có sẵn và miễn phí, không cần khóa. Bật sẵn: cache chính xác, khử trùng lặp các yêu cầu đồng thời, bộ giải cục bộ, đặt điểm cache prompt và cắt các kết quả công cụ đã bị thay thế. Phần còn lại bạn bật, mỗi cái một dòng. Hai máy có thể dùng chung cache miễn phí với kho lưu trữ do bạn vận hành (ví dụ Redis). Zero telemetry, và khóa được đặt nhưng không hợp lệ vẫn fail-closed. Cloud là tùy chọn: bảng điều khiển nhóm, đo lường dùng chung, chỗ và giấy phép theo phí cố định mỗi chỗ — không hoa hồng trên khoản tiết kiệm của bạn."
+          "body": "Mọi đòn bẩy đều có sẵn và miễn phí, không cần khóa. Bật sẵn: cache chính xác, khử trùng lặp các yêu cầu đồng thời, bộ giải cục bộ, đặt điểm cache prompt, cắt các kết quả công cụ đã bị thay thế và tuần tự hóa gọn dữ liệu có cấu trúc mà bạn truyền vào. Phần còn lại bạn bật, mỗi cái một dòng. Hai máy có thể dùng chung cache miễn phí với kho lưu trữ do bạn vận hành (ví dụ Redis). Zero telemetry, và khóa được đặt nhưng không hợp lệ vẫn fail-closed. Cloud là tùy chọn: bảng điều khiển nhóm, đo lường dùng chung, chỗ và giấy phép theo phí cố định mỗi chỗ — không hoa hồng trên khoản tiết kiệm của bạn."
         }
       ],
       "nota": "Các đoạn hoạt hình minh họa ý tưởng. Những con số thật — đo với nhà cung cấp thật — nằm ngay bên dưới."
@@ -1361,7 +1362,7 @@
         "medir": {
           "name": "Measure",
           "price": "Miễn phí",
-          "body": "Miễn phí, không cần thẻ. Gói CLOUD miễn phí cho nhóm nhỏ: một tổ chức, tối đa {seats} chỗ và {requests} yêu cầu mỗi ngày. Đúng các đòn bẩy như open core không khóa, cộng bảng điều khiển với khoản tiết kiệm thực của bạn; không bao giờ chịu hoa hồng. Cần @bivelio/savings-layer {version} trở lên và tiết kiệm từ phiên bản ghi trong điều khoản; các bản trước chỉ quan sát.",
+          "body": "Miễn phí, không cần thẻ. Gói CLOUD miễn phí cho nhóm nhỏ: một tổ chức, tối đa {seats} chỗ và {requests} yêu cầu mỗi ngày. Đúng các đòn bẩy như open core không khóa, cộng bảng điều khiển với khoản tiết kiệm thực của bạn; không bao giờ chịu hoa hồng. Tiết kiệm với @bivelio/savings-layer {saves} trở lên; các phiên bản từ {version} đến trước {saves} chỉ quan sát.",
           "cta": "Bắt đầu miễn phí →"
         },
         "pro": {
@@ -1639,7 +1640,7 @@
         },
         {
           "q": "Measure và Community khác nhau thế nào?",
-          "a": "Community là engine mã nguồn mở trên hạ tầng của bạn: không tài khoản, không khóa BiVelio và mặc định không telemetry. Measure là gói Savings Cloud miễn phí cho nhóm nhỏ: cần tài khoản, áp dụng đúng các đòn bẩy như Community và thêm bảng điều khiển với khoản tiết kiệm thực của bạn. Với các phiên bản cũ của gói, nó chỉ quan sát; phiên bản tối thiểu có trong điều khoản."
+          "a": "Community là engine mã nguồn mở trên hạ tầng của bạn: không tài khoản, không khóa BiVelio và mặc định không telemetry. Measure là gói Savings Cloud miễn phí cho nhóm nhỏ: cần tài khoản, áp dụng đúng các đòn bẩy như Community và thêm bảng điều khiển với khoản tiết kiệm thực của bạn. Với các phiên bản cũ của gói, nó chỉ quan sát; trang bảng giá ghi rõ nó tiết kiệm từ phiên bản nào."
         },
         {
           "q": "Có dùng được cho gói thuê bao như ChatGPT Plus không?",
@@ -2135,7 +2136,7 @@
     "caseClaudeSub": "claude.ai, miễn phí hoặc trả phí",
     "caseClaudeBody": "Thuê bao cố định: không có hóa đơn token để đo — nhưng có giới hạn (cửa sổ năm giờ và giới hạn tuần). Skill savings-mode sinh ra đúng cho việc đó: miễn phí, tải lên claude.ai trong một phút, tấn công hai khối đốt giới hạn. Hiệu quả của nó sẽ được công bố khi đo xong — không bao giờ trước đó.",
     "caseCodeSub": "terminal, với khóa API",
-    "caseCodeBody": "Với thuê bao, phí cố định, và gateway không thay đổi gì trong lưu lượng của bạn: nó đo ngay trên máy bạn, miễn phí, chi tiêu của mỗi phiên theo giá niêm yết. Với các giới hạn có skill savings-mode, miễn phí, hiệu quả chưa được đo. Với API key có hóa đơn token thật — và bộ đo đã chạy: không cần khóa BiVelio nào, «bvsala claude» khởi chạy Claude Code qua gateway cục bộ, không đụng một dòng mã. Gateway đo ngay trên máy của bạn những gì đi qua nó, bằng mức sử dụng do nhà cung cấp của bạn báo cáo, và khi thoát sẽ cho bạn biết đã đo được bao nhiêu yêu cầu, yêu cầu nào không đo được và vì sao. Trên các mô hình Anthropic, nó còn chuyển các lần ghi bộ nhớ đệm từ TTL một giờ sang TTL năm phút, chỉ ở những lượt mà một phần lớn prompt là mới (lượt đầu tiên của một phiên, sau khi nén ngữ cảnh): khoản tiết kiệm được tính trên chính số token do nhà cung cấp của bạn đếm, không bao giờ dựa trên ước tính. Muốn vậy, Claude Code phải yêu cầu bộ nhớ đệm một giờ, và với API key nó không làm vậy nếu bạn không cấu hình: mặc định gateway chỉ đo. Với khóa Savings Cloud, bạn cũng thấy chi tiêu của mình trong bảng điều khiển, từng token một.",
+    "caseCodeBody": "Với thuê bao, phí cố định, và với cấu hình mặc định, gateway không thay đổi gì trong lưu lượng của bạn: nó đo ngay trên máy bạn, miễn phí, chi tiêu của mỗi phiên theo giá niêm yết. Với các giới hạn có skill savings-mode, miễn phí, hiệu quả chưa được đo. Với API key có hóa đơn token thật — và bộ đo đã chạy: không cần khóa BiVelio nào, «bvsala claude» khởi chạy Claude Code qua gateway cục bộ, không đụng một dòng mã. Gateway đo ngay trên máy của bạn những gì đi qua nó, bằng mức sử dụng do nhà cung cấp của bạn báo cáo, và khi thoát sẽ cho bạn biết đã chi bao nhiêu theo giá niêm yết, đã tiết kiệm bao nhiêu kèm cơ sở (đo được hay ước tính), đã đo được bao nhiêu yêu cầu, yêu cầu nào không đo được và vì sao. Trên các mô hình Anthropic, nó còn chuyển các lần ghi bộ nhớ đệm từ TTL một giờ sang TTL năm phút, chỉ ở những lượt mà một phần lớn prompt là mới (lượt đầu tiên của một phiên, sau khi nén ngữ cảnh): khoản tiết kiệm được tính trên chính số token do nhà cung cấp của bạn đếm, không bao giờ dựa trên ước tính. Muốn vậy, Claude Code phải yêu cầu bộ nhớ đệm một giờ, và với API key nó không làm vậy nếu bạn không cấu hình: mặc định gateway chỉ đo. Với khóa Savings Cloud, bạn cũng thấy chi tiêu của mình trong bảng điều khiển, từng token một.",
     "caseAppName": "Ứng dụng của bạn",
     "caseAppSub": "mã của bạn + khóa API của bạn",
     "caseAppBody": "Trường hợp Savings Layer tồn tại. Ứng dụng của bạn gọi API bằng khóa của bạn, nhà cung cấp tính phí từng token, và tầng cài đặt trong hai bước: gói và bọc lời gọi. Từ yêu cầu đầu tiên nó trả về <b>SavingsReport</b> với khoản tiết kiệm, tách giữa đo được và ước tính.",
@@ -2165,7 +2166,7 @@
     "billWith": "Tùy",
     "billDepends": "vào mức độ lặp lại của lưu lượng",
     "hero": {
-      "ctaInstall": "Cài đặt mã nguồn mở",
+      "ctaInstall": "Cài miễn phí",
       "ctaResults": "Xem kết quả có thể tái lập"
     },
     "beam": {

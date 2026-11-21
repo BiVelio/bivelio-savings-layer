@@ -154,6 +154,7 @@
     "alreadyHaveAccount": "Hai già un account BiVelio?",
     "signIn": "Accedi",
     "workEmail": "Email di lavoro",
+    "emailPlaceholder": "tu@azienda.com",
     "password": "Password",
     "createAccountCta": "Crea account →",
     "signupLegal": "Creando l'account accetti le <terms>condizioni di Savings Cloud</terms> e l'<privacy>informativa sulla privacy</privacy>.",
@@ -1267,7 +1268,7 @@
         },
         {
           "title": "Open core: risparmia senza chiavi",
-          "body": "Tutte le leve sono incluse e gratis, senza chiave. Attive di default: cache esatta, deduplicazione delle richieste simultanee, resolver locali, posizionamento della cache del prompt e taglio dei risultati degli strumenti già superati. Le altre si accendono con una riga ciascuna. Due macchine possono condividere una cache gratis con uno storage che gestisci tu (Redis, per esempio). Zero telemetria, e una chiave impostata ma non valida resta fail-closed. Il cloud è opzionale: dashboard di team, misurazione condivisa, postazioni e licenze con un canone fisso per postazione — e nessuna commissione sul tuo risparmio."
+          "body": "Tutte le leve sono incluse e gratis, senza chiave. Attive di default: cache esatta, deduplicazione delle richieste simultanee, resolver locali, posizionamento della cache del prompt, taglio dei risultati degli strumenti già superati e serializzazione compatta dei dati strutturati che passi. Le altre si accendono con una riga ciascuna. Due macchine possono condividere una cache gratis con uno storage che gestisci tu (Redis, per esempio). Zero telemetria, e una chiave impostata ma non valida resta fail-closed. Il cloud è opzionale: dashboard di team, misurazione condivisa, postazioni e licenze con un canone fisso per postazione — e nessuna commissione sul tuo risparmio."
         }
       ],
       "nota": "Le animazioni illustrano l'idea. Le cifre vere — misurate contro fornitori reali — sono subito sotto."
@@ -1361,7 +1362,7 @@
         "medir": {
           "name": "Measure",
           "price": "Gratis",
-          "body": "Gratis, senza carta. Il piano CLOUD gratuito, per team piccoli: un'organizzazione, fino a {seats} postazioni e {requests} richieste al giorno. Le stesse leve dell'open core senza chiave, più la dashboard con il tuo risparmio reale; mai soggetto a commissioni. Serve @bivelio/savings-layer {version} o successivo e risparmia dalla versione indicata nelle sue condizioni; le precedenti osservano soltanto.",
+          "body": "Gratis, senza carta. Il piano CLOUD gratuito, per team piccoli: un'organizzazione, fino a {seats} postazioni e {requests} richieste al giorno. Le stesse leve dell'open core senza chiave, più la dashboard con il tuo risparmio reale; mai soggetto a commissioni. Risparmia con @bivelio/savings-layer {saves} o successivo; le versioni dalla {version} fino a prima della {saves} osservano soltanto.",
           "cta": "Inizia gratis →"
         },
         "pro": {
@@ -1639,7 +1640,7 @@
         },
         {
           "q": "Che differenza c’è tra Measure e Community?",
-          "a": "Community è il motore open source sulla tua infrastruttura: niente account, niente chiave BiVelio e nessuna telemetria di default. Measure è il piano gratuito di Savings Cloud per team piccoli: richiede un account, applica le stesse leve di Community e aggiunge la dashboard con il tuo risparmio reale. Con versioni vecchie del pacchetto osserva soltanto; la versione minima è nelle sue condizioni."
+          "a": "Community è il motore open source sulla tua infrastruttura: niente account, niente chiave BiVelio e nessuna telemetria di default. Measure è il piano gratuito di Savings Cloud per team piccoli: richiede un account, applica le stesse leve di Community e aggiunge la dashboard con il tuo risparmio reale. Con versioni vecchie del pacchetto osserva soltanto; la pagina dei prezzi dice da quale versione risparmia."
         },
         {
           "q": "Serve per un abbonamento come ChatGPT Plus?",
@@ -2135,7 +2136,7 @@
     "caseClaudeSub": "claude.ai, gratis o a pagamento",
     "caseClaudeBody": "Abbonamento fisso: nessuna fattura di token da misurare — ma con tetti (la finestra di cinque ore e quello settimanale). È esattamente per questo che esiste la skill savings-mode: gratuita, si carica su claude.ai in un minuto e attacca le due masse che bruciano il tetto. Il suo effetto sarà pubblicato quando sarà misurato — mai prima.",
     "caseCodeSub": "terminale, con chiave API",
-    "caseCodeBody": "Con l'abbonamento la quota è fissa, e il gateway non cambia nulla del tuo traffico: misura sulla tua macchina, gratis, quanto spende ogni sessione a prezzo di listino. Per i tetti c'è la skill savings-mode, gratis, con un effetto non ancora misurato. Con la chiave API c'è una fattura di token reale — e il misuratore è già in moto: senza alcuna chiave di BiVelio, «bvsala claude» lancia Claude Code attraverso il gateway locale, senza toccare una riga di codice. Il gateway misura sulla tua macchina ciò che lo attraversa, con l'utilizzo dichiarato dal tuo fornitore, e all'uscita ti dice quante richieste ha misurato, quali no e perché. Sui modelli Anthropic sposta anche le scritture della cache dal TTL di un'ora a quello di cinque minuti solo nei turni in cui una parte consistente del prompt è nuova (il primo turno di una sessione, una compattazione): un risparmio calcolato sul conteggio dei token del tuo stesso fornitore, mai su una stima. Per questo Claude Code deve chiedere la cache di un'ora, e con la chiave API non lo fa se non lo imposti: per impostazione predefinita il gateway si limita a misurare. Con una chiave di Savings Cloud vedi la tua spesa anche nel pannello, token per token.",
+    "caseCodeBody": "Con l'abbonamento la quota è fissa, e con le impostazioni predefinite il gateway non cambia nulla del tuo traffico: misura sulla tua macchina, gratis, quanto spende ogni sessione a prezzo di listino. Per i tetti c'è la skill savings-mode, gratis, con un effetto non ancora misurato. Con la chiave API c'è una fattura di token reale — e il misuratore è già in moto: senza alcuna chiave di BiVelio, «bvsala claude» lancia Claude Code attraverso il gateway locale, senza toccare una riga di codice. Il gateway misura sulla tua macchina ciò che lo attraversa, con l'utilizzo dichiarato dal tuo fornitore, e all'uscita ti dice quanto ha speso a prezzo di listino, quanto ha risparmiato secondo la sua base (misurato o stimato), quante richieste ha misurato, quali no e perché. Sui modelli Anthropic sposta anche le scritture della cache dal TTL di un'ora a quello di cinque minuti solo nei turni in cui una parte consistente del prompt è nuova (il primo turno di una sessione, una compattazione): un risparmio calcolato sul conteggio dei token del tuo stesso fornitore, mai su una stima. Per questo Claude Code deve chiedere la cache di un'ora, e con la chiave API non lo fa se non lo imposti: per impostazione predefinita il gateway si limita a misurare. Con una chiave di Savings Cloud vedi la tua spesa anche nel pannello, token per token.",
     "caseAppName": "La tua applicazione",
     "caseAppSub": "il tuo codice + la tua chiave API",
     "caseAppBody": "Il caso per cui esiste Savings Layer. La tua app chiama l'API con la tua chiave, il provider fattura ogni token, e il layer si installa in due passi: il pacchetto e avvolgere la chiamata. Dalla prima richiesta restituisce un <b>SavingsReport</b> con il risparmio, diviso tra misurato e stimato.",
@@ -2165,7 +2166,7 @@
     "billWith": "Dipende",
     "billDepends": "da quanto si ripete il tuo traffico",
     "hero": {
-      "ctaInstall": "Installa l'open source",
+      "ctaInstall": "Installa gratis",
       "ctaResults": "Vedi i risultati riproducibili"
     },
     "beam": {

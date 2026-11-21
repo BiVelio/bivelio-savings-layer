@@ -154,6 +154,7 @@
     "alreadyHaveAccount": "Sudah punya akun BiVelio?",
     "signIn": "Masuk",
     "workEmail": "Email kerja",
+    "emailPlaceholder": "kamu@perusahaan.com",
     "password": "Kata sandi",
     "createAccountCta": "Buat akun →",
     "signupLegal": "Dengan membuat akun, kamu menyetujui <terms>ketentuan Savings Cloud</terms> dan <privacy>kebijakan privasi</privacy>.",
@@ -1267,7 +1268,7 @@
         },
         {
           "title": "Open core: hemat tanpa kunci",
-          "body": "Semua tuas sudah termasuk dan gratis, tanpa kunci. Aktif secara bawaan: cache persis, deduplikasi permintaan bersamaan, resolver lokal, penempatan cache prompt, dan pemangkasan hasil alat yang sudah tergantikan. Sisanya Anda aktifkan, masing-masing satu baris. Dua mesin bisa berbagi cache secara gratis dengan penyimpanan yang Anda jalankan (Redis, misalnya). Nol telemetri, dan kunci yang diatur tetapi tidak valid tetap fail-closed. Cloud bersifat opsional: dasbor tim, pengukuran bersama, kursi, dan lisensi dengan biaya tetap per kursi — tanpa komisi atas penghematan Anda."
+          "body": "Semua tuas sudah termasuk dan gratis, tanpa kunci. Aktif secara bawaan: cache persis, deduplikasi permintaan bersamaan, resolver lokal, penempatan cache prompt, pemangkasan hasil alat yang sudah tergantikan, dan serialisasi ringkas data terstruktur yang Anda kirim. Sisanya Anda aktifkan, masing-masing satu baris. Dua mesin bisa berbagi cache secara gratis dengan penyimpanan yang Anda jalankan (Redis, misalnya). Nol telemetri, dan kunci yang diatur tetapi tidak valid tetap fail-closed. Cloud bersifat opsional: dasbor tim, pengukuran bersama, kursi, dan lisensi dengan biaya tetap per kursi — tanpa komisi atas penghematan Anda."
         }
       ],
       "nota": "Animasi ini menggambarkan idenya. Angka sesungguhnya — diukur terhadap penyedia sungguhan — ada tepat di bawah."
@@ -1361,7 +1362,7 @@
         "medir": {
           "name": "Measure",
           "price": "Gratis",
-          "body": "Gratis, tanpa kartu. Paket CLOUD gratis untuk tim kecil: satu organisasi, hingga {seats} kursi dan {requests} permintaan per hari. Tuas yang sama seperti open core tanpa kunci, ditambah dasbor dengan penghematan nyata Anda; tidak pernah dikenai komisi. Butuh @bivelio/savings-layer {version} atau lebih baru dan berhemat sejak versi yang disebut ketentuannya; versi sebelumnya hanya mengamati.",
+          "body": "Gratis, tanpa kartu. Paket CLOUD gratis untuk tim kecil: satu organisasi, hingga {seats} kursi dan {requests} permintaan per hari. Tuas yang sama seperti open core tanpa kunci, ditambah dasbor dengan penghematan nyata Anda; tidak pernah dikenai komisi. Berhemat dengan @bivelio/savings-layer {saves} atau lebih baru; versi sejak {version} hingga sebelum {saves} hanya mengamati.",
           "cta": "Mulai gratis →"
         },
         "pro": {
@@ -1639,7 +1640,7 @@
         },
         {
           "q": "Apa bedanya Measure dan Community?",
-          "a": "Community adalah mesin open source di infrastruktur Anda: tanpa akun, tanpa kunci BiVelio, dan tanpa telemetri secara bawaan. Measure adalah paket gratis Savings Cloud untuk tim kecil: butuh akun, menerapkan tuas yang sama seperti Community, dan menambahkan dasbor dengan penghematan nyata Anda. Dengan versi paket yang lama ia hanya mengamati; versi minimumnya ada di ketentuannya."
+          "a": "Community adalah mesin open source di infrastruktur Anda: tanpa akun, tanpa kunci BiVelio, dan tanpa telemetri secara bawaan. Measure adalah paket gratis Savings Cloud untuk tim kecil: butuh akun, menerapkan tuas yang sama seperti Community, dan menambahkan dasbor dengan penghematan nyata Anda. Dengan versi paket yang lama ia hanya mengamati; halaman harga menyebutkan sejak versi mana ia berhemat."
         },
         {
           "q": "Apakah berguna untuk langganan seperti ChatGPT Plus?",
@@ -2135,7 +2136,7 @@
     "caseClaudeSub": "claude.ai, gratis atau berbayar",
     "caseClaudeBody": "Langganan tetap: tidak ada tagihan token untuk diukur — tapi ada batas (jendela lima jam dan mingguan). Untuk itulah skill savings-mode: gratis, diunggah ke claude.ai dalam semenit, menyerang dua massa yang membakar batas. Efeknya akan dipublikasikan setelah diukur — tidak pernah sebelumnya.",
     "caseCodeSub": "terminal, dengan kunci API",
-    "caseCodeBody": "Dengan langganan, biayanya tetap, dan gateway tidak mengubah apa pun pada trafik Anda: ia mengukur di mesin Anda, gratis, biaya setiap sesi dengan harga daftar. Untuk batasnya ada skill savings-mode, gratis, yang efeknya belum diukur. Dengan API key ada tagihan token sungguhan — dan meterannya sudah berjalan: tanpa kunci BiVelio apa pun, “bvsala claude” meluncurkan Claude Code lewat gateway lokal, tanpa menyentuh satu baris kode. Gateway mengukur di mesin Anda apa yang melewatinya, dengan penggunaan yang dilaporkan penyedia Anda, dan saat keluar memberi tahu berapa permintaan yang berhasil diukur, mana yang tidak, dan alasannya. Pada model Anthropic, gateway juga memindahkan penulisan cache dari TTL satu jam ke TTL lima menit hanya pada giliran ketika porsi besar dari prompt masih baru (giliran pertama sebuah sesi, pemadatan): penghematan yang dihitung dari hitungan token penyedia Anda sendiri, tidak pernah dari estimasi. Untuk itu Claude Code harus meminta cache satu jam, dan dengan API key ia tidak melakukannya kecuali Anda mengaturnya: secara default gateway hanya mengukur. Dengan kunci Savings Cloud, Anda juga melihat pengeluaran Anda di dasbor, token demi token.",
+    "caseCodeBody": "Dengan langganan, biayanya tetap, dan dengan pengaturan bawaan gateway tidak mengubah apa pun pada trafik Anda: ia mengukur di mesin Anda, gratis, biaya setiap sesi dengan harga daftar. Untuk batasnya ada skill savings-mode, gratis, yang efeknya belum diukur. Dengan API key ada tagihan token sungguhan — dan meterannya sudah berjalan: tanpa kunci BiVelio apa pun, “bvsala claude” meluncurkan Claude Code lewat gateway lokal, tanpa menyentuh satu baris kode. Gateway mengukur di mesin Anda apa yang melewatinya, dengan penggunaan yang dilaporkan penyedia Anda, dan saat keluar memberi tahu berapa yang dibelanjakan dengan harga daftar, berapa yang dihemat menurut dasarnya (terukur atau estimasi), berapa permintaan yang berhasil diukur, mana yang tidak, dan alasannya. Pada model Anthropic, gateway juga memindahkan penulisan cache dari TTL satu jam ke TTL lima menit hanya pada giliran ketika porsi besar dari prompt masih baru (giliran pertama sebuah sesi, pemadatan): penghematan yang dihitung dari hitungan token penyedia Anda sendiri, tidak pernah dari estimasi. Untuk itu Claude Code harus meminta cache satu jam, dan dengan API key ia tidak melakukannya kecuali Anda mengaturnya: secara default gateway hanya mengukur. Dengan kunci Savings Cloud, Anda juga melihat pengeluaran Anda di dasbor, token demi token.",
     "caseAppName": "Aplikasi kamu",
     "caseAppSub": "kode kamu + kunci API kamu",
     "caseAppBody": "Kasus yang menjadi alasan Savings Layer ada. Aplikasi Anda memanggil API dengan kunci Anda, penyedia menagih setiap token, dan lapisan terpasang dalam dua langkah: paket dan membungkus panggilan. Sejak permintaan pertama ia mengembalikan <b>SavingsReport</b> dengan penghematan, terpisah antara terukur dan terestimasi.",
@@ -2165,7 +2166,7 @@
     "billWith": "Tergantung",
     "billDepends": "seberapa sering lalu lintas Anda berulang",
     "hero": {
-      "ctaInstall": "Pasang open source",
+      "ctaInstall": "Pasang gratis",
       "ctaResults": "Lihat hasil yang dapat direproduksi"
     },
     "beam": {

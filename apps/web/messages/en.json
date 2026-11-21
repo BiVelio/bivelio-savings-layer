@@ -154,6 +154,7 @@
     "alreadyHaveAccount": "Already have a BiVelio account?",
     "signIn": "Sign in",
     "workEmail": "Work email",
+    "emailPlaceholder": "you@company.com",
     "password": "Password",
     "createAccountCta": "Create account →",
     "signupLegal": "By creating an account you accept the <terms>Savings Cloud terms</terms> and the <privacy>privacy policy</privacy>.",
@@ -1267,7 +1268,7 @@
         },
         {
           "title": "Open core: it saves with no keys",
-          "body": "Every lever is included and free, with no key. On by default: exact cache, in-flight deduplication, local resolvers, prompt-cache placement and trimming of superseded tool results. The rest you switch on, one line each. Two machines can share a cache for free with a store you run (Redis, for example). Zero telemetry, and a key that is set but invalid still fails closed. The cloud is optional: team dashboard, shared measurement, seats and licences for a fixed fee per seat, whether or not you save — and no commission on your savings."
+          "body": "Every lever is included and free, with no key. On by default: exact cache, in-flight deduplication, local resolvers, prompt-cache placement, trimming of superseded tool results and compact serialization of the structured data you pass. The rest you switch on, one line each. Two machines can share a cache for free with a store you run (Redis, for example). Zero telemetry, and a key that is set but invalid still fails closed. The cloud is optional: team dashboard, shared measurement, seats and licences for a fixed fee per seat, whether or not you save — and no commission on your savings."
         }
       ],
       "nota": "The animations illustrate the idea. The real numbers — measured against live providers — are right below."
@@ -1361,7 +1362,7 @@
         "medir": {
           "name": "Measure",
           "price": "Free",
-          "body": "Free, no card. The free CLOUD plan, for small teams: one organization, up to {seats} seats and {requests} requests a day. The same levers as the open core with no key, plus the dashboard with your real savings; never part of any commission. It needs @bivelio/savings-layer {version} or later and saves from the version its terms give; earlier ones only observe.",
+          "body": "Free, no card. The free CLOUD plan, for small teams: one organization, up to {seats} seats and {requests} requests a day. The same levers as the open core with no key, plus the dashboard with your real savings; never part of any commission. It saves with @bivelio/savings-layer {saves} or later; versions from {version} up to before {saves} only observe.",
           "cta": "Start free →"
         },
         "pro": {
@@ -1639,7 +1640,7 @@
         },
         {
           "q": "How are Measure and Community different?",
-          "a": "Community is the open-source engine on your infrastructure: no account, no BiVelio key and no telemetry by default. Measure is the free Savings Cloud plan for small teams: it needs an account, applies the same levers as Community and adds the dashboard with your real savings. Older versions of the package only observe with it; the minimum version is in its terms."
+          "a": "Community is the open-source engine on your infrastructure: no account, no BiVelio key and no telemetry by default. Measure is the free Savings Cloud plan for small teams: it needs an account, applies the same levers as Community and adds the dashboard with your real savings. Older versions of the package only observe with it; the pricing page says from which version it saves."
         },
         {
           "q": "Does it work with a subscription like ChatGPT Plus?",
@@ -2135,7 +2136,7 @@
     "caseClaudeSub": "claude.ai, free or paid",
     "caseClaudeBody": "Flat subscription: no token invoice to meter — but there are caps (the five-hour window and the weekly one). That is exactly what the savings-mode skill is for: free, uploaded to claude.ai in a minute, attacking the two masses that burn cap. Its effect will be published once measured — never before.",
     "caseCodeSub": "terminal, with an API key",
-    "caseCodeBody": "On a subscription the fee is flat, and the gateway changes nothing in your traffic: it measures each session's spend on your machine, free, at list price. For the caps there is the savings-mode skill, free, with its effect not measured yet. With an API key there is a real token invoice — and the meter is already running: with no BiVelio key at all, “bvsala claude” launches Claude Code through the local gateway, without touching a line of code. The gateway meters what passes through it on your machine, with the usage your provider reports, and on exit tells you how many requests it metered, which ones it could not, and why. On Anthropic models it also moves cache writes from the one-hour TTL to the five-minute one only on turns where a large part of the prompt is new (a session's first turn, a compaction): a saving computed on your provider's own token count, never on an estimate. That needs Claude Code to ask for the one-hour cache, and on an API key it does not unless you set it: by default the gateway only measures. With a Savings Cloud key you see your spend in the dashboard as well, token by token.",
+    "caseCodeBody": "On a subscription the fee is flat, and with the defaults the gateway changes nothing in your traffic: it measures each session's spend on your machine, free, at list price. For the caps there is the savings-mode skill, free, with its effect not measured yet. With an API key there is a real token invoice — and the meter is already running: with no BiVelio key at all, “bvsala claude” launches Claude Code through the local gateway, without touching a line of code. The gateway meters what passes through it on your machine, with the usage your provider reports, and on exit tells you what it spent at list price, what it saved by basis (measured or estimated), how many requests it metered, which ones it could not, and why. On Anthropic models it also moves cache writes from the one-hour TTL to the five-minute one only on turns where a large part of the prompt is new (a session's first turn, a compaction): a saving computed on your provider's own token count, never on an estimate. That needs Claude Code to ask for the one-hour cache, and on an API key it does not unless you set it: by default the gateway only measures. With a Savings Cloud key you see your spend in the dashboard as well, token by token.",
     "caseAppName": "Your application",
     "caseAppSub": "your code + your API key",
     "caseAppBody": "The case Savings Layer exists for. Your app calls the API with your key, the provider bills every token, and the layer installs in two steps: package and wrapping the call. From the first request it returns a <b>SavingsReport</b> with the saving, split into measured and estimated.",
@@ -2165,7 +2166,7 @@
     "billWith": "It depends",
     "billDepends": "on how much your traffic repeats",
     "hero": {
-      "ctaInstall": "Install open source",
+      "ctaInstall": "Install free",
       "ctaResults": "See reproducible results"
     },
     "beam": {

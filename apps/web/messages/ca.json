@@ -154,6 +154,7 @@
     "alreadyHaveAccount": "Ja tens un compte de BiVelio?",
     "signIn": "Inicia la sessió",
     "workEmail": "Correu de la feina",
+    "emailPlaceholder": "tu@empresa.com",
     "password": "Contrasenya",
     "createAccountCta": "Crea el compte →",
     "signupLegal": "En crear el compte acceptes les <terms>condicions de Savings Cloud</terms> i la <privacy>política de privadesa</privacy>.",
@@ -1267,7 +1268,7 @@
         },
         {
           "title": "Open core: estalvia sense claus",
-          "body": "Totes les palanques venen incloses i gratis, sense clau. Enceses per defecte: memòria cau exacta, deduplicació de peticions simultànies, resolutors locals, col·locació de la memòria cau de prompt i retall de resultats d'eines ja substituïts. La resta s'encén amb una línia cadascuna. Dues màquines poden compartir memòria cau gratis amb un magatzem teu (Redis, per exemple). Zero telemetria, i una clau posada però invàlida continua fail-closed. El núvol és opcional: tauler d'equip, mesurament compartit, seients i llicències per una quota fixa per seient, estalviïs o no — i sense comissió sobre el teu estalvi."
+          "body": "Totes les palanques venen incloses i gratis, sense clau. Enceses per defecte: memòria cau exacta, deduplicació de peticions simultànies, resolutors locals, col·locació de la memòria cau de prompt, retall de resultats d'eines ja substituïts i serialització compacta de les dades estructurades que passes. La resta s'encén amb una línia cadascuna. Dues màquines poden compartir memòria cau gratis amb un magatzem teu (Redis, per exemple). Zero telemetria, i una clau posada però invàlida continua fail-closed. El núvol és opcional: tauler d'equip, mesurament compartit, seients i llicències per una quota fixa per seient, estalviïs o no — i sense comissió sobre el teu estalvi."
         }
       ],
       "nota": "Les animacions il·lustren la idea. Les xifres de debò — mesurades contra proveïdors reals — són just a sota."
@@ -1361,7 +1362,7 @@
         "medir": {
           "name": "Measure",
           "price": "Gratis",
-          "body": "Gratis, sense targeta. El pla de NÚVOL gratuït, per a equips petits: una organització, fins a {seats} seients i {requests} peticions al dia. Les mateixes palanques que l'open core sense clau, més el tauler amb el teu estalvi real; mai no entra en cap comissió. Necessita @bivelio/savings-layer {version} o posterior i estalvia des de la versió que diuen les seves condicions; les anteriors només observen.",
+          "body": "Gratis, sense targeta. El pla de NÚVOL gratuït, per a equips petits: una organització, fins a {seats} seients i {requests} peticions al dia. Les mateixes palanques que l'open core sense clau, més el tauler amb el teu estalvi real; mai no entra en cap comissió. Estalvia amb @bivelio/savings-layer {saves} o posterior; les versions des de la {version} fins abans de la {saves} només observen.",
           "cta": "Comença gratis →"
         },
         "pro": {
@@ -1639,7 +1640,7 @@
         },
         {
           "q": "En què es diferencien Measure i Community?",
-          "a": "Community és el motor open source a la teva infraestructura: sense compte, sense clau de BiVelio i sense telemetria per defecte. Measure és el pla gratuït de Savings Cloud per a equips petits: necessita compte, aplica les mateixes palanques que Community i hi afegeix el tauler amb el teu estalvi real. Amb versions antigues del paquet només observa; la versió mínima és a les seves condicions."
+          "a": "Community és el motor open source a la teva infraestructura: sense compte, sense clau de BiVelio i sense telemetria per defecte. Measure és el pla gratuït de Savings Cloud per a equips petits: necessita compte, aplica les mateixes palanques que Community i hi afegeix el tauler amb el teu estalvi real. Amb versions antigues del paquet només observa; la pàgina de preus diu des de quina versió estalvia."
         },
         {
           "q": "Serveix per a una subscripció com ChatGPT Plus?",
@@ -2135,7 +2136,7 @@
     "caseClaudeSub": "claude.ai, gratis o de pagament",
     "caseClaudeBody": "Subscripció fixa: sense factura de tokens a mesurar — però amb topalls (la finestra de cinc hores i el setmanal). Justament per a això hi ha l'skill savings-mode: gratuït, es puja a claude.ai en un minut i ataca les dues masses que cremen topall. El seu efecte es publicarà quan estigui mesurat — mai abans.",
     "caseCodeSub": "terminal, amb clau d'API",
-    "caseCodeBody": "Amb subscripció la quota és fixa, i el gateway no canvia res del teu trànsit: mesura a la teva màquina, gratis, el que gasta cada sessió a preu de llista. Per als topalls hi ha l'skill savings-mode, gratis, amb el seu efecte encara sense mesurar. Amb clau d'API hi ha una factura per tokens real — i el mesurador ja està en marxa: sense cap clau de BiVelio, «bvsala claude» llança Claude Code a través del gateway local, sense tocar una línia de codi. El gateway mesura a la teva màquina el que hi passa, amb l'ús que declara el teu proveïdor, i en sortir et diu quantes peticions ha mesurat, quines no i per què. En models d'Anthropic passa a més les escriptures de la memòria cau del TTL d'una hora al de cinc minuts només en els torns en què una part gran del prompt és nova (el primer d'una sessió, una compactació): un estalvi calculat sobre el recompte de tokens del teu propi proveïdor, mai sobre una estimació. Per a això Claude Code ha de demanar la memòria cau d'una hora, i amb clau d'API no la demana si no ho configures: per defecte el gateway només mesura. Amb una clau de Savings Cloud veus també la teva despesa al tauler, token a token.",
+    "caseCodeBody": "Amb subscripció la quota és fixa, i per defecte el gateway no canvia res del teu trànsit: mesura a la teva màquina, gratis, el que gasta cada sessió a preu de llista. Per als topalls hi ha l'skill savings-mode, gratis, amb el seu efecte encara sense mesurar. Amb clau d'API hi ha una factura per tokens real — i el mesurador ja està en marxa: sense cap clau de BiVelio, «bvsala claude» llança Claude Code a través del gateway local, sense tocar una línia de codi. El gateway mesura a la teva màquina el que hi passa, amb l'ús que declara el teu proveïdor, i en sortir et diu quant ha gastat a preu de llista, quant ha estalviat segons la seva base (mesurat o estimat), quantes peticions ha mesurat, quines no i per què. En models d'Anthropic passa a més les escriptures de la memòria cau del TTL d'una hora al de cinc minuts només en els torns en què una part gran del prompt és nova (el primer d'una sessió, una compactació): un estalvi calculat sobre el recompte de tokens del teu propi proveïdor, mai sobre una estimació. Per a això Claude Code ha de demanar la memòria cau d'una hora, i amb clau d'API no la demana si no ho configures: per defecte el gateway només mesura. Amb una clau de Savings Cloud veus també la teva despesa al tauler, token a token.",
     "caseAppName": "La teva aplicació",
     "caseAppSub": "el teu codi + la teva clau d'API",
     "caseAppBody": "El cas per al qual existeix Savings Layer. La teva app crida l'API amb la teva clau, el proveïdor factura cada token, i la capa s'instal·la en dos passos: el paquet i embolicar la trucada. Des de la primera petició retorna un <b>SavingsReport</b> amb l'estalvi, separat en mesurat i estimat.",
@@ -2165,7 +2166,7 @@
     "billWith": "Depèn",
     "billDepends": "de quant es repeteixi el teu trànsit",
     "hero": {
-      "ctaInstall": "Instal·lar open source",
+      "ctaInstall": "Instal·lar gratis",
       "ctaResults": "Veure resultats reproduïbles"
     },
     "beam": {

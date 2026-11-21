@@ -154,6 +154,7 @@
     "alreadyHaveAccount": "Masz już konto BiVelio?",
     "signIn": "Zaloguj się",
     "workEmail": "Służbowy e-mail",
+    "emailPlaceholder": "ty@firma.com",
     "password": "Hasło",
     "createAccountCta": "Załóż konto →",
     "signupLegal": "Zakładając konto, akceptujesz <terms>warunki Savings Cloud</terms> i <privacy>politykę prywatności</privacy>.",
@@ -1267,7 +1268,7 @@
         },
         {
           "title": "Open core: oszczędza bez kluczy",
-          "body": "Wszystkie dźwignie są w zestawie i za darmo, bez klucza. Domyślnie włączone: dokładna pamięć podręczna, deduplikacja równoczesnych żądań, lokalne resolwery, rozmieszczenie pamięci podręcznej promptu i przycinanie zastąpionych wyników narzędzi. Resztę włączasz jedną linijką każdą. Dwie maszyny mogą za darmo dzielić pamięć podręczną dzięki magazynowi, który sam prowadzisz (na przykład Redis). Zerowa telemetria, a ustawiony, ale nieprawidłowy klucz nadal działa fail-closed. Chmura jest opcjonalna: panel zespołu, wspólne pomiary, stanowiska i licencje za stałą opłatą za stanowisko — bez prowizji od Twoich oszczędności."
+          "body": "Wszystkie dźwignie są w zestawie i za darmo, bez klucza. Domyślnie włączone: dokładna pamięć podręczna, deduplikacja równoczesnych żądań, lokalne resolwery, rozmieszczenie pamięci podręcznej promptu, przycinanie zastąpionych wyników narzędzi i zwarta serializacja przekazywanych danych strukturalnych. Resztę włączasz jedną linijką każdą. Dwie maszyny mogą za darmo dzielić pamięć podręczną dzięki magazynowi, który sam prowadzisz (na przykład Redis). Zerowa telemetria, a ustawiony, ale nieprawidłowy klucz nadal działa fail-closed. Chmura jest opcjonalna: panel zespołu, wspólne pomiary, stanowiska i licencje za stałą opłatą za stanowisko — bez prowizji od Twoich oszczędności."
         }
       ],
       "nota": "Animacje ilustrują pomysł. Prawdziwe liczby — zmierzone u prawdziwych dostawców — są tuż poniżej."
@@ -1361,7 +1362,7 @@
         "medir": {
           "name": "Measure",
           "price": "Za darmo",
-          "body": "Za darmo, bez karty. Darmowy plan CHMUROWY dla małych zespołów: jedna organizacja, do {seats} stanowisk i {requests} żądań dziennie. Te same dźwignie co open core bez klucza, plus panel z Twoimi rzeczywistymi oszczędnościami; nigdy nie wchodzi w żadną prowizję. Wymaga @bivelio/savings-layer {version} lub nowszej i oszczędza od wersji podanej w warunkach; wcześniejsze tylko obserwują.",
+          "body": "Za darmo, bez karty. Darmowy plan CHMUROWY dla małych zespołów: jedna organizacja, do {seats} stanowisk i {requests} żądań dziennie. Te same dźwignie co open core bez klucza, plus panel z Twoimi rzeczywistymi oszczędnościami; nigdy nie wchodzi w żadną prowizję. Oszczędza od @bivelio/savings-layer {saves}; wersje od {version} do wersji poprzedzającej {saves} tylko obserwują.",
           "cta": "Zacznij za darmo →"
         },
         "pro": {
@@ -1639,7 +1640,7 @@
         },
         {
           "q": "Czym różnią się Measure i Community?",
-          "a": "Community to silnik open source w Twojej infrastrukturze: bez konta, bez klucza BiVelio i domyślnie bez telemetrii. Measure to darmowy plan Savings Cloud dla małych zespołów: wymaga konta, stosuje te same dźwignie co Community i dodaje panel z Twoimi rzeczywistymi oszczędnościami. Ze starszymi wersjami pakietu tylko obserwuje; minimalna wersja jest w jego warunkach."
+          "a": "Community to silnik open source w Twojej infrastrukturze: bez konta, bez klucza BiVelio i domyślnie bez telemetrii. Measure to darmowy plan Savings Cloud dla małych zespołów: wymaga konta, stosuje te same dźwignie co Community i dodaje panel z Twoimi rzeczywistymi oszczędnościami. Ze starszymi wersjami pakietu tylko obserwuje; od której wersji oszczędza, podaje strona cennika."
         },
         {
           "q": "Czy to działa z subskrypcją taką jak ChatGPT Plus?",
@@ -2135,7 +2136,7 @@
     "caseClaudeSub": "claude.ai, za darmo lub płatnie",
     "caseClaudeBody": "Stała subskrypcja: brak faktury za tokeny do zmierzenia — ale są limity (pięciogodzinne okno i tygodniowy). Właśnie po to jest skill savings-mode: darmowy, wgrywany na claude.ai w minutę, atakuje dwie masy spalające limit. Jego efekt zostanie opublikowany po zmierzeniu — nigdy wcześniej.",
     "caseCodeSub": "terminal, z kluczem API",
-    "caseCodeBody": "Przy subskrypcji opłata jest stała, a bramka niczego nie zmienia w Twoim ruchu: mierzy na Twoim komputerze, za darmo, ile kosztuje każda sesja po cenie katalogowej. Na limity jest skill savings-mode, darmowy, którego efekt nie został jeszcze zmierzony. Z kluczem API jest prawdziwa faktura za tokeny — a miernik już działa: bez żadnego klucza BiVelio „bvsala claude” uruchamia Claude Code przez lokalną bramkę, bez dotykania linijki kodu. Bramka mierzy na Twoim komputerze to, co przez nią przechodzi, na podstawie zużycia raportowanego przez Twojego dostawcę, a przy wyjściu mówi Ci, ile żądań zmierzyła, których nie zdołała zmierzyć i dlaczego. Na modelach Anthropic przestawia też zapisy do pamięci podręcznej z godzinnego TTL na pięciominutowy tylko w turach, w których duża część promptu jest nowa (pierwsza tura sesji, kompaktowanie): oszczędność wyliczona z liczby tokenów podanej przez Twojego własnego dostawcę, nigdy z szacunków. Do tego Claude Code musi prosić o godzinną pamięć podręczną, a z kluczem API tego nie robi, dopóki tego nie ustawisz: domyślnie bramka tylko mierzy. Z kluczem Savings Cloud swoje wydatki zobaczysz dodatkowo w panelu, token po tokenie.",
+    "caseCodeBody": "Przy subskrypcji opłata jest stała, a przy ustawieniach domyślnych bramka niczego nie zmienia w Twoim ruchu: mierzy na Twoim komputerze, za darmo, ile kosztuje każda sesja po cenie katalogowej. Na limity jest skill savings-mode, darmowy, którego efekt nie został jeszcze zmierzony. Z kluczem API jest prawdziwa faktura za tokeny — a miernik już działa: bez żadnego klucza BiVelio „bvsala claude” uruchamia Claude Code przez lokalną bramkę, bez dotykania linijki kodu. Bramka mierzy na Twoim komputerze to, co przez nią przechodzi, na podstawie zużycia raportowanego przez Twojego dostawcę, a przy wyjściu mówi Ci, ile wydano po cenie katalogowej, ile zaoszczędzono wraz z podstawą (zmierzone lub szacowane), ile żądań zmierzyła, których nie zdołała zmierzyć i dlaczego. Na modelach Anthropic przestawia też zapisy do pamięci podręcznej z godzinnego TTL na pięciominutowy tylko w turach, w których duża część promptu jest nowa (pierwsza tura sesji, kompaktowanie): oszczędność wyliczona z liczby tokenów podanej przez Twojego własnego dostawcę, nigdy z szacunków. Do tego Claude Code musi prosić o godzinną pamięć podręczną, a z kluczem API tego nie robi, dopóki tego nie ustawisz: domyślnie bramka tylko mierzy. Z kluczem Savings Cloud swoje wydatki zobaczysz dodatkowo w panelu, token po tokenie.",
     "caseAppName": "Twoja aplikacja",
     "caseAppSub": "Twój kod + Twój klucz API",
     "caseAppBody": "Przypadek, dla którego istnieje Savings Layer. Twoja aplikacja wywołuje API Twoim kluczem, dostawca nalicza każdy token, a warstwa instaluje się w dwóch krokach: pakiet i opakowanie wywołania. Od pierwszej prośby zwraca <b>SavingsReport</b> z oszczędnością, rozdzieloną na zmierzone i oszacowane.",
@@ -2165,7 +2166,7 @@
     "billWith": "To zależy",
     "billDepends": "od tego, jak często Twój ruch się powtarza",
     "hero": {
-      "ctaInstall": "Zainstaluj open source",
+      "ctaInstall": "Zainstaluj za darmo",
       "ctaResults": "Zobacz odtwarzalne wyniki"
     },
     "beam": {
