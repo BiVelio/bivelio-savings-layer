@@ -999,6 +999,8 @@ describe("5 · la garantía publicada cita esta batería y dice sus límites", (
     const guia = leer("../docs/terminales/README.md");
     expect(guia).toContain("## What the gateway guarantees");
     expect(guia).toContain("test/gateway-no-empeora.test.ts");
+    // El repositorio es público: la guía decía «the source repository is not public».
+    expect(guia).not.toMatch(/repository is not public/i);
     expect(guia).toContain("[gateway] degraded traffic");
     for (const cosa of ["tool_reference", "defer_loading", "cache_control", "anthropic-beta", "advisor", 'ttl: "1h"']) {
       expect(guia, cosa).toContain(cosa);
