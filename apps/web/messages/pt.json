@@ -195,7 +195,7 @@
       "network": "Sem ligação. Verifica a tua rede e tenta de novo.",
       "missingFields": "Escreve o teu email e a palavra-passe."
     },
-    "signupMedir": "Ou comece grátis com o Measure: o plano de nuvem gratuito para equipas pequenas, sem cartão, até {seats} lugares e {requests} pedidos por dia, com as mesmas alavancas que sem chave (com uma exceção no corte de resultados de ferramentas, descrita no README) e a sua poupança real no painel. Poupa com @bivelio/savings-layer {saves} ou posterior; as versões anteriores só observam.",
+    "signupMedir": "Ou comece grátis com o Measure: o plano de nuvem gratuito para equipas pequenas, sem cartão, até {seats} lugares e {requests} pedidos por dia, com exatamente as mesmas alavancas que sem chave e a sua poupança real no painel. Poupa com @bivelio/savings-layer {saves} ou posterior; as versões anteriores só observam.",
     "signupPlanPro": "Escolheste {plan} — {price} por lugar e mês. Cria a tua conta, confirma o teu e-mail e pagas no painel, através da Stripe.",
     "signupPlanTeam": "Escolheste {plan} — {price} por mês, com {seats} lugares incluídos. Cria a tua conta, confirma o teu e-mail e pagas no painel, através da Stripe.",
     "openSourceQuestion": "Só queres o motor open source?",
@@ -1361,14 +1361,14 @@
     "pricing": {
       "eyebrow": "Planos",
       "title": "Motor open source. Controlo cloud para a tua equipa.",
-      "body": "O pacote é open core Apache-2.0: todas as alavancas incluídas e grátis, sem chave, e zero telemetria. A nuvem é opcional — Measure é o plano gratuito, Pro e Team são faturados por lugar, em {currency}, sem comissão sobre a tua poupança.",
+      "body": "O pacote é open core Apache-2.0: todas as alavancas incluídas e grátis, sem chave, e zero telemetria. A nuvem é opcional — Measure é o plano gratuito, Pro é faturado por lugar e Team tem uma mensalidade fixa com lugares incluídos, em {currency}, poupes ou não, sem comissão sobre a tua poupança.",
       "amount": "{amount}",
       "per": "/ lugar / mês",
       "plans": {
         "medir": {
           "name": "Measure",
           "price": "Grátis",
-          "body": "Grátis, sem cartão. O plano NUVEM gratuito, para equipas pequenas: uma organização, até {seats} lugares e {requests} pedidos por dia. As mesmas alavancas que o open core sem chave (com uma exceção no corte de resultados de ferramentas, descrita no README), mais o painel com a tua poupança real; nunca entra em nenhuma comissão. Poupa com @bivelio/savings-layer {saves} ou posterior; as versões desde a {version} até antes da {saves} só observam.",
+          "body": "Grátis, sem cartão. O plano NUVEM gratuito, para equipas pequenas: uma organização, até {seats} lugares e {requests} pedidos por dia. Exatamente as mesmas alavancas que o open core sem chave, mais o painel com a tua poupança real; nunca entra em nenhuma comissão. Poupa com @bivelio/savings-layer {saves} ou posterior; as versões desde a {version} até antes da {saves} só observam.",
           "cta": "Começar grátis →"
         },
         "pro": {
@@ -1422,7 +1422,7 @@
     },
     "footer": {
       "ctaTitle": "Meça-o com o seu próprio tráfego",
-      "ctaSub": "Uma vez instalado, cada chamada devolve o seu SavingsReport, com medido e estimado separados. O open core não precisa de chaves: as alavancas correm em local com zero telemetria. A nuvem opcional começa grátis com Measure e é faturada por lugar, sem comissão sobre a tua poupança.",
+      "ctaSub": "Uma vez instalado, cada chamada devolve o seu SavingsReport, com medido e estimado separados. O open core não precisa de chaves: as alavancas correm em local com zero telemetria. A nuvem opcional começa grátis com Measure; os seus planos pagos têm uma mensalidade fixa, sem comissão sobre a tua poupança.",
       "ctaStart": "Começar",
       "tagline": "O <b>BiVelio Savings Layer</b> é um otimizador de custo de LLM neutro quanto ao fornecedor — cada valor medido é medido contra o contador do fornecedor; o estimado e o simulado mostram-se à parte, ditos como tais, e nunca se faturam.",
       "badge": "BV‑SALA · Savings Layer",
@@ -1638,7 +1638,7 @@
       "items": [
         {
           "q": "O que se paga exatamente?",
-          "a": "O motor open source é gratuito. O Savings Cloud tem um plano gratuito, o Measure, e dois planos de mensalidade fixa por lugar, o Pro e o Team. A mensalidade paga-se haja poupança ou não, não tem comissão sobre a poupança e não inclui o consumo do teu fornecedor de LLM: esse continuas a pagá-lo tu, nas condições dele."
+          "a": "O motor open source é gratuito. O Savings Cloud tem um plano gratuito, o Measure, e dois planos de mensalidade fixa: o Pro, por lugar, e o Team, com lugares incluídos e lugares extra à parte. A mensalidade paga-se haja poupança ou não, não tem comissão sobre a poupança e não inclui o consumo do teu fornecedor de LLM: esse continuas a pagá-lo tu, nas condições dele."
         },
         {
           "q": "O que é um lugar?",
@@ -1646,7 +1646,7 @@
         },
         {
           "q": "Qual é a diferença entre o Measure e o Community?",
-          "a": "O Community é o motor open source na tua infraestrutura: sem conta, sem chave da BiVelio, sem telemetria por defeito e sem depender dos servidores da BiVelio. O Measure é o plano gratuito do Savings Cloud para equipas pequenas: precisa de conta e de chave, aplica as mesmas alavancas que o Community (com uma exceção no corte de resultados de ferramentas, descrita no README) e acrescenta o painel com a tua poupança real; com essa chave, uma camada que passa três dias sem resposta de savings.bivelio.com recusa todas as chamadas até a receber ou até removeres a chave. Com versões antigas do pacote só observa; a página de preços diz a partir de que versão poupa."
+          "a": "O Community é o motor open source na tua infraestrutura: sem conta, sem chave da BiVelio, sem telemetria por defeito e sem depender dos servidores da BiVelio. O Measure é o plano gratuito do Savings Cloud para equipas pequenas: precisa de conta e de chave, aplica exatamente as mesmas alavancas que o Community e acrescenta o painel com a tua poupança real; com essa chave, uma camada que passa três dias sem resposta de savings.bivelio.com recusa todas as chamadas até a receber ou até removeres a chave. Com versões antigas do pacote só observa; a página de preços diz a partir de que versão poupa."
         },
         {
           "q": "Serve para uma subscrição como o ChatGPT Plus?",
@@ -1670,7 +1670,7 @@
       "title": "Mede primeiro.",
       "titleAccent": "Decide depois.",
       "titleMark": "depois",
-      "sub": "O Measure é gratuito e não pede cartão: as mesmas alavancas que o motor open source (com uma exceção no corte de resultados de ferramentas, descrita no README), mais o painel com o que poupas de verdade com o teu próprio tráfego. O motor é open source e o seu código está à vista.",
+      "sub": "O Measure é gratuito e não pede cartão: exatamente as mesmas alavancas que o motor open source, mais o painel com o que poupas de verdade com o teu próprio tráfego. O motor é open source e o seu código está à vista.",
       "repo": "Ver o repositório"
     },
     "layer": {
@@ -2290,15 +2290,16 @@
     "lede": "O motor é open source: não precisa de chaves. Esta página dá preço ao Savings Cloud, a nuvem opcional — Measure grátis, depois Pro por lugar ou um plano Team, sem comissão sobre a tua poupança. Cada número desta página vem do mesmo código que te fatura, e muda quando o preço muda.",
     "plans": {
       "title": "Planos",
-      "intro": "Quatro planos, do menor para o maior. Pro e Team pagam-se por assento e não têm comissão.",
+      "intro": "Quatro planos, do menor para o maior. O Pro paga-se por lugar, o Team com uma mensalidade fixa com lugares incluídos mais cada lugar extra, e nenhum dos dois tem comissão.",
       "medir": {
         "name": "Measure",
-        "body": "<b>Grátis, sem cartão.</b> O plano NUVEM gratuito, para equipas pequenas: uma organização, até <b>{seats} lugares</b> e <b>{requests} pedidos por dia</b>. Aplica as mesmas alavancas que o open core sem chave, exceto que o corte de resultados de ferramentas já substituídos só atua dentro de um ciclo de ferramentas na Anthropic, e acrescenta o painel com a tua poupança real, com o medido e o estimado em separado; nunca leva comissão. Poupa com <b>@bivelio/savings-layer {saves} ou posterior</b>. As versões desde a {version} até antes da {saves} só observam com uma chave Measure: modo sombra, nenhuma alavanca aplicada, e o painel mostra quanto se teria poupado. As alavancas em si não precisam de plano nenhum: o open core corre sem chave."
+        "body": "<b>Grátis, sem cartão.</b> O plano NUVEM gratuito, para equipas pequenas: uma organização, até <b>{seats} lugares</b> e <b>{requests} pedidos por dia</b>. Aplica exatamente as mesmas alavancas que o open core sem chave, incluindo o corte de resultados de ferramentas já substituídos, e acrescenta o painel com a tua poupança real, com o medido e o estimado em separado; nunca leva comissão. Poupa com <b>@bivelio/savings-layer {saves} ou posterior</b>. As versões desde a {version} até antes da {saves} só observam com uma chave Measure: modo sombra, nenhuma alavanca aplicada, e o painel mostra quanto se teria poupado. As alavancas em si não precisam de plano nenhum: o open core corre sem chave."
       },
       "pro": {
         "name": "Pro",
         "amount": "<b>{monthly}</b> por assento e mês, ou <b>{yearly}</b> por assento e ano, em {currency}.",
-        "body": "Tudo o que o Measure tem, para mais máquinas e pedidos: painel de equipa, medição partilhada, lugares e licenças. O motor e as suas alavancas continuam grátis sem chave. No gateway local, cada alavanca precisa ainda de estar incluída na licença da tua organização, verificada em fail-closed: se essa verificação não puder ser feita, os pedidos seguem intactos. <b>Sem comissão</b> sobre a poupança: pagas os lugares, poupes ou não."
+        "body": "Tudo o que o Measure tem, para mais máquinas e pedidos: painel de equipa, medição partilhada, lugares e licenças. O motor e as suas alavancas continuam grátis sem chave. No SDK, com uma licença paga, o corte de resultados de ferramentas já substituídos só atua dentro de um ciclo de ferramentas na Anthropic. No gateway local, cada alavanca precisa ainda de estar incluída na licença da tua organização, verificada em fail-closed: se essa verificação não puder ser feita, os pedidos seguem intactos. <b>Sem comissão</b> sobre a poupança: pagas os lugares, poupes ou não.",
+        "refund": "<b>Reembolso:</b> na primeira compra mensal podes pedir o reembolso no prazo de {days} dias <contact>escrevendo-nos</contact>."
       },
       "team": {
         "name": "Team",
@@ -2374,7 +2375,7 @@
       "cloud": {
         "tag": "Opcional · com planos",
         "name": "Savings Cloud",
-        "body": "O painel, a medição partilhada, a organização e as licenças. O Measure é o seu plano gratuito, para equipas pequenas; o Pro e o Team pagam-se com uma mensalidade fixa por lugar, sem comissão sobre a poupança. Uma chave, incluindo a chave gratuita do Measure, liga a camada a savings.bivelio.com: com licenseServerUrl definido, como o painel o configura, uma camada que passa {horas} horas sem resposta recusa todas as chamadas (LicenseError) até a receber ou até removeres a chave. O Community não tem essa dependência."
+        "body": "O painel, a medição partilhada, a organização e as licenças. O Measure é o seu plano gratuito, para equipas pequenas; o Pro paga-se com uma mensalidade fixa por lugar e o Team com uma mensalidade fixa com lugares incluídos, sem comissão sobre a poupança. Uma chave, incluindo a chave gratuita do Measure, liga a camada a savings.bivelio.com: com licenseServerUrl definido, como o painel o configura, uma camada que passa {horas} horas sem resposta recusa todas as chamadas (LicenseError) até a receber ou até removeres a chave. O Community não tem essa dependência."
       }
     },
     "cards": {
@@ -2408,7 +2409,7 @@
       "provider": "A mensalidade não inclui o consumo do teu fornecedor de LLM: continuas a pagá-lo tu, nas condições dele. Valores sem IVA.",
       "medir": {
         "unit": "O plano gratuito da nuvem, para equipas pequenas.",
-        "summary": "O painel com o que poupas de verdade, e as mesmas alavancas que sem chave (com uma exceção no corte de resultados de ferramentas, descrita no README). Poupa com @bivelio/savings-layer {saves} ou posterior; as versões anteriores só observam.",
+        "summary": "O painel com o que poupas de verdade, e exatamente as mesmas alavancas que sem chave. Poupa com @bivelio/savings-layer {saves} ou posterior; as versões anteriores só observam.",
         "cta": "Começar com o Measure",
         "version": "Funciona com a versão mais recente de @bivelio/savings-layer."
       },

@@ -195,7 +195,7 @@
       "network": "Brak połączenia. Sprawdź sieć i spróbuj ponownie.",
       "missingFields": "Wpisz e-mail i hasło."
     },
-    "signupMedir": "Albo zacznij za darmo z Measure: darmowy plan chmurowy dla małych zespołów, bez karty, do {seats} stanowisk i {requests} żądań dziennie, z tymi samymi dźwigniami co bez klucza (z jednym wyjątkiem dotyczącym przycinania wyników narzędzi, opisanym w README) i Twoimi rzeczywistymi oszczędnościami w panelu. Oszczędza od @bivelio/savings-layer {saves}; starsze wersje tylko obserwują.",
+    "signupMedir": "Albo zacznij za darmo z Measure: darmowy plan chmurowy dla małych zespołów, bez karty, do {seats} stanowisk i {requests} żądań dziennie, z dokładnie tymi samymi dźwigniami co bez klucza i Twoimi rzeczywistymi oszczędnościami w panelu. Oszczędza od @bivelio/savings-layer {saves}; starsze wersje tylko obserwują.",
     "signupPlanPro": "Wybrano {plan} — {price} za stanowisko miesięcznie. Załóż konto, potwierdź e-mail, a zapłacisz w panelu przez Stripe.",
     "signupPlanTeam": "Wybrano {plan} — {price} miesięcznie, {seats} stanowisk w cenie. Załóż konto, potwierdź e-mail, a zapłacisz w panelu przez Stripe.",
     "openSourceQuestion": "Chcesz tylko silnik open source?",
@@ -1361,14 +1361,14 @@
     "pricing": {
       "eyebrow": "Plany",
       "title": "Silnik open source. Kontrola w chmurze dla Twojego zespołu.",
-      "body": "Pakiet to open core Apache-2.0: wszystkie dźwignie w zestawie i za darmo, bez klucza, i zerowa telemetria. Chmura jest opcjonalna — Measure to plan darmowy, Pro i Team są rozliczane za stanowisko, w {currency}, bez prowizji od Twoich oszczędności.",
+      "body": "Pakiet to open core Apache-2.0: wszystkie dźwignie w zestawie i za darmo, bez klucza, i zerowa telemetria. Chmura jest opcjonalna — Measure to plan darmowy, Pro jest rozliczany za stanowisko, a Team stałą opłatą z wliczonymi stanowiskami, w {currency}, niezależnie od tego, czy oszczędzasz, bez prowizji od Twoich oszczędności.",
       "amount": "{amount}",
       "per": "/ stanowisko / mies.",
       "plans": {
         "medir": {
           "name": "Measure",
           "price": "Za darmo",
-          "body": "Za darmo, bez karty. Darmowy plan CHMUROWY dla małych zespołów: jedna organizacja, do {seats} stanowisk i {requests} żądań dziennie. Te same dźwignie co open core bez klucza (z jednym wyjątkiem dotyczącym przycinania wyników narzędzi, opisanym w README), plus panel z Twoimi rzeczywistymi oszczędnościami; nigdy nie wchodzi w żadną prowizję. Oszczędza od @bivelio/savings-layer {saves}; wersje od {version} do wersji poprzedzającej {saves} tylko obserwują.",
+          "body": "Za darmo, bez karty. Darmowy plan CHMUROWY dla małych zespołów: jedna organizacja, do {seats} stanowisk i {requests} żądań dziennie. Dokładnie te same dźwignie co open core bez klucza, plus panel z Twoimi rzeczywistymi oszczędnościami; nigdy nie wchodzi w żadną prowizję. Oszczędza od @bivelio/savings-layer {saves}; wersje od {version} do wersji poprzedzającej {saves} tylko obserwują.",
           "cta": "Zacznij za darmo →"
         },
         "pro": {
@@ -1422,7 +1422,7 @@
     },
     "footer": {
       "ctaTitle": "Zmierz to na własnym ruchu",
-      "ctaSub": "Po instalacji każde wywołanie zwraca swój SavingsReport, z rozdzielonym zmierzonym i oszacowanym. Open core nie potrzebuje kluczy: dźwignie działają lokalnie z zerową telemetrią. Opcjonalna chmura zaczyna się za darmo od Measure i jest rozliczana za stanowisko, bez prowizji od Twoich oszczędności.",
+      "ctaSub": "Po instalacji każde wywołanie zwraca swój SavingsReport, z rozdzielonym zmierzonym i oszacowanym. Open core nie potrzebuje kluczy: dźwignie działają lokalnie z zerową telemetrią. Opcjonalna chmura zaczyna się za darmo od Measure; jej płatne plany mają stałą opłatę, bez prowizji od Twoich oszczędności.",
       "ctaStart": "Zacznij",
       "tagline": "<b>BiVelio Savings Layer</b> to neutralny wobec dostawcy optymalizator kosztów LLM — każda zmierzona liczba jest zmierzona względem licznika dostawcy; szacunki i symulacje pokazujemy osobno, nazwane wprost, i nigdy ich nie fakturujemy.",
       "badge": "BV‑SALA · Savings Layer",
@@ -1638,7 +1638,7 @@
       "items": [
         {
           "q": "Za co dokładnie się płaci?",
-          "a": "Silnik open source jest darmowy. Savings Cloud ma darmowy plan Measure oraz dwa plany ze stałą opłatą za stanowisko: Pro i Team. Opłatę ponosisz niezależnie od tego, czy oszczędzasz; nie ma prowizji od oszczędności i nie obejmuje ona zużycia u Twojego dostawcy LLM: za nie nadal płacisz samodzielnie, na jego warunkach."
+          "a": "Silnik open source jest darmowy. Savings Cloud ma darmowy plan Measure oraz dwa plany ze stałą opłatą: Pro, za stanowisko, i Team, z wliczonymi stanowiskami i dodatkowymi stanowiskami płatnymi osobno. Opłatę ponosisz niezależnie od tego, czy oszczędzasz; nie ma prowizji od oszczędności i nie obejmuje ona zużycia u Twojego dostawcy LLM: za nie nadal płacisz samodzielnie, na jego warunkach."
         },
         {
           "q": "Czym jest stanowisko?",
@@ -1646,7 +1646,7 @@
         },
         {
           "q": "Czym różnią się Measure i Community?",
-          "a": "Community to silnik open source w Twojej infrastrukturze: bez konta, bez klucza BiVelio, domyślnie bez telemetrii i bez zależności od serwerów BiVelio. Measure to darmowy plan Savings Cloud dla małych zespołów: wymaga konta i klucza, stosuje te same dźwignie co Community (z jednym wyjątkiem dotyczącym przycinania wyników narzędzi, opisanym w README) i dodaje panel z Twoimi rzeczywistymi oszczędnościami; z tym kluczem warstwa, która przez trzy dni nie dostaje odpowiedzi od savings.bivelio.com, odrzuca każde wywołanie, dopóki jej nie dostanie albo nie usuniesz klucza. Ze starszymi wersjami pakietu tylko obserwuje; od której wersji oszczędza, podaje strona cennika."
+          "a": "Community to silnik open source w Twojej infrastrukturze: bez konta, bez klucza BiVelio, domyślnie bez telemetrii i bez zależności od serwerów BiVelio. Measure to darmowy plan Savings Cloud dla małych zespołów: wymaga konta i klucza, stosuje dokładnie te same dźwignie co Community i dodaje panel z Twoimi rzeczywistymi oszczędnościami; z tym kluczem warstwa, która przez trzy dni nie dostaje odpowiedzi od savings.bivelio.com, odrzuca każde wywołanie, dopóki jej nie dostanie albo nie usuniesz klucza. Ze starszymi wersjami pakietu tylko obserwuje; od której wersji oszczędza, podaje strona cennika."
         },
         {
           "q": "Czy to działa z subskrypcją taką jak ChatGPT Plus?",
@@ -1670,7 +1670,7 @@
       "title": "Najpierw zmierz.",
       "titleAccent": "Potem zdecyduj.",
       "titleMark": "zdecyduj",
-      "sub": "Measure jest darmowy i nie wymaga karty: te same dźwignie co silnik open source (z jednym wyjątkiem dotyczącym przycinania wyników narzędzi, opisanym w README), plus panel z tym, co naprawdę oszczędzasz na własnym ruchu. Silnik jest open source, a jego kod jest jawny.",
+      "sub": "Measure jest darmowy i nie wymaga karty: dokładnie te same dźwignie co silnik open source, plus panel z tym, co naprawdę oszczędzasz na własnym ruchu. Silnik jest open source, a jego kod jest jawny.",
       "repo": "Zobacz repozytorium"
     },
     "layer": {
@@ -2290,15 +2290,16 @@
     "lede": "Silnik jest open source: nie potrzebuje kluczy. Ta strona wycenia Savings Cloud, opcjonalną chmurę — Measure za darmo, potem Pro za stanowisko lub plan Team, bez prowizji od Twoich oszczędności. Każda liczba na tej stronie pochodzi z tego samego kodu, który Cię rozlicza, i zmienia się, gdy zmienia się cena.",
     "plans": {
       "title": "Plany",
-      "intro": "Cztery plany, od najmniejszego do największego. Pro i Team są płatne za stanowisko i nie mają prowizji.",
+      "intro": "Cztery plany, od najmniejszego do największego. Pro jest płatny za stanowisko, Team stałą opłatą z wliczonymi stanowiskami plus każde dodatkowe stanowisko, i żaden z nich nie ma prowizji.",
       "medir": {
         "name": "Measure",
-        "body": "<b>Za darmo, bez karty.</b> Darmowy plan CHMUROWY dla małych zespołów: jedna organizacja, do <b>{seats} stanowisk</b> i <b>{requests} żądań dziennie</b>. Stosuje te same dźwignie co open core bez klucza, z tym że przycinanie zastąpionych wyników narzędzi działa tylko wewnątrz pętli narzędzi na Anthropic, i dodaje panel z Twoimi rzeczywistymi oszczędnościami, z osobno podanym pomiarem i szacunkiem; nigdy nie niesie prowizji. Oszczędza od <b>@bivelio/savings-layer {saves}</b>. Wersje od {version} do wersji poprzedzającej {saves} z kluczem Measure tylko obserwują: tryb cienia, żadna dźwignia nie jest stosowana, a panel pokazuje, ile by zaoszczędzono. Same dźwignie nie wymagają żadnego planu: open core działa bez klucza."
+        "body": "<b>Za darmo, bez karty.</b> Darmowy plan CHMUROWY dla małych zespołów: jedna organizacja, do <b>{seats} stanowisk</b> i <b>{requests} żądań dziennie</b>. Stosuje dokładnie te same dźwignie co open core bez klucza, łącznie z przycinaniem zastąpionych wyników narzędzi, i dodaje panel z Twoimi rzeczywistymi oszczędnościami, z osobno podanym pomiarem i szacunkiem; nigdy nie niesie prowizji. Oszczędza od <b>@bivelio/savings-layer {saves}</b>. Wersje od {version} do wersji poprzedzającej {saves} z kluczem Measure tylko obserwują: tryb cienia, żadna dźwignia nie jest stosowana, a panel pokazuje, ile by zaoszczędzono. Same dźwignie nie wymagają żadnego planu: open core działa bez klucza."
       },
       "pro": {
         "name": "Pro",
         "amount": "<b>{monthly}</b> za stanowisko miesięcznie lub <b>{yearly}</b> za stanowisko rocznie, w {currency}.",
-        "body": "Wszystko z Measure, dla większej liczby maszyn i żądań: panel zespołu, wspólne pomiary, stanowiska i licencje. Silnik i jego dźwignie pozostają darmowe bez klucza. W lokalnej bramie każda dźwignia musi też być objęta licencją Twojej organizacji, sprawdzaną w trybie fail-closed: jeśli tego sprawdzenia nie da się wykonać, żądania przechodzą bez zmian. <b>Bez prowizji</b> od oszczędności: płacisz za stanowiska niezależnie od tego, czy oszczędzasz."
+        "body": "Wszystko z Measure, dla większej liczby maszyn i żądań: panel zespołu, wspólne pomiary, stanowiska i licencje. Silnik i jego dźwignie pozostają darmowe bez klucza. W SDK, z płatną licencją, przycinanie zastąpionych wyników narzędzi działa tylko wewnątrz pętli narzędzi na Anthropic. W lokalnej bramie każda dźwignia musi też być objęta licencją Twojej organizacji, sprawdzaną w trybie fail-closed: jeśli tego sprawdzenia nie da się wykonać, żądania przechodzą bez zmian. <b>Bez prowizji</b> od oszczędności: płacisz za stanowiska niezależnie od tego, czy oszczędzasz.",
+        "refund": "<b>Zwrot:</b> przy pierwszym zakupie miesięcznym możesz poprosić o zwrot w ciągu {days} dni, <contact>pisząc do nas</contact>."
       },
       "team": {
         "name": "Team",
@@ -2374,7 +2375,7 @@
       "cloud": {
         "tag": "Opcjonalnie · z planami",
         "name": "Savings Cloud",
-        "body": "Panel, wspólne pomiary, organizacja i licencje. Measure to darmowy plan dla małych zespołów; Pro i Team są płatne stałą opłatą za stanowisko, bez prowizji od oszczędności. Klucz, także darmowy klucz Measure, wiąże warstwę z savings.bivelio.com: przy ustawionym licenseServerUrl, tak jak konfiguruje go panel, warstwa, która przez {horas} godziny nie dostaje odpowiedzi, odrzuca każde wywołanie (LicenseError), dopóki jej nie dostanie albo nie usuniesz klucza. Community nie ma tej zależności."
+        "body": "Panel, wspólne pomiary, organizacja i licencje. Measure to darmowy plan dla małych zespołów; Pro jest płatny stałą opłatą za stanowisko, a Team stałą opłatą z wliczonymi stanowiskami, bez prowizji od oszczędności. Klucz, także darmowy klucz Measure, wiąże warstwę z savings.bivelio.com: przy ustawionym licenseServerUrl, tak jak konfiguruje go panel, warstwa, która przez {horas} godziny nie dostaje odpowiedzi, odrzuca każde wywołanie (LicenseError), dopóki jej nie dostanie albo nie usuniesz klucza. Community nie ma tej zależności."
       }
     },
     "cards": {
@@ -2408,7 +2409,7 @@
       "provider": "Opłata nie obejmuje zużycia u Twojego dostawcy LLM: nadal płacisz za nie samodzielnie, na jego warunkach. Kwoty bez VAT.",
       "medir": {
         "unit": "Darmowy plan chmurowy dla małych zespołów.",
-        "summary": "Panel z tym, co naprawdę oszczędzasz, i te same dźwignie co bez klucza (z jednym wyjątkiem dotyczącym przycinania wyników narzędzi, opisanym w README). Oszczędza od @bivelio/savings-layer {saves}; starsze wersje tylko obserwują.",
+        "summary": "Panel z tym, co naprawdę oszczędzasz, i dokładnie te same dźwignie co bez klucza. Oszczędza od @bivelio/savings-layer {saves}; starsze wersje tylko obserwują.",
         "cta": "Zacznij od Measure",
         "version": "Działa z najnowszą wersją @bivelio/savings-layer."
       },

@@ -195,7 +195,7 @@
       "network": "Bağlantı yok. Ağınızı kontrol edip tekrar deneyin.",
       "missingFields": "E-postanızı ve şifrenizi girin."
     },
-    "signupMedir": "Ya da Measure ile ücretsiz başlayın: küçük ekipler için ücretsiz bulut planı, kartsız, {seats} koltuğa ve günde {requests} isteğe kadar; anahtarsız kullanımdaki kolların aynısı (tek istisna araç sonuçlarının kırpılmasında, bkz. README) ve panelde gerçek tasarrufunuz. @bivelio/savings-layer {saves} ve üzeriyle tasarruf eder; eski sürümler yalnızca gözlemler.",
+    "signupMedir": "Ya da Measure ile ücretsiz başlayın: küçük ekipler için ücretsiz bulut planı, kartsız, {seats} koltuğa ve günde {requests} isteğe kadar; anahtarsız kullanımdaki kolların birebir aynısı ve panelde gerçek tasarrufunuz. @bivelio/savings-layer {saves} ve üzeriyle tasarruf eder; eski sürümler yalnızca gözlemler.",
     "signupPlanPro": "{plan} planını seçtiniz — koltuk başına aylık {price}. Hesabınızı oluşturun, e-postanızı onaylayın; ödemeyi panelde Stripe üzerinden yaparsınız.",
     "signupPlanTeam": "{plan} planını seçtiniz — aylık {price}, {seats} koltuk dahil. Hesabınızı oluşturun, e-postanızı onaylayın; ödemeyi panelde Stripe üzerinden yaparsınız.",
     "openSourceQuestion": "Yalnızca açık kaynak motoru mu istiyorsunuz?",
@@ -1361,14 +1361,14 @@
     "pricing": {
       "eyebrow": "Planlar",
       "title": "Açık kaynak motor. Ekibiniz için bulut kontrolü.",
-      "body": "Paket Apache-2.0 açık çekirdektir: tüm kollar dahil ve ücretsiz, anahtarsız, sıfır telemetri. Bulut isteğe bağlıdır — Measure ücretsiz plandır, Pro ve Team koltuk başına, {currency} cinsinden, tasarrufunuz üzerinden komisyonsuz faturalanır.",
+      "body": "Paket Apache-2.0 açık çekirdektir: tüm kollar dahil ve ücretsiz, anahtarsız, sıfır telemetri. Bulut isteğe bağlıdır — Measure ücretsiz plandır, Pro koltuk başına, Team ise koltukları dahil sabit bir ücretle, {currency} cinsinden, tasarruf etseniz de etmeseniz de, tasarrufunuz üzerinden komisyonsuz faturalanır.",
       "amount": "{amount}",
       "per": "/ koltuk / ay",
       "plans": {
         "medir": {
           "name": "Measure",
           "price": "Ücretsiz",
-          "body": "Ücretsiz, kartsız. Küçük ekipler için ücretsiz BULUT planı: bir kuruluş, {seats} koltuğa ve günde {requests} isteğe kadar. Anahtarsız açık çekirdekle aynı kollar (tek istisna araç sonuçlarının kırpılmasında, bkz. README) ve gerçek tasarrufunuzu gösteren panel; asla bir komisyona dahil olmaz. @bivelio/savings-layer {saves} veya üzeri ile tasarruf eder; {version} sürümünden {saves} öncesine kadarki sürümler yalnızca gözlemler.",
+          "body": "Ücretsiz, kartsız. Küçük ekipler için ücretsiz BULUT planı: bir kuruluş, {seats} koltuğa ve günde {requests} isteğe kadar. Anahtarsız açık çekirdekle birebir aynı kollar ve gerçek tasarrufunuzu gösteren panel; asla bir komisyona dahil olmaz. @bivelio/savings-layer {saves} veya üzeri ile tasarruf eder; {version} sürümünden {saves} öncesine kadarki sürümler yalnızca gözlemler.",
           "cta": "Ücretsiz başlayın →"
         },
         "pro": {
@@ -1422,7 +1422,7 @@
     },
     "footer": {
       "ctaTitle": "Kendi trafiğinde ölç",
-      "ctaSub": "Kurulduktan sonra her çağrı SavingsReport'unu döndürür; ölçülen ve tahmin edilen ayrı tutulur. Açık çekirdek anahtar gerektirmez: kollar yerelde sıfır telemetriyle çalışır. İsteğe bağlı bulut Measure ile ücretsiz başlar ve koltuk başına, tasarrufunuz üzerinden komisyonsuz faturalanır.",
+      "ctaSub": "Kurulduktan sonra her çağrı SavingsReport'unu döndürür; ölçülen ve tahmin edilen ayrı tutulur. Açık çekirdek anahtar gerektirmez: kollar yerelde sıfır telemetriyle çalışır. İsteğe bağlı bulut Measure ile ücretsiz başlar; ücretli planları sabit ücretlidir ve tasarrufunuz üzerinden komisyon almaz.",
       "ctaStart": "Başla",
       "tagline": "<b>BiVelio Savings Layer</b>, sağlayıcıdan bağımsız bir LLM maliyet optimizasyon aracıdır — ölçülen her rakam sağlayıcının kendi sayacına göre ölçülür; tahminler ve simülasyonlar ayrı gösterilir, öyle oldukları belirtilir ve asla faturalanmaz.",
       "badge": "BV‑SALA · Savings Layer",
@@ -1638,7 +1638,7 @@
       "items": [
         {
           "q": "Tam olarak ne için ödeme yapılır?",
-          "a": "Açık kaynak motor ücretsizdir. Savings Cloud'un ücretsiz bir planı (Measure) ve koltuk başına sabit ücretli iki planı (Pro ve Team) vardır. Ücret, tasarruf olsun ya da olmasın ödenir, tasarruf üzerinden komisyon içermez ve LLM sağlayıcınızın kullanım bedelini kapsamaz: onu kendi koşullarıyla siz ödemeye devam edersiniz."
+          "a": "Açık kaynak motor ücretsizdir. Savings Cloud'un ücretsiz bir planı (Measure) ve sabit ücretli iki planı vardır: koltuk başına Pro ve koltukları dahil, ek koltukları ayrıca ödenen Team. Ücret, tasarruf olsun ya da olmasın ödenir, tasarruf üzerinden komisyon içermez ve LLM sağlayıcınızın kullanım bedelini kapsamaz: onu kendi koşullarıyla siz ödemeye devam edersiniz."
         },
         {
           "q": "Koltuk nedir?",
@@ -1646,7 +1646,7 @@
         },
         {
           "q": "Measure ile Community arasındaki fark nedir?",
-          "a": "Community, altyapınızdaki açık kaynak motordur: hesap yok, BiVelio anahtarı yok, varsayılan olarak telemetri yok ve BiVelio sunucularına bağımlılık yok. Measure, küçük ekipler için ücretsiz Savings Cloud planıdır: hesap ve anahtar gerektirir, Community ile aynı kolları uygular (tek istisna araç sonuçlarının kırpılmasında, bkz. README) ve gerçek tasarrufunuzu gösteren paneli ekler; bu anahtarla, savings.bivelio.com'dan üç gün yanıt alamayan bir katman, yanıt alana ya da anahtarı kaldırana kadar her çağrıyı reddeder. Paketin eski sürümleriyle yalnızca gözlemler; hangi sürümden itibaren tasarruf ettiği fiyatlandırma sayfasında yazar."
+          "a": "Community, altyapınızdaki açık kaynak motordur: hesap yok, BiVelio anahtarı yok, varsayılan olarak telemetri yok ve BiVelio sunucularına bağımlılık yok. Measure, küçük ekipler için ücretsiz Savings Cloud planıdır: hesap ve anahtar gerektirir, Community ile birebir aynı kolları uygular ve gerçek tasarrufunuzu gösteren paneli ekler; bu anahtarla, savings.bivelio.com'dan üç gün yanıt alamayan bir katman, yanıt alana ya da anahtarı kaldırana kadar her çağrıyı reddeder. Paketin eski sürümleriyle yalnızca gözlemler; hangi sürümden itibaren tasarruf ettiği fiyatlandırma sayfasında yazar."
         },
         {
           "q": "ChatGPT Plus gibi bir abonelikte işe yarar mı?",
@@ -1670,7 +1670,7 @@
       "title": "Önce ölçün.",
       "titleAccent": "Sonra karar verin.",
       "titleMark": "karar verin",
-      "sub": "Measure ücretsizdir ve kart istemez: açık kaynak motorla aynı kollar (tek istisna araç sonuçlarının kırpılmasında, bkz. README) ve kendi trafiğinizde gerçekte ne tasarruf ettiğinizi gösteren panel. Motor açık kaynaktır ve kodu herkesin gözü önündedir.",
+      "sub": "Measure ücretsizdir ve kart istemez: açık kaynak motorla birebir aynı kollar ve kendi trafiğinizde gerçekte ne tasarruf ettiğinizi gösteren panel. Motor açık kaynaktır ve kodu herkesin gözü önündedir.",
       "repo": "Depoyu görün"
     },
     "layer": {
@@ -2290,15 +2290,16 @@
     "lede": "Motor açık kaynaktır: anahtar gerekmez. Bu sayfa isteğe bağlı bulut olan Savings Cloud'u fiyatlandırır — Measure ücretsiz, sonra koltuk başına Pro veya bir Team planı, tasarrufunuz üzerinden komisyonsuz. Buradaki her rakam sizi faturalayan kodun aynısından gelir ve fiyat değişince değişir.",
     "plans": {
       "title": "Planlar",
-      "intro": "Küçükten büyüğe dört plan. Pro ve Team koltuk başına ödenir ve komisyon içermez.",
+      "intro": "Küçükten büyüğe dört plan. Pro koltuk başına ödenir, Team ise koltukları dahil sabit bir ücret artı her ek koltuk için ödenir; ikisi de komisyon içermez.",
       "medir": {
         "name": "Measure",
-        "body": "<b>Ücretsiz, kartsız.</b> Küçük ekipler için ücretsiz BULUT planı: bir kuruluş, <b>{seats} koltuğa</b> ve günde <b>{requests} isteğe</b> kadar. Anahtarsız açık çekirdekle aynı kolları uygular (tek fark: yerini yenisine bırakmış araç sonuçlarının kırpılması yalnızca Anthropic'teki bir araç döngüsü içinde çalışır) ve gerçek tasarrufunuzu, ölçülen ve tahmini ayrı tutarak gösteren paneli ekler; asla komisyon taşımaz. <b>@bivelio/savings-layer {saves} veya üzeri</b> ile tasarruf eder. {version} sürümünden {saves} öncesine kadarki sürümler Measure anahtarıyla yalnızca gözlemler: gölge modu, hiçbir kol uygulanmaz ve panel ne tasarruf edilmiş olacağını gösterir. Kolların kendisi hiçbir plan gerektirmez: açık çekirdek anahtarsız çalışır."
+        "body": "<b>Ücretsiz, kartsız.</b> Küçük ekipler için ücretsiz BULUT planı: bir kuruluş, <b>{seats} koltuğa</b> ve günde <b>{requests} isteğe</b> kadar. Anahtarsız açık çekirdekle birebir aynı kolları uygular (yerini yenisine bırakmış araç sonuçlarının kırpılması dahil) ve gerçek tasarrufunuzu, ölçülen ve tahmini ayrı tutarak gösteren paneli ekler; asla komisyon taşımaz. <b>@bivelio/savings-layer {saves} veya üzeri</b> ile tasarruf eder. {version} sürümünden {saves} öncesine kadarki sürümler Measure anahtarıyla yalnızca gözlemler: gölge modu, hiçbir kol uygulanmaz ve panel ne tasarruf edilmiş olacağını gösterir. Kolların kendisi hiçbir plan gerektirmez: açık çekirdek anahtarsız çalışır."
       },
       "pro": {
         "name": "Pro",
         "amount": "Koltuk başına aylık <b>{monthly}</b> veya koltuk başına yıllık <b>{yearly}</b>, {currency} cinsinden.",
-        "body": "Measure'daki her şey, daha fazla makine ve istek için: ekip paneli, ortak ölçüm, koltuklar ve lisanslar. Motor ve kolları anahtarsız ücretsiz kalır. Tasarruf üzerinden Yerel gateway'de her kolun ayrıca organizasyonunuzun lisansında yer alması gerekir ve bu fail-closed olarak denetlenir: denetim yapılamazsa istekler dokunulmadan iletilir. <b>komisyon yok</b>: tasarruf etseniz de etmeseniz de koltukları ödersiniz."
+        "body": "Measure'daki her şey, daha fazla makine ve istek için: ekip paneli, ortak ölçüm, koltuklar ve lisanslar. Motor ve kolları anahtarsız ücretsiz kalır. SDK'da, ücretli bir lisansla, yerini yenisine bırakmış araç sonuçlarının kırpılması yalnızca Anthropic'teki bir araç döngüsü içinde çalışır. Yerel gateway'de her kolun ayrıca organizasyonunuzun lisansında yer alması gerekir ve bu fail-closed olarak denetlenir: denetim yapılamazsa istekler dokunulmadan iletilir. Tasarruf üzerinden <b>komisyon yok</b>: tasarruf etseniz de etmeseniz de koltukları ödersiniz.",
+        "refund": "<b>İade:</b> ilk aylık satın alımda, {days} gün içinde <contact>bize yazarak</contact> iade isteyebilirsiniz."
       },
       "team": {
         "name": "Team",
@@ -2374,7 +2375,7 @@
       "cloud": {
         "tag": "İsteğe bağlı · planlı",
         "name": "Savings Cloud",
-        "body": "Panel, ortak ölçüm, organizasyon ve lisanslar. Measure, küçük ekipler için ücretsiz planıdır; Pro ve Team, tasarruf üzerinden komisyon olmadan koltuk başına sabit bir ücretle ödenir. Bir anahtar, ücretsiz Measure anahtarı da dahil, katmanı savings.bivelio.com'a bağlar: panelin kurduğu gibi licenseServerUrl ayarlıyken, {horas} saat yanıt alamayan bir katman, yanıt alana ya da anahtarı kaldırana kadar her çağrıyı reddeder (LicenseError). Community'de bu bağımlılık yoktur."
+        "body": "Panel, ortak ölçüm, organizasyon ve lisanslar. Measure, küçük ekipler için ücretsiz planıdır; Pro koltuk başına sabit bir ücretle, Team ise koltukları dahil sabit bir ücretle, tasarruf üzerinden komisyon olmadan ödenir. Bir anahtar, ücretsiz Measure anahtarı da dahil, katmanı savings.bivelio.com'a bağlar: panelin kurduğu gibi licenseServerUrl ayarlıyken, {horas} saat yanıt alamayan bir katman, yanıt alana ya da anahtarı kaldırana kadar her çağrıyı reddeder (LicenseError). Community'de bu bağımlılık yoktur."
       }
     },
     "cards": {
@@ -2408,7 +2409,7 @@
       "provider": "Ücret, LLM sağlayıcınızın kullanım bedelini kapsamaz: onu kendi koşullarıyla siz ödemeye devam edersiniz. Tutarlara KDV dahil değildir.",
       "medir": {
         "unit": "Küçük ekipler için ücretsiz bulut planı.",
-        "summary": "Gerçekte ne tasarruf ettiğinizi gösteren panel ve anahtarsız kullanımdaki kolların aynısı (tek istisna araç sonuçlarının kırpılmasında, bkz. README). @bivelio/savings-layer {saves} ve üzeriyle tasarruf eder; eski sürümler yalnızca gözlemler.",
+        "summary": "Gerçekte ne tasarruf ettiğinizi gösteren panel ve anahtarsız kullanımdaki kolların birebir aynısı. @bivelio/savings-layer {saves} ve üzeriyle tasarruf eder; eski sürümler yalnızca gözlemler.",
         "cta": "Measure ile başlayın",
         "version": "@bivelio/savings-layer'ın en son sürümüyle çalışır."
       },

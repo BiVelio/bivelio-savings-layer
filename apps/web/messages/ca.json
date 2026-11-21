@@ -195,7 +195,7 @@
       "network": "Sense connexió. Comprova la xarxa i torna-ho a intentar.",
       "missingFields": "Escriu el teu correu i la contrasenya."
     },
-    "signupMedir": "O comença gratis amb Measure: el pla de núvol gratuït per a equips petits, sense targeta, fins a {seats} seients i {requests} peticions al dia, amb les mateixes palanques que sense clau (amb una excepció en el retall de resultats d'eines, explicada al README) i el teu estalvi real al tauler. Estalvia amb @bivelio/savings-layer {saves} o posterior; les versions anteriors només observen.",
+    "signupMedir": "O comença gratis amb Measure: el pla de núvol gratuït per a equips petits, sense targeta, fins a {seats} seients i {requests} peticions al dia, amb exactament les mateixes palanques que sense clau i el teu estalvi real al tauler. Estalvia amb @bivelio/savings-layer {saves} o posterior; les versions anteriors només observen.",
     "signupPlanPro": "Has triat {plan} — {price} per seient i mes. Crea el compte, confirma el correu i pagaràs des del panell, amb Stripe.",
     "signupPlanTeam": "Has triat {plan} — {price} al mes, amb {seats} seients inclosos. Crea el compte, confirma el correu i pagaràs des del panell, amb Stripe.",
     "openSourceQuestion": "Només vols el motor open source?",
@@ -1361,14 +1361,14 @@
     "pricing": {
       "eyebrow": "Plans",
       "title": "Motor open source. Control cloud per al teu equip.",
-      "body": "El paquet és open core Apache-2.0: totes les palanques incloses i gratis, sense clau, i zero telemetria. El núvol és opcional — Measure és el pla gratuït, Pro i Team es facturen per seient, en {currency}, estalviïs o no, i sense comissió sobre el teu estalvi.",
+      "body": "El paquet és open core Apache-2.0: totes les palanques incloses i gratis, sense clau, i zero telemetria. El núvol és opcional — Measure és el pla gratuït, Pro es factura per seient i Team és una quota fixa amb seients inclosos, en {currency}, estalviïs o no, i sense comissió sobre el teu estalvi.",
       "amount": "{amount}",
       "per": "/ seient / mes",
       "plans": {
         "medir": {
           "name": "Measure",
           "price": "Gratis",
-          "body": "Gratis, sense targeta. El pla de NÚVOL gratuït, per a equips petits: una organització, fins a {seats} seients i {requests} peticions al dia. Les mateixes palanques que l'open core sense clau (amb una excepció en el retall de resultats d'eines, explicada al README), més el tauler amb el teu estalvi real; mai no entra en cap comissió. Estalvia amb @bivelio/savings-layer {saves} o posterior; les versions des de la {version} fins abans de la {saves} només observen.",
+          "body": "Gratis, sense targeta. El pla de NÚVOL gratuït, per a equips petits: una organització, fins a {seats} seients i {requests} peticions al dia. Exactament les mateixes palanques que l'open core sense clau, més el tauler amb el teu estalvi real; mai no entra en cap comissió. Estalvia amb @bivelio/savings-layer {saves} o posterior; les versions des de la {version} fins abans de la {saves} només observen.",
           "cta": "Comença gratis →"
         },
         "pro": {
@@ -1422,7 +1422,7 @@
     },
     "footer": {
       "ctaTitle": "Mesura-ho amb el teu propi trànsit",
-      "ctaSub": "Un cop instal·lat, cada trucada retorna el seu SavingsReport, amb el mesurat i l'estimat separats. L'open core no necessita claus: les palanques corren en local amb zero telemetria. El núvol opcional comença gratis amb Measure i es factura per seient, sense comissió sobre el teu estalvi.",
+      "ctaSub": "Un cop instal·lat, cada trucada retorna el seu SavingsReport, amb el mesurat i l'estimat separats. L'open core no necessita claus: les palanques corren en local amb zero telemetria. El núvol opcional comença gratis amb Measure; els seus plans de pagament són una quota fixa, sense comissió sobre el teu estalvi.",
       "ctaStart": "Comença",
       "tagline": "<b>BiVelio Savings Layer</b> és un optimitzador de cost de LLM neutral respecte al proveïdor — cada xifra mesurada ho és contra el comptador del proveïdor; l'estimat i el simulat es mostren a part, dits com a tals, i mai no es facturen.",
       "badge": "BV‑SALA · Savings Layer",
@@ -1638,7 +1638,7 @@
       "items": [
         {
           "q": "Què es paga exactament?",
-          "a": "El motor open source és gratuït. Savings Cloud té un pla gratuït, Measure, i dos plans de quota fixa per seient, Pro i Team. La quota es paga hi hagi estalvi o no, no porta comissió sobre l’estalvi i no inclou el consum del teu proveïdor de LLM: aquest el continues pagant tu, amb les seves condicions."
+          "a": "El motor open source és gratuït. Savings Cloud té un pla gratuït, Measure, i dos plans de quota fixa: Pro, per seient, i Team, amb seients inclosos i seients extra a part. La quota es paga hi hagi estalvi o no, no porta comissió sobre l’estalvi i no inclou el consum del teu proveïdor de LLM: aquest el continues pagant tu, amb les seves condicions."
         },
         {
           "q": "Què és un seient?",
@@ -1646,7 +1646,7 @@
         },
         {
           "q": "En què es diferencien Measure i Community?",
-          "a": "Community és el motor open source a la teva infraestructura: sense compte, sense clau de BiVelio, sense telemetria per defecte i sense dependre dels servidors de BiVelio. Measure és el pla gratuït de Savings Cloud per a equips petits: necessita compte i clau, aplica les mateixes palanques que Community (amb una excepció en el retall de resultats d'eines, explicada al README) i hi afegeix el tauler amb el teu estalvi real; amb aquesta clau, una capa que passa tres dies sense resposta de savings.bivelio.com rebutja totes les crides fins que la rep o treus la clau. Amb versions antigues del paquet només observa; la pàgina de preus diu des de quina versió estalvia."
+          "a": "Community és el motor open source a la teva infraestructura: sense compte, sense clau de BiVelio, sense telemetria per defecte i sense dependre dels servidors de BiVelio. Measure és el pla gratuït de Savings Cloud per a equips petits: necessita compte i clau, aplica exactament les mateixes palanques que Community i hi afegeix el tauler amb el teu estalvi real; amb aquesta clau, una capa que passa tres dies sense resposta de savings.bivelio.com rebutja totes les crides fins que la rep o treus la clau. Amb versions antigues del paquet només observa; la pàgina de preus diu des de quina versió estalvia."
         },
         {
           "q": "Serveix per a una subscripció com ChatGPT Plus?",
@@ -1670,7 +1670,7 @@
       "title": "Mesura primer.",
       "titleAccent": "Decideix després.",
       "titleMark": "després",
-      "sub": "Measure és gratuït i no demana targeta: les mateixes palanques que el motor open source (amb una excepció en el retall de resultats d'eines, explicada al README), més el tauler amb el que estalvies de veritat amb el teu propi trànsit. El motor és open source i el seu codi és a la vista.",
+      "sub": "Measure és gratuït i no demana targeta: exactament les mateixes palanques que el motor open source, més el tauler amb el que estalvies de veritat amb el teu propi trànsit. El motor és open source i el seu codi és a la vista.",
       "repo": "Veure el repositori"
     },
     "layer": {
@@ -2290,15 +2290,16 @@
     "lede": "El motor és open source: no necessita claus. Aquesta pàgina posa preu a Savings Cloud, el núvol opcional — Measure gratuït, després Pro per seient o un pla Team, sense comissió sobre el teu estalvi. Cada xifra d'aquesta pàgina es llegeix del mateix codi que et factura, així que canvia quan canvia el preu.",
     "plans": {
       "title": "Plans",
-      "intro": "Quatre plans, de menys a més. Pro i Team es paguen per seient i no porten comissió.",
+      "intro": "Quatre plans, de menys a més. Pro es paga per seient, Team amb una quota fixa amb seients inclosos més cada seient extra, i cap dels dos porta comissió.",
       "medir": {
         "name": "Measure",
-        "body": "<b>Gratis, sense targeta.</b> El pla de NÚVOL gratuït, per a equips petits: una organització, fins a <b>{seats} seients</b> i <b>{requests} peticions al dia</b>. Aplica les mateixes palanques que l'open core sense clau, excepte que el retall de resultats d'eines ja substituïts només actua dins d'un bucle d'eines a Anthropic, i hi afegeix el tauler amb el teu estalvi real, amb el que s'ha mesurat i el que s'ha estimat per separat; mai no porta comissió. Estalvia amb <b>@bivelio/savings-layer {saves} o posterior</b>. Les versions des de la {version} fins abans de la {saves} només observen amb una clau de Measure: mode ombra, cap palanca aplicada, i el tauler mostra què s'hauria estalviat. Les palanques en si no necessiten cap pla: l'open core corre sense clau."
+        "body": "<b>Gratis, sense targeta.</b> El pla de NÚVOL gratuït, per a equips petits: una organització, fins a <b>{seats} seients</b> i <b>{requests} peticions al dia</b>. Aplica exactament les mateixes palanques que l'open core sense clau, també el retall de resultats d'eines ja substituïts, i hi afegeix el tauler amb el teu estalvi real, amb el que s'ha mesurat i el que s'ha estimat per separat; mai no porta comissió. Estalvia amb <b>@bivelio/savings-layer {saves} o posterior</b>. Les versions des de la {version} fins abans de la {saves} només observen amb una clau de Measure: mode ombra, cap palanca aplicada, i el tauler mostra què s'hauria estalviat. Les palanques en si no necessiten cap pla: l'open core corre sense clau."
       },
       "pro": {
         "name": "Pro",
         "amount": "<b>{monthly}</b> per seient i mes, o <b>{yearly}</b> per seient i any, en {currency}.",
-        "body": "Tot el de Measure, per a més màquines i peticions: tauler d'equip, mesurament compartit, seients i llicències. El motor i les seves palanques continuen gratis sense clau. Al gateway local, cada palanca necessita a més que la llicència de la teva organització la inclogui, comprovat fail-closed: si aquesta comprovació no es pot fer, les peticions viatgen intactes. <b>Sense comissió</b> sobre l’estalvi: pagues els seients, estalviïs o no."
+        "body": "Tot el de Measure, per a més màquines i peticions: tauler d'equip, mesurament compartit, seients i llicències. El motor i les seves palanques continuen gratis sense clau. A l'SDK, amb una llicència de pagament, el retall de resultats d'eines ja substituïts només actua dins d'un bucle d'eines a Anthropic. Al gateway local, cada palanca necessita a més que la llicència de la teva organització la inclogui, comprovat fail-closed: si aquesta comprovació no es pot fer, les peticions viatgen intactes. <b>Sense comissió</b> sobre l’estalvi: pagues els seients, estalviïs o no.",
+        "refund": "<b>Devolució:</b> en la primera compra mensual pots demanar la devolució en un termini de {days} dies <contact>escrivint-nos</contact>."
       },
       "team": {
         "name": "Team",
@@ -2374,7 +2375,7 @@
       "cloud": {
         "tag": "Opcional · amb plans",
         "name": "Savings Cloud",
-        "body": "El tauler, el mesurament compartit, l’organització i les llicències. Measure n’és el pla gratuït, per a equips petits; Pro i Team es paguen amb una quota fixa per seient, sense comissió sobre l’estalvi. Una clau, també la gratuïta de Measure, lliga la capa a savings.bivelio.com: amb licenseServerUrl configurat, com el deixa el tauler, una capa que passa {horas} hores sense resposta rebutja totes les crides (LicenseError) fins que la rep o treus la clau. Community no té aquesta dependència."
+        "body": "El tauler, el mesurament compartit, l’organització i les llicències. Measure n’és el pla gratuït, per a equips petits; Pro es paga amb una quota fixa per seient i Team amb una quota fixa amb seients inclosos, sense comissió sobre l’estalvi. Una clau, també la gratuïta de Measure, lliga la capa a savings.bivelio.com: amb licenseServerUrl configurat, com el deixa el tauler, una capa que passa {horas} hores sense resposta rebutja totes les crides (LicenseError) fins que la rep o treus la clau. Community no té aquesta dependència."
       }
     },
     "cards": {
@@ -2408,7 +2409,7 @@
       "provider": "La quota no inclou el consum del teu proveïdor de LLM: el continues pagant tu, amb les seves condicions. Imports sense IVA.",
       "medir": {
         "unit": "El pla gratuït del núvol, per a equips petits.",
-        "summary": "El tauler amb el que estalvies de veritat, i les mateixes palanques que sense clau (amb una excepció en el retall de resultats d'eines, explicada al README). Estalvia amb @bivelio/savings-layer {saves} o posterior; les versions anteriors només observen.",
+        "summary": "El tauler amb el que estalvies de veritat, i exactament les mateixes palanques que sense clau. Estalvia amb @bivelio/savings-layer {saves} o posterior; les versions anteriors només observen.",
         "cta": "Comença amb Measure",
         "version": "Funciona amb la darrera versió de @bivelio/savings-layer."
       },

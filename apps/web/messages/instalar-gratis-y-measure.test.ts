@@ -158,7 +158,7 @@ describe("Measure con la 1.2.4: ahorra, y las versiones anteriores solo observan
     }
     expect(en["pricingPage.cards.medir.unit"]).toBe("The free cloud plan, for small teams.");
     expect(en["pricingPage.cards.medir.summary"]).toBe(
-      "The dashboard with what you really save, and the same levers as with no key (one exception for tool-result trimming, see the README). Saves with @bivelio/savings-layer {saves} or later; older versions only observe.",
+      "The dashboard with what you really save, and exactly the same levers as with no key. Saves with @bivelio/savings-layer {saves} or later; older versions only observe.",
     );
     // Las condiciones sí nombran la sombra: es lo que hacen las versiones anteriores.
     expect(en["pricingPage.plans.medir.body"]).toContain("only observe with a Measure key: shadow mode");
@@ -514,20 +514,26 @@ describe("verificación final de la 1.2.4 (#614): lo que quedaba en la web", () 
 });
 
 /**
- * LA EXCEPCIÓN DEL RECORTE (comportamiento final de la 1.2.4, CHANGELOG y README
- * de release/1.2.4): con cualquier clave, Measure incluida, el recorte de
- * resultados de herramientas sustituidos solo actúa dentro de un bucle de
- * herramientas en Anthropic; sin clave, como en la 1.2.3. Por eso ningún texto
- * público dice «las mismas palancas que sin clave» a secas: donde Measure se
- * ofrece va la forma corta («una excepción para el recorte, ver el README») y
- * en sus condiciones de /pricing, la excepción entera, como el README y el
- * panel de la 1.2.4. Las condiciones tampoco dicen que el ahorro real se mida
- * todo «con el contador del proveedor»: el panel enseña lo medido y lo estimado
- * aparte (dashboard.measurePlan.card.realContext).
+ * MEASURE = EXACTAMENTE LO MISMO QUE SIN CLAVE (decisión del dueño, 21-11-2026
+ * 21:45 UTC). Hasta esa hora la 1.2.4 tenía una excepción: con cualquier clave,
+ * Measure incluida, el recorte de resultados de herramientas sustituidos solo
+ * actuaba dentro de un bucle de herramientas en Anthropic. El dueño la quitó
+ * para Measure: «en modo gratis y open source debemos poder dar el servicio
+ * que decimos». La excepción queda SOLO para las licencias de pago (Pro, Team,
+ * Enterprise), y la web la cuenta donde están sus condiciones: Pro en /pricing
+ * (Team es «lo mismo que Pro»). Por eso:
+ *   · donde Measure se ofrece, «exactamente las mismas palancas», sin la forma
+ *     corta vieja («una excepción para el recorte, ver el README»);
+ *   · sus condiciones dicen que el recorte va incluido y no dan la excepción;
+ *   · la excepción, en todo lo público, solo en las condiciones de Pro.
+ * Las claves del panel (dashboard.measurePlan.*) las cambia otra rama.
+ * Las condiciones tampoco dicen que el ahorro real se mida todo «con el
+ * contador del proveedor»: el panel enseña lo medido y lo estimado aparte
+ * (dashboard.measurePlan.card.realContext).
  */
-describe("la excepción del recorte de resultados de herramientas (1.2.4)", () => {
-  /** La forma corta, la misma en las cinco claves que ofrecen Measure. */
-  const CORTA: Record<Loc, string> = {
+describe("Measure aplica exactamente las mismas palancas que sin clave; el recorte, excepción solo de pago", () => {
+  /** La forma corta vieja: ya no va en ningún texto público. */
+  const VIEJA: Record<Loc, string> = {
     ca: "(amb una excepció en el retall de resultats d'eines, explicada al README)",
     de: "(mit einer Ausnahme beim Kürzen von Tool-Ergebnissen, siehe README)",
     en: "(one exception for tool-result trimming, see the README)",
@@ -541,16 +547,31 @@ describe("la excepción del recorte de resultados de herramientas (1.2.4)", () =
     tr: "(tek istisna araç sonuçlarının kırpılmasında, bkz. README)",
     vi: "(có một ngoại lệ về việc cắt bớt kết quả công cụ, xem README)",
   };
-  /** La excepción entera, en las condiciones de /pricing (las palabras del panel de la 1.2.4). */
-  const ENTERA: Record<Loc, RegExp> = {
+  /** «Exactamente las mismas palancas», en cada idioma. */
+  const EXACTA: Record<Loc, RegExp> = {
+    ca: /exactament les mateixes palanques/i,
+    de: /genau (dieselben|denselben) Hebel/i,
+    en: /exactly the same levers/i,
+    es: /exactamente las mismas palancas/i,
+    fr: /exactement les mêmes leviers/i,
+    id: /tuas yang persis sama/i,
+    it: /esattamente le stesse leve/i,
+    nl: /precies dezelfde hendels/i,
+    pl: /dokładnie (te same|tymi samymi) dźwign/i,
+    pt: /exatamente as mesmas alavancas/i,
+    tr: /birebir aynı/i,
+    vi: /đòn bẩy y hệt/i,
+  };
+  /** La excepción del recorte (las palabras del README de la 1.2.4): solo con licencia de pago. */
+  const SOLO_PAGO: Record<Loc, RegExp> = {
     ca: /només actua dins d'un bucle d'eines a Anthropic/,
     de: /ausschließlich innerhalb einer Tool-Schleife auf Anthropic/,
-    en: /except that trimming of superseded tool results only acts inside a tool loop on Anthropic/,
-    es: /salvo que el recorte de resultados de herramientas ya sustituidos solo actúa dentro de un bucle de herramientas en Anthropic/,
+    en: /only acts inside a tool loop on Anthropic/,
+    es: /solo actúa dentro de un bucle de herramientas en Anthropic/,
     fr: /n'agit qu'à l'intérieur d'une boucle d'outils sur Anthropic/,
     id: /hanya bekerja di dalam loop alat di Anthropic/,
     it: /agisce solo dentro un ciclo di strumenti su Anthropic/,
-    nl: /alleen binnen een toollus op Anthropic werkt/,
+    nl: /alleen binnen een toollus op Anthropic/,
     pl: /działa tylko wewnątrz pętli narzędzi na Anthropic/,
     pt: /só atua dentro de um ciclo de ferramentas na Anthropic/,
     tr: /yalnızca Anthropic'teki bir araç döngüsü içinde çalışır/,
@@ -565,28 +586,34 @@ describe("la excepción del recorte de resultados de herramientas (1.2.4)", () =
   ] as const;
 
   for (const loc of LOCALES) {
-    it(`${loc}: donde se ofrece Measure, «las mismas palancas» llevan la excepción; en las condiciones, entera`, () => {
+    it(`${loc}: donde se ofrece Measure y en sus condiciones, exactamente las mismas palancas, sin excepción`, () => {
       const d = cargar(loc);
-      for (const k of OFRECEN) expect(d[k], `${loc} ${k}`).toContain(CORTA[loc]);
-      expect(d["pricingPage.plans.medir.body"], loc).toMatch(ENTERA[loc]);
-      // Sigue formateando (ICU) con los apóstrofos de la excepción.
+      for (const k of [...OFRECEN, "pricingPage.plans.medir.body"]) {
+        expect(d[k], `${loc} ${k}`).toMatch(EXACTA[loc]);
+        expect(d[k], `${loc} ${k}`).not.toContain(VIEJA[loc]);
+        expect(d[k], `${loc} ${k}`).not.toMatch(SOLO_PAGO[loc]);
+      }
+      // Sigue formateando (ICU) con los apóstrofos.
       const t = createTranslator({ locale: loc, messages: crudo(loc), onError: (e) => { throw e; } });
       const alta = (t as unknown as (k: string, p: object) => string)("auth.signupMedir", { seats: 5, requests: "20.000", saves: VERSION_MEDIR_AHORRA });
-      expect(alta).toContain("README");
+      expect(alta).toMatch(EXACTA[loc]);
+    });
+
+    it(`${loc}: la excepción del recorte, en lo público, solo en las condiciones de Pro (licencia de pago)`, () => {
+      const d = cargar(loc);
+      expect(d["pricingPage.plans.pro.body"], loc).toMatch(SOLO_PAGO[loc]);
+      expect(publicas(d).filter(([k, v]) => k !== "pricingPage.plans.pro.body" && SOLO_PAGO[loc].test(v)).map(([k]) => k), loc).toEqual([]);
+      expect(publicas(d).filter(([, v]) => v.includes(VIEJA[loc])).map(([k]) => k), loc).toEqual([]);
     });
   }
 
-  it("en/es: ningún texto público dice «the same levers» / «las mismas palancas» sin la excepción", () => {
+  it("en/es: ningún texto público dice «the same levers» / «las mismas palancas» sin «exactly» / «exactamente»", () => {
     const en = cargar("en");
     const es = cargar("es");
-    expect(publicas(en).filter(([, v]) => /same levers/i.test(v) && !/exception|except that/i.test(v)).map(([k]) => k)).toEqual([]);
-    expect(publicas(es).filter(([, v]) => /mismas palancas/i.test(v) && !/excepción|salvo que/i.test(v)).map(([k]) => k)).toEqual([]);
-    expect(publicas(en).filter(([, v]) => /exactly the same levers|8 (of|out of) 60/i.test(v)).map(([k]) => k)).toEqual([]);
-  });
-
-  it("vi: «cùng các» (las mismas), no «đúng các» (exactamente las) donde se ofrece Measure", () => {
-    const vi = cargar("vi");
-    for (const k of [...OFRECEN, "pricingPage.plans.medir.body"]) expect(vi[k], k).not.toMatch(/đúng các đòn bẩy/i);
+    expect(publicas(en).filter(([, v]) => /same levers/i.test(v) && !/exactly the same levers/i.test(v)).map(([k]) => k)).toEqual([]);
+    expect(publicas(es).filter(([, v]) => /mismas palancas/i.test(v) && !/exactamente las mismas palancas/i.test(v)).map(([k]) => k)).toEqual([]);
+    expect(publicas(en).filter(([, v]) => /one exception for tool-result trimming|except that trimming/i.test(v)).map(([k]) => k)).toEqual([]);
+    expect(cargar("en")["pricingPage.plans.medir.body"]).toContain("exactly the same levers as the open core with no key, trimming of superseded tool results included");
   });
 
   it("en/es: las condiciones dan el ahorro real con lo medido y lo estimado aparte, no todo «con el contador del proveedor»", () => {

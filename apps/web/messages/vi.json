@@ -195,7 +195,7 @@
       "network": "Không có kết nối. Kiểm tra mạng và thử lại.",
       "missingFields": "Nhập email và mật khẩu của bạn."
     },
-    "signupMedir": "Hoặc bắt đầu miễn phí với Measure: gói cloud miễn phí cho nhóm nhỏ, không cần thẻ, tối đa {seats} chỗ và {requests} yêu cầu mỗi ngày, với cùng các đòn bẩy như khi không có khóa (có một ngoại lệ về việc cắt bớt kết quả công cụ, xem README) và khoản tiết kiệm thực trong bảng điều khiển. Tiết kiệm từ @bivelio/savings-layer {saves} trở lên; các phiên bản cũ hơn chỉ quan sát.",
+    "signupMedir": "Hoặc bắt đầu miễn phí với Measure: gói cloud miễn phí cho nhóm nhỏ, không cần thẻ, tối đa {seats} chỗ và {requests} yêu cầu mỗi ngày, với các đòn bẩy y hệt như khi không có khóa và khoản tiết kiệm thực trong bảng điều khiển. Tiết kiệm từ @bivelio/savings-layer {saves} trở lên; các phiên bản cũ hơn chỉ quan sát.",
     "signupPlanPro": "Bạn đã chọn {plan} — {price} mỗi chỗ mỗi tháng. Tạo tài khoản, xác nhận email, rồi bạn sẽ thanh toán trong bảng điều khiển qua Stripe.",
     "signupPlanTeam": "Bạn đã chọn {plan} — {price} mỗi tháng, bao gồm {seats} chỗ. Tạo tài khoản, xác nhận email, rồi bạn sẽ thanh toán trong bảng điều khiển qua Stripe.",
     "openSourceQuestion": "Chỉ muốn dùng engine mã nguồn mở?",
@@ -1361,14 +1361,14 @@
     "pricing": {
       "eyebrow": "Các gói",
       "title": "Engine mã nguồn mở. Kiểm soát trên cloud cho nhóm của bạn.",
-      "body": "Gói là open core Apache-2.0: mọi đòn bẩy đều có sẵn và miễn phí, không cần khóa, và zero telemetry. Cloud là tùy chọn — Measure là gói miễn phí, Pro và Team tính phí theo chỗ, bằng {currency}, không hoa hồng trên khoản tiết kiệm của bạn.",
+      "body": "Gói là open core Apache-2.0: mọi đòn bẩy đều có sẵn và miễn phí, không cần khóa, và zero telemetry. Cloud là tùy chọn — Measure là gói miễn phí, Pro tính phí theo chỗ và Team là phí cố định đã gồm sẵn một số chỗ, bằng {currency}, dù có tiết kiệm hay không, không hoa hồng trên khoản tiết kiệm của bạn.",
       "amount": "{amount}",
       "per": "/ ghế / tháng",
       "plans": {
         "medir": {
           "name": "Measure",
           "price": "Miễn phí",
-          "body": "Miễn phí, không cần thẻ. Gói CLOUD miễn phí cho nhóm nhỏ: một tổ chức, tối đa {seats} chỗ và {requests} yêu cầu mỗi ngày. Cùng các đòn bẩy như open core không khóa (có một ngoại lệ về việc cắt bớt kết quả công cụ, xem README), cộng bảng điều khiển với khoản tiết kiệm thực của bạn; không bao giờ chịu hoa hồng. Tiết kiệm với @bivelio/savings-layer {saves} trở lên; các phiên bản từ {version} đến trước {saves} chỉ quan sát.",
+          "body": "Miễn phí, không cần thẻ. Gói CLOUD miễn phí cho nhóm nhỏ: một tổ chức, tối đa {seats} chỗ và {requests} yêu cầu mỗi ngày. Các đòn bẩy y hệt như open core không khóa, cộng bảng điều khiển với khoản tiết kiệm thực của bạn; không bao giờ chịu hoa hồng. Tiết kiệm với @bivelio/savings-layer {saves} trở lên; các phiên bản từ {version} đến trước {saves} chỉ quan sát.",
           "cta": "Bắt đầu miễn phí →"
         },
         "pro": {
@@ -1422,7 +1422,7 @@
     },
     "footer": {
       "ctaTitle": "Đo trên chính lưu lượng của bạn",
-      "ctaSub": "Sau khi cài, mỗi lời gọi trả về SavingsReport, tách riêng phần đo được và ước tính. Open core không cần khóa: các đòn bẩy chạy cục bộ với zero telemetry. Cloud tùy chọn bắt đầu miễn phí với Measure và tính phí theo chỗ, không hoa hồng trên khoản tiết kiệm của bạn.",
+      "ctaSub": "Sau khi cài, mỗi lời gọi trả về SavingsReport, tách riêng phần đo được và ước tính. Open core không cần khóa: các đòn bẩy chạy cục bộ với zero telemetry. Cloud tùy chọn bắt đầu miễn phí với Measure; các gói trả phí là phí cố định, không hoa hồng trên khoản tiết kiệm của bạn.",
       "ctaStart": "Bắt đầu",
       "tagline": "<b>BiVelio Savings Layer</b> là bộ tối ưu chi phí LLM trung lập với nhà cung cấp — mọi con số đo được đều đo theo bộ đếm của chính nhà cung cấp; ước tính và mô phỏng được hiển thị riêng, nói rõ là như vậy, và không bao giờ tính phí.",
       "badge": "BV‑SALA · Savings Layer",
@@ -1638,7 +1638,7 @@
       "items": [
         {
           "q": "Chính xác thì trả tiền cho cái gì?",
-          "a": "Engine mã nguồn mở là miễn phí. Savings Cloud có một gói miễn phí là Measure và hai gói phí cố định theo ghế là Pro và Team. Phí được tính dù có tiết kiệm hay không, không có hoa hồng trên khoản tiết kiệm và không bao gồm chi phí sử dụng tại nhà cung cấp LLM của bạn: bạn vẫn tự trả khoản đó theo điều khoản của họ."
+          "a": "Engine mã nguồn mở là miễn phí. Savings Cloud có một gói miễn phí là Measure và hai gói phí cố định: Pro, tính theo chỗ, và Team, đã gồm sẵn một số chỗ, chỗ thêm tính riêng. Phí được tính dù có tiết kiệm hay không, không có hoa hồng trên khoản tiết kiệm và không bao gồm chi phí sử dụng tại nhà cung cấp LLM của bạn: bạn vẫn tự trả khoản đó theo điều khoản của họ."
         },
         {
           "q": "Ghế là gì?",
@@ -1646,7 +1646,7 @@
         },
         {
           "q": "Measure và Community khác nhau thế nào?",
-          "a": "Community là engine mã nguồn mở trên hạ tầng của bạn: không tài khoản, không khóa BiVelio, mặc định không telemetry và không phụ thuộc vào máy chủ của BiVelio. Measure là gói Savings Cloud miễn phí cho nhóm nhỏ: cần tài khoản và khóa, áp dụng cùng các đòn bẩy như Community (có một ngoại lệ về việc cắt bớt kết quả công cụ, xem README) và thêm bảng điều khiển với khoản tiết kiệm thực của bạn; với khóa đó, một lớp không nhận được phản hồi từ savings.bivelio.com trong ba ngày sẽ từ chối mọi lệnh gọi cho đến khi nhận được phản hồi hoặc bạn gỡ khóa. Với các phiên bản cũ của gói, nó chỉ quan sát; trang bảng giá ghi rõ nó tiết kiệm từ phiên bản nào."
+          "a": "Community là engine mã nguồn mở trên hạ tầng của bạn: không tài khoản, không khóa BiVelio, mặc định không telemetry và không phụ thuộc vào máy chủ của BiVelio. Measure là gói Savings Cloud miễn phí cho nhóm nhỏ: cần tài khoản và khóa, áp dụng các đòn bẩy y hệt như Community và thêm bảng điều khiển với khoản tiết kiệm thực của bạn; với khóa đó, một lớp không nhận được phản hồi từ savings.bivelio.com trong ba ngày sẽ từ chối mọi lệnh gọi cho đến khi nhận được phản hồi hoặc bạn gỡ khóa. Với các phiên bản cũ của gói, nó chỉ quan sát; trang bảng giá ghi rõ nó tiết kiệm từ phiên bản nào."
         },
         {
           "q": "Có dùng được cho gói thuê bao như ChatGPT Plus không?",
@@ -1670,7 +1670,7 @@
       "title": "Đo trước.",
       "titleAccent": "Quyết định sau.",
       "titleMark": "sau",
-      "sub": "Measure miễn phí và không yêu cầu thẻ: cùng các đòn bẩy như engine mã nguồn mở (có một ngoại lệ về việc cắt bớt kết quả công cụ, xem README), cộng bảng điều khiển với khoản bạn thực sự tiết kiệm trên chính lưu lượng của bạn. Engine là mã nguồn mở và mã của nó công khai.",
+      "sub": "Measure miễn phí và không yêu cầu thẻ: các đòn bẩy y hệt như engine mã nguồn mở, cộng bảng điều khiển với khoản bạn thực sự tiết kiệm trên chính lưu lượng của bạn. Engine là mã nguồn mở và mã của nó công khai.",
       "repo": "Xem kho mã"
     },
     "layer": {
@@ -2290,15 +2290,16 @@
     "lede": "Engine là mã nguồn mở: không cần khóa. Trang này định giá Savings Cloud, phần cloud tùy chọn — Measure miễn phí, rồi Pro theo chỗ hoặc gói Team, không hoa hồng trên khoản tiết kiệm của bạn. Mọi con số ở đây đọc từ chính mã tính phí bạn, nên nó đổi khi giá đổi.",
     "plans": {
       "title": "Các gói",
-      "intro": "Bốn gói, từ nhỏ đến lớn. Pro và Team trả theo chỗ và không có hoa hồng.",
+      "intro": "Bốn gói, từ nhỏ đến lớn. Pro trả theo chỗ, Team trả phí cố định đã gồm sẵn một số chỗ cộng thêm mỗi chỗ thêm, và cả hai đều không có hoa hồng.",
       "medir": {
         "name": "Measure",
-        "body": "<b>Miễn phí, không cần thẻ.</b> Gói CLOUD miễn phí cho nhóm nhỏ: một tổ chức, tối đa <b>{seats} chỗ</b> và <b>{requests} yêu cầu mỗi ngày</b>. Gói áp dụng cùng các đòn bẩy như open core không khóa, ngoại trừ việc cắt các kết quả công cụ đã bị thay thế chỉ hoạt động bên trong một vòng lặp công cụ trên Anthropic, và thêm bảng điều khiển với khoản tiết kiệm thực của bạn, tách riêng phần đo được và phần ước tính; không bao giờ mang hoa hồng. Tiết kiệm với <b>@bivelio/savings-layer {saves} trở lên</b>. Các phiên bản từ {version} đến trước {saves} chỉ quan sát khi có khóa Measure: chế độ bóng, không đòn bẩy nào được áp dụng, và bảng điều khiển cho thấy mức lẽ ra tiết kiệm được. Bản thân các đòn bẩy không cần gói nào: open core chạy không khóa."
+        "body": "<b>Miễn phí, không cần thẻ.</b> Gói CLOUD miễn phí cho nhóm nhỏ: một tổ chức, tối đa <b>{seats} chỗ</b> và <b>{requests} yêu cầu mỗi ngày</b>. Gói áp dụng các đòn bẩy y hệt như open core không khóa, kể cả việc cắt các kết quả công cụ đã bị thay thế, và thêm bảng điều khiển với khoản tiết kiệm thực của bạn, tách riêng phần đo được và phần ước tính; không bao giờ mang hoa hồng. Tiết kiệm với <b>@bivelio/savings-layer {saves} trở lên</b>. Các phiên bản từ {version} đến trước {saves} chỉ quan sát khi có khóa Measure: chế độ bóng, không đòn bẩy nào được áp dụng, và bảng điều khiển cho thấy mức lẽ ra tiết kiệm được. Bản thân các đòn bẩy không cần gói nào: open core chạy không khóa."
       },
       "pro": {
         "name": "Pro",
         "amount": "<b>{monthly}</b> mỗi chỗ mỗi tháng, hoặc <b>{yearly}</b> mỗi chỗ mỗi năm, bằng {currency}.",
-        "body": "Mọi thứ của Measure, cho nhiều máy và yêu cầu hơn: bảng điều khiển nhóm, đo lường dùng chung, chỗ và giấy phép. Engine và các đòn bẩy của nó vẫn miễn phí khi không có khóa. Trong gateway cục bộ, mỗi đòn bẩy còn phải nằm trong giấy phép của tổ chức bạn, được kiểm tra theo kiểu fail-closed: nếu không thể kiểm tra, các yêu cầu được chuyển đi nguyên vẹn. <b>Không hoa hồng</b> trên khoản tiết kiệm: bạn trả cho các chỗ, dù có tiết kiệm hay không."
+        "body": "Mọi thứ của Measure, cho nhiều máy và yêu cầu hơn: bảng điều khiển nhóm, đo lường dùng chung, chỗ và giấy phép. Engine và các đòn bẩy của nó vẫn miễn phí khi không có khóa. Trong SDK, với giấy phép trả phí, việc cắt các kết quả công cụ đã bị thay thế chỉ hoạt động bên trong một vòng lặp công cụ trên Anthropic. Trong gateway cục bộ, mỗi đòn bẩy còn phải nằm trong giấy phép của tổ chức bạn, được kiểm tra theo kiểu fail-closed: nếu không thể kiểm tra, các yêu cầu được chuyển đi nguyên vẹn. <b>Không hoa hồng</b> trên khoản tiết kiệm: bạn trả cho các chỗ, dù có tiết kiệm hay không.",
+        "refund": "<b>Hoàn tiền:</b> với lần mua theo tháng đầu tiên, bạn có thể yêu cầu hoàn tiền trong vòng {days} ngày bằng cách <contact>viết cho chúng tôi</contact>."
       },
       "team": {
         "name": "Team",
@@ -2374,7 +2375,7 @@
       "cloud": {
         "tag": "Tùy chọn · có các gói",
         "name": "Savings Cloud",
-        "body": "Bảng điều khiển, đo lường dùng chung, tổ chức và giấy phép. Measure là gói miễn phí, cho nhóm nhỏ; Pro và Team trả phí cố định theo chỗ, không tính hoa hồng trên khoản tiết kiệm. Một khóa, kể cả khóa Measure miễn phí, gắn lớp với savings.bivelio.com: khi đã đặt licenseServerUrl như bảng điều khiển thiết lập, một lớp không nhận được phản hồi trong {horas} giờ sẽ từ chối mọi lệnh gọi (LicenseError) cho đến khi nhận được phản hồi hoặc bạn gỡ khóa. Community không có sự phụ thuộc đó."
+        "body": "Bảng điều khiển, đo lường dùng chung, tổ chức và giấy phép. Measure là gói miễn phí, cho nhóm nhỏ; Pro trả phí cố định theo chỗ và Team trả phí cố định đã gồm sẵn một số chỗ, không tính hoa hồng trên khoản tiết kiệm. Một khóa, kể cả khóa Measure miễn phí, gắn lớp với savings.bivelio.com: khi đã đặt licenseServerUrl như bảng điều khiển thiết lập, một lớp không nhận được phản hồi trong {horas} giờ sẽ từ chối mọi lệnh gọi (LicenseError) cho đến khi nhận được phản hồi hoặc bạn gỡ khóa. Community không có sự phụ thuộc đó."
       }
     },
     "cards": {
@@ -2408,7 +2409,7 @@
       "provider": "Phí không bao gồm chi phí sử dụng tại nhà cung cấp LLM của bạn: bạn vẫn tự trả khoản đó theo điều khoản của họ. Số tiền chưa gồm VAT.",
       "medir": {
         "unit": "Gói cloud miễn phí cho nhóm nhỏ.",
-        "summary": "Bảng điều khiển với khoản bạn thực sự tiết kiệm, và cùng các đòn bẩy như khi không có khóa (có một ngoại lệ về việc cắt bớt kết quả công cụ, xem README). Tiết kiệm từ @bivelio/savings-layer {saves} trở lên; các phiên bản cũ hơn chỉ quan sát.",
+        "summary": "Bảng điều khiển với khoản bạn thực sự tiết kiệm, và các đòn bẩy y hệt như khi không có khóa. Tiết kiệm từ @bivelio/savings-layer {saves} trở lên; các phiên bản cũ hơn chỉ quan sát.",
         "cta": "Bắt đầu với Measure",
         "version": "Hoạt động với phiên bản mới nhất của @bivelio/savings-layer."
       },

@@ -11,6 +11,7 @@ import { etiquetasQueRigen } from "@/app/components/LegalGoverns";
 import { URL_DEL_CODIGO } from "@/app/components/sitio";
 import { Link } from "@/i18n/navigation";
 import { absolute, languageAlternates, tarjetaSocial } from "@/i18n/site";
+import { DIAS_DE_DEVOLUCION_PRIMERA_COMPRA_MENSUAL } from "@/lib/billing/planes";
 import { terminosDeLosPlanes, terminosDePrecio } from "@/lib/legal/precios-publicados";
 import { HORAS_SIN_RESPUESTA_CON_CLAVE, LIMITES_MEDIR, VERSION_MEDIR_AHORRA, VERSION_MINIMA_MEDIR } from "@/lib/license/medir-publico";
 import { preciosDelPlan, tarifasDeLosPlanes } from "@/lib/stripe/pricing";
@@ -208,6 +209,15 @@ export default async function PricingPage({ params }: { params: Promise<{ locale
                 {t.rich("plans.pro.amount", { b, monthly: planes.pro.mensual, yearly: planes.pro.anual, currency: planes.moneda })}
               </p>
               <p>{t.rich("plans.pro.body", { b })}</p>
+              {/* La devolución decidida por el dueño (21-11-2026): Team es «lo mismo
+                  que Pro», así que vale para los dos. La cifra llega por parámetro. */}
+              <p>
+                {t.rich("plans.pro.refund", {
+                  b,
+                  days: DIAS_DE_DEVOLUCION_PRIMERA_COMPRA_MENSUAL,
+                  contact: (c) => <a href="mailto:support@bivelio.com">{c}</a>,
+                })}
+              </p>
 
               <h3 id="team">{nombres.team}</h3>
               <p className="terms-amount">

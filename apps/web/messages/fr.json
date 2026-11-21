@@ -195,7 +195,7 @@
       "network": "Pas de connexion. Vérifiez votre réseau et réessayez.",
       "missingFields": "Saisissez votre e-mail et votre mot de passe."
     },
-    "signupMedir": "Ou démarrez gratuitement avec Measure : le plan cloud gratuit pour les petites équipes, sans carte, jusqu'à {seats} sièges et {requests} requêtes par jour, avec les mêmes leviers que sans clé (avec une exception pour l'élagage des résultats d'outils, voir le README) et vos économies réelles dans le tableau de bord. Il économise avec @bivelio/savings-layer {saves} ou plus récent ; les versions antérieures ne font qu’observer.",
+    "signupMedir": "Ou démarrez gratuitement avec Measure : le plan cloud gratuit pour les petites équipes, sans carte, jusqu'à {seats} sièges et {requests} requêtes par jour, avec exactement les mêmes leviers que sans clé et vos économies réelles dans le tableau de bord. Il économise avec @bivelio/savings-layer {saves} ou plus récent ; les versions antérieures ne font qu’observer.",
     "signupPlanPro": "Vous avez choisi {plan} — {price} par siège et par mois. Créez votre compte, confirmez votre e-mail, et vous paierez dans votre tableau de bord via Stripe.",
     "signupPlanTeam": "Vous avez choisi {plan} — {price} par mois, {seats} sièges inclus. Créez votre compte, confirmez votre e-mail, et vous paierez dans votre tableau de bord via Stripe.",
     "openSourceQuestion": "Vous voulez seulement le moteur open source ?",
@@ -1361,14 +1361,14 @@
     "pricing": {
       "eyebrow": "Plans",
       "title": "Moteur open source. Contrôle cloud pour votre équipe.",
-      "body": "Le paquet est open core Apache-2.0 : tous les leviers inclus et gratuits, sans clé, et zéro télémétrie. Le cloud est optionnel — Measure est le plan gratuit, Pro et Team sont facturés par siège, en {currency}, sans commission sur vos économies.",
+      "body": "Le paquet est open core Apache-2.0 : tous les leviers inclus et gratuits, sans clé, et zéro télémétrie. Le cloud est optionnel — Measure est le plan gratuit, Pro est facturé par siège et Team au forfait avec des sièges inclus, en {currency}, que vous économisiez ou non, sans commission sur vos économies.",
       "amount": "{amount}",
       "per": "/ siège / mois",
       "plans": {
         "medir": {
           "name": "Measure",
           "price": "Gratuit",
-          "body": "Gratuit, sans carte. Le plan CLOUD gratuit, pour les petites équipes : une organisation, jusqu'à {seats} sièges et {requests} requêtes par jour. Les mêmes leviers que l'open core sans clé (avec une exception pour l'élagage des résultats d'outils, voir le README), plus le tableau de bord avec vos économies réelles ; jamais soumis à une commission. Il économise avec @bivelio/savings-layer {saves} ou plus récent ; les versions de la {version} jusqu'à celle qui précède la {saves} ne font qu'observer.",
+          "body": "Gratuit, sans carte. Le plan CLOUD gratuit, pour les petites équipes : une organisation, jusqu'à {seats} sièges et {requests} requêtes par jour. Exactement les mêmes leviers que l'open core sans clé, plus le tableau de bord avec vos économies réelles ; jamais soumis à une commission. Il économise avec @bivelio/savings-layer {saves} ou plus récent ; les versions de la {version} jusqu'à celle qui précède la {saves} ne font qu'observer.",
           "cta": "Commencer gratuitement →"
         },
         "pro": {
@@ -1422,7 +1422,7 @@
     },
     "footer": {
       "ctaTitle": "Mesurez-le sur votre propre trafic",
-      "ctaSub": "Une fois installé, chaque appel renvoie son SavingsReport, mesuré et estimé séparés. L'open core n'a besoin d'aucune clé : les leviers tournent en local avec zéro télémétrie. Le cloud optionnel démarre gratuitement avec Measure et se facture par siège, sans commission sur vos économies.",
+      "ctaSub": "Une fois installé, chaque appel renvoie son SavingsReport, mesuré et estimé séparés. L'open core n'a besoin d'aucune clé : les leviers tournent en local avec zéro télémétrie. Le cloud optionnel démarre gratuitement avec Measure ; ses formules payantes sont à tarif fixe, sans commission sur vos économies.",
       "ctaStart": "Commencer",
       "tagline": "<b>BiVelio Savings Layer</b> est un optimiseur de coût LLM neutre vis-à-vis du fournisseur — chaque chiffre mesuré l'est contre le compteur du fournisseur ; les estimations et les simulations sont montrées à part, présentées comme telles, et jamais facturées.",
       "badge": "BV‑SALA · Savings Layer",
@@ -1638,7 +1638,7 @@
       "items": [
         {
           "q": "Que paie-t-on exactement ?",
-          "a": "Le moteur open source est gratuit. Savings Cloud propose une formule gratuite, Measure, et deux formules à tarif fixe par siège, Pro et Team. Le tarif est dû qu’il y ait des économies ou non, ne comporte aucune commission sur les économies et n’inclut pas la consommation de votre fournisseur LLM : vous continuez à la payer vous-même, à ses conditions."
+          "a": "Le moteur open source est gratuit. Savings Cloud propose une formule gratuite, Measure, et deux formules à tarif fixe : Pro, par siège, et Team, avec des sièges inclus et des sièges supplémentaires en plus. Le tarif est dû qu’il y ait des économies ou non, ne comporte aucune commission sur les économies et n’inclut pas la consommation de votre fournisseur LLM : vous continuez à la payer vous-même, à ses conditions."
         },
         {
           "q": "Qu’est-ce qu’un siège ?",
@@ -1646,7 +1646,7 @@
         },
         {
           "q": "Quelle différence entre Measure et Community ?",
-          "a": "Community est le moteur open source sur votre infrastructure : sans compte, sans clé BiVelio, sans télémétrie par défaut et sans dépendre des serveurs de BiVelio. Measure est le plan gratuit de Savings Cloud pour les petites équipes : il demande un compte et une clé, applique les mêmes leviers que Community (avec une exception pour l'élagage des résultats d'outils, voir le README) et ajoute le tableau de bord avec vos économies réelles ; avec cette clé, une couche qui reste trois jours sans réponse de savings.bivelio.com refuse chaque appel jusqu'à obtenir une réponse ou jusqu'à ce que vous retiriez la clé. Avec les anciennes versions du paquet, il ne fait qu'observer ; la page des tarifs indique à partir de quelle version il économise."
+          "a": "Community est le moteur open source sur votre infrastructure : sans compte, sans clé BiVelio, sans télémétrie par défaut et sans dépendre des serveurs de BiVelio. Measure est le plan gratuit de Savings Cloud pour les petites équipes : il demande un compte et une clé, applique exactement les mêmes leviers que Community et ajoute le tableau de bord avec vos économies réelles ; avec cette clé, une couche qui reste trois jours sans réponse de savings.bivelio.com refuse chaque appel jusqu'à obtenir une réponse ou jusqu'à ce que vous retiriez la clé. Avec les anciennes versions du paquet, il ne fait qu'observer ; la page des tarifs indique à partir de quelle version il économise."
         },
         {
           "q": "Est-ce utile pour un abonnement comme ChatGPT Plus ?",
@@ -1670,7 +1670,7 @@
       "title": "Mesurez d’abord.",
       "titleAccent": "Décidez ensuite.",
       "titleMark": "ensuite",
-      "sub": "Measure est gratuit et ne demande pas de carte : les mêmes leviers que le moteur open source (avec une exception pour l'élagage des résultats d'outils, voir le README), plus le tableau de bord avec ce que vous économisez vraiment sur votre propre trafic. Le moteur est open source et son code est visible par tous.",
+      "sub": "Measure est gratuit et ne demande pas de carte : exactement les mêmes leviers que le moteur open source, plus le tableau de bord avec ce que vous économisez vraiment sur votre propre trafic. Le moteur est open source et son code est visible par tous.",
       "repo": "Voir le dépôt"
     },
     "layer": {
@@ -2290,15 +2290,16 @@
     "lede": "Le moteur est open source : aucune clé requise. Cette page tarifie Savings Cloud, le cloud optionnel — Measure gratuit, puis Pro par siège ou un plan Team, sans commission sur vos économies. Chaque chiffre vient du même code qui vous facture, et change quand le prix change.",
     "plans": {
       "title": "Plans",
-      "intro": "Quatre plans, du plus petit au plus grand. Pro et Team se paient par siège et ne comportent aucune commission.",
+      "intro": "Quatre plans, du plus petit au plus grand. Pro se paie par siège, Team au forfait avec des sièges inclus plus chaque siège supplémentaire, et aucun des deux ne comporte de commission.",
       "medir": {
         "name": "Measure",
-        "body": "<b>Gratuit, sans carte.</b> Le plan CLOUD gratuit, pour les petites équipes : une organisation, jusqu'à <b>{seats} sièges</b> et <b>{requests} requêtes par jour</b>. Il applique les mêmes leviers que l'open core sans clé, sauf que l'élagage des résultats d'outils remplacés n'agit qu'à l'intérieur d'une boucle d'outils sur Anthropic, et ajoute le tableau de bord avec vos économies réelles, le mesuré et l'estimé séparés ; il ne porte jamais de commission. Il économise avec <b>@bivelio/savings-layer {saves} ou plus récent</b>. Les versions de la {version} jusqu'à celle qui précède la {saves} ne font qu'observer avec une clé Measure : mode fantôme, aucun levier appliqué, et le tableau de bord montre ce qui aurait été économisé. Les leviers eux-mêmes n'ont besoin d'aucun plan : l'open core tourne sans clé."
+        "body": "<b>Gratuit, sans carte.</b> Le plan CLOUD gratuit, pour les petites équipes : une organisation, jusqu'à <b>{seats} sièges</b> et <b>{requests} requêtes par jour</b>. Il applique exactement les mêmes leviers que l'open core sans clé, élagage des résultats d'outils remplacés compris, et ajoute le tableau de bord avec vos économies réelles, le mesuré et l'estimé séparés ; il ne porte jamais de commission. Il économise avec <b>@bivelio/savings-layer {saves} ou plus récent</b>. Les versions de la {version} jusqu'à celle qui précède la {saves} ne font qu'observer avec une clé Measure : mode fantôme, aucun levier appliqué, et le tableau de bord montre ce qui aurait été économisé. Les leviers eux-mêmes n'ont besoin d'aucun plan : l'open core tourne sans clé."
       },
       "pro": {
         "name": "Pro",
         "amount": "<b>{monthly}</b> par siège et par mois, ou <b>{yearly}</b> par siège et par an, en {currency}.",
-        "body": "Tout ce qu’offre Measure, pour plus de machines et de requêtes : tableau de bord d’équipe, mesure partagée, sièges et licences. Le moteur et ses leviers restent gratuits sans clé. Dans la passerelle locale, chaque levier doit en plus être inclus dans la licence de votre organisation, vérifiée en fail-closed : si cette vérification est impossible, les requêtes passent intactes. <b>Aucune commission</b> sur les économies : vous payez les sièges, que vous économisiez ou non."
+        "body": "Tout ce qu’offre Measure, pour plus de machines et de requêtes : tableau de bord d’équipe, mesure partagée, sièges et licences. Le moteur et ses leviers restent gratuits sans clé. Dans le SDK, avec une licence payante, l'élagage des résultats d'outils remplacés n'agit qu'à l'intérieur d'une boucle d'outils sur Anthropic. Dans la passerelle locale, chaque levier doit en plus être inclus dans la licence de votre organisation, vérifiée en fail-closed : si cette vérification est impossible, les requêtes passent intactes. <b>Aucune commission</b> sur les économies : vous payez les sièges, que vous économisiez ou non.",
+        "refund": "<b>Remboursement :</b> sur un premier achat mensuel, vous pouvez demander un remboursement dans les {days} jours en <contact>nous écrivant</contact>."
       },
       "team": {
         "name": "Team",
@@ -2374,7 +2375,7 @@
       "cloud": {
         "tag": "En option · avec formules",
         "name": "Savings Cloud",
-        "body": "Le tableau de bord, la mesure partagée, l’organisation et les licences. Measure en est la formule gratuite, pour les petites équipes ; Pro et Team se paient par un tarif fixe par siège, sans commission sur les économies. Une clé, y compris la clé gratuite de Measure, lie la couche à savings.bivelio.com : avec licenseServerUrl défini, comme le tableau de bord le configure, une couche qui reste {horas} heures sans réponse refuse chaque appel (LicenseError) jusqu'à obtenir une réponse ou jusqu'à ce que vous retiriez la clé. Community n'a pas cette dépendance."
+        "body": "Le tableau de bord, la mesure partagée, l’organisation et les licences. Measure en est la formule gratuite, pour les petites équipes ; Pro se paie par un tarif fixe par siège et Team par un forfait avec des sièges inclus, sans commission sur les économies. Une clé, y compris la clé gratuite de Measure, lie la couche à savings.bivelio.com : avec licenseServerUrl défini, comme le tableau de bord le configure, une couche qui reste {horas} heures sans réponse refuse chaque appel (LicenseError) jusqu'à obtenir une réponse ou jusqu'à ce que vous retiriez la clé. Community n'a pas cette dépendance."
       }
     },
     "cards": {
@@ -2408,7 +2409,7 @@
       "provider": "Le tarif n’inclut pas la consommation de votre fournisseur LLM : vous continuez à la payer vous-même, à ses conditions. Montants hors TVA.",
       "medir": {
         "unit": "La formule cloud gratuite, pour les petites équipes.",
-        "summary": "Le tableau de bord avec ce que vous économisez vraiment, et les mêmes leviers que sans clé (avec une exception pour l'élagage des résultats d'outils, voir le README). Économise avec @bivelio/savings-layer {saves} ou plus récent ; les versions antérieures ne font qu’observer.",
+        "summary": "Le tableau de bord avec ce que vous économisez vraiment, et exactement les mêmes leviers que sans clé. Économise avec @bivelio/savings-layer {saves} ou plus récent ; les versions antérieures ne font qu’observer.",
         "cta": "Commencer avec Measure",
         "version": "Fonctionne avec la dernière version de @bivelio/savings-layer."
       },
