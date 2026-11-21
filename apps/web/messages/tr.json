@@ -194,6 +194,8 @@
       "missingFields": "E-postanızı ve şifrenizi girin."
     },
     "signupMedir": "Ya da Measure ile ücretsiz başlayın: ücretsiz bulut planı, kartsız, gölge modu, günde {seats} koltuğa ve {requests} isteğe kadar. @bivelio/savings-layer'ın en son sürümüyle çalışır.",
+    "signupPlanPro": "{plan} planını seçtiniz — koltuk başına aylık {price}. Hesabınızı oluşturun, e-postanızı onaylayın; ödemeyi panelde Stripe üzerinden yaparsınız.",
+    "signupPlanTeam": "{plan} planını seçtiniz — aylık {price}, {seats} koltuk dahil. Hesabınızı oluşturun, e-postanızı onaylayın; ödemeyi panelde Stripe üzerinden yaparsınız.",
     "openSourceQuestion": "Yalnızca açık kaynak motoru mu istiyorsunuz?",
     "openSourceLink": "Hesap açmadan kurun",
     "showPassword": "Parolayı göster",

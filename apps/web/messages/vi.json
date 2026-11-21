@@ -194,6 +194,8 @@
       "missingFields": "Nhập email và mật khẩu của bạn."
     },
     "signupMedir": "Hoặc bắt đầu miễn phí với Measure: gói cloud miễn phí, không cần thẻ, chế độ bóng, tối đa {seats} chỗ và {requests} yêu cầu mỗi ngày. Hoạt động với phiên bản mới nhất của @bivelio/savings-layer.",
+    "signupPlanPro": "Bạn đã chọn {plan} — {price} mỗi ghế mỗi tháng. Tạo tài khoản, xác nhận email, rồi bạn sẽ thanh toán trong bảng điều khiển qua Stripe.",
+    "signupPlanTeam": "Bạn đã chọn {plan} — {price} mỗi tháng, bao gồm {seats} ghế. Tạo tài khoản, xác nhận email, rồi bạn sẽ thanh toán trong bảng điều khiển qua Stripe.",
     "openSourceQuestion": "Chỉ muốn dùng engine mã nguồn mở?",
     "openSourceLink": "Cài đặt không cần tài khoản",
     "showPassword": "Hiện mật khẩu",
