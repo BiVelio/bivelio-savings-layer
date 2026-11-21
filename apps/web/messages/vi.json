@@ -194,7 +194,7 @@
       "network": "Không có kết nối. Kiểm tra mạng và thử lại.",
       "missingFields": "Nhập email và mật khẩu của bạn."
     },
-    "signupMedir": "Hoặc bắt đầu miễn phí với Measure: gói cloud miễn phí cho nhóm nhỏ, không cần thẻ, tối đa {seats} chỗ và {requests} yêu cầu mỗi ngày, với đúng các đòn bẩy như khi không có khóa và khoản tiết kiệm thực trong bảng điều khiển. Hoạt động với phiên bản mới nhất của @bivelio/savings-layer.",
+    "signupMedir": "Hoặc bắt đầu miễn phí với Measure: gói cloud miễn phí cho nhóm nhỏ, không cần thẻ, tối đa {seats} chỗ và {requests} yêu cầu mỗi ngày, với đúng các đòn bẩy như khi không có khóa và khoản tiết kiệm thực trong bảng điều khiển. Tiết kiệm từ @bivelio/savings-layer {saves} trở lên; các phiên bản cũ hơn chỉ quan sát.",
     "signupPlanPro": "Bạn đã chọn {plan} — {price} mỗi chỗ mỗi tháng. Tạo tài khoản, xác nhận email, rồi bạn sẽ thanh toán trong bảng điều khiển qua Stripe.",
     "signupPlanTeam": "Bạn đã chọn {plan} — {price} mỗi tháng, bao gồm {seats} chỗ. Tạo tài khoản, xác nhận email, rồi bạn sẽ thanh toán trong bảng điều khiển qua Stripe.",
     "openSourceQuestion": "Chỉ muốn dùng engine mã nguồn mở?",

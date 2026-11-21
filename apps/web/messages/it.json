@@ -194,7 +194,7 @@
       "network": "Nessuna connessione. Controlla la rete e riprova.",
       "missingFields": "Inserisci email e password."
     },
-    "signupMedir": "Oppure parti gratis con Measure: il piano cloud gratuito per team piccoli, senza carta, fino a {seats} postazioni e {requests} richieste al giorno, con le stesse leve che senza chiave e il tuo risparmio reale nella dashboard. Funziona con l'ultima versione di @bivelio/savings-layer.",
+    "signupMedir": "Oppure parti gratis con Measure: il piano cloud gratuito per team piccoli, senza carta, fino a {seats} postazioni e {requests} richieste al giorno, con le stesse leve che senza chiave e il tuo risparmio reale nella dashboard. Risparmia con @bivelio/savings-layer {saves} o successivo; le versioni precedenti osservano soltanto.",
     "signupPlanPro": "Hai scelto {plan} — {price} per postazione al mese. Crea il tuo account, conferma la tua email e pagherai nella dashboard tramite Stripe.",
     "signupPlanTeam": "Hai scelto {plan} — {price} al mese, {seats} postazioni incluse. Crea il tuo account, conferma la tua email e pagherai nella dashboard tramite Stripe.",
     "openSourceQuestion": "Vuoi solo il motore open source?",

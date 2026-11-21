@@ -27,8 +27,9 @@ import { VERSION_MEDIR_AHORRA, VERSION_MINIMA_MEDIR } from "@/lib/license/medir-
  *     ahorro con suscripción.
  *
  * Las claves del panel (dashboard.*) las lleva otro trabajo y no se tocan aquí.
- * `auth.signupMedir` conserva la frase de #608 («la última versión», sin número;
- * textos-que-no-caducan.test.ts) y solo deja de decir «modo sombra».
+ * `auth.signupMedir` dice, como la tarjeta, desde qué versión ahorra Measure
+ * (`{saves}`, por parámetro; revisión de #610) en lugar de «la última versión»:
+ * es un umbral fijo y no caduca con cada release (textos-que-no-caducan.test.ts).
  */
 
 const LOCALES = ["ca", "de", "en", "es", "fr", "id", "it", "nl", "pl", "pt", "tr", "vi"] as const;
@@ -159,6 +160,62 @@ describe("Measure con la 1.2.4: ahorra, y las versiones anteriores solo observan
     expect(en["pricingPage.plans.medir.body"]).toContain("only observe with a Measure key: shadow mode");
     expect(en["pricingPage.plans.medir.body"]).not.toMatch(/cloud levers need Pro or Team/);
     expect(es["pricingPage.plans.medir.body"]).not.toMatch(/palancas de nube necesitan Pro o Team/);
+  });
+});
+
+describe("revisión de #610: el alta y «cómo funciona» dicen lo que hace Measure con la 1.2.4", () => {
+  /** La frase de #608 que cerraba el alta: «funciona con la última versión», sin decir desde cuál ahorra. */
+  const ULTIMA: Record<Loc, string> = {
+    ca: "Funciona amb la darrera versió",
+    de: "funktioniert mit der neuesten Version",
+    en: "works with the latest version",
+    es: "Funciona con la última versión",
+    fr: "fonctionne avec la dernière version",
+    id: "Berfungsi dengan versi terbaru",
+    it: "Funziona con l'ultima versione",
+    nl: "werkt met de nieuwste versie",
+    pl: "Działa z najnowszą wersją",
+    pt: "Funciona com a versão mais recente",
+    tr: "en son sürümüyle çalışır",
+    vi: "Hoạt động với phiên bản mới nhất",
+  };
+
+  it("/signup pasa la versión que ahorra por parámetro, desde la constante", () => {
+    expect(codigo("app/[locale]/signup/page.tsx")).toMatch(/t\("signupMedir", \{[^}]*saves: VERSION_MEDIR_AHORRA,/);
+  });
+
+  for (const loc of LOCALES) {
+    it(`${loc}: el alta dice desde qué versión ahorra y que las anteriores solo observan, sin números escritos`, () => {
+      const d = cargar(loc);
+      const alta = d["auth.signupMedir"]!;
+      expect(alta).toContain("@bivelio/savings-layer {saves}");
+      expect(alta).not.toContain(ULTIMA[loc]);
+      expect(alta).not.toContain("{version}");
+      expect(alta).not.toMatch(/[0-9]/);
+      // La misma frase que la tarjeta de Measure: «ahorra con {saves}…; las anteriores solo observan».
+      const tarjeta = d["pricingPage.cards.medir.summary"]!;
+      const desdeTarjeta = tarjeta.slice(tarjeta.indexOf("@bivelio/savings-layer {saves}"));
+      expect(alta.endsWith(desdeTarjeta), `${loc}: ${alta}`).toBe(true);
+      const t = createTranslator({ locale: loc, messages: crudo(loc), onError: (e) => { throw e; } });
+      const pintado = (t as unknown as (k: string, p: object) => string)("auth.signupMedir", { seats: 5, requests: "20.000", saves: VERSION_MEDIR_AHORRA });
+      expect(pintado).toContain("@bivelio/savings-layer 1.2.4");
+    });
+  }
+
+  it("en/es: el texto exacto del cierre del alta", () => {
+    expect(cargar("en")["auth.signupMedir"]).toMatch(/ It saves with @bivelio\/savings-layer \{saves\} or later; older versions only observe\.$/);
+    expect(cargar("es")["auth.signupMedir"]).toMatch(/ Ahorra con @bivelio\/savings-layer \{saves\} o posterior; las versiones anteriores solo observan\.$/);
+  });
+
+  it("/how-it-works: la tarjeta «antes de instalar», que nombra Measure, ya no lleva la insignia «modo sombra»", () => {
+    const src = codigo("app/components/HowItWorks.tsx");
+    const antes = src.slice(src.indexOf('{t("mBeforeK")}'), src.indexOf('{t("mAfterK")}'));
+    expect(antes).toContain("{t(\"mBeforeBody\")}");
+    expect(antes).not.toContain('tipo="sombra"');
+    expect(antes).not.toContain("evidence.sombra");
+    // La cifra de antes de instalar sale del banco público, como dice el texto.
+    expect(antes).toContain('<EvidenceBadge tipo="benchmark" label={tUi("evidence.benchmark")} />');
+    expect(cargar("en")["howItWorks.mBeforeBody"]).toContain("the public bench");
   });
 });
 

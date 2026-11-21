@@ -516,8 +516,10 @@ describe("Medir: sus límites donde se ofrece, y su versión mínima en sus cond
 
   // La versión mínima (VERSION_MINIMA_MEDIR) es una CONDICIÓN de Measure y se
   // queda en sus condiciones (/pricing#medir). Donde Measure se ofrece —la
-  // tarjeta, el alta y la banda final— se dice «la última versión del paquete»,
-  // que no caduca con cada release (m27, 2026-11-21).
+  // tarjeta, el alta y la banda final— no se escribe ninguna versión que
+  // caduque con cada release (m27, 2026-11-21). El alta sí dice desde qué
+  // versión AHORRA (`{saves}`, VERSION_MEDIR_AHORRA): es un umbral fijo, no «la
+  // última», y llega por parámetro.
   const CON_VERSION = ["landing.pricing.plans.medir.body", "pricingPage.plans.medir.body"];
   const SIN_VERSION = ["auth.signupMedir", "pricingPage.cards.medir.version", "landing.footer.ctaSub"];
   for (const loc of LOCALES) {
@@ -563,7 +565,7 @@ describe("los textos nuevos se formatean en los 12 idiomas (ICU sin errores)", (
     "landing.footer.ctaSub": {},
     "howItWorks.billWith": {},
     "howItWorks.billDepends": {},
-    "auth.signupMedir": { seats: 5, requests: "20.000" },
+    "auth.signupMedir": { seats: 5, requests: "20.000", saves: "1.2.4" },
   };
   for (const loc of LOCALES) {
     it(`${loc}`, () => {

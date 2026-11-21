@@ -194,7 +194,7 @@
       "network": "Geen verbinding. Controleer je netwerk en probeer het opnieuw.",
       "missingFields": "Vul je e-mailadres en wachtwoord in."
     },
-    "signupMedir": "Of start gratis met Measure: het gratis cloud-plan voor kleine teams, zonder kaart, tot {seats} seats en {requests} verzoeken per dag, met dezelfde hendels als zonder sleutel en je echte besparing in het dashboard. Het werkt met de nieuwste versie van @bivelio/savings-layer.",
+    "signupMedir": "Of start gratis met Measure: het gratis cloud-plan voor kleine teams, zonder kaart, tot {seats} seats en {requests} verzoeken per dag, met dezelfde hendels als zonder sleutel en je echte besparing in het dashboard. Het bespaart vanaf @bivelio/savings-layer {saves}; oudere versies kijken alleen mee.",
     "signupPlanPro": "Je hebt {plan} gekozen — {price} per seat per maand. Maak je account aan, bevestig je e-mailadres en je betaalt in je dashboard via Stripe.",
     "signupPlanTeam": "Je hebt {plan} gekozen — {price} per maand, inclusief {seats} seats. Maak je account aan, bevestig je e-mailadres en je betaalt in je dashboard via Stripe.",
     "openSourceQuestion": "Wil je alleen de open-source-engine?",

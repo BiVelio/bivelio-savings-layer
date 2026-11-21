@@ -194,7 +194,7 @@
       "network": "Tidak ada koneksi. Periksa jaringan Anda dan coba lagi.",
       "missingFields": "Masukkan email dan kata sandi Anda."
     },
-    "signupMedir": "Atau mulai gratis dengan Measure: paket cloud gratis untuk tim kecil, tanpa kartu, hingga {seats} kursi dan {requests} permintaan per hari, dengan tuas yang sama seperti tanpa kunci dan penghematan nyata Anda di dasbor. Berfungsi dengan versi terbaru @bivelio/savings-layer.",
+    "signupMedir": "Atau mulai gratis dengan Measure: paket cloud gratis untuk tim kecil, tanpa kartu, hingga {seats} kursi dan {requests} permintaan per hari, dengan tuas yang sama seperti tanpa kunci dan penghematan nyata Anda di dasbor. Berhemat dengan @bivelio/savings-layer {saves} atau lebih baru; versi lama hanya mengamati.",
     "signupPlanPro": "Anda memilih {plan} — {price} per kursi per bulan. Buat akun Anda, konfirmasikan email Anda, lalu bayar di dasbor melalui Stripe.",
     "signupPlanTeam": "Anda memilih {plan} — {price} per bulan, termasuk {seats} kursi. Buat akun Anda, konfirmasikan email Anda, lalu bayar di dasbor melalui Stripe.",
     "openSourceQuestion": "Hanya ingin mesin open source?",

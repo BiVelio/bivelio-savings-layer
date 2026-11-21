@@ -194,7 +194,7 @@
       "network": "Bağlantı yok. Ağınızı kontrol edip tekrar deneyin.",
       "missingFields": "E-postanızı ve şifrenizi girin."
     },
-    "signupMedir": "Ya da Measure ile ücretsiz başlayın: küçük ekipler için ücretsiz bulut planı, kartsız, {seats} koltuğa ve günde {requests} isteğe kadar; anahtarsız kullanımdaki kolların aynısı ve panelde gerçek tasarrufunuz. @bivelio/savings-layer'ın en son sürümüyle çalışır.",
+    "signupMedir": "Ya da Measure ile ücretsiz başlayın: küçük ekipler için ücretsiz bulut planı, kartsız, {seats} koltuğa ve günde {requests} isteğe kadar; anahtarsız kullanımdaki kolların aynısı ve panelde gerçek tasarrufunuz. @bivelio/savings-layer {saves} ve üzeriyle tasarruf eder; eski sürümler yalnızca gözlemler.",
     "signupPlanPro": "{plan} planını seçtiniz — koltuk başına aylık {price}. Hesabınızı oluşturun, e-postanızı onaylayın; ödemeyi panelde Stripe üzerinden yaparsınız.",
     "signupPlanTeam": "{plan} planını seçtiniz — aylık {price}, {seats} koltuk dahil. Hesabınızı oluşturun, e-postanızı onaylayın; ödemeyi panelde Stripe üzerinden yaparsınız.",
     "openSourceQuestion": "Yalnızca açık kaynak motoru mu istiyorsunuz?",

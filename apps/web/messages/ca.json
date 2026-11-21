@@ -194,7 +194,7 @@
       "network": "Sense connexió. Comprova la xarxa i torna-ho a intentar.",
       "missingFields": "Escriu el teu correu i la contrasenya."
     },
-    "signupMedir": "O comença gratis amb Measure: el pla de núvol gratuït per a equips petits, sense targeta, fins a {seats} seients i {requests} peticions al dia, amb les mateixes palanques que sense clau i el teu estalvi real al tauler. Funciona amb la darrera versió de @bivelio/savings-layer.",
+    "signupMedir": "O comença gratis amb Measure: el pla de núvol gratuït per a equips petits, sense targeta, fins a {seats} seients i {requests} peticions al dia, amb les mateixes palanques que sense clau i el teu estalvi real al tauler. Estalvia amb @bivelio/savings-layer {saves} o posterior; les versions anteriors només observen.",
     "signupPlanPro": "Has triat {plan} — {price} per seient i mes. Crea el compte, confirma el correu i pagaràs des del panell, amb Stripe.",
     "signupPlanTeam": "Has triat {plan} — {price} al mes, amb {seats} seients inclosos. Crea el compte, confirma el correu i pagaràs des del panell, amb Stripe.",
     "openSourceQuestion": "Només vols el motor open source?",
