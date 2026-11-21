@@ -111,6 +111,7 @@
     "web:build": "tsup",
     "web:dev": "node apps/web/serve.mjs",
     "prepublishOnly": "pnpm run build",
+    "prepack": "node scripts/permisos-del-paquete.mjs",
     "ab:publish": "tsx benchmarks/publish.ts",
     "bench:mt-bench": "tsx --env-file-if-exists=.env.bench benchmarks/publicados/mt-bench/mt-bench.ts",
     "ab:sonda": "BVSALA_DEV_OPEN=1 tsx --env-file-if-exists=.env.bench benchmarks/sonda-del-banco.ts",

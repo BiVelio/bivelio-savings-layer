@@ -35,8 +35,9 @@ import { beforeAll, afterAll, describe, it, expect } from "vitest";
  * `publish.yml` solo corre al cortar la Release. Los dos llegan tarde: el fallo
  * que esto caza se publica, no se compila mal. `pnpm test` corre en cada push
  * (ci.yml), así que aquí es donde tiene que estar. Cuesta ~1,5 s: `npm pack`
- * tarda 0,25 s, no reconstruye nada (no hay `prepack`; `prepublishOnly` no lo
- * dispara `pack`) y el resto son tres procesos node cortos. Un test lento se
+ * tarda 0,25 s, no reconstruye nada (el `prepack` solo ajusta permisos, ver
+ * test/permisos-del-paquete.test.ts; `prepublishOnly` no lo dispara `pack`) y el
+ * resto son tres procesos node cortos. Un test lento se
  * desactiva, y uno desactivado no defiende nada.
  *
  * ── POR QUÉ NO `npm install` ──────────────────────────────────────────────────
