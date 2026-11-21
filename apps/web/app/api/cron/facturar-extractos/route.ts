@@ -16,13 +16,16 @@ import {
 } from "@/lib/billing/facturacion";
 import { alertar } from "@/lib/observabilidad/alerta";
 import { getStripe } from "@/lib/stripe/client";
-import { billingConfigured, preciosSinComision } from "@/lib/stripe/env";
+import { billingConfigured, preciosSinComision, STRIPE_PRICE_ID_MONTHLY, STRIPE_PRICE_ID_YEARLY } from "@/lib/stripe/env";
 import {
+  idsConComision,
   idsSinComision,
   orgsExentasPorMedir,
   orgsSinComisionPorPlan,
+  tuvoComisionEnElPeriodo,
   ESTADOS_CON_PLAN,
   type LicenciaMedirDeOrg,
+  type SuscripcionConFinDePeriodo,
   type SuscripcionConPrecio,
   type SuscripcionDeOrg,
 } from "@/lib/billing/plan-de-la-org";
@@ -49,8 +52,10 @@ import { leerTodo } from "@/lib/supabase/leer-todo";
  * Un fallo con UNA org no bloquea a las demás: se alerta y se sigue.
  *
  * ENSAYO EN SECO (`?seco=1`, mismo Bearer): devuelve, por extracto, qué haría
- * (facturar/omitir/nada/exenta, céntimos, cliente y de dónde saldría el cobro)
- * sin crear nada en Stripe ni escribir en cargos. Solo LECTURAS de Stripe.
+ * (facturar/omitir/nada/exenta/revisar, céntimos, cliente y de dónde saldría el
+ * cobro) sin crear nada en Stripe ni escribir en cargos. Solo LECTURAS de Stripe.
+ * «revisar» es la tercera verja: cargo en una organización sin la modalidad con
+ * comisión en el período; de verdad no se factura y se alerta.
  */
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -259,6 +264,46 @@ export async function GET(req: Request): Promise<NextResponse> {
       }
 
       const decision = decidirCargo(e, cliente, conCargo.has(e.org_id));
+
+      // TERCERA VERJA (verificación de la 1.2.4, 21-11-2026): la lista POSITIVA.
+      // Las dos de arriba eximen a quien se sabe que no lleva comisión; esta solo
+      // deja facturar (o registrar como omitido) a quien TUVO la modalidad con
+      // comisión en el período: una suscripción con uno de SUS precios cuyo
+      // período llega a este mes. Sin ella (Pro en `unpaid`, Pro cancelado el
+      // día 1 de madrugada, Enterprise a mano, `price_id` nulo, ex-comisión que
+      // pasó por Pro…) no hay factura ni fila en cargos: se alerta y lo revisa
+      // una persona. Solo cobra MENOS que sin ella, nunca más. Ver
+      // `tuvoComisionEnElPeriodo` en lib/billing/plan-de-la-org.ts.
+      if (decision.accion !== "nada") {
+        const preciosComision = idsConComision(STRIPE_PRICE_ID_MONTHLY, STRIPE_PRICE_ID_YEARLY, process.env.STRIPE_PRICE_IDS_EXTRA);
+        let conModalidad = false;
+        if (preciosComision.length > 0) {
+          const { data: subsCom, error: errCom } = await supabase
+            .schema("bvsala")
+            .from("subscriptions")
+            .select("price_id, current_period_end")
+            .eq("org_id", e.org_id);
+          // Falla CERRADA, como el resto de la verja: sin poder leerlo no se factura.
+          if (errCom) throw new Error(`modalidad de ${e.org_id} ilegible: ${errCom.message}`);
+          conModalidad = tuvoComisionEnElPeriodo((subsCom ?? []) as SuscripcionConFinDePeriodo[], preciosComision, e.periodo);
+        }
+        if (!conModalidad) {
+          if (seco) ensayo.push(ensayoDeCargo(e, "sin_modalidad", undefined));
+          else
+            await alertar({
+              nivel: "critico",
+              asunto: "Extracto con cargo de comisión en una organización SIN la modalidad con comisión: no se factura, revisar",
+              detalle: {
+                orgId: e.org_id,
+                periodo: e.periodo,
+                cargoEur: e.cargo_eur,
+                preciosDeComisionConfigurados: preciosComision.length,
+              },
+            });
+          continue;
+        }
+      }
+
       if (seco) {
         const medio = decision.accion === "facturar" ? await medioDePagoDeLaOrg(supabase, stripe, e.org_id, decision.clienteStripe) : undefined;
         ensayo.push(ensayoDeCargo(e, decision, medio));

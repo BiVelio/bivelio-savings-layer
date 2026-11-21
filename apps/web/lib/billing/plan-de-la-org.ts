@@ -118,3 +118,75 @@ export function orgsExentasPorMedir(
   }
   return exentas;
 }
+
+// ── LA TERCERA VERJA: SOLO PAGA COMISIÓN QUIEN TUVO LA MODALIDAD CON COMISIÓN ─
+//
+// Las dos verjas de arriba son listas NEGATIVAS: eximen a quien está en Pro o
+// Equipo, o en Medir sin historia de comisión, y todo lo demás «lleva comisión»
+// (`planDelPrecio`). La verificación de la 1.2.4 (21-11-2026), con la cadena
+// entera (ingesta → base real → cierre → facturación), encontró 8 caminos por
+// los que esa regla factura comisión a quien NUNCA la contrató este mes: Pro en
+// `unpaid`, Pro cancelado el día 1 de madrugada, Enterprise o piloto a mano,
+// Pro con `price_id` nulo, ex-comisión que pasa por Pro y cancela, Pro sin vuelta
+// a Medir, Medir con un precio hecho a mano y ex-comisión en gracia.
+//
+// Esta verja es la lista POSITIVA: solo se factura comisión a una organización
+// con una suscripción de un precio de la modalidad con comisión
+// (STRIPE_PRICE_ID_MONTHLY / _YEARLY y STRIPE_PRICE_IDS_EXTRA) cuyo período
+// llegue al período facturado. Lo demás no se cobra solo: alerta y revisión
+// humana. Solo puede cobrar MENOS que sin ella, nunca más.
+
+/** Una fila de `subscriptions` con su precio y el fin de su período, en CUALQUIER estado. */
+export interface SuscripcionConFinDePeriodo {
+  price_id?: string | null;
+  current_period_end?: string | null;
+}
+
+/**
+ * Los price ids de la modalidad CON comisión: cada argumento puede traer varios
+ * separados por comas (STRIPE_PRICE_IDS_EXTRA); se trocean, se recortan y se
+ * descartan los vacíos. Un salto de línea final en la variable de entorno no
+ * puede dejar fuera a nadie.
+ */
+export function idsConComision(...variables: ReadonlyArray<string | null | undefined>): string[] {
+  return variables
+    .flatMap((v) => (v ?? "").split(","))
+    .map((s) => s.trim())
+    .filter(Boolean);
+}
+
+/**
+ * ¿Tuvo esta organización la modalidad con comisión en el período `YYYY-MM`?
+ * Sí si alguna de sus suscripciones lleva uno de `ids` y su `current_period_end`
+ * es POSTERIOR al primer instante del período (o es nulo: sin fecha, no se le
+ * quita la comisión a quien la tiene). Una fecha ilegible no cuenta: equivocarse
+ * hacia este lado solo deja una factura sin emitir, con su alerta.
+ */
+export function tuvoComisionEnElPeriodo(
+  suscripciones: readonly SuscripcionConFinDePeriodo[],
+  ids: readonly string[],
+  periodo: string,
+): boolean {
+  return tuvoComisionDesde(suscripciones, ids, Date.parse(`${periodo}-01T00:00:00Z`));
+}
+
+/**
+ * La misma regla con un instante cualquiera (ms UTC): ¿alguna suscripción de
+ * la modalidad con comisión tiene su período abierto DESPUÉS de `desdeMs`? El
+ * panel la usa para no decir «nunca se factura» sobre días que sí entran en una
+ * comisión.
+ */
+export function tuvoComisionDesde(
+  suscripciones: readonly SuscripcionConFinDePeriodo[],
+  ids: readonly string[],
+  desdeMs: number,
+): boolean {
+  if (ids.length === 0 || Number.isNaN(desdeMs)) return false;
+  return suscripciones.some((s) => {
+    const precio = (s.price_id ?? "").trim();
+    if (!precio || !ids.includes(precio)) return false;
+    if (s.current_period_end == null || s.current_period_end === "") return true;
+    const fin = Date.parse(s.current_period_end);
+    return !Number.isNaN(fin) && fin > desdeMs;
+  });
+}
