@@ -87,6 +87,10 @@ vi.mock("@/lib/stripe/client", () => ({ getStripe: () => stripe }));
 vi.mock("@/lib/stripe/env", () => ({
   billingConfigured: true,
   preciosSinComision: () => ({ pro: ["price_pro_m"], equipo: ["price_team_m"] }),
+  // Los precios de la modalidad CON comisión: la tercera verja (tercera-verja.test.ts)
+  // solo deja facturar a quien tiene uno de ellos en el período.
+  STRIPE_PRICE_ID_MONTHLY: "price_comision_antiguo",
+  STRIPE_PRICE_ID_YEARLY: "price_comision_antiguo_y",
 }));
 
 import { GET } from "./route";
