@@ -71,12 +71,20 @@ describe("portada: dos ofertas, cada una con su bloque", () => {
     expect(enlaces).toMatch(/import \{ useRouter \} from "@\/i18n\/navigation"/);
   });
 
-  it("el héroe (dueño, 2026-10-03): «Empezar» lleva al alta y el secundario al banco público", () => {
+  it("el héroe (dueño, 2026-11-21): «Instalar gratis» es el principal, Measure el segundo y el banco público de apoyo", () => {
     // Hasta el 2026-10-03 el botón principal preguntaba «¿SDK o gateway?» y
-    // llevaba a #offers. El héroe nuevo es titular, línea, dos botones y la
+    // llevaba a #offers. El héroe nuevo es titular, línea, botones y la
     // captura del panel: la elección entre las dos ofertas sigue justo debajo.
+    // Del 2026-10-03 al 2026-11-21 el principal era «Start with Measure» (al
+    // alta). El dueño lo cambió: lo que ahorra es el open source sin clave, así
+    // que el principal instala gratis (#sdk-install) y Measure pasa a segundo.
+    // El diseño no cambia: cada posición conserva sus clases.
     const cta = CODIGO.slice(CODIGO.indexOf('className="hero-cta"'), CODIGO.indexOf('className="hpanel-shot"'));
-    expect(cta).toMatch(/className="btn" href="\/signup">\s*\{t\("hero\.ctaStart"\)\}/);
+    expect(cta).toMatch(/<a className="btn" href="#sdk-install">\s*\{t\("hero\.ctaOss"\)\}/);
+    expect(cta).toMatch(/<Link className="btn ghost hero-oss" href="\/signup">\s*\{t\("hero\.ctaStart"\)\}/);
+    expect(cta.indexOf('href="#sdk-install"')).toBeLessThan(cta.indexOf('href="/signup"'));
+    // Las clases, en el mismo orden que antes del cambio: solo se movieron texto y destino.
+    expect([...cta.matchAll(/className="([^"]+)"/g)].map((m) => m[1])).toEqual(["hero-cta", "btn", "btn ghost hero-oss", "hero-apoyo", "btn ghost"]);
     expect(cta).toMatch(/className="btn ghost" href="\/benchmarks">\s*\{t\("hero\.ctaBench"\)\}/);
     expect(PAGINA).not.toContain("hero.ctaRun");
     expect(PAGINA).not.toContain("hero.ctaOffers");

@@ -150,10 +150,11 @@
     "createAnAccount": "Crea un account",
     "backToVerifier": "← Torna alla home",
     "createYourAccount": "Crea il tuo account Cloud",
-    "signupSubtitle": "Un account BiVelio per tutta la suite. Crealo per il cloud: dashboard, cache condivise e gestione licenze. Il pacchetto non ha bisogno di account — l'open core gira senza chiave.",
+    "signupSubtitle": "Un account BiVelio per tutta la suite. Crealo per il cloud: dashboard di team, misurazione condivisa, postazioni e licenze. Il pacchetto non ha bisogno di account — l'open core gira senza chiave.",
     "alreadyHaveAccount": "Hai già un account BiVelio?",
     "signIn": "Accedi",
     "workEmail": "Email di lavoro",
+    "emailPlaceholder": "tu@azienda.com",
     "password": "Password",
     "createAccountCta": "Crea account →",
     "signupLegal": "Creando l'account accetti le <terms>condizioni di Savings Cloud</terms> e l'<privacy>informativa sulla privacy</privacy>.",
@@ -194,7 +195,7 @@
       "network": "Nessuna connessione. Controlla la rete e riprova.",
       "missingFields": "Inserisci email e password."
     },
-    "signupMedir": "Oppure parti gratis con Measure: il piano cloud gratuito, senza carta, modalità ombra, fino a {seats} postazioni e {requests} richieste al giorno. Funziona con l'ultima versione di @bivelio/savings-layer.",
+    "signupMedir": "Oppure parti gratis con Measure: il piano cloud gratuito per team piccoli, senza carta, fino a {seats} postazioni e {requests} richieste al giorno, con le stesse leve che senza chiave e il tuo risparmio reale nella dashboard. Risparmia con @bivelio/savings-layer {saves} o successivo; le versioni precedenti osservano soltanto.",
     "signupPlanPro": "Hai scelto {plan} — {price} per postazione al mese. Crea il tuo account, conferma la tua email e pagherai nella dashboard tramite Stripe.",
     "signupPlanTeam": "Hai scelto {plan} — {price} al mese, {seats} postazioni incluse. Crea il tuo account, conferma la tua email e pagherai nella dashboard tramite Stripe.",
     "openSourceQuestion": "Vuoi solo il motore open source?",
@@ -1242,7 +1243,7 @@
       "proofTitle": "Misurato contro un provider reale",
       "compatibleCon": "Compatibile con",
       "compatibleNota": "Compatibile non vuol dire misurato. L'SDK funziona con qualsiasi endpoint compatibile con l'API di OpenAI, più l'adattatore nativo di Anthropic e l'adattatore nativo di Gemini (novità della {gemini}). Con una cifra di risparmio sul banco pubblico, oggi solo i modelli di OpenAI e di Anthropic; Gemini non ha una cifra di risparmio. Ciò che è misurato per Gemini: {flash}, tramite la sua API nativa, nel banco settimanale dal vivo del {fecha} — tutte e quattro le batterie, senza errori dello strato e senza alcun rifiuto in cache o accreditato come risparmio. Quel banco verifica che lo strato non rompa nulla e non faccia pagare di più; non misura un risparmio. Misurato anche: {pro}, tramite la sua API nativa, in due esecuzioni parziali del {fechaPro} (la sua quota giornaliera del fornitore non basta per le quattro batterie in un giorno): tutte e quattro le batterie, anche qui senza alcun errore del livello e senza alcun rifiuto messo in cache o contato come risparmio.",
-      "ctaOss": "Installa l’open source"
+      "ctaOss": "Installa gratis"
     },
     "cascade": {
       "title": "Vince l'esecuzione più economica",
@@ -1267,7 +1268,7 @@
         },
         {
           "title": "Open core: risparmia senza chiavi",
-          "body": "Installa il pacchetto e le leve sono attive: la modalità Community accende ogni leva locale con zero telemetria, e una chiave impostata ma non valida resta fail-closed. Il cloud è opzionale: dashboard di team, cache condivise e gestione licenze con un canone fisso per postazione — e nessuna commissione sul tuo risparmio."
+          "body": "Tutte le leve sono incluse e gratis, senza chiave. Attive di default: cache esatta, deduplicazione delle richieste simultanee, resolver locali, posizionamento della cache del prompt, taglio dei risultati degli strumenti già superati e serializzazione compatta dei dati strutturati che passi. Le altre si accendono con una riga ciascuna. Due macchine possono condividere una cache gratis con uno storage che gestisci tu (Redis, per esempio). Zero telemetria, e una chiave impostata ma non valida resta fail-closed. Il cloud è opzionale: dashboard di team, misurazione condivisa, postazioni e licenze con un canone fisso per postazione — e nessuna commissione sul tuo risparmio."
         }
       ],
       "nota": "Le animazioni illustrano l'idea. Le cifre vere — misurate contro fornitori reali — sono subito sotto."
@@ -1354,19 +1355,19 @@
     "pricing": {
       "eyebrow": "Piani",
       "title": "Motore open source. Controllo cloud per il tuo team.",
-      "body": "Il pacchetto è open core Apache-2.0: nessuna chiave, tutte le leve locali attive, zero telemetria. Il cloud è opzionale — Measure è il piano gratuito, Pro e Team si fatturano per postazione, in {currency}, senza commissioni sul tuo risparmio.",
+      "body": "Il pacchetto è open core Apache-2.0: tutte le leve incluse e gratis, senza chiave, e zero telemetria. Il cloud è opzionale — Measure è il piano gratuito, Pro e Team si fatturano per postazione, in {currency}, senza commissioni sul tuo risparmio.",
       "amount": "{amount}",
       "per": "/ postazione / mese",
       "plans": {
         "medir": {
           "name": "Measure",
           "price": "Gratis",
-          "body": "Gratis, senza carta. Il piano CLOUD gratuito: modalità ombra per un'organizzazione, fino a {seats} postazioni e {requests} richieste al giorno — nulla di ciò che invii cambia, nulla è servito dalla cache, mai parte di alcuna commissione, e la dashboard mostra quanto avrebbe risparmiato. Le leve locali non ne hanno bisogno: l'open core funziona senza alcuna chiave. Serve @bivelio/savings-layer {version} o successivo.",
+          "body": "Gratis, senza carta. Il piano CLOUD gratuito, per team piccoli: un'organizzazione, fino a {seats} postazioni e {requests} richieste al giorno. Le stesse leve dell'open core senza chiave, più la dashboard con il tuo risparmio reale; mai soggetto a commissioni. Risparmia con @bivelio/savings-layer {saves} o successivo; le versioni dalla {version} fino a prima della {saves} osservano soltanto.",
           "cta": "Inizia gratis →"
         },
         "pro": {
           "name": "Pro",
-          "note": "Oppure <b>{yearly} / postazione / anno</b>. Tutte le ottimizzazioni, la ricevuta per richiesta e la dashboard. Nessuna commissione.",
+          "note": "Oppure <b>{yearly} / postazione / anno</b>. Dashboard di team, misurazione condivisa, postazioni e licenze. Nessuna commissione.",
           "cta": "Scegli Pro →"
         },
         "team": {
@@ -1384,7 +1385,7 @@
       "legacy": "Hai già la formula precedente, con commissione sul risparmio misurato? La mantieni senza modifiche; le sue condizioni sono nei <terms>termini di prezzo</terms>.",
       "seatNote": "Una postazione è una <b>macchina o identità di servizio</b>, non una persona. Paghi le postazioni coperte dal tuo abbonamento; la tua dashboard mostra quante sono state in uso questo mese (attive in almeno {dias} giorni; CI e runner effimeri non contano).",
       "features": [
-        "Ogni ottimizzazione BV‑SALA, senza limiti",
+        "Dashboard di team e misurazione condivisa per ogni postazione",
         "Una ricevuta per richiesta: SavingsReport con quattro registri, misurato e stimato separati",
         "Dashboard di risparmio e analitiche di team",
         "I tuoi prompt non passano dai server di BiVelio: vengono inviati al provider che configuri"
@@ -1639,7 +1640,7 @@
         },
         {
           "q": "Che differenza c’è tra Measure e Community?",
-          "a": "Community è il motore open source nella tua infrastruttura: senza account, senza chiave BiVelio e senza telemetria per impostazione predefinita. Measure è il piano gratuito di Savings Cloud: richiede un account e funziona in modalità ombra, quindi non modifica le tue richieste né serve risposte dalla cache; la tua dashboard mostra quanto si sarebbe risparmiato."
+          "a": "Community è il motore open source sulla tua infrastruttura: niente account, niente chiave BiVelio e nessuna telemetria di default. Measure è il piano gratuito di Savings Cloud per team piccoli: richiede un account, applica le stesse leve di Community e aggiunge la dashboard con il tuo risparmio reale. Con versioni vecchie del pacchetto osserva soltanto; la pagina dei prezzi dice da quale versione risparmia."
         },
         {
           "q": "Serve per un abbonamento come ChatGPT Plus?",
@@ -1655,7 +1656,7 @@
         },
         {
           "q": "Garantite un risparmio?",
-          "a": "No. Quanto risparmi dipende dal tuo traffico; per esempio, da quanto si ripete. Pubblichiamo ogni misurazione con il suo modello, il suo campione e il suo intervallo, e Measure ti fa vedere quanto si sarebbe risparmiato sul tuo traffico prima di pagare qualcosa."
+          "a": "No. Quanto risparmi dipende dal tuo traffico; per esempio, da quanto si ripete. Pubblichiamo ogni misurazione con il suo modello, il suo campione e il suo intervallo, e l'open core ti mostra sul tuo traffico, richiesta per richiesta, quanto risparmia prima che tu paghi qualcosa."
         }
       ]
     },
@@ -1663,7 +1664,7 @@
       "title": "Prima misura.",
       "titleAccent": "Poi decidi.",
       "titleMark": "decidi",
-      "sub": "Measure è gratuito e non chiede la carta: funziona in modalità ombra e ti mostra quanto si sarebbe risparmiato sul tuo traffico. Il motore è open source e il suo codice è sotto gli occhi di tutti.",
+      "sub": "Measure è gratuito e non chiede la carta: le stesse leve del motore open source, più la dashboard con ciò che risparmi davvero sul tuo traffico. Il motore è open source e il suo codice è sotto gli occhi di tutti.",
       "repo": "Vedi il repository"
     },
     "layer": {
@@ -1682,7 +1683,7 @@
       "srcAgent": "Il tuo agente",
       "srcAgentVia": "gateway locale",
       "memoryLabel": "Memoria delle richieste recenti",
-      "compactLabel": "Compattazione dei dati",
+      "compactLabel": "Formato compatto",
       "providersLabel": "Il provider che configuri",
       "nativeAdapter": "adattatore nativo",
       "compatName": "Qualsiasi endpoint compatibile con l'API di OpenAI",
@@ -1690,13 +1691,13 @@
       "step1Body": "Parte dalla tua app o dal tuo agente senza lasciare la tua infrastruttura.",
       "step2Title": "Ripetuta · servita senza chiamare il provider",
       "step2Body": "Lo strato la riconosce nella sua memoria e restituisce la risposta salvata.",
-      "step3Title": "Dati compattati · meno token",
-      "step3Body": "Una richiesta nuova viaggia più leggera verso il provider che configuri e la risposta torna attraverso lo strato.",
+      "step3Title": "Nuova · più leggera dove si può",
+      "step3Body": "Una nuova richiesta va al provider che configuri: dati strutturati in un formato compatto, risultati degli strumenti già superati tagliati. Compattare gli output degli strumenti è una leva che accendi tu. La risposta torna attraverso il layer.",
       "step4Title": "Solo conteggi e costi · mai prompt",
       "step4Body": "Savings Cloud è facoltativo: se lo colleghi, riceve cifre, non contenuti.",
       "legendRepeat": "Ripetute",
       "legendRepeatTo": "senza chiamare il provider",
-      "legendData": "Dati compattati",
+      "legendData": "Dati strutturati",
       "legendDataTo": "meno token",
       "legendCache": "Cache del provider",
       "legendCacheTo": "input meno costoso",
@@ -2135,7 +2136,7 @@
     "caseClaudeSub": "claude.ai, gratis o a pagamento",
     "caseClaudeBody": "Abbonamento fisso: nessuna fattura di token da misurare — ma con tetti (la finestra di cinque ore e quello settimanale). È esattamente per questo che esiste la skill savings-mode: gratuita, si carica su claude.ai in un minuto e attacca le due masse che bruciano il tetto. Il suo effetto sarà pubblicato quando sarà misurato — mai prima.",
     "caseCodeSub": "terminale, con chiave API",
-    "caseCodeBody": "Con l'abbonamento la quota è fissa — ma con tetti: la stessa skill si installa con un solo comando e allunga lo stesso tetto settimanale. Con la chiave API c'è una fattura di token reale — e il misuratore è già in moto: senza alcuna chiave di BiVelio, «bvsala claude» lancia Claude Code attraverso il gateway locale, senza toccare una riga di codice. Il gateway misura sulla tua macchina ciò che lo attraversa, con l'utilizzo dichiarato dal tuo fornitore, e all'uscita ti dice quante richieste ha misurato, quali no e perché. Sui modelli Anthropic sposta anche le scritture della cache dal TTL di un'ora a quello di cinque minuti solo nei turni in cui una parte consistente del prompt è nuova (il primo turno di una sessione, una compattazione): un risparmio calcolato sul conteggio dei token del tuo stesso fornitore, mai su una stima. Per questo Claude Code deve chiedere la cache di un'ora, e con la chiave API non lo fa se non lo imposti: per impostazione predefinita il gateway si limita a misurare. Con una chiave di Savings Cloud vedi la tua spesa anche nel pannello, token per token.",
+    "caseCodeBody": "Con l'abbonamento la quota è fissa, e con le impostazioni predefinite il gateway non cambia nulla del tuo traffico: misura sulla tua macchina, gratis, quanto spende ogni sessione a prezzo di listino. Per i tetti c'è la skill savings-mode, gratis, con un effetto non ancora misurato. Con la chiave API c'è una fattura di token reale — e il misuratore è già in moto: senza alcuna chiave di BiVelio, «bvsala claude» lancia Claude Code attraverso il gateway locale, senza toccare una riga di codice. Il gateway misura sulla tua macchina ciò che lo attraversa, con l'utilizzo dichiarato dal tuo fornitore, e all'uscita ti dice quanto ha speso a prezzo di listino, quanto ha risparmiato secondo la sua base (misurato o stimato), quante richieste ha misurato, quali no e perché. Sui modelli Anthropic sposta anche le scritture della cache dal TTL di un'ora a quello di cinque minuti solo nei turni in cui una parte consistente del prompt è nuova (il primo turno di una sessione, una compattazione): un risparmio calcolato sul conteggio dei token del tuo stesso fornitore, mai su una stima. Per questo Claude Code deve chiedere la cache di un'ora, e con la chiave API non lo fa se non lo imposti: per impostazione predefinita il gateway si limita a misurare. Con una chiave di Savings Cloud vedi la tua spesa anche nel pannello, token per token.",
     "caseAppName": "La tua applicazione",
     "caseAppSub": "il tuo codice + la tua chiave API",
     "caseAppBody": "Il caso per cui esiste Savings Layer. La tua app chiama l'API con la tua chiave, il provider fattura ogni token, e il layer si installa in due passi: il pacchetto e avvolgere la chiamata. Dalla prima richiesta restituisce un <b>SavingsReport</b> con il risparmio, diviso tra misurato e stimato.",
@@ -2149,7 +2150,7 @@
     "s3Sub": "Il prodotto ha due numeri diversi ed è meglio non mescolarli.",
     "mBeforeK": "Prima di installare",
     "mBeforeV": "Stima",
-    "mBeforeBody": "Il piano cloud gratuito fa girare il layer in modalità ombra sul tuo traffico e mostra quanto avrebbe risparmiato, richiesta per richiesta. Non cambia nulla e non applica nulla — per questo porta l'etichetta «stima». Nessun piano? Open core: le leve locali girano senza chiave e con zero telemetria.",
+    "mBeforeBody": "Prima di installare, ogni cifra è una stima: il banco pubblico mostra come si comporta ogni leva sul suo traffico, non sul tuo. Per iniziare non serve alcun piano: nell'open core ogni leva è gratis, senza chiave e con zero telemetria; il piano gratuito Measure aggiunge la dashboard.",
     "mAfterK": "Dopo l'installazione",
     "mAfterV": "Misurazione reale",
     "mAfterBody": "Ogni chiamata restituisce un SavingsReport: le chiamate che non hai mai pagato e il risparmio netto per richiesta. Verificabile, richiesta per richiesta, sulla tua infrastruttura.",
@@ -2165,7 +2166,7 @@
     "billWith": "Dipende",
     "billDepends": "da quanto si ripete il tuo traffico",
     "hero": {
-      "ctaInstall": "Installa l'open source",
+      "ctaInstall": "Installa gratis",
       "ctaResults": "Vedi i risultati riproducibili"
     },
     "beam": {
@@ -2254,7 +2255,7 @@
         "hint": "facoltativo",
         "what": "Centralizza la misurazione e la gestione del team: organizzazione, licenze e posti.",
         "where": "In Savings Cloud, ospitato da BiVelio. Riceve i dati definiti dalla pagina sulla privacy.",
-        "account": "Sì. Measure è il piano gratuito, in modalità ombra."
+        "account": "Sì. Measure è il piano gratuito, per team piccoli."
       },
       "evidence": {
         "name": "Evidenza",
@@ -2286,12 +2287,12 @@
       "intro": "Quattro piani, dal più piccolo al più grande. Pro e Team si pagano per postazione e non prevedono commissioni.",
       "medir": {
         "name": "Measure",
-        "body": "<b>Gratis, senza carta.</b> Il piano CLOUD gratuito: il layer gira in modalità ombra per un'organizzazione, fino a <b>{seats} postazioni</b> e <b>{requests} richieste al giorno</b>: ogni richiesta raggiunge il tuo provider esattamente come l'hai scritta, nulla è servito dalla cache e nessuna leva è applicata. La dashboard mostra quanto avrebbe risparmiato — una stima che non porta mai commissioni. Serve <b>@bivelio/savings-layer {version} o successivo</b>. Le leve locali non hanno bisogno di alcun piano: l'open core gira senza chiave; le leve cloud richiedono Pro o Team."
+        "body": "<b>Gratis, senza carta.</b> Il piano CLOUD gratuito, per team piccoli: un'organizzazione, fino a <b>{seats} postazioni</b> e <b>{requests} richieste al giorno</b>. Applica le stesse leve dell'open core senza chiave e aggiunge la dashboard con il tuo risparmio reale, misurato con il contatore del tuo provider; non porta mai commissioni. Risparmia con <b>@bivelio/savings-layer {saves} o successivo</b>. Le versioni dalla {version} fino a prima della {saves} osservano soltanto con una chiave Measure: modalità ombra, nessuna leva applicata, e la dashboard mostra quanto si sarebbe risparmiato. Le leve in sé non richiedono alcun piano: l'open core gira senza chiave."
       },
       "pro": {
         "name": "Pro",
         "amount": "<b>{monthly}</b> per postazione al mese, oppure <b>{yearly}</b> per postazione all’anno, in {currency}.",
-        "body": "Tutte le ottimizzazioni del livello, la ricevuta per richiesta e la dashboard. <b>Nessuna commissione</b> sul risparmio: paghi le postazioni, che tu risparmi o no."
+        "body": "Tutto ciò che offre Measure, per più macchine e richieste: dashboard di team, misurazione condivisa, postazioni e licenze. Il motore e le sue leve restano gratis senza chiave. <b>Nessuna commissione</b> sul risparmio: paghi le postazioni, che tu risparmi o no."
       },
       "team": {
         "name": "Team",
@@ -2355,7 +2356,7 @@
     },
     "access": {
       "code": "Vedi il codice",
-      "install": "Installa l’open source"
+      "install": "Installa gratis"
     },
     "modes": {
       "title": "Community e Cloud sono cose diverse",
@@ -2367,7 +2368,7 @@
       "cloud": {
         "tag": "Opzionale · con piani",
         "name": "Savings Cloud",
-        "body": "La dashboard, la misurazione condivisa, l’organizzazione e le licenze. Measure ne è il piano gratuito, in modalità ombra; Pro e Team si pagano con un canone fisso per postazione, senza commissioni sul risparmio."
+        "body": "La dashboard, la misurazione condivisa, l’organizzazione e le licenze. Measure ne è il piano gratuito, per team piccoli; Pro e Team si pagano con un canone fisso per postazione, senza commissioni sul risparmio."
       }
     },
     "cards": {
@@ -2400,13 +2401,13 @@
       "terms": "Vedi le condizioni",
       "provider": "Il canone non include il consumo del tuo provider LLM: continui a pagarlo tu, alle sue condizioni. Importi IVA esclusa.",
       "medir": {
-        "unit": "Piano cloud gratuito, in modalità ombra.",
-        "summary": "Misura senza cambiare nulla: le tue richieste arrivano al provider così come le costruisci e la dashboard mostra quanto si sarebbe risparmiato.",
+        "unit": "Il piano cloud gratuito, per team piccoli.",
+        "summary": "La dashboard con ciò che risparmi davvero, e le stesse leve che senza chiave. Risparmia con @bivelio/savings-layer {saves} o successivo; le versioni precedenti osservano soltanto.",
         "cta": "Inizia con Measure",
         "version": "Funziona con l'ultima versione di @bivelio/savings-layer."
       },
       "pro": {
-        "summary": "Tutte le ottimizzazioni, la ricevuta per richiesta e la dashboard. Canone fisso: si paga che ci sia risparmio o no.",
+        "summary": "Tutto ciò che offre Measure, per più macchine e richieste: dashboard di team, misurazione condivisa, postazioni e licenze. Il motore e le sue leve restano gratis senza chiave. Canone fisso: si paga che ci sia risparmio o no.",
         "cta": "Scegli Pro"
       },
       "team": {

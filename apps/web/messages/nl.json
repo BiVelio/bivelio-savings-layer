@@ -150,10 +150,11 @@
     "createAnAccount": "Een account aanmaken",
     "backToVerifier": "← Terug naar de startpagina",
     "createYourAccount": "Maak je Cloud-account aan",
-    "signupSubtitle": "Eén BiVelio-account voor de hele suite. Maak het aan voor de cloud: dashboard, gedeelde caches en licentiebeheer. Het pakket zelf heeft geen account nodig — open core draait zonder sleutel.",
+    "signupSubtitle": "Eén BiVelio-account voor de hele suite. Maak het aan voor de cloud: teamdashboard, gedeelde meting, seats en licenties. Het pakket zelf heeft geen account nodig — open core draait zonder sleutel.",
     "alreadyHaveAccount": "Heb je al een BiVelio-account?",
     "signIn": "Inloggen",
     "workEmail": "Zakelijk e-mailadres",
+    "emailPlaceholder": "jij@bedrijf.com",
     "password": "Wachtwoord",
     "createAccountCta": "Account aanmaken →",
     "signupLegal": "Door een account aan te maken ga je akkoord met de <terms>voorwaarden van Savings Cloud</terms> en het <privacy>privacybeleid</privacy>.",
@@ -194,7 +195,7 @@
       "network": "Geen verbinding. Controleer je netwerk en probeer het opnieuw.",
       "missingFields": "Vul je e-mailadres en wachtwoord in."
     },
-    "signupMedir": "Of start gratis met Measure: het gratis cloud-plan, zonder kaart, schaduwmodus, tot {seats} seats en {requests} verzoeken per dag. Het werkt met de nieuwste versie van @bivelio/savings-layer.",
+    "signupMedir": "Of start gratis met Measure: het gratis cloud-plan voor kleine teams, zonder kaart, tot {seats} seats en {requests} verzoeken per dag, met dezelfde hendels als zonder sleutel en je echte besparing in het dashboard. Het bespaart vanaf @bivelio/savings-layer {saves}; oudere versies kijken alleen mee.",
     "signupPlanPro": "Je hebt {plan} gekozen — {price} per seat per maand. Maak je account aan, bevestig je e-mailadres en je betaalt in je dashboard via Stripe.",
     "signupPlanTeam": "Je hebt {plan} gekozen — {price} per maand, inclusief {seats} seats. Maak je account aan, bevestig je e-mailadres en je betaalt in je dashboard via Stripe.",
     "openSourceQuestion": "Wil je alleen de open-source-engine?",
@@ -1242,7 +1243,7 @@
       "proofTitle": "Gemeten tegen een echte provider",
       "compatibleCon": "Compatibel met",
       "compatibleNota": "Compatibel is niet gemeten. De SDK werkt met elk endpoint dat compatibel is met de OpenAI-API, plus de native Anthropic-adapter en de native Gemini-adapter (nieuw in {gemini}). Met een besparingscijfer op de publieke benchmark zijn vandaag alleen modellen van OpenAI en Anthropic gemeten; Gemini heeft geen besparingscijfer. Wat voor Gemini gemeten is: {flash}, via zijn native API, in de wekelijkse live bench van {fecha} — alle vier batterijen, zonder fouten van de laag en zonder weigering in de cache of als besparing gecrediteerd. Die bench controleert dat de laag niets breekt en niet te veel rekent; hij meet geen besparing. Ook gemeten: {pro}, via zijn native API, in twee gedeeltelijke runs op {fechaPro} (zijn dagelijkse providerquotum volstaat niet voor alle vier batterijen op één dag): alle vier batterijen, eveneens zonder fouten van de laag en zonder gecachte of als besparing geboekte weigering.",
-      "ctaOss": "Open source installeren"
+      "ctaOss": "Gratis installeren"
     },
     "cascade": {
       "title": "De goedkoopste uitvoering wint",
@@ -1267,7 +1268,7 @@
         },
         {
           "title": "Open core: bespaart zonder sleutels",
-          "body": "Installeer het pakket en de hendels staan aan: de Community-modus zet elke lokale hendel aan met nul telemetrie, en een ingestelde maar ongeldige sleutel blijft fail-closed. De cloud is optioneel: teamdashboard, gedeelde caches en licentiebeheer voor een vast bedrag per seat — en geen commissie op je besparing."
+          "body": "Alle hendels zitten erin en zijn gratis, zonder sleutel. Standaard aan: exacte cache, deduplicatie van gelijktijdige verzoeken, lokale resolvers, plaatsing van de promptcache, het inkorten van achterhaalde toolresultaten en compacte serialisatie van de gestructureerde data die je meegeeft. De rest zet je aan met één regel per hendel. Twee machines kunnen gratis een cache delen met een opslag die je zelf draait (Redis, bijvoorbeeld). Nul telemetrie, en een ingestelde maar ongeldige sleutel blijft fail-closed. De cloud is optioneel: teamdashboard, gedeelde meting, seats en licenties voor een vast bedrag per seat — en geen commissie op je besparing."
         }
       ],
       "nota": "De animaties illustreren het idee. De echte cijfers — gemeten tegen echte aanbieders — staan er direct onder."
@@ -1354,19 +1355,19 @@
     "pricing": {
       "eyebrow": "Abonnementen",
       "title": "Open-source-engine. Cloudcontrole voor je team.",
-      "body": "Het pakket is Apache-2.0 open core: geen sleutel nodig, alle lokale hendels aan, nul telemetrie. De cloud is optioneel — Measure is het gratis plan, Pro en Team worden per seat gefactureerd, in {currency}, zonder commissie op je besparing.",
+      "body": "Het pakket is Apache-2.0 open core: alle hendels inbegrepen en gratis, zonder sleutel, en nul telemetrie. De cloud is optioneel — Measure is het gratis plan, Pro en Team worden per seat gefactureerd, in {currency}, zonder commissie op je besparing.",
       "amount": "{amount}",
       "per": "/ seat / maand",
       "plans": {
         "medir": {
           "name": "Measure",
           "price": "Gratis",
-          "body": "Gratis, zonder kaart. Het gratis CLOUD-plan: schaduwmodus voor één organisatie, tot {seats} seats en {requests} verzoeken per dag — niets van wat je stuurt verandert, niets komt uit de cache, nooit deel van enige commissie, en je dashboard toont wat het bespaard zou hebben. De lokale hendels hebben het niet nodig: open core draait zonder enige sleutel. Het vereist @bivelio/savings-layer {version} of nieuwer.",
+          "body": "Gratis, zonder kaart. Het gratis CLOUD-plan voor kleine teams: één organisatie, tot {seats} seats en {requests} verzoeken per dag. Dezelfde hendels als open core zonder sleutel, plus het dashboard met je echte besparing; nooit onderdeel van een commissie. Het bespaart vanaf @bivelio/savings-layer {saves}; versies vanaf {version} tot vóór {saves} kijken alleen mee.",
           "cta": "Gratis beginnen →"
         },
         "pro": {
           "name": "Pro",
-          "note": "Of <b>{yearly} / seat / jaar</b>. Alle optimalisaties, de bon per verzoek en het dashboard. Geen commissie.",
+          "note": "Of <b>{yearly} / seat / jaar</b>. Teamdashboard, gedeelde meting, seats en licenties. Geen commissie.",
           "cta": "Kies Pro →"
         },
         "team": {
@@ -1384,7 +1385,7 @@
       "legacy": "Heb je al het eerdere model, met commissie op gemeten besparing? Je behoudt het ongewijzigd; de voorwaarden staan in de <terms>prijsvoorwaarden</terms>.",
       "seatNote": "Een seat is één <b>machine- of service-identiteit</b>, geen persoon. Je betaalt voor de seats die je abonnement dekt; je dashboard toont hoeveel er deze maand in gebruik waren (actief op minstens {dias} dagen; CI en kortstondige runners tellen niet mee).",
       "features": [
-        "Elke BV‑SALA-optimalisatie, ongelimiteerd",
+        "Teamdashboard en gedeelde meting voor elke seat",
         "Een bon per verzoek: SavingsReport met vier grootboeken, gemeten en geschat apart",
         "Besparingsdashboards en teamanalyses",
         "Je prompts gaan niet via de servers van BiVelio: ze gaan naar de provider die je instelt"
@@ -1639,7 +1640,7 @@
         },
         {
           "q": "Wat is het verschil tussen Measure en Community?",
-          "a": "Community is de open-source-engine op je eigen infrastructuur: geen account, geen BiVelio-sleutel en standaard geen telemetrie. Measure is het gratis abonnement van Savings Cloud: je hebt een account nodig en het draait in schaduwmodus, dus het wijzigt je verzoeken niet en serveert geen antwoorden uit de cache; je dashboard laat zien wat er bespaard zou zijn."
+          "a": "Community is de open-source-engine op je eigen infrastructuur: geen account, geen BiVelio-sleutel en standaard geen telemetrie. Measure is het gratis Savings Cloud-plan voor kleine teams: het vraagt een account, past dezelfde hendels toe als Community en voegt het dashboard toe met je echte besparing. Met oudere versies van het pakket kijkt het alleen mee; op de prijspagina staat vanaf welke versie het bespaart."
         },
         {
           "q": "Werkt het met een abonnement zoals ChatGPT Plus?",
@@ -1655,7 +1656,7 @@
         },
         {
           "q": "Garanderen jullie een besparing?",
-          "a": "Nee. Wat je bespaart hangt af van je verkeer, bijvoorbeeld van hoeveel ervan zich herhaalt. We publiceren elke meting met het model, de steekproef en het interval, en met Measure zie je wat er met je eigen verkeer bespaard zou zijn voordat je iets betaalt."
+          "a": "Nee. Wat je bespaart hangt af van je verkeer; bijvoorbeeld van hoeveel ervan zich herhaalt. We publiceren elke meting met haar model, steekproef en interval, en open core laat je op je eigen verkeer, verzoek voor verzoek, zien wat het bespaart voordat je iets betaalt."
         }
       ]
     },
@@ -1663,7 +1664,7 @@
       "title": "Eerst meten.",
       "titleAccent": "Daarna beslissen.",
       "titleMark": "beslissen",
-      "sub": "Measure is gratis en vraagt geen kaart: het draait in schaduwmodus en laat zien wat er met je eigen verkeer bespaard zou zijn. De engine is open source en de code is voor iedereen te zien.",
+      "sub": "Measure is gratis en vraagt geen kaart: dezelfde hendels als de open-source-engine, plus het dashboard met wat je met je eigen verkeer echt bespaart. De engine is open source en de code is voor iedereen te zien.",
       "repo": "Repository bekijken"
     },
     "layer": {
@@ -1682,7 +1683,7 @@
       "srcAgent": "Je agent",
       "srcAgentVia": "lokale gateway",
       "memoryLabel": "Geheugen van recente verzoeken",
-      "compactLabel": "Gegevenscompactie",
+      "compactLabel": "Compact formaat",
       "providersLabel": "De provider die je configureert",
       "nativeAdapter": "native adapter",
       "compatName": "Elk endpoint dat compatibel is met de OpenAI-API",
@@ -1690,13 +1691,13 @@
       "step1Body": "Hij vertrekt uit je app of je agent en blijft binnen je infrastructuur.",
       "step2Title": "Herhaald · beantwoord zonder de provider aan te roepen",
       "step2Body": "De laag herkent het verzoek in haar geheugen en geeft het opgeslagen antwoord terug.",
-      "step3Title": "Gegevens gecompacteerd · minder tokens",
-      "step3Body": "Een nieuw verzoek reist lichter naar de provider die je configureert en het antwoord komt via de laag terug.",
+      "step3Title": "Nieuw · lichter waar het kan",
+      "step3Body": "Een nieuw verzoek gaat naar de provider die je instelt: gestructureerde data in een compact formaat, achterhaalde toolresultaten ingekort. Tooluitvoer comprimeren is een hendel die je zelf aanzet. Het antwoord komt terug via de laag.",
       "step4Title": "Alleen tellingen en kosten · nooit prompts",
       "step4Body": "Savings Cloud is optioneel: als je het koppelt, ontvangt het cijfers, geen inhoud.",
       "legendRepeat": "Herhaalde verzoeken",
       "legendRepeatTo": "zonder provideraanroep",
-      "legendData": "Gecompacteerde gegevens",
+      "legendData": "Gestructureerde data",
       "legendDataTo": "minder tokens",
       "legendCache": "Cache van de provider",
       "legendCacheTo": "goedkopere invoer",
@@ -2135,7 +2136,7 @@
     "caseClaudeSub": "claude.ai, gratis of betaald",
     "caseClaudeBody": "Vast abonnement: geen tokenfactuur om te meten — maar wel limieten (het venster van vijf uur en de weeklimiet). Daar is de savings-mode-skill precies voor: gratis, in een minuut geüpload naar claude.ai, gericht op de twee massa's die limiet verbranden. Het effect wordt gepubliceerd zodra het gemeten is — nooit eerder.",
     "caseCodeSub": "terminal, met API-sleutel",
-    "caseCodeBody": "Met een abonnement is het tarief vast — maar begrensd: dezelfde skill installeert met één commando en rekt dezelfde weeklimiet op. Met een API-sleutel is er een echte tokenfactuur — en de meter loopt al: zonder BiVelio-sleutel start “bvsala claude” Claude Code via de lokale gateway, zonder één regel code aan te raken. De gateway meet op je eigen machine wat erdoorheen gaat, met het gebruik dat je provider meldt, en vertelt je bij het afsluiten hoeveel verzoeken hij heeft gemeten, welke niet en waarom. Op Anthropic-modellen zet hij bovendien cache-schrijfacties om van de TTL van een uur naar die van vijf minuten, alleen in beurten waarin een groot deel van de prompt nieuw is (de eerste beurt van een sessie, een compactie): een besparing berekend op de tokentelling van je eigen provider, nooit op een schatting. Daarvoor moet Claude Code om de cache van een uur vragen, en met een API-sleutel doet het dat niet zolang je het niet instelt: standaard meet de gateway alleen. Met een sleutel voor Savings Cloud zie je je uitgaven ook in het dashboard, token voor token.",
+    "caseCodeBody": "Met een abonnement is het tarief vast, en met de standaardinstellingen verandert de gateway niets aan je verkeer: hij meet op je eigen machine, gratis, wat elke sessie kost tegen catalogusprijs. Voor de limieten is er de skill savings-mode, gratis, waarvan het effect nog niet gemeten is. Met een API-sleutel is er een echte tokenfactuur — en de meter loopt al: zonder BiVelio-sleutel start “bvsala claude” Claude Code via de lokale gateway, zonder één regel code aan te raken. De gateway meet op je eigen machine wat erdoorheen gaat, met het gebruik dat je provider meldt, en vertelt je bij het afsluiten wat er tegen catalogusprijs is uitgegeven, wat er is bespaard met de basis erbij (gemeten of geschat), hoeveel verzoeken hij heeft gemeten, welke niet en waarom. Op Anthropic-modellen zet hij bovendien cache-schrijfacties om van de TTL van een uur naar die van vijf minuten, alleen in beurten waarin een groot deel van de prompt nieuw is (de eerste beurt van een sessie, een compactie): een besparing berekend op de tokentelling van je eigen provider, nooit op een schatting. Daarvoor moet Claude Code om de cache van een uur vragen, en met een API-sleutel doet het dat niet zolang je het niet instelt: standaard meet de gateway alleen. Met een sleutel voor Savings Cloud zie je je uitgaven ook in het dashboard, token voor token.",
     "caseAppName": "Jouw applicatie",
     "caseAppSub": "jouw code + jouw API-sleutel",
     "caseAppBody": "Het geval waarvoor Savings Layer bestaat. Je app roept de API met je sleutel, de provider factureert elke token, en de laag installeert zich in twee stappen: het pakket en de aanroep omhullen. Vanaf het eerste verzoek levert ze een <b>SavingsReport</b> met de besparing, gesplitst in gemeten en geschat.",
@@ -2149,7 +2150,7 @@
     "s3Sub": "Het product heeft twee verschillende cijfers, en die kun je beter niet mengen.",
     "mBeforeK": "Vóór installatie",
     "mBeforeV": "Schatting",
-    "mBeforeBody": "Het gratis cloud-plan draait de laag in schaduwmodus over je eigen verkeer en toont wat ze bespaard zou hebben, verzoek voor verzoek. Ze verandert niets en past niets toe — daarom draagt ze het «schatting»-label. Helemaal geen plan? Open core: de lokale hendels draaien zonder sleutel en met nul telemetrie.",
+    "mBeforeBody": "Vóór de installatie is elk cijfer een schatting: de publieke benchmark toont hoe elke hendel zich gedraagt op zijn eigen verkeer, niet op het jouwe. Om te beginnen heb je geen plan nodig: in open core is elke hendel gratis, zonder sleutel en met nul telemetrie; het gratis plan Measure voegt het dashboard toe.",
     "mAfterK": "Na installatie",
     "mAfterV": "Echte meting",
     "mAfterBody": "Elke aanroep levert een SavingsReport: de aanroepen die je nooit betaalde en de nettobesparing per verzoek. Controleerbaar, verzoek voor verzoek, op je eigen infrastructuur.",
@@ -2165,7 +2166,7 @@
     "billWith": "Het hangt ervan af",
     "billDepends": "hoeveel je verkeer zich herhaalt",
     "hero": {
-      "ctaInstall": "Open source installeren",
+      "ctaInstall": "Gratis installeren",
       "ctaResults": "Reproduceerbare resultaten bekijken"
     },
     "beam": {
@@ -2254,7 +2255,7 @@
         "hint": "optioneel",
         "what": "Centraliseert de meting en het beheer van je team: organisatie, licenties en seats.",
         "where": "In Savings Cloud, gehost door BiVelio. Het ontvangt de gegevens die de privacypagina vastlegt.",
-        "account": "Ja. Measure is het gratis plan, in schaduwmodus."
+        "account": "Ja. Measure is het gratis plan, voor kleine teams."
       },
       "evidence": {
         "name": "Bewijs",
@@ -2286,12 +2287,12 @@
       "intro": "Vier plannen, van klein naar groot. Pro en Team betaal je per seat en hebben geen commissie.",
       "medir": {
         "name": "Measure",
-        "body": "<b>Gratis, zonder kaart.</b> Het gratis CLOUD-plan: de laag draait in schaduwmodus voor één organisatie, tot <b>{seats} seats</b> en <b>{requests} verzoeken per dag</b>: elk verzoek bereikt je provider precies zoals je het bouwde, niets komt uit de cache en geen hendel wordt toegepast. Je dashboard toont wat het bespaard zou hebben — een schatting die nooit een commissie draagt. Het vereist <b>@bivelio/savings-layer {version} of nieuwer</b>. De lokale hendels hebben geen enkel plan nodig: open core draait zonder sleutel; de cloud-hendels vereisen Pro of Team."
+        "body": "<b>Gratis, zonder kaart.</b> Het gratis CLOUD-plan voor kleine teams: één organisatie, tot <b>{seats} seats</b> en <b>{requests} verzoeken per dag</b>. Het past dezelfde hendels toe als open core zonder sleutel en voegt het dashboard toe met je echte besparing, gemeten met de teller van je provider; het draagt nooit een commissie. Het bespaart vanaf <b>@bivelio/savings-layer {saves}</b>. Versies vanaf {version} tot vóór {saves} kijken met een Measure-sleutel alleen mee: schaduwmodus, geen hendel toegepast, en het dashboard toont wat er bespaard zou zijn. De hendels zelf hebben geen plan nodig: open core draait zonder sleutel."
       },
       "pro": {
         "name": "Pro",
         "amount": "<b>{monthly}</b> per seat per maand, of <b>{yearly}</b> per seat per jaar, in {currency}.",
-        "body": "Alle optimalisaties van de laag, de bon per verzoek en het dashboard. <b>Geen commissie</b> op besparing: je betaalt de seats, of je nu bespaart of niet."
+        "body": "Alles van Measure, voor meer machines en verzoeken: teamdashboard, gedeelde meting, seats en licenties. De engine en zijn hendels blijven gratis zonder sleutel. <b>Geen commissie</b> op besparing: je betaalt de seats, of je nu bespaart of niet."
       },
       "team": {
         "name": "Team",
@@ -2355,7 +2356,7 @@
     },
     "access": {
       "code": "Code bekijken",
-      "install": "Open source installeren"
+      "install": "Gratis installeren"
     },
     "modes": {
       "title": "Community en Cloud zijn verschillende dingen",
@@ -2367,7 +2368,7 @@
       "cloud": {
         "tag": "Optioneel · met abonnementen",
         "name": "Savings Cloud",
-        "body": "Het dashboard, gedeelde meting, de organisatie en de licenties. Measure is het gratis abonnement, in schaduwmodus; voor Pro en Team betaal je een vast tarief per seat, zonder commissie op de besparing."
+        "body": "Het dashboard, gedeelde meting, de organisatie en de licenties. Measure is het gratis abonnement, voor kleine teams; voor Pro en Team betaal je een vast tarief per seat, zonder commissie op de besparing."
       }
     },
     "cards": {
@@ -2400,13 +2401,13 @@
       "terms": "Voorwaarden bekijken",
       "provider": "Het tarief dekt niet het verbruik bij je LLM-provider: dat blijf je zelf betalen, tegen hun voorwaarden. Bedragen exclusief btw.",
       "medir": {
-        "unit": "Gratis cloudabonnement, in schaduwmodus.",
-        "summary": "Meet zonder iets te veranderen: je verzoeken bereiken je provider precies zoals je ze opbouwt, en het dashboard laat zien wat er bespaard zou zijn.",
+        "unit": "Het gratis cloudplan, voor kleine teams.",
+        "summary": "Het dashboard met wat je echt bespaart, en dezelfde hendels als zonder sleutel. Bespaart vanaf @bivelio/savings-layer {saves}; oudere versies kijken alleen mee.",
         "cta": "Starten met Measure",
         "version": "Werkt met de nieuwste versie van @bivelio/savings-layer."
       },
       "pro": {
-        "summary": "Alle optimalisaties, de bon per verzoek en het dashboard. Vast tarief, verschuldigd of je nu bespaart of niet.",
+        "summary": "Alles van Measure, voor meer machines en verzoeken: teamdashboard, gedeelde meting, seats en licenties. De engine en zijn hendels blijven gratis zonder sleutel. Vast tarief, verschuldigd of je nu bespaart of niet.",
         "cta": "Pro kiezen"
       },
       "team": {

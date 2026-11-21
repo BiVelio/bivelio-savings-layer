@@ -38,7 +38,15 @@ export async function POST(req: Request): Promise<NextResponse> {
   const token = typeof body.token === "string" ? body.token.trim() : "";
   if (!token) return NextResponse.json({ code: "invalida" }, { status: 400 });
 
-  const admin = createAdminClient();
+  // Sin la clave de servicio, createAdminClient() lanza: responder lo mismo que
+  // cuando falla la lectura (503) y no un 500 sin cuerpo que la pantalla no entiende.
+  let admin: ReturnType<typeof createAdminClient>;
+  try {
+    admin = createAdminClient();
+  } catch (err) {
+    console.error("[org/preview] sin cliente de servicio:", err instanceof Error ? err.message : err);
+    return NextResponse.json({ code: "error" }, { status: 503 });
+  }
   const { data, error } = await admin
     .from("org_invitations")
     .select("id, org_id, email, role, expires_at, accepted_at")

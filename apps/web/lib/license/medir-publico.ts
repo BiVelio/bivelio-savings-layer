@@ -27,3 +27,12 @@ export const LIMITES_MEDIR = {
  * arranca.
  */
 export const VERSION_MINIMA_MEDIR = "0.4.33";
+
+/**
+ * La primera versión del paquete en la que la licencia Medir AHORRA: aplica las
+ * mismas palancas que sin clave y el panel enseña el ahorro real (dueño,
+ * 21-11-2026). Las anteriores, desde VERSION_MINIMA_MEDIR, reconocen la
+ * licencia pero solo observan (modo sombra). La tarjeta de Measure y sus
+ * condiciones la reciben por parámetro, nunca escrita en el texto.
+ */
+export const VERSION_MEDIR_AHORRA = "1.2.4";
