@@ -7,7 +7,12 @@ continue its quickstart: `provider`, `layer` and `createSavingsLayer` come from 
 
 By default the layer writes the provider's prompt cache at two fixed places: the end
 of the system header and the end of the history before your last user message, and
-stops marking a prefix whose measured hit rate does not pay the write premium. On
+stops marking a prefix whose measured hit rate does not pay the write premium. That
+measurement is bounded even when the prefix differs on every request (a timestamp or
+UUID in the system prompt): the first 8 marked requests pay the premium, then the
+layer stops marking prefixes it has not seen before, marks a prefix again from the
+second time it is sent, and re-probes with 8 requests at growing intervals (after 64
+unmarked requests, then 128, up to 1,024). On
 Anthropic, where a write costs 1.25x, the history and a tool catalogue sent without a
 system header are marked only when the request itself shows they will be sent again:
 a tool-loop step after your last user message, or a conversation already past its
@@ -56,7 +61,8 @@ const placedLayer = createSavingsLayer({
 ## Cache-aware prompt management: mutable tokens out of the cacheable prefix (opt-in)
 
 A timestamp, UUID or epoch in your `system` prompt poisons the provider's prefix
-cache: every request misses and pays a full-price cache write. With
+cache: every request misses, so there is no cache discount (and the layer, after
+measuring it, stops marking that prefix so you do not keep paying the write premium). With
 `savings: { cachePrefix: true }`, the layer moves the mutable lines to the end of
 the header and marks only the stable part with `cache_control` — the provider's
 cache can hit where a mutable token used to force a miss plus a paid write on every
@@ -68,6 +74,9 @@ call.
   block or a code fence is never moved — that would corrupt the payload — and the
   request travels untouched. The `cache-prefix` trace reports what moved and why it
   abstained; it records counts and patterns, never your prompt text.
+- **It moves whole lines.** Put the per-request value on a line of its own. When it
+  shares its line with the rest of the prompt (a one-line `system`), nothing stable is
+  left to keep and the request travels untouched.
 - **Measured live, exploratory** (v2.3-r1 evidence, 20 requests per arm): 0 % → 95 %
   hit-rate, −82.76 % per request (claude-haiku-4-5, provider's counters;
   [`benchmarks/evidencia/cache-prefix-vivo-2026-11-15.json`](../../benchmarks/evidencia/cache-prefix-vivo-2026-11-15.json)).
@@ -76,7 +85,7 @@ call.
 const { report } = await layer.generate({
   model: "anthropic/claude-haiku-4-5",
   messages: [
-    { role: "system", content: "You are a support bot. Generated at 2026-11-15T10:00:00Z. Be brief." },
+    { role: "system", content: "You are a support bot.\nGenerated at 2026-11-15T10:00:00Z.\nBe brief." },
     { role: "user", content: "Where is my order?" },
   ],
   savings: { cachePrefix: true },
