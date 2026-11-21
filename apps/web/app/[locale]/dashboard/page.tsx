@@ -25,6 +25,7 @@ import { PanelEditable } from "./components/PanelEditable";
 import { SesionesCard } from "./components/SesionesCard";
 import { VerdictHero } from "./components/VerdictHero";
 import { MedirSavingsCard } from "./components/MedirSavingsCard";
+import { comisionLlegaA, desdeDeLaTarjeta } from "./comision-del-panel";
 import { ShadowOpportunitiesCard } from "./components/ShadowOpportunitiesCard";
 import { ResumenKpis } from "./components/ResumenKpis";
 import { DesgloseModelos } from "./components/DesgloseModelos";
@@ -88,6 +89,10 @@ export default async function OverviewPage({
   const [sesiones, asientos] = lector && orgId
     ? await Promise.all([getSesiones(lector, orgId), getAsientos(lector, orgId)])
     : [{ rows: [], failed: false }, { rows: [], failed: false }];
+  // La tarjeta de Measure no dice «nunca se factura» sobre días que entran en una
+  // comisión (cancelada a mitad de mes): solo se consulta para quien la ve.
+  const conComision =
+    ctx.medir === "solo-medir" && lector && orgId ? await comisionLlegaA(lector, orgId, desdeDeLaTarjeta(usage, new Date())) : false;
   const readErrors = [
     orgFallo ? "org" : null,
     usageFailed ? "usage" : null,
@@ -139,7 +144,7 @@ export default async function OverviewPage({
         <div className="panel-stack">
           <VerdictHero usage={usage} failed={usageFailed} visibilidad={visibilidad} rango={rango} integrado={integrado} />
           {hayUso ? <MosaicoDeLlamadas usage={usage} /> : null}
-          {ctx.medir === "solo-medir" ? <MedirSavingsCard usage={usage} /> : null}
+          {ctx.medir === "solo-medir" ? <MedirSavingsCard usage={usage} conComision={conComision} /> : null}
           {hayUso ? <ResumenKpis usage={usage} rango={rango} steps={steps} /> : null}
           {hayUso ? <PulsoDelPeriodo usage={usage} porModelo={porModeloFailed ? [] : porModelo} rango={rango} /> : null}
         </div>
