@@ -85,7 +85,7 @@ call.
 const { report } = await layer.generate({
   model: "anthropic/claude-haiku-4-5",
   messages: [
-    { role: "system", content: "You are a support bot. Generated at 2026-11-15T10:00:00Z. Be brief." },
+    { role: "system", content: "You are a support bot.\nGenerated at 2026-11-15T10:00:00Z.\nBe brief." },
     { role: "user", content: "Where is my order?" },
   ],
   savings: { cachePrefix: true },
