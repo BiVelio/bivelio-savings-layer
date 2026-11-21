@@ -306,16 +306,28 @@ describe("lo que ya ahorraba no cambia", () => {
     expect(delQueCambia.slice(8)).toEqual(Array(52).fill(false));
   });
 
-  it("un system estable que llega DESPUÉS de apagarse la clase se marca desde su segunda petición", async () => {
+  it("un system estable que llega DESPUÉS de apagarse la clase se marca desde su PRIMERA petición, como en main", async () => {
+    // Antes de la revisión de #611 este test esperaba [false, true × 19]: la
+    // clase apagada por el system con hora frenaba también la primera petición
+    // del estable («se pierde una lectura, una vez»). Con una sola app era poco;
+    // con muchas sesiones, cada una con su system estable propio, esa primera
+    // petición sin marcar es la ESCRITURA que la segunda iba a leer, y la
+    // factura subía (ver «muchas sesiones a la vez», abajo).
+    //
+    // Ahora la clase solo se le pasa a la verja cuando el prefijo incluye
+    // historial o cuando el system lleva contenido por petición DETECTADO
+    // (fecha, UUID, epoch). Un system estable y sin nada de eso decide solo por
+    // su huella, igual que en main: se marca desde la primera.
     const f = anthropicFalso();
     const layer = capa(f.fetchImpl);
     for (let i = 0; i < 20; i++) await layer.generate(peticion(CON_HORA(i), i));
+    expect(f.cuenta.marcas.slice(8)).toEqual(Array(12).fill(false)); // la clase está apagada
     const antes = f.cuenta.marcas.length;
     for (let i = 0; i < 20; i++) await layer.generate(peticion(ESTABLE, i));
     const marcas = f.cuenta.marcas.slice(antes);
-    // Lo que se pierde frente a antes: una lectura, una vez.
-    expect(marcas).toEqual([false, ...Array(19).fill(true)]);
-    expect(f.cuenta.leidos).toBeGreaterThan(18 * 3000);
+    expect(marcas).toEqual(Array(20).fill(true));
+    // 1 escritura y 19 lecturas: no se pierde ninguna.
+    expect(f.cuenta.leidos).toBeGreaterThan(19 * 3000);
   });
 
   it("una conversación con historial (huella nueva en cada turno) sigue marcando y leyendo", async () => {
@@ -331,5 +343,184 @@ describe("lo que ya ahorraba no cambia", () => {
     // Todas menos la primera leen, y lo leído crece con el historial.
     expect(f.cuenta.leidos).toBeGreaterThan(39 * 3000);
     expect(coste(f.cuenta) / sinCapa(f.cuenta)).toBeLessThan(0.35);
+  });
+});
+
+/**
+ * MUCHAS SESIONES A LA VEZ, CADA UNA CON SU SYSTEM ESTABLE PROPIO
+ * («chatea con tu documento»: el system es el documento de esa sesión).
+ *
+ * La revisión de #611 encontró que la primera versión del arreglo SUBÍA la
+ * factura aquí. La clase de la verja no lleva el texto del system, así que
+ * todas las sesiones caían en la misma clase; las primeras peticiones de cada
+ * sesión son escrituras sin lectura, la clase se apagaba como si fuera el caso
+ * de la fecha, y las sesiones siguientes dejaban de marcar: su segundo turno ya
+ * no tenía nada que leer. Medido con 200 sesiones × 2 turnos, 20 intercaladas:
+ * de −26,1 % en main a +5,4 %.
+ *
+ * Las cifras de MAIN de la tabla están medidas con este mismo fichero copiado a
+ * main (20a36791) y se quedan fijas: la rama no puede costar más que eso.
+ * `coste` es la entrada en tokens a precio lleno (lectura 0,10×, escritura
+ * 1,25×), que es lo único que mueve esta palanca.
+ */
+const CLAUSULA = (s: string, i: number): string =>
+  `Clause ${i} of contract ${s}. The supplier number ${s} delivers item ${i} within ${i} days, ` +
+  "and the buyer pays within thirty days of delivery unless the goods are rejected in writing. ";
+/** El «documento» inventado de una sesión: ≈ 1.700 tokens, distinto por sesión, igual en todos sus turnos. */
+const DOCUMENTO = (s: string): string =>
+  `You answer questions about the invented contract number ${s}. Use only the text below.\n` +
+  Array.from({ length: 40 }, (_, i) => CLAUSULA(s, i + 1)).join("\n");
+
+interface Carga {
+  sesiones: number;
+  turnos: number;
+  /** Cuántas sesiones van intercaladas (turno 1 de todas, turno 2 de todas, …). */
+  intercaladas: number;
+  modo: "defecto" | "auto";
+}
+
+async function correr(c: Carga, una: (layer: SavingsPipeline, id: string, turno: number) => Promise<void>): Promise<Cuenta> {
+  const f = anthropicFalso();
+  const layer = capa(f.fetchImpl, { silenceWarnings: true, ...(c.modo === "auto" ? { cacheBreakpoints: "auto" } : {}) });
+  for (let base = 0; base < c.sesiones; base += c.intercaladas) {
+    for (let turno = 0; turno < c.turnos; turno++) {
+      for (let s = base; s < Math.min(c.sesiones, base + c.intercaladas); s++) await una(layer, `s${s}`, turno);
+    }
+  }
+  return f.cuenta;
+}
+
+/** Cada sesión con su system propio; cada turno, una pregunta suelta (sin historial). */
+const sesionesConSystemPropio = (c: Carga): Promise<Cuenta> =>
+  correr(c, async (layer, id, turno) => {
+    await layer.generate({
+      model: MODELO,
+      messages: [
+        { role: "system", content: DOCUMENTO(id) },
+        { role: "user", content: `Question ${turno + 1} about contract ${id}: what happens with item ${turno + 3}?` },
+      ],
+    } as SavingsRequest);
+  });
+
+/** Un system común y un historial por sesión que crece en cada turno. */
+const PEGADO = "Background paragraph the user pasted. ".repeat(60);
+const chatsConHistorial = (c: Carga): Promise<Cuenta> => {
+  const historiales = new Map<string, ChatMessage[]>();
+  return correr(c, async (layer, id, turno) => {
+    const h = historiales.get(id) ?? [];
+    const q: ChatMessage = { role: "user", content: `Question ${turno + 1} of chat ${id}: ${PEGADO} what happens with item ${turno + 3}?` };
+    const r = await layer.generate({ model: MODELO, messages: [{ role: "system", content: DOCUMENTO("comun") }, ...h, q] } as SavingsRequest);
+    historiales.set(id, [...h, q, { role: "assistant", content: `${r.text} Answer ${turno + 1} for chat ${id}.` }]);
+  });
+};
+
+const resumen = (c: Cuenta): { marcadas: number; escritos: number; leidos: number; coste: number } => ({
+  marcadas: c.marcadas,
+  escritos: c.escritos,
+  leidos: c.leidos,
+  coste: Math.round(coste(c)),
+});
+
+type Fijo = readonly [sesiones: number, turnos: number, intercaladas: number, modo: Carga["modo"], main: ReturnType<typeof resumen>];
+const carga = ([sesiones, turnos, intercaladas, modo]: Fijo): Carga => ({ sesiones, turnos, intercaladas, modo });
+const nombre = ([s, n, k, modo]: Fijo): string => `${s} sesiones × ${n} turnos, ${k} intercaladas (${modo})`;
+
+describe("muchas sesiones a la vez, cada una con su system estable propio: la rama no cuesta más que main", () => {
+  // Cifras de main (20a36791). En main todas las peticiones se marcan: una
+  // escritura por sesión y una lectura por cada turno siguiente.
+  const MAIN: Fijo[] = [
+    [60, 2, 1, "defecto", { marcadas: 120, escritos: 107320, leidos: 107320, coste: 147522 }],
+    [60, 2, 10, "defecto", { marcadas: 120, escritos: 107320, leidos: 107320, coste: 147522 }],
+    [60, 3, 10, "defecto", { marcadas: 180, escritos: 107320, leidos: 214640, coste: 159574 }],
+    [60, 5, 10, "defecto", { marcadas: 300, escritos: 107320, leidos: 429280, coste: 183678 }],
+    [60, 2, 10, "auto", { marcadas: 120, escritos: 107320, leidos: 107320, coste: 147522 }],
+    [60, 3, 10, "auto", { marcadas: 180, escritos: 107320, leidos: 214640, coste: 159574 }],
+    // El caso del bloqueante: con la primera versión de #611 la clase se
+    // apagaba a mitad de carga (226 marcadas de 400 en la carga del revisor) y
+    // la factura quedaba POR ENCIMA de no llevar capa (+5,4 %).
+    [200, 2, 20, "defecto", { marcadas: 400, escritos: 360200, leidos: 360200, coste: 495270 }],
+    [300, 3, 50, "defecto", { marcadas: 900, escritos: 541400, leidos: 1082800, coste: 805430 }],
+    [300, 4, 50, "auto", { marcadas: 1200, escritos: 541400, leidos: 1624200, coste: 866370 }],
+  ];
+
+  it.each(MAIN.map((f) => [nombre(f), f] as const))("%s", async (_n, fijo) => {
+    const main = fijo[4];
+    const c = await sesionesConSystemPropio(carga(fijo));
+    // Lo que no puede pasar: pagar más que main.
+    expect(Math.round(coste(c))).toBeLessThanOrEqual(main.coste);
+    // Ni, por supuesto, más que sin capa.
+    expect(coste(c)).toBeLessThan(sinCapa(c));
+    // Y hoy es EXACTAMENTE lo de main: un system estable y sin fecha no pasa
+    // por la clase. Si esto cambia a mejor, se actualiza la cifra a conciencia.
+    expect(resumen(c)).toEqual(main);
+    expect(c.marcadas).toBe(c.llamadas);
+  });
+});
+
+describe("muchos chats a la vez con un system común y su propio historial: la rama no cuesta más que main", () => {
+  // Aquí el prefijo SÍ incluye historial y la clase se le pasa a la verja; la
+  // clase lee (cada turno lee lo que escribió el anterior), así que no se apaga.
+  const MAIN: Fijo[] = [
+    [150, 6, 50, "defecto", { marcadas: 900, escritos: 457602, leidos: 2467318, coste: 1441824 }],
+    [150, 6, 50, "auto", { marcadas: 900, escritos: 546252, leidos: 2959206, coste: 1021288 }],
+    [150, 3, 50, "defecto", { marcadas: 450, escritos: 184122, leidos: 822568, coste: 669549 }],
+  ];
+
+  it.each(MAIN.map((f) => [nombre(f), f] as const))("%s", async (_n, fijo) => {
+    const main = fijo[4];
+    const c = await chatsConHistorial(carga(fijo));
+    expect(Math.round(coste(c))).toBeLessThanOrEqual(main.coste);
+    expect(coste(c)).toBeLessThan(sinCapa(c));
+    expect(resumen(c)).toEqual(main);
+  });
+});
+
+describe("y el caso de la fecha sigue acotado con el arreglo de la revisión", () => {
+  it("60 peticiones con la hora en el system: 8 marcadas, aunque antes hayan pasado 200 sesiones de system estable", async () => {
+    const f = anthropicFalso();
+    const layer = capa(f.fetchImpl, { silenceWarnings: true });
+    // 200 sesiones × 2 turnos de system estable propio: todas marcadas.
+    for (let s = 0; s < 200; s++) {
+      for (let turno = 0; turno < 2; turno++) {
+        await layer.generate({
+          model: MODELO,
+          messages: [
+            { role: "system", content: DOCUMENTO(`previa-${s}`) },
+            { role: "user", content: `Question ${turno + 1}: what happens with item ${turno + 3}?` },
+          ],
+        } as SavingsRequest);
+      }
+    }
+    expect(f.cuenta.marcadas).toBe(400);
+    const antes = f.cuenta.marcas.length;
+    for (let i = 0; i < 60; i++) await layer.generate(peticion(CON_HORA(i), i));
+    const marcas = f.cuenta.marcas.slice(antes);
+    expect(marcas.filter(Boolean)).toHaveLength(8);
+    expect(marcas.slice(8)).toEqual(Array(52).fill(false));
+  });
+
+  it("sesiones cuyo system propio lleva además la hora de cada petición: 8 de exploración y un reintento, no 120", async () => {
+    const f = anthropicFalso();
+    const layer = capa(f.fetchImpl, { silenceWarnings: true });
+    let n = 0;
+    for (let turno = 0; turno < 2; turno++) {
+      for (let s = 0; s < 60; s++) {
+        const system = DOCUMENTO(`con-hora-${s}`).replace("\n", `\nGenerated at ${hora(n++)}.\n`);
+        await layer.generate({
+          model: MODELO,
+          messages: [
+            { role: "system", content: system },
+            { role: "user", content: `Question ${turno + 1}: what happens with item ${turno + 3}?` },
+          ],
+        } as SavingsRequest);
+      }
+    }
+    expect(f.cuenta.llamadas).toBe(120);
+    // 8 de exploración; tras 64 sin marcar, un reintento de otras 8 (el mismo
+    // ritmo que «600 peticiones, 32 marcadas», arriba). Antes: 120 de 120.
+    expect(f.cuenta.marcas.slice(0, 8)).toEqual(Array(8).fill(true));
+    expect(f.cuenta.marcas.slice(8, 72)).toEqual(Array(64).fill(false));
+    expect(f.cuenta.marcadas).toBe(16);
+    expect(f.cuenta.leidos).toBe(0);
   });
 });

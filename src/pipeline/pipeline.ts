@@ -1208,11 +1208,13 @@ export class SavingsPipeline {
     const claveDeVerja = explicita ? `${huella}|explicit` : huella;
     // La forma separa la cabecera sola del historial, que se leen de manera
     // distinta (ver `claseDeVerja`).
-    const claseDeVerja = this.claseDeVerja(
-      modeloServido,
-      toolSelection.tools,
-      `fija|${mensajesDePrefijo > S ? "historial" : "cabecera"}${explicita ? "|explicit" : ""}`,
-    );
+    const claseDeVerja = mensajesDePrefijo > S || this.systemCambiaEnCadaPeticion(messages, S)
+      ? this.claseDeVerja(
+          modeloServido,
+          toolSelection.tools,
+          `fija|${mensajesDePrefijo > S ? "historial" : "cabecera"}${explicita ? "|explicit" : ""}`,
+        )
+      : undefined;
     const decision = this.verjaDeCache.decidir(
       claveDeVerja,
       { totalTokens, stablePrefixTokens, tier: tramoExplicito ?? tier },
@@ -1230,7 +1232,7 @@ export class SavingsPipeline {
           marcar: true,
           huella,
           claveDeVerja,
-          claseDeVerja,
+          ...(claseDeVerja != null ? { claseDeVerja } : {}),
           mensajesDePrefijo,
           cacheWriteMultiplier: tier.cacheWriteMultiplier,
           explicita,
@@ -1400,7 +1402,7 @@ export class SavingsPipeline {
       // `clase` (la del espejo) lleva el texto del `system`: con uno que cambia
       // en cada petición es nueva siempre, igual que la huella de la colocación
       // fija. La clase de la verja no lo lleva.
-      const claseDeVerja = this.claseDeVerja(modeloServido, toolSelection.tools, `colocador|explicit|${tipo}`);
+      const claseDeVerja = tipo === "H" || this.systemCambiaEnCadaPeticion(messages, S) ? this.claseDeVerja(modeloServido, toolSelection.tools, `colocador|explicit|${tipo}`) : undefined;
       const decision = this.verjaDeCache.decidir(
         claveDeVerja,
         { totalTokens: tokensHasta(T), stablePrefixTokens: tokensHasta(frontera), tier: tramoOpenAI },
@@ -1417,7 +1419,7 @@ export class SavingsPipeline {
           marcar: decision.marcar,
           huella: decision.marcar ? this.huellaDelPrefijo(modeloServido, toolSelection.tools, messages, frontera) : "",
           claveDeVerja: decision.marcar ? claveDeVerja : "",
-          ...(decision.marcar ? { claseDeVerja } : {}),
+          ...(decision.marcar && claseDeVerja != null ? { claseDeVerja } : {}),
           mensajesDePrefijo: decision.marcar ? frontera : 0,
           cacheWriteMultiplier: 1,
           explicita: true,
@@ -1478,7 +1480,7 @@ export class SavingsPipeline {
     // Igual que arriba: la clase del espejo lleva el texto del `system`; la de
     // la verja no, y es la que acota la exploración cuando ese texto cambia en
     // cada petición (medido: con "auto" también eran 60 de 60).
-    const claseDeVerja = this.claseDeVerja(modeloServido, toolSelection.tools, `colocador|${forma}`);
+    const claseDeVerja = frontera > S || this.systemCambiaEnCadaPeticion(messages, S) ? this.claseDeVerja(modeloServido, toolSelection.tools, `colocador|${forma}`) : undefined;
     const decision = this.verjaDeCache.decidir(
       claveDeVerja,
       {
@@ -1507,7 +1509,7 @@ export class SavingsPipeline {
         marcar: true,
         huella: this.huellaDelPrefijo(modeloServido, toolSelection.tools, messages, frontera),
         claveDeVerja,
-        claseDeVerja,
+        ...(claseDeVerja != null ? { claseDeVerja } : {}),
         mensajesDePrefijo: frontera,
         cacheWriteMultiplier: tier.cacheWriteMultiplier,
         explicita: false,
@@ -1784,6 +1786,10 @@ export class SavingsPipeline {
    * siempre (60 de 60 marcadas, +21,6 % de factura). La clase sí se repite, y es
    * donde la verja mide si un prefijo que no ha visto nunca llega a leerse.
    */
+  private systemCambiaEnCadaPeticion(messages: readonly ChatMessage[], S: number): boolean {
+    return S > 0 && detectarContenidoMutable(this.assemblePromptText(messages.slice(0, S))).length > 0;
+  }
+
   private claseDeVerja(modelo: string, tools: SavingsRequest["tools"], forma: string): string {
     return sha256(stableStringify({ claseDeVerja: forma, model: modelo, tools: (tools ?? []).map((t) => t.id) }));
   }
@@ -3195,7 +3201,7 @@ export class SavingsPipeline {
       };
     }
 
-    // --- Etapa 9-bis: elisión por SUPERSESIÓN de tool_results (opt-in, license-gated, fidelidad primero). ---
+    // --- Etapa 9-bis: elisión por SUPERSESIÓN de tool_results (encendida por defecto, fidelidad primero). ---
     //
     // Reescribe por un muñón estable el cuerpo de un tool_result SOLO cuando un
     // tool_result ESTRICTAMENTE MÁS NUEVO vuelve a pedir el MISMO recurso (misma
@@ -3211,20 +3217,19 @@ export class SavingsPipeline {
     // redundante. Va DESPUÉS de la compresión: son ortogonales sobre `messages`.
     //
     // FIDELIDAD PRIMERO (ver `ELISION_EN_VIVO`). Con el flag apagado, esta etapa NO
-    // toca `messages` ni acredita: solo TRAZA lo que HABRÍA elidido. El borrado
-    // real arranca solo con la verja de fidelidad en verde (`pnpm fidelidad`) y,
-    // por entitlement `tool_result_elision`, primero en el anillo-0 (ninguna
-    // licencia PRO lo lleva todavía: encenderlo no cambia nada del tráfico actual).
+    // toca `messages` ni acredita: solo TRAZA lo que HABRÍA elidido. El flag está
+    // encendido desde que la verja de fidelidad pasó en verde (`pnpm fidelidad`).
     //
-    // AUTOMÁTICA POR DEFECTO (`!== false`, no `=== true`). El ahorro de entrada tiene
-    // que funcionar SOLO, sin opt-in por petición: en cuanto un token entitled llega,
-    // la elisión corre sin que la app pida nada. Sigue triplemente gateada —
-    // `policy.allowElision` (declina con herramientas de escritura, datos frescos,
-    // personalizado, estocástico o frescura de día), el entitlement `tool_result_elision`
-    // (que NINGÚN token PRO/Stripe lleva: fuera de PRO_FEATURES, solo lo firma la ruta
-    // interna del anillo-0), y `ELISION_EN_VIVO`. El opt-out explícito es por petición:
-    // `savings:{elision:false}`. Como el entitlement no viaja en tráfico de clientes,
-    // este default-on no cambia nada de lo que ven hoy los clientes de pago.
+    // VA ENCENDIDA POR DEFECTO (`!== false`, no `=== true`). El ahorro de entrada
+    // tiene que funcionar SOLO, sin pedirlo en cada petición, y hoy lo hace para
+    // todo el mundo: sin `licenseKey` la capa corre con la verja de comunidad
+    // (`communityGate`, `isEntitled: () => true`), así que `tool_result_elision`
+    // está concedido y la elisión corre. Con una licencia firmada manda lo que
+    // lleve su token. Lo que sigue pudiendo apagarla:
+    //   · `policy.allowElision` (declina con herramientas de escritura, datos
+    //     frescos, personalizado, estocástico o frescura de día);
+    //   · `ELISION_EN_VIVO` (apagado, solo traza);
+    //   · el opt-out explícito por petición: `savings: { elision: false }`.
     if (
       toggles.elision !== false &&
       policy.allowElision &&
