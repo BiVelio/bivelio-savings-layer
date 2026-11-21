@@ -366,7 +366,8 @@ export function startupFailureMessage(code: StartupFailureCode, ctx: FailureCont
       return (
         "your organization has no active BiVelio license, and the gateway does not start without one. Get the free " +
         `Measure license (no card; the same levers as with no key, plus the cloud dashboard) at ${INSTALL_URL}, or subscribe at ` +
-        `${ACCOUNT_URL}, and relaunch; the license is collected automatically with your service key.`
+        `${ACCOUNT_URL}, and relaunch; the license is collected automatically with your service key. ` +
+        SALIDA_GRATUITA
       );
     case "license-expired": {
       const e = ctx.expiresAt ?? 0;
@@ -375,7 +376,8 @@ export function startupFailureMessage(code: StartupFailureCode, ctx: FailureCont
         `${isoDay(finDeGracia(e, ctx.graceDays ?? 0))}. Renew at ${ACCOUNT_URL} and relaunch.` +
         (ctx.cause
           ? ` (savings.bivelio.com could not be reached to look for a renewed license: ${ctx.cause})`
-          : "")
+          : "") +
+        ` ${SALIDA_GRATUITA}`
       );
     }
     case "license-invalid": {
@@ -407,7 +409,7 @@ export function startupFailureMessage(code: StartupFailureCode, ctx: FailureCont
         "does not start without a verified license. Check your connection and relaunch. If savings.bivelio.com is " +
         `down, export BIVELIO_LICENSE_KEY=<your license key> (from ${INSTALL_URL}) as a fallback: it is verified ` +
         "on this machine and used only when savings.bivelio.com cannot be reached, and it must be replaced by hand " +
-        "every billing period."
+        `every billing period. ${SALIDA_GRATUITA}`
       );
   }
 }
@@ -630,28 +632,38 @@ export function licenseVerdict(
 
 const ASUMIDO = "requests already in flight were not interrupted";
 
+/**
+ * LA SALIDA GRATUITA, dicha donde se corta (verificación final de la 1.2.4).
+ * «Solo se cobra el Cloud»: ante una licencia caducada, revocada o inexistente,
+ * pagar no es el único remedio. Sin ninguna clave de BiVelio el gateway arranca
+ * en modo comunitario con las mismas palancas. ASCII, como el resto del 402.
+ */
+export const SALIDA_GRATUITA =
+  "To keep running free with every lever, unset BIVELIO_SERVICE_KEY and BIVELIO_LICENSE_KEY and relaunch " +
+  "(COMMUNITY mode needs no license).";
+
 /** The `error.message` of the 402 a refused request receives. */
 export function refusalMessage(state: CutState): string {
   switch (state) {
     case "expired":
       return (
         "bvsala gateway: the BiVelio license for this organization has expired. New requests are refused until " +
-        `it is renewed at ${ACCOUNT_URL}; ${ASUMIDO}.`
+        `it is renewed at ${ACCOUNT_URL}; ${ASUMIDO}. ${SALIDA_GRATUITA}`
       );
     case "revoked":
       return (
         "bvsala gateway: the BiVelio license for this organization is no longer active (revoked or cancelled). " +
-        `New requests are refused; ${ASUMIDO}. Check ${ACCOUNT_URL} or write to support@bivelio.com.`
+        `New requests are refused; ${ASUMIDO}. Check ${ACCOUNT_URL} or write to support@bivelio.com. ${SALIDA_GRATUITA}`
       );
     case "no-license":
       return (
         "bvsala gateway: this organization has no active BiVelio license. New requests are refused until you " +
-        `subscribe at ${ACCOUNT_URL}; ${ASUMIDO}.`
+        `subscribe at ${ACCOUNT_URL}; ${ASUMIDO}. ${SALIDA_GRATUITA}`
       );
     case "blocked":
       return (
         "bvsala gateway: savings.bivelio.com reports the BiVelio license for this organization as not active. " +
-        `New requests are refused; ${ASUMIDO}. Check ${ACCOUNT_URL}.`
+        `New requests are refused; ${ASUMIDO}. Check ${ACCOUNT_URL}. ${SALIDA_GRATUITA}`
       );
     case "invalid":
       return (
@@ -670,10 +682,10 @@ export function refusalBody(state: CutState): string {
 }
 
 const REMEDIO: Record<CutState, string> = {
-  expired: `Renew at ${ACCOUNT_URL}`,
-  revoked: `Check ${ACCOUNT_URL} or write to support@bivelio.com`,
-  "no-license": `Subscribe at ${ACCOUNT_URL}`,
-  blocked: `Check ${ACCOUNT_URL}`,
+  expired: `Renew at ${ACCOUNT_URL}. ${SALIDA_GRATUITA}`,
+  revoked: `Check ${ACCOUNT_URL} or write to support@bivelio.com. ${SALIDA_GRATUITA}`,
+  "no-license": `Subscribe at ${ACCOUNT_URL}. ${SALIDA_GRATUITA}`,
+  blocked: `Check ${ACCOUNT_URL}. ${SALIDA_GRATUITA}`,
   invalid: "Relaunch the terminal; if it persists, write to support@bivelio.com",
 };
 
