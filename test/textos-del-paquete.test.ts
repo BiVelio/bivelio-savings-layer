@@ -649,3 +649,16 @@ describe("auditoría de lo gratis · los bloques que se pegan arrancan sin clave
     expect(crudo).not.toMatch(/In the local gateway:\nEvery gateway lever/);
   });
 });
+
+describe("LICENSE-CLOUD §1 dice lo que hace una licencia de pago en el gateway (verificación final)", () => {
+  it("con licencia de pago, el gateway funciona como en la 1.2.3 (fail-closed), y no solo «the same levers»", () => {
+    const lc = leer("LICENSE-CLOUD.md").replace(/\s+/g, " ");
+    expect(lc).toContain("in the local gateway each lever also requires your organization's license to include it, checked fail-closed, as in version 1.2.3");
+    expect(lc).not.toMatch(/Under a paid license \(Pro, Team, Enterprise\) the Software applies the same levers too/);
+  });
+  it("la entrada 1.2.4 del CHANGELOG no cuenta estados intermedios que nunca se publicaron", () => {
+    const ch = leer("CHANGELOG.md");
+    const e = ch.slice(ch.indexOf("## 1.2.4"), ch.indexOf("\n## 1.2.3"));
+    expect(e).not.toMatch(/\+21\.9 %/);
+  });
+});

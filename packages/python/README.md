@@ -13,7 +13,7 @@
 
 A thin client for the local **bvsala gateway**. It routes the official OpenAI
 and Anthropic Python SDKs through the gateway and hands you, for each request,
-the report the gateway recorded for your BiVelio dashboard: the provider's own
+the report the gateway recorded (with a BiVelio key, the same one your dashboard receives): the provider's own
 token counts, the cost at the model's list price, and where the figure comes
 from (`cost.basis`).
 
@@ -21,7 +21,7 @@ from (`cost.basis`).
   [`@bivelio/savings-layer`](https://www.npmjs.com/package/@bivelio/savings-layer)
   (Apache-2.0), forwards each request to your provider and
   measures it with the provider's usage counter. This package prices nothing
-  itself, so its numbers are exactly the dashboard's.
+  itself, so its numbers are exactly the gateway's.
 - **Open core.** The gateway starts with no keys at all (COMMUNITY mode: free,
   zero telemetry). Every gateway lever is free, with no key; one is on by default (cache TTL tuning) and the others you switch on.
   Without a running gateway, `wrap()` raises; it never falls back to calling

@@ -167,7 +167,7 @@ reports, is at **[savings.bivelio.com/en/benchmarks](https://savings.bivelio.com
 | Anything sent to BiVelio | **Nothing** | Per-request usage only (counts, cost, model id, opaque ids — [LICENSE-CLOUD.md](https://github.com/BiVelio/bivelio-savings-layer/blob/main/LICENSE-CLOUD.md) §5), never prompts or keys |
 
 Both columns have the same levers. In the SDK, a BiVelio key only adds the cloud: the free Measure license applies exactly the same levers as no key. A paid license (Pro, Team, Enterprise) does too, except trimming of superseded tool results, which with a paid license only acts inside a tool loop on Anthropic.
-With a paid license, that trimming acts with `AnthropicProvider` and the default cache placement, never with `cacheBreakpoints: "auto"` or `AnthropicProvider({ automaticCache: true })`, and only on results after your last user message; with any other provider (Claude through an OpenAI-compatible endpoint included) it stays off, as in 1.2.3 with a paid key. With no key and with Measure that trimming runs as in 1.2.3: on a long agent loop on gpt-5, Gemini, DeepSeek or Qwen, or with `cacheBreakpoints: "auto"` or `automaticCache`, or on Anthropic in a chat that re-reads the same tool output on every user turn, compare with `savings: { elision: false }`.
+With a paid license, that trimming acts with `AnthropicProvider` and the default cache placement, never with `cacheBreakpoints: "auto"` or `AnthropicProvider({ automaticCache: true })`, and only on results after your last user message; with any other provider (Claude through an OpenAI-compatible endpoint included) it stays off, as in 1.2.3 with a paid key. With no key and with Measure that trimming runs as it did with no key in 1.2.3: on a long agent loop on gpt-5, Gemini, DeepSeek or Qwen, or with `cacheBreakpoints: "auto"` or `automaticCache`, or on Anthropic in a chat that re-reads the same tool output on every user turn, compare with `savings: { elision: false }`.
 In the `bvsala` gateway the free Measure license applies the same levers as no key, and a paid license works as in 1.2.3: each lever also needs your organization's license to include it, checked fail-closed.
 One dependency comes with a key, the free Measure key included: with `licenseServerUrl` set (as in the recipe your dashboard and `init` print), a layer that goes 72 hours without an answer from savings.bivelio.com fails closed with `LicenseError` on every call until it gets one or you remove the key. With no key there is no such dependency.
 What the gateway needs instead, and every timeout: [SECURITY.md, Availability](https://github.com/BiVelio/bivelio-savings-layer/blob/main/SECURITY.md#availability-what-happens-if-our-servers-do-not-respond).
@@ -373,8 +373,8 @@ routes below work the same, and nothing is sent to BiVelio.
 Each request can also bring its report back to your code. Send the header
 `x-bvsala-report: 1` (in Python, `default_headers={"x-bvsala-report": "1"}` on
 the client) and the gateway answers with `x-bvsala-request-id`. On the same
-gateway, `GET /_bvsala/v1/reports/<that id>` returns what it recorded for your
-dashboard: `metered` with the `SavingsReport` (the provider's token counts, the
+gateway, `GET /_bvsala/v1/reports/<that id>` returns what it recorded for that
+request: `metered` with the `SavingsReport` (the provider's token counts, the
 cost at list price and `cost.basis`), or `not_metered` with the reason from the
 log line. `?response_id=<the provider's response id>` finds it too, and
 `wait_ms` waits for a request still in flight. The header never reaches your

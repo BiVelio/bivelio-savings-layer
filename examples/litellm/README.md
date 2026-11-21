@@ -119,7 +119,7 @@ prints `ok` when the second one comes back as an exact repeat answered in your
 process (basis `estimated`, as § 4 explains):
 
 ```bash
-LITELLM_BASE_URL=http://localhost:4000 LITELLM_API_KEY=… BIVELIO_LICENSE_KEY=… npx tsx check.ts
+LITELLM_BASE_URL=http://localhost:4000 LITELLM_API_KEY=… npx tsx check.ts
 ```
 
 Your LiteLLM logs should show **one** request, not two.
