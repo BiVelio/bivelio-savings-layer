@@ -31,7 +31,7 @@ const agentLayer = createSavingsLayer({
   conversation that started without it is rewritten once, on its first compacted
   request.
 - **Counted, not billed.** What it removes shows in `report.tokens.compressedInput`
-  and in `report.traces`; it never enters `cost.*` or any commission. Your provider's
+  and in `report.traces`; it never enters `cost.*` or any charge. Your provider's
   invoice shows the effect.
 - **Inside a framework,** call `compactToolOutput(text)` in your tool before you
   return its result: your history then holds the compacted text itself.

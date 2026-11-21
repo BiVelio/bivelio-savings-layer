@@ -525,10 +525,11 @@ export async function arrancarGateway(opts: OpcionesGateway): Promise<GatewayArr
   } else if (comunidad) {
     avisarUnaVez(
       "gateway-modo-comunitario",
-      "[bvsala gateway] COMMUNITY MODE (open core): no BIVELIO_SERVICE_KEY - every local saving lever is on and " +
-        "every request is metered on this machine with the provider's own usage (log line, exit summary, and the " +
-        "local report routes with x-bvsala-report). Nothing is sent to BiVelio. " +
-        "Add a service key to get the cloud dashboard, org entitlements and team metering.",
+      // 1.2.4 · decía «every local saving lever is on»: en la pasarela va UNA por
+      // defecto, y eso lo dice la línea de las palancas (textos-publicos.ts).
+      "[bvsala gateway] COMMUNITY MODE (open core): no BIVELIO_SERVICE_KEY - every request is metered on this " +
+        "machine with the provider's own usage (log line, exit summary, and the local report routes with " +
+        "x-bvsala-report). Nothing is sent to BiVelio. A service key only adds the cloud dashboard.",
     );
   } else {
     // Licencia presente (offline) pero sin clave de servicio: no hay org cuyo
@@ -854,8 +855,9 @@ export async function arrancarGateway(opts: OpcionesGateway): Promise<GatewayArr
             falloTtl,
           );
       emitir(informe);
-      if (coalescida) recuento.replica();
-      else recuento.medida();
+      // El recuento de salida suma el dinero del MISMO informe: nada se recalcula.
+      if (coalescida) recuento.replica(informe.cost);
+      else recuento.medida(informe.cost, suscripcion === true);
       // El MISMO objeto que va a la ingesta: el cliente que lo pidió ve los
       // números de su panel, sin recalcular nada.
       buzon.medido(requestId, informe);
