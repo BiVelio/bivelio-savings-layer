@@ -64,18 +64,22 @@ describe.skipIf(process.platform === "win32")("A2-14/A2-23/A2-29 · sin clave, n
     for (const re of VIEJAS) expect(r.stderr, String(re)).not.toMatch(re);
   });
 
-  it("`bvsala --help`: las palancas son gratis sin claves; solo con licencia de organización manda la suya", () => {
+  it("`bvsala --help`: las palancas son gratis sin claves y con cualquier licencia (1.2.4: ninguna manda sobre ellas)", () => {
     const r = spawnSync(process.execPath, [BIN, "--help"], { encoding: "utf8", env: { PATH: process.env.PATH ?? "" } });
     expect(r.status).toBe(0);
     for (const re of [...VIEJAS, /only takes effect if your organization's licen[cs]e/i, /toward the fee/i, /commission/i]) {
       expect(r.stdout, String(re)).not.toMatch(re);
     }
     expect(r.stdout).toMatch(/With\s+no BiVelio keys \(COMMUNITY mode\) they are free and need no license\./);
-    // Las dos palancas opt-in: gratis sin claves y con la licencia gratuita Measure; las de pago las incluyen.
-    expect(r.stdout.match(/Free with\s+no keys and with the free\s+Measure license; a Pro or Team license\s+includes it/g)).toHaveLength(2);
+    // Las dos palancas opt-in: gratis en cualquier plan, con o sin clave. Hasta la
+    // 1.2.3 decía «a Pro or Team license includes it (fail-closed)».
+    expect(r.stdout.match(/Free on\s+every plan, with or without\s+a BiVelio key\./g)).toHaveLength(2);
+    expect(r.stdout).not.toMatch(/fail-closed|license\s+includes (it|them)/);
     // 1.2.4 · la clave solo añade la nube: ningún texto dice que una licencia decide qué palancas aplican.
     expect(r.stdout).not.toMatch(/feature list decide|every local (saving )?lever|all local levers|arms every|org entitlements/);
-    expect(r.stdout).toMatch(/A BiVelio key only adds the cloud: the free Measure license applies\s+the same levers as no key/);
+    expect(r.stdout).toMatch(
+      /A BiVelio key only adds the cloud: the free Measure license and a\s+Pro or Team license apply the same levers as no key \(a blocked or\s+lapsed license stops the gateway: it answers 402\)\./,
+    );
     // La frase del 8,0 % no describe tráfico de suscripción como factura de API.
     expect(r.stdout).not.toContain("8.0% of the bill");
     expect(r.stdout).toMatch(/at API list prices that surcharge was 8\.0% of the cost/);

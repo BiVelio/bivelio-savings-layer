@@ -188,11 +188,14 @@ declare const __BV_SALA_DEMO_ONLY__: boolean | undefined;
  * 100,0 % sobre los casos con elisión (1 y 2 recursos supersedidos); los casos de
  * recursos distintos declinan y no tocan nada (los que rompían v0).
  *
- * Encender esto NO cambia el tráfico de NINGÚN cliente actual: el borrado exige
- * además el entitlement `tool_result_elision` (abajo, `this.entitled`), que NO
- * lleva ninguna licencia PRO firmada todavía. Es el anillo-0: la máquina queda
- * armada y verificada; conceder el feature a una org (re-emitir su token) es la
- * válvula deliberada, separada de este flag.
+ * QUIÉN LA TIENE (1.2.4): todo el mundo. El borrado pide además el entitlement
+ * `tool_result_elision` (abajo, `this.entitled`), y lo concede cualquier gate
+ * vivo: el comunitario (sin clave) y, desde la 1.2.4, toda licencia válida del
+ * plan que sea (license/live-gate.ts ya no mira la lista firmada del token).
+ * Hasta la 1.2.3 ninguna licencia PRO llevaba ese literal, así que quien pagaba
+ * tenía una palanca MENOS que quien no ponía clave: era un resto del anillo-0
+ * (la máquina armada y el feature sin conceder), no una decisión de producto.
+ * Una licencia caducada o revocada no llega aquí: la entrada falla cerrado.
  */
 const ELISION_EN_VIVO: boolean = true;
 
@@ -400,7 +403,7 @@ function mensajeSinLicencia(): string {
     return (
       "BiVelio license required: none was configured. Pass { licenseKey } — the signed token " +
       "from your subscription, verified offline. This published package has no unlicensed mode. " +
-      "The free Measure license (no card) turns every lever on and adds the cloud dashboard. " +
+      "The free Measure license (no card) applies the same levers as no key and adds the cloud dashboard. " +
       "Copy your key and a ready-to-paste snippet at " +
       "https://savings.bivelio.com/dashboard/install (license status: none)"
     );
@@ -3223,11 +3226,12 @@ export class SavingsPipeline {
     // encendido desde que la verja de fidelidad pasó en verde (`pnpm fidelidad`).
     //
     // VA ENCENDIDA POR DEFECTO (`!== false`, no `=== true`). El ahorro de entrada
-    // tiene que funcionar SOLO, sin pedirlo en cada petición, y hoy lo hace para
+    // tiene que funcionar SOLO, sin pedirlo en cada petición, y lo hace para
     // todo el mundo: sin `licenseKey` la capa corre con la verja de comunidad
-    // (`communityGate`, `isEntitled: () => true`), así que `tool_result_elision`
-    // está concedido y la elisión corre. Con una licencia firmada manda lo que
-    // lleve su token. Lo que sigue pudiendo apagarla:
+    // (`communityGate`, `isEntitled: () => true`), y con una licencia viva de
+    // cualquier plan (Measure, Pro, Team, Enterprise) el gate concede lo mismo
+    // (1.2.4: `live-gate.ts` ya no mira la lista firmada del token). Lo que
+    // sigue pudiendo apagarla:
     //   · `policy.allowElision` (declina con herramientas de escritura, datos
     //     frescos, personalizado, estocástico o frescura de día);
     //   · `ELISION_EN_VIVO` (apagado, solo traza);

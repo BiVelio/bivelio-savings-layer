@@ -192,14 +192,17 @@ describe("Measure ahorra de verdad · la misma carga, contada por el proveedor f
     expect(a.llamadas).toBe(2);
   });
 
-  it("una licencia de pago SIN un feature sigue sin él (Measure no ha abierto las licencias de pago)", async () => {
+  it("el gate: una licencia viva de cualquier plan concede lo mismo que Measure y que no traer clave (1.2.4)", async () => {
     const { liveGateFromKey } = await import("../src/license/live-gate.js");
     const { RevocationSnapshot } = await import("../src/license/revocation.js");
     const gate = (plan: string, features: string[]) =>
       liveGateFromKey(signLicense(testPayload({ plan, features })), TEST_KEYS.publicKey, { revocation: new RevocationSnapshot() });
     const pro = gate("pro", ["semantic_cache"]);
     expect(pro.isEntitled("semantic_cache")).toBe(true);
-    expect(pro.isEntitled("context_elision")).toBe(false);
+    // Hasta la 1.2.3 esto era `false`: la lista firmada mandaba y una licencia de
+    // pago podía tener MENOS que no poner clave (test/licencia-con-todas-las-palancas).
+    expect(pro.isEntitled("context_elision")).toBe(true);
+    expect(pro.isEntitled("tool_result_elision")).toBe(true);
     const measure = gate("measure", []);
     // Como el gate comunitario: todo, mientras la licencia está viva.
     for (const f of PRO) expect(measure.isEntitled(f)).toBe(true);

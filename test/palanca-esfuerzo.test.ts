@@ -190,10 +190,11 @@ describe("dicha en voz alta al arrancar", () => {
     const armada = describirEstadoDeEsfuerzo("low", true, true);
     expect(armada.aviso).toBe(false);
     expect(armada.linea).toContain("ARMED");
-    expect(armada.linea).toContain("per_turn_effort");
     // Tiene que decir la propiedad que justifica la palanca.
     expect(armada.linea).toContain("prefix cache");
-    expect(armada.linea).toContain("your organization's licence includes per_turn_effort");
+    // 1.2.4 · gratis en cualquier plan: ya no depende de la lista de features de la org.
+    expect(armada.linea).toContain("free on every plan: a license only adds the cloud");
+    expect(armada.linea).not.toMatch(/licence includes|fail-closed/);
   });
 
   it("A2-14 · en modo comunitario es gratis y la línea no habla de ninguna licencia", () => {
