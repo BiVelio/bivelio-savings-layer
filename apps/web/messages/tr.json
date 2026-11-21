@@ -1200,10 +1200,10 @@
     },
     "measurePlan": {
       "title": "Ya da ücretsiz başlayın: kartsız Measure lisansı",
-      "body": "1 kuruluş ve en fazla {seats} koltuk için ücretsiz bulut planı: katman, anahtarsız çalıştığındaki gibi aynen tasarruf eder ve paneliniz gerçek tasarrufu gösterir. Asla faturalandırılmaz, komisyon yoktur.",
+      "body": "1 kuruluş ve en fazla {seats} koltuk için ücretsiz bulut planı: katman anahtarsız kullanımdakiyle aynı kolları uygular; tek fark, yerini yenisi almış araç sonuçlarının kırpılmasının yalnızca Anthropic'teki bir araç döngüsü içinde çalışmasıdır. Paneliniz gerçek tasarrufu gösterir. Asla faturalandırılmaz, komisyon yoktur.",
       "claim": "Ücretsiz Measure lisansımı al",
       "claiming": "Düzenleniyor…",
-      "keyLabel": "Measure lisans anahtarınız (ücretsiz: anahtarsız kullanımdakiyle aynı kollar)",
+      "keyLabel": "Measure lisans anahtarınız (ücretsiz: anahtarsız kullanımdakiyle aynı kollar, tek istisnası README'de)",
       "keyHint": "Ücretli bir anahtar gibi BIVELIO_LICENSE_KEY olarak kullanın. Ücretli plana geçerseniz katman ücretli lisansı kendisi alır.",
       "errEmailNotVerified": "Önce e-posta adresinizi doğrulayın, ardından tekrar deneyin.",
       "errDisposableEmail": "Tek kullanımlık e-posta adresleri Measure lisansını alamaz. Kalıcı bir adresle (örneğin iş adresinle) kaydol ve tekrar dene.",
@@ -1225,7 +1225,7 @@
         "shadowTitle": "Ne kadar tasarruf ederdiniz",
         "amount": "Harcamayacağınız tutar: {amount}",
         "context": "Varsayımsaldır ve gerçek tasarrufunuzdan ayrı gösterilir. Yalnızca gözlem yapan makinelerden gelir (salt-gözlem modu veya Measure anahtarı kullanan eski bir istemci) ve kendi sağlayıcınızın sayacıyla değerlenir. Gerçekten tasarruf etmek için bu makineleri güncelleyin veya salt-gözlem modunu kapatın. Hiçbir şey faturalandırılmaz.",
-        "empty": "Henüz tasarruf yok: katmanınız bir çağrıyı önlediğinde veya ucuzlattığında görünür. Measure, anahtarsız kullanımdakiyle aynı kolları uygular.",
+        "empty": "Henüz tasarruf yok: katmanınız bir çağrıyı önlediğinde veya ucuzlattığında görünür. Measure, anahtarsız kullanımdakiyle aynı kolları uygular; yalnızca Anthropic'teki bir araç döngüsü dışında, yerini yenisi almış araç sonuçlarını kırpmaz.",
         "limits": "1 kuruluş için ücretsiz, en fazla {seats} koltuk ve günde {requests} istek.",
         "cta": "Daha fazla koltuk veya hacim mi gerekiyor? Planlara bakın"
       }

@@ -43,6 +43,7 @@ changed. In the TypeScript SDK:
 Every lever is included and free, with no key. On by default: exact cache, deduplication, local resolvers, prompt-cache placement, trimming of superseded tool results and compact serialization of the structured data you pass. The rest you switch on, one line each.
 
 A BiVelio key only adds the cloud: the free Measure license and a paid one apply the same levers as no key, except trimming of superseded tool results, which with a key only acts inside a tool loop on Anthropic.
+In the `bvsala` gateway the free Measure license applies the same levers as no key, and a paid license works as in 1.2.3: each lever also needs your organization's license to include it, checked fail-closed.
 One dependency comes with a key, the free Measure key included: with BIVELIO_SERVICE_KEY set, the gateway needs savings.bivelio.com to start (or a valid BIVELIO_LICENSE_KEY as a fallback); once running it keeps serving without it. With no key there is no such dependency.
 What the paid cloud adds is the team dashboard, shared measurement, seats and
 license management. BiVelio hosts no cache.

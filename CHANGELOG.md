@@ -26,32 +26,38 @@
   trimming of superseded tool results (an old tool result is replaced by a stub
   when a newer call re-reads the same resource) asked for a feature that no issued
   license carried. With a live license of any plan, Measure included, the SDK now
-  trims them on Anthropic models with the default cache placement, and only results
-  from the tool loop in progress (after your last user message), which that
+  trims them with `AnthropicProvider` and the default cache placement, and only
+  results from the tool loop in progress (after your last user message), which that
   placement never marks for caching (`elision` trace `partial` when it keeps an
-  older one). With a key it stays off with `cacheBreakpoints: "auto"`, with
-  `AnthropicProvider({ automaticCache: true })` and on every other provider, as in
-  1.2.3 (`elision` trace `skipped`). It is decided in the client, so it works with
-  the license you already have. Opt out per request with
+  older one). With a key it stays off with `cacheBreakpoints: "auto"` and with any
+  provider other than `AnthropicProvider` without `automaticCache` (Claude through
+  an OpenAI-compatible endpoint such as OpenRouter or LiteLLM included), as in 1.2.3
+  (`elision` trace `skipped`). It is decided in the client, so it works with the
+  license you already have. Opt out per request with
   `savings: { elision: false }`. An expired, revoked or invalid license still fails
   closed, as before.
-- **The gateway's levers no longer depend on your organization's feature list.**
-  With a license of any plan, `bvsala` applies the same levers as with no keys: cache
-  TTL tuning by default, and sibling model routing, per-turn effort and the context
-  dials only with their own flags. Up to 1.2.3 a paid organization whose license
-  row lacked a feature, a gateway started in-process without a service key, or an
-  unreachable entitlements endpoint left those levers off without an error.
-  `BVSALA_GATEWAY_ELISION=0` still turns them all off, and a blocked, expired or
-  revoked license still answers 402. The startup lines say "free on every plan"
-  instead of "ON if your organization's licence includes …; fail-closed".
+- **In the gateway, a Measure license applies the levers; paid licenses work as in
+  1.2.3.** With the free Measure license `bvsala` applies the same levers as with no
+  keys: cache TTL tuning by default, and sibling model routing, per-turn effort and
+  the context dials only with their own flags, whatever the entitlements endpoint
+  answers. With a Pro, Team or Enterprise license nothing changes from 1.2.3: each
+  lever also needs its feature in your organization's license, checked fail-closed,
+  so with no service key, an unreachable entitlements endpoint, a 401 or a license
+  without the feature, requests travel untouched. `BVSALA_GATEWAY_ELISION=0` still
+  turns them all off, and a blocked, expired or revoked license still answers 402.
+  The startup lines say "free Measure license: the same levers as no key" with
+  Measure, and "ON if your organization's licence includes …; fail-closed" with a
+  paid license, as in 1.2.3.
 - **With no key, trimming of superseded tool results works exactly as in 1.2.3.**
   Replacing an old tool result with a stub changes the middle of the history, so on
   a provider that caches the whole prompt by itself everything after it is billed
   again. Measured with a fake provider, cost against not using the layer, the same
   in 1.2.3 and 1.2.4 with no key: on a 60-step agent loop, gpt-5 +12.2 %, Gemini 2.5
   Flash +11.9 %, DeepSeek +166 % and Qwen +13 %; on Anthropic with
-  `cacheBreakpoints: "auto"`, −71.5 % against −84.4 % with trimming off, and with
-  `AnthropicProvider({ automaticCache: true })`, −69.0 % against −85.2 %. Set
+  `cacheBreakpoints: "auto"`, −71.5 % against −84.4 % with trimming off, with
+  `AnthropicProvider({ automaticCache: true })`, −69.0 % against −85.2 %, and in a
+  chat that re-reads the same tool output on every user turn (a 12-turn support chat
+  on Sonnet 4.5), −30.1 % against −67.2 % with trimming off. Set
   `savings: { elision: false }` there. With a key it only acts inside a tool loop on
   Anthropic (see above): agent loops on Anthropic go from 0 % to −71.6 % with Pro,
   and every other load we measured trims nothing, as in 1.2.3 with a paid key.
@@ -66,8 +72,10 @@
   TTL tuning is the only gateway lever on by default, that it only acts on Anthropic
   API-key traffic asking for the 1-hour cache, that on a Claude or ChatGPT
   subscription the run only measures, and the variable for each opt-in lever.
-  `--help`, `bvsala doctor` and `bvsala init` say that a BiVelio key only adds the
-  cloud.
+  `--help`, `bvsala doctor` and `bvsala init` say what a BiVelio key adds: the
+  cloud, with the same levers as no key under the free Measure license (in the SDK,
+  with the trimming exception above), and in the gateway a paid license works as in
+  1.2.3.
 - **`bvsala doctor` checks each terminal against its own route.** Gemini CLI, Cursor,
   Aider, DeepSeek and Ollama name the log line of their own protocol
   (`:generateContent`, `/v1/chat/completions`, …) instead of inheriting the
@@ -85,10 +93,12 @@
 
 ### Fixed
 
-- **A failed entitlements fetch, or a deleted service key, no longer says
-  "savings features disabled".** The gateway's levers keep working in both cases;
-  the lines now say what is actually lost (the organization status refresh, or the
-  usage reporting to your dashboard).
+- **With the free Measure license, a failed entitlements fetch or a deleted service
+  key no longer says "savings features disabled".** With Measure the gateway's
+  levers keep working in both cases, and the lines say what is actually lost (the
+  organization status refresh, or the usage reporting to your dashboard). With a
+  paid license the lines and the behaviour are those of 1.2.3: the savings features
+  switch off (fail-closed) and traffic keeps flowing.
 - **`bvsala` says what it is doing in observe-only mode.** With
   `BVSALA_GATEWAY_OBSERVE_ONLY=1` the startup banner prints one observe-only line
   instead of "cache TTL tuning is the only one ON by default", and the exit summary
@@ -119,11 +129,13 @@
   (shipped in the package) are in English, with the real log lines.
 - **`LICENSE-CLOUD.md` §1 and `NOTICE`.** §1 now says that under a Measure license
   the software applies its saving levers as with no key, except that trimming of
-  superseded tool results only acts inside a tool loop on Anthropic models, and that
+  superseded tool results only acts inside a tool loop on Anthropic through
+  `AnthropicProvider`, and that
   Measure usage is never billed and never part of any commission; "shared caches" is
   removed from the list of Cloud Services in both files.
-- **`SECURITY.md`, Availability.** The gateway section says that the levers do not
-  depend on the entitlements fetch.
+- **`SECURITY.md`, Availability.** The gateway section says that with the free
+  Measure license the levers do not depend on the entitlements fetch, and that with
+  a paid license a failed fetch switches them off, as in 1.2.3.
 - **What a key ties you to, and the conditions of the headline figures.** The README,
   the PyPI page, `init`, `doctor` and `--help` say that a key, the free Measure key
   included, makes the layer depend on savings.bivelio.com: with `licenseServerUrl`, 72
