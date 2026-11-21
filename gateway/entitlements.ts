@@ -60,8 +60,8 @@ export class CanalComunitario implements FuenteDeEntitlements {
 
 /** La clave dejó de valer con el proceso vivo (borrada o rotada). No corta nada. */
 const LINEA_401 =
-  "[gateway] entitlements: BIVELIO_SERVICE_KEY is no longer recognised (HTTP 401): savings features disabled " +
-  "and usage is not being reported; create a new key at https://savings.bivelio.com/dashboard/install and relaunch";
+  "[gateway] entitlements: BIVELIO_SERVICE_KEY is no longer recognised (HTTP 401): usage is not being reported " +
+  "to your dashboard (the savings levers keep working); create a new key at https://savings.bivelio.com/dashboard/install and relaunch";
 
 export class CanalDeEntitlements {
   private readonly url: string;
@@ -129,7 +129,9 @@ export class CanalDeEntitlements {
       if (res.status === 401) {
         // Una clave borrada o rotada NO se cura sola, y el emisor tampoco puede
         // reportar con ella: se dice una vez, con el arreglo. La licencia ya
-        // verificada sigue sirviendo; solo caen las features (fail-closed).
+        // verificada sigue sirviendo. La caché de features del canal se vacía,
+        // pero desde la 1.2.4 las palancas no cuelgan de ella (servidor.ts las
+        // concede localmente, como sin claves): lo que se pierde es el reporte.
         this.cerrar("entitlements HTTP 401", LINEA_401);
         return;
       }
@@ -157,6 +159,9 @@ export class CanalDeEntitlements {
 
   /**
    * Fail-closed: sin respuesta fiable no hay features — y se reintenta pronto.
+   * (Desde la 1.2.4 las palancas del gateway NO dependen de esta lista: son
+   * gratis en cualquier plan y `servidor.ts` las concede localmente. La lista
+   * sigue siendo lo que la nube dice de la org; el bloqueo viaja en `reason`.)
    * NO toca `razonDeBloqueo`: un fallo de red no es una revocación.
    */
   private cerrar(motivo: string, linea?: string): void {
@@ -167,7 +172,7 @@ export class CanalDeEntitlements {
       this.avisado = true;
       this.log(
         linea ??
-          `[gateway] entitlements unavailable (${motivo}) — savings features disabled (fail-closed); traffic keeps flowing`,
+          `[gateway] entitlements unavailable (${motivo}) — the organization status could not be refreshed; the savings levers keep working and traffic keeps flowing`,
       );
     }
   }

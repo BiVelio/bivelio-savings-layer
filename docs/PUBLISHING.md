@@ -1,10 +1,10 @@
 # Publishing `@bivelio/savings-layer`
 
 **PUBLIC npm, open core.** `pnpm add @bivelio/savings-layer` works for anyone with zero
-auth — the friction-free path — and the package runs with **no key**: every local saving
-lever is on (COMMUNITY mode), with zero telemetry. The package is Apache-2.0 and its code
-is readable; the repository is public. A BiVelio key is optional and only governs
-**Savings Cloud** (dashboard, team metering, org entitlements, license management). The
+auth — the friction-free path — and the package runs with **no key**: every lever is
+included and free (COMMUNITY mode), with zero telemetry. The package is Apache-2.0 and its
+code is readable; the repository is public. A BiVelio key is optional and only adds
+**Savings Cloud** (the team dashboard, shared measurement, seats and license management). The
 public registry was chosen over a private one (2026-07-20) because the SDK runs
 client-side, so gating *install* buys nothing while adding real onboarding friction.
 

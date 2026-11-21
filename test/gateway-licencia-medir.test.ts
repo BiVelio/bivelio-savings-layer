@@ -349,14 +349,41 @@ describe("pasarela con licencia Medir · ahorra igual que el modo comunitario", 
 });
 
 describe("pasarela · lo que NO cambia", () => {
-  it("licencia de PAGO sin las features en su organización: las palancas siguen negadas (Medir no ha abierto las de pago)", async () => {
+  it("opt-out del operador (BVSALA_GATEWAY_ELISION=0) con licencia de PAGO: nada se reescribe", async () => {
     const recibidos: string[] = [];
-    const g = await gatewayConLicencia(await upstreamFalso(recibidos, 0, SSE_ESCRITURA_1H), await plataformaFalsa([], []), "pro");
+    const g = await arrancarGateway({
+      license: testLicense({ plan: "pro", features: TODAS }),
+      puerto: 0,
+      ...oficialHaciaElMock(await upstreamFalso(recibidos, 0, SSE_ESCRITURA_1H)),
+      ...banderas(true),
+      elision: false,
+      coalescer: false,
+    });
+    recursos.push(g);
     await (await pedir(g.puerto)).text();
     expect(recibidos).toEqual([CUERPO]);
   });
+});
 
-  it("licencia de PAGO sin clave de servicio: sin canal, nada se reescribe (como antes)", async () => {
+describe("pasarela · una licencia de PAGO lleva las mismas palancas que sin claves (1.2.4)", () => {
+  // Hasta la 1.2.3 estos dos casos decían «nada se reescribe»: una organización
+  // de pago con la fila sin literales, o sin clave de servicio, tenía MENOS
+  // palancas que quien no ponía ninguna clave.
+  it("licencia de PAGO sin las features en su organización: lo mismo que el modo comunitario", async () => {
+    const comunidad: string[] = [];
+    const gc = await gatewayComunitario(await upstreamFalso(comunidad, 0, SSE_ESCRITURA_1H), true, false);
+    await (await pedir(gc.puerto)).text();
+    const recibidos: string[] = [];
+    const g = await gatewayConLicencia(await upstreamFalso(recibidos, 0, SSE_ESCRITURA_1H), await plataformaFalsa([], []), "pro");
+    await (await pedir(g.puerto)).text();
+    expect(recibidos).toEqual(comunidad);
+    expect(recibidos).not.toEqual([CUERPO]);
+  });
+
+  it("licencia de PAGO sin clave de servicio: lo mismo que el modo comunitario", async () => {
+    const comunidad: string[] = [];
+    const gc = await gatewayComunitario(await upstreamFalso(comunidad, 0, SSE_ESCRITURA_1H), true, false);
+    await (await pedir(gc.puerto)).text();
     const recibidos: string[] = [];
     const g = await arrancarGateway({
       license: testLicense({ plan: "pro", features: TODAS }),
@@ -367,7 +394,8 @@ describe("pasarela · lo que NO cambia", () => {
     });
     recursos.push(g);
     await (await pedir(g.puerto)).text();
-    expect(recibidos).toEqual([CUERPO]);
+    expect(recibidos).toEqual(comunidad);
+    expect(recibidos).not.toEqual([CUERPO]);
   });
 
   it.each([

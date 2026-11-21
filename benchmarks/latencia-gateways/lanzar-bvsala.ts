@@ -44,6 +44,12 @@ if (esElPrincipal(import.meta.url)) {
     puerto: Number(arg("--puerto") ?? 0),
     upstream,
     license: testLicense(),
+    // El banco mide el coste de REENVIAR (y de medir), no el de una palanca.
+    // Hasta la 1.2.3 eso salía solo: sin clave de servicio no había canal, y el
+    // upstream falso no concede ningún feature. Desde la 1.2.4 una licencia
+    // lleva las palancas del modo comunitario, así que se desarman a mano (es
+    // BVSALA_GATEWAY_ELISION=0) para que el banco siga midiendo lo mismo.
+    elision: false,
     ...(modo === "medido"
       ? {
           serviceAccountKey: CLAVE_FALSA_DE_BANCO,

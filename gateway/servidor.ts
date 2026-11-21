@@ -648,32 +648,38 @@ export async function arrancarGateway(opts: OpcionesGateway): Promise<GatewayArr
     : comunidad
       ? new CanalComunitario()
       : null;
-  // LA LICENCIA MEDIR CONCEDE LAS MISMAS PALANCAS QUE EL MODO COMUNITARIO (1.2.4).
+  // UNA LICENCIA, DEL PLAN QUE SEA, CONCEDE LAS MISMAS PALANCAS QUE EL MODO
+  // COMUNITARIO (1.2.4).
   //
-  // La nube sirve `features: []` para una org que solo tiene Medir (y así debe
-  // seguir: los clientes ≤ 1.2.3 las leen como sombra), de modo que el canal de
-  // org las negaría todas. Mientras el plan vigente sea `measure`, las palancas
-  // de la casa se conceden LOCALMENTE, como sin claves: ni más (las opcionales
-  // siguen pidiendo su bandera local) ni menos. Dos cosas NO cambian:
+  // Regla del producto: las palancas son gratis para todos; la clave solo añade
+  // la nube. Hasta la 1.2.3 una organización con clave podía tener MENOS
+  // palancas que quien no ponía ninguna, y sin un solo error:
+  //  · Medir: la nube sirve `features: []` (y así debe seguir: los clientes
+  //    ≤ 1.2.3 las leen como sombra);
+  //  · de pago con una fila de licencia sin el literal (emitida antes de un
+  //    relleno, o Enterprise escrita a mano);
+  //  · de pago sin clave de servicio (no había canal: nada actuaba);
+  //  · cualquier caída o 401 de `/api/org/entitlements` (fail-closed a apagado).
+  // Ahora las palancas de la casa se conceden LOCALMENTE, como sin claves: ni
+  // más (las opcionales siguen pidiendo su bandera local, y
+  // `BVSALA_GATEWAY_ELISION=0` las sigue desarmando todas) ni menos.
+  //
+  // Lo que NO cambia:
   //  · el canal de org se sigue consultando en cada pregunta, porque de él sale
   //    el `reason` con el que el control plane BLOQUEA una organización (y su
   //    refresco en segundo plano cuelga de `tiene`);
-  //  · con cualquier otro plan manda la respuesta de la org, como siempre.
-  // Sin clave de servicio y con una Medir pegada a mano no hay org que consultar:
-  // se concede igual (antes de la 1.2.4 no había canal y nada actuaba).
+  //  · una licencia caducada, revocada o bloqueada no llega aquí: la verja por
+  //    petición (`veredicto`, abajo) responde 402 antes de cualquier palanca.
   const comunitario = new CanalComunitario();
   const canal: FuenteDeEntitlements = {
     tiene: (feature: string): boolean => {
-      const deLaOrg = canalDeOrg?.tiene(feature) ?? false;
-      return esMedir() ? comunitario.tiene() : deLaOrg;
+      canalDeOrg?.tiene(feature);
+      return comunitario.tiene();
     },
     blockReason: (): string | null => canalDeOrg?.blockReason() ?? null,
   };
-  // ¿Hay canal del que cuelguen las palancas? Con claves de pago, solo con clave
-  // de servicio (como siempre); con Medir, siempre. Por petición: el plan cambia
-  // en caliente.
-  const hayCanal = (): boolean => canalDeOrg !== null || esMedir();
-  const palancasArmadas = (): boolean => hayCanal() && opts.elision !== false;
+  // `BVSALA_GATEWAY_ELISION=0` desarma todas las palancas; es lo único que lo hace.
+  const palancasArmadas = (): boolean => opts.elision !== false;
 
   // ── La verja por petición y sus transiciones ────────────────────────────
   const veredicto = (): Verdict =>
@@ -1502,15 +1508,6 @@ export async function arrancarGateway(opts: OpcionesGateway): Promise<GatewayArr
         opts.modeloHermano === true &&
         req.method === "POST" &&
         (url.pathname === "/v1/messages" || url.pathname === "/v1/messages/count_tokens");
-      // La bandera puesta y la licencia sin el feature se dice UNA vez: sin
-      // esto, quien paga y enciende C ve pasar el cuerpo intacto en silencio.
-      if (quiereHermano && !canal.tiene("sibling_model_routing")) {
-        avisarUnaVez(
-          "gateway-hermano-sin-feature",
-          "[bvsala gateway] sibling model routing: the flag is set but your org's license does not include " +
-            "sibling_model_routing; the request is forwarded unchanged (fail-closed).",
-        );
-      }
       if (quiereHermano && canal.tiene("sibling_model_routing")) {
         try {
           // Si los diales ya reescribieron, `cuerpoSaliente` es JSON plano.

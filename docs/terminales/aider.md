@@ -9,7 +9,7 @@ are litellm's [V].
 ## What you need
 
 - `aider` on the PATH and your **API key** (`ANTHROPIC_API_KEY` or `OPENAI_API_KEY`).
-- `bvsala` installed. Open core: with no keys it starts in Community mode; `BIVELIO_SERVICE_KEY` (optional) adds the dashboard and the entitlements (see [README](README.md)).
+- `bvsala` installed. Open core: with no keys it starts in Community mode; `BIVELIO_SERVICE_KEY` (optional) adds the cloud dashboard (see [README](README.md)).
 
 ## Wrapper: `bvsala aider [args…]`
 

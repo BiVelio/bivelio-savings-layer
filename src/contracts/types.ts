@@ -1550,8 +1550,8 @@ export interface SavingsReport {
    * config): what the levers would have saved on this request. Nothing was
    * applied — `cost` is this call's measured spend with no saving claimed.
    * (Up to 1.2.3 the free «Measure» license forced this mode; since 1.2.4 a
-   * Measure license applies every lever and this block is absent unless you
-   * opt in.)
+   * Measure license applies the same levers as no key and this block is absent
+   * unless you opt in.)
    */
   measure?: MeasureReport;
 
