@@ -65,7 +65,8 @@
 - **Usage ingest answers 503 instead of accepting a batch blind.** When the cloud
   cannot read your organization's license during ingest, it retries once and then
   answers 503 without storing the batch. The SDK and the gateway re-queue a batch
-  on any 5xx, so no usage is lost; it arrives on the next flush.
+  on any 5xx (up to 1,000 records per process; beyond that the oldest are dropped),
+  so a short outage loses no usage; it arrives on the next flush.
 
 ### Fixed
 
@@ -73,6 +74,16 @@
   "savings features disabled".** The gateway's levers keep working in both cases;
   the lines now say what is actually lost (the organization status refresh, or the
   usage reporting to your dashboard).
+- **`bvsala` says what it is doing in observe-only mode.** With
+  `BVSALA_GATEWAY_OBSERVE_ONLY=1` the startup banner prints one observe-only line
+  instead of "cache TTL tuning is the only one ON by default", and the exit summary
+  explains a $0.00 saving by that mode, not by the TTL rule. The banner names the
+  variable that turns the context elision dials on, and `bvsala <unknown command>`
+  says the command does not exist before printing the help (exit code 1, as before).
+- **The tarball is readable by every user, whatever the packer's umask.** A `prepack`
+  step adds read permission for everyone to the published files, so a tarball packed
+  from a tree created with umask 077 no longer installs files only their owner can
+  read. Releases built by CI were not affected.
 
 ### Documentation and license texts
 
@@ -97,6 +108,17 @@
   removed from the list of Cloud Services in both files.
 - **`SECURITY.md`, Availability.** The gateway section says that the levers do not
   depend on the entitlements fetch.
+- **What a key ties you to, and the conditions of the headline figures.** The README,
+  the PyPI page, `init`, `doctor` and `--help` say that a key, the free Measure key
+  included, makes the layer depend on savings.bivelio.com: with `licenseServerUrl`, 72
+  hours with no answer fail closed with `LicenseError` until it answers or you remove
+  the key; the gateway with a service key needs it to start. With no key there is no
+  such dependency. The 31.50 % / 75.08 % figures now say their workload (built from
+  GSM8K questions, 30 % exact repeats) and that about 41 points of the 75.08 % are
+  Anthropic's cache pricing. `--help` and the terminal guide describe cache TTL tuning
+  as the code runs it: only on turns where a large part of the request is new, never
+  on chained turns. A license that is expired, revoked or missing now says, in the SDK
+  and in the gateway, that removing the key keeps the layer running free.
 
 ## 1.2.3 — 2026-11-21 — fixes from the pre-launch audit
 

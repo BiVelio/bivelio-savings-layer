@@ -205,7 +205,7 @@ export function describirEstadoDeElision(
   const cola = " (TTL tuning ON: the levers are free on every plan, a license only adds the cloud)";
   const diales = dialesArmados
     ? " · context elision dials FORCED ON BY HAND (BVSALA_GATEWAY_DIALES_ELISION=1): they measure as a net loss, R=4.05 vs R*=0.0127"
-    : " · context elision dials OFF";
+    : " · context elision dials OFF (BVSALA_GATEWAY_DIALES_ELISION=1 turns them on)";
   if (bandera === "0") {
     // Desde que la licencia verja el gateway, =0 apaga las PALANCAS pero no el
     // canal: por él llega el bloqueo del control plane (`reason`), y cerrarlo

@@ -33,10 +33,11 @@ npx @bivelio/savings-layer claude    # or meter Claude Code through the local ga
   your spend on your machine, request by request; its cache-write TTL lever saves only
   when your client pays per token and asks for the one-hour cache. No key, no signup, no
   telemetry, and nothing is sent to BiVelio.
-- **The cloud is the paid, optional part.** A BiVelio key adds the team dashboard, shared
-  measurement, seats and license management, for a fixed fee per seat, and never a
-  commission on what you save. A key only adds the cloud: it switches no lever off.
-  Prices below.
+- **The cloud is the optional part.** A BiVelio key adds the team dashboard, shared
+  measurement, seats and license management: free on Measure, a fixed subscription on
+  Pro and Team, and never a commission on what you save. A key only adds the cloud: it
+  switches no lever off, though it does tie the layer to savings.bivelio.com (see
+  [Community vs Cloud](#community-vs-cloud)). Prices below.
 - **The evidence is public.** [The paper](https://savings.bivelio.com/paper) (v2.3-r1,
   revised after an external pre-publication review) gives the method, the results and
   every limitation; the artifacts are in
@@ -72,23 +73,30 @@ It is not a promise you take on faith: every saving is split into four ledgers
 and labelled `measured`, `reference` or `estimated`. Nothing is sent to BiVelio
 unless you choose to add a key: **zero telemetry by default**, and prompts,
 completions and provider keys never reach BiVelio (the exact per-request fields a
-cloud key sends are in [LICENSE-CLOUD.md](./LICENSE-CLOUD.md) §5).
+cloud key sends are in [LICENSE-CLOUD.md](https://github.com/BiVelio/bivelio-savings-layer/blob/main/LICENSE-CLOUD.md) §5).
 
 ### Measured, not promised — recomputed from the public artifacts
 
-- **Pooled reductions on the public GSM8K benchmark**: **31.50 %** (gpt-4o-mini) and
-  **75.08 %** (claude-sonnet-5), with bootstrap intervals; the equal-family means
-  (22.88 % / 70.71 %) are reported separately, as they should be.
+- **Pooled reductions on a public workload built from GSM8K questions, 30 % of them
+  exact repeats** (SDK 0.4.31 artifacts from September 2026, recomputed offline with no
+  new provider calls): **31.50 %** (gpt-4o-mini) and **75.08 %** (claude-sonnet-5, about
+  41 points of which are a descriptive contrast of Anthropic's cache pricing, not an
+  isolated effect of the layer), with bootstrap intervals; the equal-family means
+  (22.88 % / 70.71 %) are reported separately, as they should be. Traffic that never
+  repeats saves about 0 %.
 - **Exploratory live A/B (20 requests per arm)** on the provider's own counters
   (`claude-haiku-4-5`), with the opt-in `savings.cachePrefix: true` against the layer
   itself without that option — not against calling the provider directly: the
   cacheable-prefix reorder took a poisoned prompt cache from 0 % → 95 % hit-rate,
-  −82.76 % cost per request in that constructed sequence.
+  −82.76 % cost per request in that constructed sequence (measured with 1.2.0 on
+  15 Nov 2026; later versions changed the arm without the option, so the same sequence
+  now shows a smaller gap).
 
 📄 **The paper:** [Verifiable Measurement of Cost Savings in LLM Applications
 (open-core edition, v2.3-r1)](https://github.com/BiVelio/bivelio-savings-layer/blob/main/docs/PAPER.md) — revised after an external
-pre-publication review: pooled reductions of **31.50 %** and **75.08 %** with
-percentile cluster-bootstrap intervals, four ledgers, and every limitation stated.
+pre-publication review: pooled reductions of **31.50 %** and **75.08 %** on a workload
+with 30 % exact repeats, with percentile cluster-bootstrap intervals, four ledgers, and
+every limitation stated.
 Also at **[savings.bivelio.com/paper](https://savings.bivelio.com/paper)**, with the
 arXiv-ready LaTeX in [`docs/paper/main.tex`](https://github.com/BiVelio/bivelio-savings-layer/blob/main/docs/paper/main.tex).
 
@@ -156,9 +164,11 @@ reports, is at **[savings.bivelio.com/en/benchmarks](https://savings.bivelio.com
 | One cache for several machines, in a store you run (for example Redis) | ✅ | ✅ |
 | Gateway + `bvsala` CLI + MCP server | ✅ | ✅ |
 | Team dashboard, shared measurement, seats and license management | — | ✅ |
-| Anything sent to BiVelio | **Nothing** | Per-request usage only (counts, cost, model id, opaque ids — [LICENSE-CLOUD.md](./LICENSE-CLOUD.md) §5), never prompts or keys |
+| Anything sent to BiVelio | **Nothing** | Per-request usage only (counts, cost, model id, opaque ids — [LICENSE-CLOUD.md](https://github.com/BiVelio/bivelio-savings-layer/blob/main/LICENSE-CLOUD.md) §5), never prompts or keys |
 
 Both columns run the same levers. A BiVelio key only adds the cloud and switches no lever off: the free Measure license applies the same levers as no key.
+One dependency comes with a key, the free Measure key included: with `licenseServerUrl` set (as in the recipe your dashboard and `init` print), a layer that goes 72 hours without an answer from savings.bivelio.com fails closed with `LicenseError` on every call until it gets one or you remove the key. With no key there is no such dependency.
+What the gateway needs instead, and every timeout: [SECURITY.md, Availability](https://github.com/BiVelio/bivelio-savings-layer/blob/main/SECURITY.md#availability-what-happens-if-our-servers-do-not-respond).
 BiVelio hosts no cache. Want several machines to share one? Give the layer a store you
 run through the `exactCache` option: you implement three methods (`get`, `set`,
 `delete`) over any key-value store your instances share, such as Redis. It is free,
@@ -172,7 +182,7 @@ A license key that **is** configured but invalid or expired still fails closed w
 Pro €15 / seat / month or €150 / seat / year; Team
 €129 / month with 10 seats included (€12 per extra seat; €1,290 / year, €120 per
 extra seat), EUR, VAT not included — and there is never a commission on what you
-save (see [LICENSE-CLOUD.md](./LICENSE-CLOUD.md) §6).
+save (see [LICENSE-CLOUD.md](https://github.com/BiVelio/bivelio-savings-layer/blob/main/LICENSE-CLOUD.md) §6).
 
 <details>
 <summary><b>Cloud pricing (the optional, paid part) — full terms</b></summary>
@@ -185,7 +195,7 @@ billed and never part of any commission.
 
 **Legacy plans, closed to new customers.** An earlier modality charged a lower per-seat fee plus a tiered commission on measured savings only: the first month carries no commission, and the commission runs from **10 % down to 4 %** by volume — keeping you **at least 90 % of every euro saved**, never from estimates, and shadow-mode usage was never part of any commission. It is closed to new customers; a subscription already on it keeps it unchanged. Your
 prompts, completions and provider keys never reach BiVelio: a cloud key sends
-only the per-request usage fields listed in [LICENSE-CLOUD.md](./LICENSE-CLOUD.md) §5.
+only the per-request usage fields listed in [LICENSE-CLOUD.md](https://github.com/BiVelio/bivelio-savings-layer/blob/main/LICENSE-CLOUD.md) §5.
 
 </details>
 
@@ -196,7 +206,7 @@ BV‑SALA is open core: the npm package is **Apache-2.0** and free — install i
 optional **cloud** is commercial. Its plans are **Measure** (free), **Pro** (per seat),
 **Team** (a number of seats included, plus each extra seat) and **Enterprise** (by
 contract); Pro and Team are paid whether or not you save and carry **no commission** on
-your savings. The prices are above, in [LICENSE-CLOUD.md](./LICENSE-CLOUD.md) §6 and in
+your savings. The prices are above, in [LICENSE-CLOUD.md](https://github.com/BiVelio/bivelio-savings-layer/blob/main/LICENSE-CLOUD.md) §6 and in
 the Published Pricing it refers to,
 **[savings.bivelio.com/pricing](https://savings.bivelio.com/pricing)**. No trial. There is one free license,
 **Measure** — no card, one organization per verified account, up to 5 seats and 20,000
@@ -210,10 +220,13 @@ mode, so update to save with it. Once you upgrade, a layer with `serviceAccountK
 If you only want to watch before the layer touches your traffic, **observe-only mode** is
 an explicit option on any plan — `observeOnly: true` in the SDK,
 `BVSALA_GATEWAY_OBSERVE_ONLY=1` in the gateway. Every request then goes to your provider
-exactly as you built it, nothing is served from any cache, no lever is applied, and
-`report.measure.wouldHaveSaved` (with `basis: "shadow"`) says what the exact cache and
+exactly as you built it, nothing is served from any cache and no lever is applied. In the
+SDK, `report.measure.wouldHaveSaved` (with `basis: "shadow"`) says what the exact cache and
 in‑flight coalescing would have saved on that request, valued with your provider's own
-counter — a lower bound, shown apart from measured savings.
+counter — a lower bound, shown apart from measured savings. In the gateway, a
+`measure (shadow)` log line says what cache TTL tuning and the sibling model would have
+saved, never counted as a saving. The framework adapters have no observe-only mode:
+switch their levers off with `savings`.
 
 The earlier plan — a lower per‑seat fee plus a tiered commission on measured savings
 only — is **closed to new customers**; a subscription already on it keeps it unchanged.
@@ -227,7 +240,7 @@ The license is a signed token your SDK and the
 gateway verify **offline**; the managed control plane and the revocation kill‑switch
 are served from BiVelio. Your LLM traffic goes **straight to your provider** —
 BiVelio receives per‑request usage (counts, cost, the model id and opaque ids), never
-prompts, completions or provider keys; [LICENSE-CLOUD.md](./LICENSE-CLOUD.md) §5 lists every field, and
+prompts, completions or provider keys; [LICENSE-CLOUD.md](https://github.com/BiVelio/bivelio-savings-layer/blob/main/LICENSE-CLOUD.md) §5 lists every field, and
 **[savings.bivelio.com/privacy](https://savings.bivelio.com/privacy)** says how long
 each one is kept.
 
@@ -240,7 +253,7 @@ Onboarding & general questions: **support@bivelio.com** · licensing & complianc
 cloud's control plane (`services/`, `db/`, `deploy/`), the website (`apps/web`) and the
 packages marked `UNLICENSED` are in this repository for transparency only: you can read
 and audit them, but they are not licensed for reuse. Third-party code keeps its own
-license ([NOTICE](./NOTICE)).
+license ([NOTICE](https://github.com/BiVelio/bivelio-savings-layer/blob/main/NOTICE)).
 
 <details>
 <summary><b>Where it installs — the full story</b></summary>
@@ -252,8 +265,8 @@ license ([NOTICE](./NOTICE)).
 </p>
 
 Your application → **BV‑SALA** → provider API. Traffic always goes straight from
-your app to your provider — BV‑SALA is a library inside your code, never a
-middleman server, and it works with any OpenAI‑compatible endpoint (OpenAI, Azure,
+your app to your provider — the SDK is a library inside your code, never a
+middleman server (the optional gateway is a local proxy on your own machine), and it works with any OpenAI‑compatible endpoint (OpenAI, Azure,
 vLLM, SGLang, a gateway) as well as Anthropic.
 
 **Is this for me?** If your product or automation calls the AI **with its own API
@@ -322,7 +335,8 @@ bvsala gateway --upstream gemini               # Gemini protocol (bvsala gemini 
 ```
 
 Flags and environment variables are in English (`--port`, `--project`, `--force`,
-`BVSALA_GATEWAY_EFFORT`, `BVSALA_GATEWAY_SIBLING_MODEL`). The Spanish spellings from
+`BVSALA_GATEWAY_EFFORT`, `BVSALA_GATEWAY_SIBLING_MODEL`), except
+`BVSALA_GATEWAY_DIALES_ELISION` (the context elision dials, off by default). The Spanish spellings from
 0.4.x (`--puerto`, `--proyecto`, `--forzar`, `BVSALA_GATEWAY_ESFUERZO`,
 `BVSALA_GATEWAY_MODELO_HERMANO`) were removed in 0.5: using one is an error that
 names the English spelling, and the gateway does not start. `bvsala --help` lists
@@ -414,7 +428,9 @@ from the measured figures — the SDK warns once when the tokenizer is missing.
 **2 · The cloud (optional)** — a [BiVelio key](https://savings.bivelio.com/dashboard/install)
 adds the team dashboard, shared measurement, seats and license management. Skip this
 step and nothing changes except the dashboard: the layer keeps working, fully, offline.
-Take it and nothing is switched off either — the free Measure key included.
+Take it and no lever is switched off.
+One dependency comes with a key, the free Measure key included: with `licenseServerUrl` set (as in the recipe your dashboard and `init` print), a layer that goes 72 hours without an answer from savings.bivelio.com fails closed with `LicenseError` on every call until it gets one or you remove the key. With no key there is no such dependency.
+Details: [SECURITY.md, Availability](https://github.com/BiVelio/bivelio-savings-layer/blob/main/SECURITY.md#availability-what-happens-if-our-servers-do-not-respond).
 
 One recipe, the same one your dashboard and `npx @bivelio/savings-layer init` print: the
 two keys in the environment, and three lines in `createSavingsLayer` (step 3).
