@@ -201,6 +201,8 @@ describe("ensayoDeCargo — el ensayo en seco dice exactamente lo que haría", (
   });
   it("exenta, omitida y nada llevan su causa y ningún importe", () => {
     expect(ensayoDeCargo(base, "exenta", undefined)).toMatchObject({ accion: "exenta", centimos: null });
+    // La tercera verja: sin la modalidad con comisión en el período, «revisar» y nada que cobrar.
+    expect(ensayoDeCargo(base, "sin_modalidad", undefined)).toMatchObject({ accion: "revisar", centimos: null, cliente: null, medio_de_pago: null });
     expect(ensayoDeCargo(base, decidirCargo(base, null, false), undefined)).toMatchObject({ accion: "omitir", detalle: "omitido_sin_cliente" });
     expect(ensayoDeCargo(base, decidirCargo(base, CLIENTE, true), undefined)).toMatchObject({ accion: "nada", detalle: "ya_facturado" });
   });
