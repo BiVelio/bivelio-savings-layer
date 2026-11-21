@@ -50,6 +50,14 @@ describe("el mensaje manda a la acción correcta", () => {
     }
   });
 
+  it("⛔ caducada, revocada o sin conexión: dice también que quitar la clave sigue gratis (verificación final de la 1.2.4)", () => {
+    for (const st of ["expired", "grace", "revoked", "stale"] as const) {
+      expect(mensajeDeLicencia(st), st).toContain("remove `licenseKey` to keep running free in COMMUNITY mode, with every lever");
+    }
+    // Una clave mal pegada se arregla pegándola bien: ahí no se ofrece quitarla.
+    expect(mensajeDeLicencia("invalid")).not.toContain("remove `licenseKey`");
+  });
+
   it("sin estado no inventa un diagnóstico", () => {
     const m = mensajeDeLicencia(undefined);
     expect(m).toMatch(/not active/i);

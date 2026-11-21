@@ -342,22 +342,23 @@ export function mensajeDeLicencia(
       // Aquí sí hay algo que gestionar, pero no es "renovar": es entender por qué.
       return (
         "BiVelio license has been revoked. If this is unexpected, check your billing status " +
-        "at https://savings.bivelio.com/dashboard/account or write to support@bivelio.com " +
-        "(license status: revoked)"
+        "at https://savings.bivelio.com/dashboard/account or write to support@bivelio.com; or remove " +
+        "`licenseKey` to keep running free in COMMUNITY mode, with every lever. (license status: revoked)"
       );
     case "stale":
       // La licencia está PAGADA y VIGENTE. El problema es la red.
       return (
         "BiVelio could not confirm your license with the control plane in time — this is a " +
         "connectivity problem, not a billing one: your license is still valid. Allow outbound " +
-        "HTTPS to your `licenseServerUrl` (https://savings.bivelio.com by default) and retry. " +
-        "(license status: stale)"
+        "HTTPS to your `licenseServerUrl` (https://savings.bivelio.com by default) and retry, or remove " +
+        "`licenseKey` to keep running free in COMMUNITY mode, with every lever. (license status: stale)"
       );
     case "expired":
     case "grace":
       return (
         "BiVelio license is not active. Renew your subscription at " +
-        `https://savings.bivelio.com/dashboard/account (license status: ${st})`
+        "https://savings.bivelio.com/dashboard/account, or remove `licenseKey` to keep running free in " +
+        `COMMUNITY mode, with every lever. (license status: ${st})`
       );
     default:
       return (
