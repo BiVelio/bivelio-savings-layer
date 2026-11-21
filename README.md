@@ -167,6 +167,7 @@ reports, is at **[savings.bivelio.com/en/benchmarks](https://savings.bivelio.com
 | Anything sent to BiVelio | **Nothing** | Per-request usage only (counts, cost, model id, opaque ids — [LICENSE-CLOUD.md](https://github.com/BiVelio/bivelio-savings-layer/blob/main/LICENSE-CLOUD.md) §5), never prompts or keys |
 
 Both columns run the same levers. A BiVelio key only adds the cloud and switches no lever off: the free Measure license applies the same levers as no key.
+One safeguard kept from 1.2.3 depends on a key: with one, trimming of superseded tool results stays off on a provider the layer does not recognise (one that may cache the whole prompt by itself, such as DeepSeek or Qwen). With no key it runs there, as in 1.2.3: on a long agent loop, compare with `savings: { elision: false }`.
 One dependency comes with a key, the free Measure key included: with `licenseServerUrl` set (as in the recipe your dashboard and `init` print), a layer that goes 72 hours without an answer from savings.bivelio.com fails closed with `LicenseError` on every call until it gets one or you remove the key. With no key there is no such dependency.
 What the gateway needs instead, and every timeout: [SECURITY.md, Availability](https://github.com/BiVelio/bivelio-savings-layer/blob/main/SECURITY.md#availability-what-happens-if-our-servers-do-not-respond).
 BiVelio hosts no cache. Want several machines to share one? Give the layer a store you
