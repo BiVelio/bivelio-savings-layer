@@ -1,32 +1,33 @@
-# Cursor (BYOK: tu propia clave OpenAI-compatible)
+# Cursor (BYOK: your own OpenAI-compatible key)
 
-Cursor solo pasa por un gateway local cuando la petición va con **tu** clave de
-proveedor: sus modelos propios viajan por los servidores de Cursor y no alcanzan
-`127.0.0.1` (su panel de uso mide esos).
+Cursor only goes through a local gateway when the request is sent with **your**
+provider key: its own models travel through Cursor's servers and do not reach
+`127.0.0.1` (its usage dashboard meters those).
 
-**Mecanismo [I]:** Cursor → Settings → Models → **OpenAI API Base URL**. Las
-peticiones OpenAI-compatibles con tu clave salen hacia esa URL.
+**Mechanism [I]:** Cursor → Settings → Models → **OpenAI API Base URL**. The
+OpenAI-compatible requests made with your key go out to that URL.
 
-## Receta
+## Recipe
 
-1. Arranca el gateway con el upstream que quieras:
+1. Start the gateway with the upstream you want:
 
    ```bash
-   bvsala gateway --upstream openai --port 8402    # deepseek, qwen, glm, moonshot, ollama… también
+   bvsala gateway --upstream openai --port 8402    # deepseek, qwen, glm, moonshot, ollama… too
    ```
 
-2. En Cursor: Settings → Models → **OpenAI API Base URL** =
-   `http://127.0.0.1:8402/v1` (**con** `/v1`).
+2. In Cursor: Settings → Models → **OpenAI API Base URL** =
+   `http://127.0.0.1:8402/v1` (**with** `/v1`).
 
-3. Añade un modelo OpenAI-compatible con tu API key, como harías sin el gateway.
+3. Add an OpenAI-compatible model with your API key, as you would without the
+   gateway.
 
-## Qué se mide y qué no
+## What is metered and what is not
 
-- Se mide: lo que Cursor manda con TU clave a esa base URL, a precio de lista
-  para los modelos con fila en el catálogo.
-- No se mide: los modelos propios de Cursor (su dashboard de uso es el medidor
-  ahí) y los streams sin `stream_options.include_usage`.
+- Metered: what Cursor sends with YOUR key to that base URL, at list price for
+  the models with a row in the catalog.
+- Not metered: Cursor's own models (its usage dashboard is the meter there) and
+  streams without `stream_options.include_usage`.
 
-## Comprobar que mide
+## Checking that it meters
 
-El log del gateway tiene que mostrar `POST /v1/chat/completions …` con `$`.
+The gateway log has to show `POST /v1/chat/completions …` with a `$`.

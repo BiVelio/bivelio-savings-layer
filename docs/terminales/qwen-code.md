@@ -1,22 +1,21 @@
-# Qwen Code a través del gateway
+# Qwen Code through the gateway
 
-**Fuente:** `docs/PASARELA-S3-TERMINALES.md` §3 [V]. Qwen Code con proveedor
-Anthropic habla dialecto Anthropic puro (SDK TS oficial), así que el medidor
-actual lo entiende sin cambios. La familia de modelos **qwen** queda fuera del
-catálogo a propósito (más abajo).
+**Source:** `docs/PASARELA-S3-TERMINALES.md` §3 [V]. Qwen Code with the
+Anthropic provider speaks the pure Anthropic dialect (the official TS SDK), so
+the current meter understands it without changes. The **qwen** model family is
+left out of the catalog on purpose (further down).
 
-## Qué necesitas
+## What you need
 
-- `qwen` en el PATH.
-- **Una API key de Anthropic** (`ANTHROPIC_API_KEY`), con Qwen Code configurado
-  para usar el proveedor Anthropic.
-- `bvsala` instalado. Open core: sin claves el gateway arranca en modo Community (todo el ahorro local, cero telemetría); `BIVELIO_SERVICE_KEY` añade el panel y los entitlements de la org (ver [README](README.md)).
+- `qwen` on the PATH.
+- **An Anthropic API key** (`ANTHROPIC_API_KEY`), with Qwen Code configured to
+  use the Anthropic provider.
+- `bvsala` installed. Open core: with no keys the gateway starts in Community mode (all the local saving, zero telemetry); `BIVELIO_SERVICE_KEY` adds the dashboard and the org's entitlements (see [README](README.md)).
 
-## Config de usuario: `~/.qwen/settings.json`
+## User config: `~/.qwen/settings.json`
 
-El enrutado necesita dos cosas a la vez [V]: la variable de entorno
-`ANTHROPIC_BASE_URL` **y** que `~/.qwen/settings.json` seleccione el tipo
-Anthropic:
+The routing needs two things at once [V]: the `ANTHROPIC_BASE_URL` environment
+variable **and** `~/.qwen/settings.json` selecting the Anthropic type:
 
 ```json
 {
@@ -24,53 +23,53 @@ Anthropic:
 }
 ```
 
-Conserva el resto de tu `settings.json`; la clave verificada en S3 es
-`selectedType`. Sin ella, Qwen Code no lee `ANTHROPIC_BASE_URL` y el gateway no
-verá nada.
+Keep the rest of your `settings.json`; the key verified in S3 is
+`selectedType`. Without it, Qwen Code does not read `ANTHROPIC_BASE_URL` and the
+gateway will see nothing.
 
-## Envoltorio: `bvsala qwen`
+## Wrapper: `bvsala qwen`
 
 ```bash
-export BIVELIO_SERVICE_KEY=bvk_…  # OPCIONAL: panel + entitlements de org (sin ella: modo Community)
+export BIVELIO_SERVICE_KEY=bvk_…  # OPTIONAL: dashboard + org entitlements (without it: Community mode)
 bvsala qwen
 ```
 
-Espejo de `bvsala claude` con `ANTHROPIC_BASE_URL`. El envoltorio **no lee**
-`settings.json`: comprueba tú que `selectedType` sea `anthropic` (`bvsala
-doctor` te recuerda la ruta). La receta manual de abajo es lo mismo.
+A mirror of `bvsala claude` with `ANTHROPIC_BASE_URL`. The wrapper **does not
+read** `settings.json`: check yourself that `selectedType` is `anthropic`
+(`bvsala doctor` reminds you of the path). The manual recipe below is the same.
 
 ## Manual: `ANTHROPIC_BASE_URL`
 
 ```bash
-bvsala gateway                                         # ventana 1: http://127.0.0.1:8402
-ANTHROPIC_BASE_URL=http://127.0.0.1:8402 qwen          # ventana 2 — SIN /v1
+bvsala gateway                                         # window 1: http://127.0.0.1:8402
+ANTHROPIC_BASE_URL=http://127.0.0.1:8402 qwen          # window 2 — NO /v1
 ```
 
-Sin `/v1`: el SDK TS oficial de Anthropic añade `/v1/messages` [V]. Sin barra
-final.
+No `/v1`: Anthropic's official TS SDK appends `/v1/messages` [V]. No trailing
+slash.
 
-## Comprobar que funciona
+## Checking that it works
 
 ```
-[gateway] POST /v1/messages  · <modelo> · $0.001234 (in 120, cache↑0 cache↓0, out 8)
+[gateway] POST /v1/messages  · <model> · $0.001234 (in 120, cache↑0 cache↓0, out 8)
 ```
 
-## La trampa típica
+## The typical pitfall
 
-1. **`/v1` en el base URL** → `[gateway] POST /v1/v1/messages → 404`.
-2. **`selectedType` no es `anthropic`** → el log del gateway no muestra nada:
-   Qwen Code está hablando con su proveedor por defecto, no contigo.
-3. **Modelos qwen (DashScope / ModelStudio)**: están **fuera del catálogo a
-   propósito** — `costeMedido → null`, passthrough con un aviso una vez
-   (`el modelo "…" no está en el catálogo de precios; su uso se reenvía pero no
-   se mide`). Coherente con la política del catálogo: presente-y-mal es peor que
-   ausente. Para medirlos harían falta precios **verificados** de
-   ModelStudio/DashScope en la fecha, y antes comprobar que DashScope emite SSE
-   con `\n\n` — el observador parte bloques solo por `\n\n`; un upstream que
-   emita `\r\n\r\n` jamás cerraría un bloque y no mediría nada aunque el precio
-   estuviera [I].
+1. **`/v1` in the base URL** → `[gateway] POST /v1/v1/messages → 404`.
+2. **`selectedType` is not `anthropic`** → the gateway log shows nothing: Qwen
+   Code is talking to its default provider, not to you.
+3. **qwen models (DashScope / ModelStudio)**: they are **outside the catalog on
+   purpose** — `costeMedido → null`, passthrough with a one-time warning
+   (`model "…" is not in the price catalog; its usage is forwarded but not
+   metered.`). Consistent with the catalog's policy: present-and-wrong is worse
+   than absent. Metering them would need **verified** ModelStudio/DashScope
+   prices as of the date, and first checking that DashScope emits SSE with
+   `\n\n` — the observer splits blocks only on `\n\n`; an upstream that emits
+   `\r\n\r\n` would never close a block and would meter nothing even if the
+   price were there [I].
 
-## Nota BYOK
+## BYOK note
 
-**API key exclusivamente.** Anthropic prohíbe el OAuth de Claude Pro/Max en
-harnesses de terceros; Qwen Code es BYOK desde abr-2026 y esta receta también.
+**API key only.** Anthropic forbids the Claude Pro/Max OAuth in third-party
+harnesses; Qwen Code has been BYOK since April 2026 and so is this recipe.

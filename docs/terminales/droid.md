@@ -1,17 +1,17 @@
-# Droid (Factory) a través del gateway
+# Droid (Factory) through the gateway
 
-**Fuente:** `docs/PASARELA-S3-TERMINALES.md` §3. Droid es **cerrado**; el
-mecanismo de enrutado está verificado [V] (`~/.factory/settings.json` →
-`customModels[]` con `provider: "anthropic"`), pero **la forma del base URL es
-inferida [I]: hay que validarla en mano contra el log del gateway.** Esta guía
-lo dice tal cual; no hay validación hecha.
+**Source:** `docs/PASARELA-S3-TERMINALES.md` §3. Droid is **closed source**; the
+routing mechanism is verified [V] (`~/.factory/settings.json` →
+`customModels[]` with `provider: "anthropic"`), but **the shape of the base URL
+is inferred [I]: it has to be validated by hand against the gateway log.** This
+guide says so plainly; no validation has been done.
 
-## Qué necesitas
+## What you need
 
-- `droid` instalado, en modo BYOK con tu **API key** de Anthropic.
-- `bvsala` instalado. Open core: sin claves el gateway arranca en modo Community (todo el ahorro local, cero telemetría); `BIVELIO_SERVICE_KEY` añade el panel y los entitlements de la org (ver [README](README.md)).
+- `droid` installed, in BYOK mode with your Anthropic **API key**.
+- `bvsala` installed. Open core: with no keys the gateway starts in Community mode (all the local saving, zero telemetry); `BIVELIO_SERVICE_KEY` adds the dashboard and the org's entitlements (see [README](README.md)).
 
-## Config de usuario: `~/.factory/settings.json`
+## User config: `~/.factory/settings.json`
 
 ```json
 {
@@ -19,37 +19,38 @@ lo dice tal cual; no hay validación hecha.
     {
       "provider": "anthropic",
       "baseUrl": "http://127.0.0.1:8402",
-      "apiKey": "<tu ANTHROPIC_API_KEY>"
+      "apiKey": "<your ANTHROPIC_API_KEY>"
     }
   ]
 }
 ```
 
-Las claves verificadas [V] son `customModels[]{provider:"anthropic", baseUrl,
-apiKey}`. La forma **sin `/v1`** es inferida [I]. Conserva el resto de tu
-`settings.json` (el `doctor --write droid` previsto en S3 hará el merge JSON
-conservador con copia `.bak`).
+The verified keys [V] are `customModels[]{provider:"anthropic", baseUrl,
+apiKey}`. The shape **without `/v1`** is inferred [I]. Keep the rest of your
+`settings.json` (the `doctor --write droid` planned in S3 will do the
+conservative JSON merge with a `.bak` copy; it does not exist yet, and today
+`bvsala doctor` only prints the block).
 
-## Validar en mano (obligatorio antes de fiarte)
+## Validate by hand (mandatory before you trust it)
 
-1. `bvsala gateway` en una ventana.
-2. Lanza `droid` con ese modelo custom y haz una pregunta trivial.
-3. Mira el log del gateway:
-   - `[gateway] POST /v1/messages  · <modelo> · $…` → la forma sin `/v1` es la
-     buena. Confírmalo en S3 (pasar el [I] a [V]).
-   - `[gateway] POST /messages → 404` → Droid solo añade `/messages`: cambia el
-     `baseUrl` a `http://127.0.0.1:8402/v1` y repite.
-   - nada en el log → Droid no está leyendo el modelo custom; revisa que sea el
-     modelo seleccionado.
+1. `bvsala gateway` in one window.
+2. Launch `droid` with that custom model and ask a trivial question.
+3. Look at the gateway log:
+   - `[gateway] POST /v1/messages  · <model> · $…` → the shape without `/v1` is
+     the right one. Confirm it in S3 (move the [I] to [V]).
+   - `[gateway] POST /messages → 404` → Droid only appends `/messages`: change
+     the `baseUrl` to `http://127.0.0.1:8402/v1` and repeat.
+   - nothing in the log → Droid is not reading the custom model; check that it
+     is the selected model.
 
-## La trampa típica
+## The typical pitfall
 
-- **Adivinar el `/v1`**: por eso el paso de validación. Un URL mal formado
-  falla en silencio (404 del upstream sin medir).
-- **La API key va en el JSON**: es config de usuario en tu máquina; no la
-  copies a ningún repo ni la pegues en un ticket.
+- **Guessing the `/v1`**: that is why the validation step exists. A malformed
+  URL fails silently (a 404 from the upstream, not metered).
+- **The API key goes in the JSON**: it is user config on your machine; do not
+  copy it to any repo or paste it in a ticket.
 
-## Nota BYOK
+## BYOK note
 
-**API key exclusivamente.** Droid es BYOK; Anthropic prohíbe el OAuth de Claude
-Pro/Max en harnesses de terceros, y esta receta no lo contempla.
+**API key only.** Droid is BYOK; Anthropic forbids the Claude Pro/Max OAuth in
+third-party harnesses, and this recipe does not cover it.

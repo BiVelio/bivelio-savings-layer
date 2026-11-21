@@ -1,38 +1,38 @@
 # Gemini CLI
 
-`bvsala gemini` lanza la CLI de Gemini a través del gateway local, sin tocar su
-configuración.
+`bvsala gemini` launches the Gemini CLI through the local gateway, without
+touching its configuration.
 
-**Mecanismo [V]:** la CLI de Gemini solo habla el protocolo generativelanguage;
-el gateway lo entiende desde la 0.6 (`:generateContent` y
-`:streamGenerateContent`, con SSE `alt=sse` o JSON por líneas) y lee el
-`usageMetadata` de cada respuesta. El `GOOGLE_GEMINI_BASE_URL` de la CLI apunta
-al gateway, y tu `GEMINI_API_KEY` viaja en `x-goog-api-key`, intacta.
+**Mechanism [V]:** the Gemini CLI only speaks the generativelanguage protocol;
+the gateway understands it (`:generateContent` and `:streamGenerateContent`,
+with `alt=sse` SSE or line-delimited JSON) and reads the `usageMetadata` of
+every response. The CLI's `GOOGLE_GEMINI_BASE_URL` points at the gateway, and
+your `GEMINI_API_KEY` travels in `x-goog-api-key`, intact.
 
-## Requisitos
+## Requirements
 
-- `bvsala` instalado (`npm i -g @bivelio/savings-layer`). Sin claves arranca en
-  modo Community; `BIVELIO_SERVICE_KEY` (opcional) añade el panel.
-- La CLI de Gemini instalada y tu `GEMINI_API_KEY` exportada.
+- `bvsala` installed (`npm i -g @bivelio/savings-layer`). With no keys it starts
+  in Community mode; `BIVELIO_SERVICE_KEY` (optional) adds the dashboard.
+- The Gemini CLI installed and your `GEMINI_API_KEY` exported.
 
-## Un comando
+## One command
 
 ```bash
 bvsala gemini
 ```
 
-A la salida imprime cuántas peticiones midió y cuáles reenvió sin medir, y por
-qué.
+On exit it prints how many requests it metered and which ones it forwarded
+without metering, and why.
 
-## A mano
+## By hand
 
 ```bash
-bvsala gateway --upstream gemini --port 8402   # el gateway con el dialecto Gemini
+bvsala gateway --upstream gemini --port 8402   # the gateway with the Gemini dialect
 GOOGLE_GEMINI_BASE_URL=http://127.0.0.1:8402 gemini
 ```
 
-## Comprobar que mide
+## Checking that it meters
 
-El log del gateway tiene que mostrar `POST /v1beta/models/…:streamGenerateContent`
-con `$` y los tokens. Los modelos con precio de lista en el catálogo se meten a
-precio de lista; uno sin fila se reenvía y la línea lo dice.
+The gateway log has to show `POST /v1beta/models/…:streamGenerateContent` with
+a `$` and the tokens. Models with a list price in the catalog are metered at
+list price; one without a row is forwarded and the line says so.

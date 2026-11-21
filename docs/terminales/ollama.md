@@ -1,8 +1,7 @@
-# Ollama, vLLM y LM Studio (modelos locales)
+# Ollama, vLLM and LM Studio (local models)
 
-El gateway también se pone delante de un servidor local OpenAI-compatible: útil
-para dar a un agente un tier local gratis mientras el gateway sigue midiendo las
-llamadas de pago.
+The gateway can also sit in front of a local OpenAI-compatible server: useful to
+give an agent a free local tier while the gateway keeps metering the paid calls.
 
 ```bash
 bvsala gateway --upstream ollama --port 8402    # http://localhost:11434
@@ -10,10 +9,10 @@ bvsala gateway --upstream vllm --port 8402      # http://localhost:8000
 bvsala gateway --upstream lmstudio --port 8402  # http://localhost:1234
 ```
 
-Luego apunta cualquier SDK OpenAI a `http://127.0.0.1:8402/v1` (**con** `/v1`).
+Then point any OpenAI SDK at `http://127.0.0.1:8402/v1` (**with** `/v1`).
 
-**Honestidad de la medición:** los modelos locales no tienen precio de lista, así
-que este tráfico se reenvía y el log lo dice (`not metered: model "…" has no
-list price in the catalog`). En dólares no se acredita nada; el valor es
-operativo: un solo base URL para todos los modelos, con el metering de los
-providers de pago funcionando al lado.
+**Honesty about the measurement:** local models have no list price, so this
+traffic is forwarded and the log says so (`not metered: model "…" has no list
+price in the catalog`). Nothing is credited in dollars; the value is
+operational: a single base URL for every model, with the metering of the paid
+providers working alongside.

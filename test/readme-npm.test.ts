@@ -1,4 +1,4 @@
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { dirname, join, normalize } from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, it, expect } from "vitest";
@@ -199,10 +199,10 @@ describe("el README cuenta los arreglos de la 1.2.3", () => {
   it("dice que la rebaja de TTL no toca la suscripción (Claude Max/Pro), en el README y en la guía de terminales", () => {
     expect(plano).toContain("the TTL lever leaves Claude Max/Pro traffic untouched");
     const terminales = leer("docs/terminales/README.md").replace(/\s+/g, " ");
-    expect(terminales).toContain("la rebaja de TTL no lo toca");
+    expect(terminales).toContain("the TTL lever does not touch it");
     // Sin clave, el gateway mide en local: línea de log, resumen y rutas locales.
-    expect(terminales).not.toContain("el metering se queda en las rutas locales");
-    expect(terminales).toContain("una línea de log por petición, el resumen al salir y las rutas locales");
+    expect(terminales).not.toMatch(/el metering se queda en las rutas locales|metering stays (on|in) the local routes/);
+    expect(terminales).toContain("one log line per request, the summary on exit and the local `/_bvsala` routes");
   });
 });
 
@@ -240,5 +240,61 @@ describe("la entrada 1.2.3 del CHANGELOG dice lo que hace el catálogo", () => {
     expect(precioDeLista(conVariante), conVariante).toBeUndefined();
     expect(precioDeLista(pariente), pariente).toBeUndefined();
     expect(precioDeLista(modelo), modelo).toBeDefined();
+  });
+});
+
+/**
+ * LAS GUÍAS DE TERMINALES VIAJAN EN EL TARBALL Y SE ENLAZAN DESDE UN README EN
+ * INGLÉS (auditoría de medios, m30). Estaban en español —título incluido— salvo
+ * una sección; quien llegaba desde npm o GitHub leía media guía. Ahora van en
+ * inglés enteras, con las líneas de log que el gateway imprime de verdad.
+ */
+describe("docs/terminales va en inglés, como el README que lo enlaza", () => {
+  const guias = readdirSync(join(RAIZ, "docs", "terminales")).filter((f) => f.endsWith(".md"));
+
+  it("están todas las guías (si cambia la carpeta, este bloque no protege nada)", () => {
+    expect(guias.length).toBeGreaterThanOrEqual(18);
+    expect(guias).toContain("README.md");
+    expect(guias).toContain("claude-code.md");
+  });
+
+  for (const f of guias) {
+    it(`⛔ ${f}: ni tildes ni comillas angulares ni las palabras de la versión española`, () => {
+      const t = leer(`docs/terminales/${f}`);
+      expect(t).not.toMatch(/[áéíóúñÁÉÍÓÚÑ¿¡«»]/);
+      expect(t).not.toMatch(/\b(Qué necesitas|Envoltorio|La trampa|Comprobar|ventana \d|través del gateway|Fuente:)\b/);
+    });
+  }
+
+  it("⛔ no dice que el repositorio no es público: lo es", () => {
+    for (const f of guias) {
+      expect(leer(`docs/terminales/${f}`), f).not.toMatch(/not\s+public|no\s+es\s+p[uú]blico/i);
+    }
+  });
+
+  it("las líneas de arranque y de log citadas son las que imprime el gateway hoy", () => {
+    const guia = leer("docs/terminales/README.md");
+    const bin = leer("gateway/bin.ts");
+    const servidor = leer("gateway/servidor.ts");
+    // El ejemplo llevaba «v0.6.x» y «metering: OFF», una línea que ya no existe.
+    expect(guia).not.toMatch(/v0\.\d+\.x listening/);
+    expect(guia).not.toContain("metering: OFF");
+    expect(guia).toContain("metering: LOCAL ONLY (community mode, no BiVelio service key)");
+    expect(bin).toContain("metering: LOCAL ONLY (community mode, no BiVelio service key)");
+    expect(guia).not.toMatch(/Desde la próxima versión|From the next version/i);
+    // La guía de Codex copiaba dos líneas de log en español que el gateway escribe en inglés.
+    const codex = leer("docs/terminales/codex.md");
+    for (const linea of [
+      "426 (WebSocket not supported; the client falls back to HTTP)",
+      "client closed after the final usage; metered anyway",
+    ]) {
+      expect(codex, linea).toContain(linea);
+      expect(servidor, linea).toContain(linea);
+    }
+  });
+
+  it("el enlace interno a la sección de Copilot en VS Code apunta a un título que existe", () => {
+    expect(leer("docs/terminales/README.md")).toContain("copilot.md#copilot-in-vs-code-byok-custom-endpoint");
+    expect(leer("docs/terminales/copilot.md")).toContain('## Copilot in VS Code (BYOK, "Custom Endpoint")');
   });
 });

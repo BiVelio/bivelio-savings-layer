@@ -1,54 +1,55 @@
-# Goose a través del gateway
+# Goose through the gateway
 
-**Fuente:** `docs/PASARELA-S3-TERMINALES.md` §3 [V]. Goose habla dialecto
-Anthropic puro y autentica con `x-api-key` + `anthropic-version`, que el
-reenvío pasa intactos: **nada que cambiar en el gateway**, todo está en la
-forma del URL.
+**Source:** `docs/PASARELA-S3-TERMINALES.md` §3 [V]. Goose speaks the pure
+Anthropic dialect and authenticates with `x-api-key` + `anthropic-version`,
+which the forwarding passes intact: **nothing to change in the gateway**, it is
+all in the shape of the URL.
 
-## Qué necesitas
+## What you need
 
-- `goose` en el PATH, con el proveedor Anthropic elegido.
-- `ANTHROPIC_API_KEY` exportada (Goose es solo BYOK).
-- `bvsala` instalado. Open core: sin claves el gateway arranca en modo Community (todo el ahorro local, cero telemetría); `BIVELIO_SERVICE_KEY` añade el panel y los entitlements de la org (ver [README](README.md)).
+- `goose` on the PATH, with the Anthropic provider chosen.
+- `ANTHROPIC_API_KEY` exported (Goose is BYOK only).
+- `bvsala` installed. Open core: with no keys the gateway starts in Community mode (all the local saving, zero telemetry); `BIVELIO_SERVICE_KEY` adds the dashboard and the org's entitlements (see [README](README.md)).
 
-## Envoltorio: `bvsala goose`
+## Wrapper: `bvsala goose`
 
 ```bash
-export BIVELIO_SERVICE_KEY=bvk_…  # OPCIONAL: panel + entitlements de org (sin ella: modo Community)
-bvsala goose                       # espejo exacto de `bvsala claude`
+export BIVELIO_SERVICE_KEY=bvk_…  # OPTIONAL: dashboard + org entitlements (without it: Community mode)
+bvsala goose                       # an exact mirror of `bvsala claude`
 ```
 
-Espejo exacto de `bvsala claude`: gateway efímero, `goose` lanzado con
-`ANTHROPIC_HOST=http://127.0.0.1:<puerto>`, todo muere al salir. La tabla vive
-en `gateway/envoltorios.ts`. La receta manual de abajo es literalmente lo mismo.
+An exact mirror of `bvsala claude`: an ephemeral gateway, `goose` launched with
+`ANTHROPIC_HOST=http://127.0.0.1:<port>`, everything dies on exit. The table
+lives in `gateway/envoltorios.ts`. The manual recipe below is literally the
+same.
 
 ## Manual: `ANTHROPIC_HOST`
 
 ```bash
-bvsala gateway                                        # ventana 1: http://127.0.0.1:8402
-ANTHROPIC_HOST=http://127.0.0.1:8402 goose            # ventana 2 — SIN /v1
+bvsala gateway                                        # window 1: http://127.0.0.1:8402
+ANTHROPIC_HOST=http://127.0.0.1:8402 goose            # window 2 — NO /v1
 ```
 
-`ANTHROPIC_HOST` **pisa** lo que haya en `config.yaml` [V], así que no hace
-falta tocar ningún archivo. Sin `/v1`, sin barra final: Goose añade
-`/v1/messages` por su cuenta.
+`ANTHROPIC_HOST` **overrides** whatever is in `config.yaml` [V], so there is no
+need to touch any file. No `/v1`, no trailing slash: Goose appends
+`/v1/messages` on its own.
 
-## Comprobar que funciona
+## Checking that it works
 
 ```
-[gateway] POST /v1/messages  · <modelo> · $0.001234 (in 120, cache↑0 cache↓0, out 8)
+[gateway] POST /v1/messages  · <model> · $0.001234 (in 120, cache↑0 cache↓0, out 8)
 ```
 
-## La trampa típica
+## The typical pitfall
 
-- **`/v1` en `ANTHROPIC_HOST`** → `[gateway] POST /v1/v1/messages → 404`. Quítalo.
-- **Escribir el host en `config.yaml`** en vez de la variable: funciona, pero
-  se queda fijo y Goose falla cada vez que el gateway no esté corriendo. La
-  variable de entorno por sesión es la forma; la env pisa al archivo de todos
-  modos.
+- **`/v1` in `ANTHROPIC_HOST`** → `[gateway] POST /v1/v1/messages → 404`. Remove it.
+- **Writing the host in `config.yaml`** instead of the variable: it works, but
+  it stays fixed and Goose fails every time the gateway is not running. The
+  per-session environment variable is the way; the env overrides the file
+  anyway.
 
-## Nota BYOK
+## BYOK note
 
-**API key exclusivamente.** Anthropic prohíbe usar el OAuth de Claude Pro/Max
-en harnesses de terceros; Goose es BYOK y esta receta también. El gateway
-reenviaría cualquier credencial sin inmutarse — eso no es una receta.
+**API key only.** Anthropic forbids using the Claude Pro/Max OAuth in
+third-party harnesses; Goose is BYOK and so is this recipe. The gateway would
+forward any credential without blinking — that is not a recipe.
