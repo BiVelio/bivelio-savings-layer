@@ -48,6 +48,19 @@ describe("resumenDeMedicion — la línea de salida", () => {
     );
   });
 
+  it("⛔ en modo solo-observar el $0 lo explica ESE modo, no la regla de la rebaja de TTL (verificación final 1.2.4)", () => {
+    const r = new RecuentoDeMedicion();
+    r.medida(SIN_AHORRO);
+    const l = resumenDeMedicion(r.estado(), "claude", { soloObservar: true });
+    expect(l).toContain(
+      "saved $0.00: observe-only mode (BVSALA_GATEWAY_OBSERVE_ONLY=1) applies no lever; what they would have saved is " +
+        "in the per-request `measure (shadow)` lines, never counted as a saving",
+    );
+    expect(l).not.toContain("cache TTL tuning is credited only");
+    // Sin el modo, el motivo de siempre.
+    expect(resumenDeMedicion(r.estado(), "claude")).toContain("cache TTL tuning is credited only");
+  });
+
   it("con el log a la vista (`bvsala gateway`, o BVSALA_GATEWAY_LOG=1) el detalle está arriba, no en otra ejecución", () => {
     const r = new RecuentoDeMedicion();
     r.medida(SIN_AHORRO);
@@ -425,6 +438,33 @@ describe.skipIf(process.platform === "win32")("1.2.4 · `bvsala claude` enseña 
     expect(r.codigo, r.stderr).toBe(0);
     expect(r.stderr).toContain(`spent ${dolares(2 * unitario)} at list-price equivalent (subscription traffic: there is no per-token invoice)`);
     expect(r.stderr).toContain("saved $0.00: no saving is credited on a subscription (there is no per-token invoice)");
+  }, 30_000);
+
+  it("⛔ con BVSALA_GATEWAY_OBSERVE_ONLY=1 el cartel no dice «TTL tuning ON» ni «ARMED»: una sola línea de solo observar", async () => {
+    exigirBinCompilado();
+    const caja = cajaLimpia();
+    const p = lanzar(
+      ["gateway", "--port", "0", "--upstream", "http://127.0.0.1:9"],
+      caja.env({ BVSALA_GATEWAY_OBSERVE_ONLY: "1", BVSALA_GATEWAY_SIBLING_MODEL: "1" }),
+    );
+    try {
+      await p.esperar(/savings levers: OBSERVE-ONLY/);
+      // El cartel sale entero antes de la línea de las palancas y de lo que va detrás.
+      await new Promise((res) => setTimeout(res, 200));
+      const todo = p.stdout() + p.stderr();
+      expect(todo).toContain("[bvsala gateway] savings levers: OBSERVE-ONLY (BVSALA_GATEWAY_OBSERVE_ONLY=1) - no lever is applied");
+      expect(todo).not.toMatch(/cache TTL tuning is the only one ON by default|sibling model routing: ARMED|TTL tuning ON/);
+    } finally {
+      p.matar();
+      caja.limpiar();
+    }
+  }, 30_000);
+
+  it("⛔ con BVSALA_GATEWAY_OBSERVE_ONLY=1 el resumen dice que ninguna palanca actuó (no la regla de la rebaja)", async () => {
+    const r = await correr(2, { "x-api-key": "clave-inventada-de-prueba" }, { BVSALA_GATEWAY_OBSERVE_ONLY: "1" });
+    expect(r.codigo, r.stderr).toBe(0);
+    expect(r.stderr).toContain("saved $0.00: observe-only mode (BVSALA_GATEWAY_OBSERVE_ONLY=1) applies no lever");
+    expect(r.stderr).not.toContain("cache TTL tuning is credited only");
   }, 30_000);
 
   it("con BVSALA_GATEWAY_LOG=1 el detalle ya está arriba: la línea no manda a repetir la ejecución", async () => {

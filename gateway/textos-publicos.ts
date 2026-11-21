@@ -52,6 +52,40 @@ export const FRASE_LA_CLAVE_SOLO_ANADE =
   "A BiVelio key only adds the cloud and switches no lever off: the free Measure license applies the same levers " +
   "as no key.";
 
+/**
+ * LA DEPENDENCIA QUE TRAE UNA CLAVE (verificación final de la 1.2.4, bloqueante 3).
+ *
+ * «La clave solo añade la nube» es cierto para las palancas, pero con una clave
+ * la capa pasa a depender de savings.bivelio.com y el README no lo contaba. Dos
+ * frases porque son dos dependencias distintas (SECURITY.md, «Availability»):
+ *
+ *  · el SDK con `licenseServerUrl` (la receta del README, de `init` y del
+ *    panel): 72 h sin respuesta confirmada → `LicenseError` `stale` en cada
+ *    llamada, hasta que vuelva a contestar o se quite la clave
+ *    (src/pipeline/create.ts `DEFAULT_MAX_STALENESS_SECONDS`; el test compara
+ *    la cifra con esa constante). Vale también para la clave gratuita Measure.
+ *  · el gateway con `BIVELIO_SERVICE_KEY`: necesita el servidor para ARRANCAR
+ *    (o un `BIVELIO_LICENSE_KEY` válido de respaldo); ya en marcha no tiene
+ *    límite de 72 h (gateway/license.ts, SECURITY.md).
+ *
+ * Sin clave no hay ninguna de las dos.
+ */
+export const FRASE_DEPENDENCIA_SDK =
+  "One dependency comes with a key, the free Measure key included: with `licenseServerUrl` set (as in the recipe " +
+  "your dashboard and `init` print), a layer that goes 72 hours without an answer from savings.bivelio.com fails " +
+  "closed with `LicenseError` on every call until it gets one or you remove the key. With no key there is no such " +
+  "dependency.";
+
+/** La del gateway (`bvsala`): el arranque, no las 72 h. */
+export const FRASE_DEPENDENCIA_GATEWAY =
+  "One dependency comes with a key, the free Measure key included: with BIVELIO_SERVICE_KEY set, the gateway needs " +
+  "savings.bivelio.com to start (or a valid BIVELIO_LICENSE_KEY as a fallback); once running it keeps serving " +
+  "without it. With no key there is no such dependency.";
+
+/** Donde se cuenta entero: SECURITY.md no viaja en el paquete, así que el enlace es absoluto. */
+export const URL_DISPONIBILIDAD =
+  "https://github.com/BiVelio/bivelio-savings-layer/blob/main/SECURITY.md#availability-what-happens-if-our-servers-do-not-respond";
+
 // ── El cartel de arranque del gateway ──────────────────────────────────────
 
 /**
@@ -72,6 +106,17 @@ export const LINEA_PALANCAS_SIN_CLAVE =
   "only acts on Anthropic API-key traffic that asks for the 1-hour cache - on a Claude or ChatGPT subscription " +
   "the default lever changes nothing and this run only measures · BVSALA_GATEWAY_ELISION=0 turns it off · opt-in: BVSALA_GATEWAY_SIBLING_MODEL=1, " +
   "BVSALA_GATEWAY_EFFORT=low|medium";
+
+/**
+ * La línea de las palancas en modo SOLO-OBSERVAR (`BVSALA_GATEWAY_OBSERVE_ONLY=1`).
+ * Sustituye a la de arriba y a las del modelo hermano y el esfuerzo: hasta la
+ * verificación final de la 1.2.4 el cartel decía «cache TTL tuning is the only
+ * one ON by default» justo encima del aviso de OBSERVE-ONLY, que no aplica ninguna.
+ */
+export const LINEA_PALANCAS_SOLO_OBSERVAR =
+  "savings levers: OBSERVE-ONLY (BVSALA_GATEWAY_OBSERVE_ONLY=1) - no lever is applied, not cache TTL tuning nor " +
+  "any opt-in one; what cache TTL tuning and the sibling model would have saved goes to the per-request " +
+  "`measure (shadow)` lines, never counted as a saving. Unset the variable to save.";
 
 /**
  * Parte una frase en líneas de `ancho` columnas como mucho, con `sangria`

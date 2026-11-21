@@ -1,4 +1,5 @@
 import {
+  FRASE_DEPENDENCIA_SDK,
   FRASE_LA_CLAVE_SOLO_ANADE,
   FRASE_PALANCAS_SDK,
   LO_QUE_ANADE_LA_NUBE,
@@ -467,7 +468,7 @@ export function planear(
   if (!d.ts && !d.esm && d.anfitrion !== "next") {
     avisos.push(
       'Your package.json has no "type": "module" and the package is ESM-only. The check is a .mjs file and runs as is; ' +
-        "from your own CommonJS files, load it with `await import(…)`, or with require() on Node ≥ 22.",
+        "from your own CommonJS files, load it with `await import(…)`, or with require() on Node 20.19+ or 22.12+.",
     );
   }
 
@@ -483,7 +484,9 @@ export function planear(
     claves.push({
       nombre: "ANTHROPIC_API_KEY",
       puesta: entorno.env("ANTHROPIC_API_KEY") || entorno.env("ANTHROPIC_AUTH_TOKEN"),
-      para: "needed even by the free check: the Anthropic SDK builds no request without credentials",
+      para:
+        "needed even by the free check: the Anthropic SDK builds no request without credentials " +
+        "(for the check any value works; nothing is sent)",
     });
   } else {
     const nombre = proveedor === "openai" ? "OPENAI_API_KEY" : "ANTHROPIC_API_KEY";
@@ -491,7 +494,8 @@ export function planear(
     // imprime un aviso con traza aunque la capa conteste (medido con 1.71.0).
     const para =
       capa === "mastra"
-        ? "your provider key; the free check works without it, but Mastra logs a warning with a stack trace"
+        ? 'your provider key; the free check works without it, but Mastra first prints a "Could not find API key" ' +
+          "warning with a stack trace you can ignore (or set it to any value)"
         : "your provider key; the free check does not need it";
     claves.push({ nombre, puesta: entorno.env(nombre), para });
   }
@@ -585,7 +589,7 @@ export function conFicheros(plan: Plan, sonda: SondaDeProyecto): Plan {
   }
   comoComprobar.push(
     "The question (2 + 2 * 3) is answered on your machine: with the layer in place the model is not called, so your provider bills nothing for it,",
-    "and the saving is `estimated`, which is never billed. Delete the check once it says ok.",
+    "and the saving is `estimated`, always shown apart from measured savings. Delete the check once it says ok.",
   );
   let compactacion = plan.compactacion;
   if (compactacion?.efectivo === "measure") {
@@ -713,7 +717,8 @@ export function textoDelPlan(plan: Plan, cabecera: string, invocacion: string, o
     ...enLineas(FRASE_PALANCAS_SDK, 112, "  "),
     ...enLineas(
       `The BiVelio keys (https://savings.bivelio.com/dashboard/install) add ${LO_QUE_ANADE_LA_NUBE}. ` +
-        `${FRASE_LA_CLAVE_SOLO_ANADE} To only observe, without changing any request: \`${OPCION_SDK_SOLO_OBSERVAR}: true\`.`,
+        `${FRASE_LA_CLAVE_SOLO_ANADE} ${FRASE_DEPENDENCIA_SDK} ` +
+        `To only observe, without changing any request: \`${OPCION_SDK_SOLO_OBSERVAR}: true\`.`,
       112,
       "  ",
     ),

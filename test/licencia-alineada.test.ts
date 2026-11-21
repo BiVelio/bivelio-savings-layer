@@ -379,8 +379,11 @@ describe("el README que viaja a npm promete lo que se cobra", () => {
   });
 
   it("remite a la LICENSE-CLOUD.md para la lista de campos y para las tarifas", () => {
-    expect(readme).toMatch(/LICENSE-CLOUD\.md\]\(\.\/LICENSE-CLOUD\.md\) §5/);
-    expect(readme).toMatch(/LICENSE-CLOUD\.md\]\(\.\/LICENSE-CLOUD\.md\) §6/);
+    // Enlace ABSOLUTO a GitHub (verificación final de la 1.2.4): npmjs.com no
+    // garantiza reescribir uno relativo, y son los términos que se aceptan.
+    const enlace = "LICENSE-CLOUD.md](https://github.com/BiVelio/bivelio-savings-layer/blob/main/LICENSE-CLOUD.md)";
+    expect(readme).toContain(`${enlace} §5`);
+    expect(readme).toContain(`${enlace} §6`);
   });
 });
 

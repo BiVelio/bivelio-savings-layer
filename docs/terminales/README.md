@@ -21,14 +21,20 @@ the summary on exit and the local `/_bvsala` routes—.
 Every gateway lever is free, with no key; one is on by default (cache TTL tuning) and the others you switch on.
 `BIVELIO_SERVICE_KEY` (optional) only adds the cloud: the dashboard and license
 collection. It switches no lever off: the free Measure license applies the same
-levers as no key. A license that is PRESENT but expired or revoked only
-refuses NEW requests with an HTTP 402 until it is renewed, never one in flight.
+levers as no key. One dependency comes with a key, the free Measure key included:
+with BIVELIO_SERVICE_KEY set, the gateway needs savings.bivelio.com to start (or a
+valid BIVELIO_LICENSE_KEY as a fallback); once running it keeps serving without it.
+With no key there is no such dependency. A license that is PRESENT but expired or
+revoked only refuses NEW requests with an HTTP 402 until it is renewed (or until you
+unset the keys and relaunch, free in Community mode), never one in flight.
 Metering is best-effort: with ingestion down, it forwards and warns.
 
 It measures every request with the provider's own counter. The **default
-lever**: it lowers the cache-write TTL while the session stays warm — it changes
-the rate, never the content the model reads. It only has something to lower when
-the client pays per token and asks for the one-hour cache: Claude Code on an API
+lever** lowers the cache-write TTL from one hour to five minutes only on turns
+where a large part of the prompt is new (at least 30 % of the request body: a
+session's first turn, a compaction) and leaves chained turns as they are — it
+changes the rate, never the content the model reads. It only has something to
+lower when the client pays per token and asks for the one-hour cache: Claude Code on an API
 key asks for the five-minute one unless you set `promptCacheTtl` to `1h`, so out
 of the box the gateway only measures. The others (sibling model, per-turn
 effort) stay off until you turn them on. And it measures **all the inference
@@ -83,7 +89,7 @@ saved.** Inside a wrapper the per-request log stays silent so that it does not
 write over the TUI, so when it finishes it prints a line like these to stderr:
 
 ```
-[bvsala claude] metering in this run: 16 inference request(s) went through the gateway · 16 request(s) metered with the provider's usage · spent $1.84 at list-price equivalent (subscription traffic: there is no per-token invoice) · saved $0.00: on a subscription the gateway only measures and changes nothing. Per-request detail: run it again with BVSALA_GATEWAY_LOG=1 (one line per request, on stderr).
+[bvsala claude] metering in this run: 16 inference request(s) went through the gateway · 16 request(s) metered with the provider's usage · spent $1.84 at list-price equivalent (subscription traffic: there is no per-token invoice) · saved $0.00: no saving is credited on a subscription (there is no per-token invoice); with the defaults the gateway changes nothing there. Per-request detail: run it again with BVSALA_GATEWAY_LOG=1 (one line per request, on stderr).
 [bvsala copilot] metering in this run: 41 request(s) metered with the provider's usage · spent $0.9312 at list price · saved $0.0410 (measured) · 3 forwarded but NOT metered (nothing is estimated in their place): 3 × the request did not ask for usage (stream_options.include_usage). What each reason means and what to do: docs/terminales/README.md. Per-request detail: run it again with BVSALA_GATEWAY_LOG=1 (one line per request, on stderr).
 ```
 
@@ -121,7 +127,7 @@ On startup it prints, among others, these lines:
 [bvsala gateway] v1.2.x listening on http://127.0.0.1:8402 → https://api.anthropic.com
 [bvsala gateway] COMMUNITY MODE (open core): no BiVelio keys set - free, zero telemetry, nothing sent to BiVelio
 [bvsala gateway] metering: LOCAL ONLY (community mode, no BiVelio service key): every request is measured on this machine with the provider's usage and nothing is sent to BiVelio · per-request reports with x-bvsala-report
-[bvsala gateway] savings levers (community mode: free, no key needed): cache TTL tuning is the only one ON by default and it only acts on Anthropic API-key traffic that asks for the 1-hour cache - on a Claude or ChatGPT subscription the default lever changes nothing and this run only measures · BVSALA_GATEWAY_ELISION=0 turns it off · opt-in: BVSALA_GATEWAY_SIBLING_MODEL=1, BVSALA_GATEWAY_EFFORT=low|medium · context elision dials OFF
+[bvsala gateway] savings levers (community mode: free, no key needed): cache TTL tuning is the only one ON by default and it only acts on Anthropic API-key traffic that asks for the 1-hour cache - on a Claude or ChatGPT subscription the default lever changes nothing and this run only measures · BVSALA_GATEWAY_ELISION=0 turns it off · opt-in: BVSALA_GATEWAY_SIBLING_MODEL=1, BVSALA_GATEWAY_EFFORT=low|medium · context elision dials OFF (BVSALA_GATEWAY_DIALES_ELISION=1 turns them on)
 ```
 
 With `BIVELIO_SERVICE_KEY` the license is collected automatically (a `license:
