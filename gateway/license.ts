@@ -490,7 +490,7 @@ export async function resolveStartupLicense(input: StartupInput): Promise<Startu
       license: null,
       source: "community",
       status: "active",
-      line: "COMMUNITY MODE (open core): every local saving lever on, zero telemetry - no BiVelio keys set",
+      line: "COMMUNITY MODE (open core): free, zero telemetry - no BiVelio keys set",
       lineIsWarning: false,
       warnings: [],
     };

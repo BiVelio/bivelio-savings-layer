@@ -132,7 +132,7 @@ export interface SavingsLayer {
  * XGrammar/llguidance backends, etc.).
  *
  * Open core: no `licenseKey` is needed. Without one the layer runs on the
- * COMMUNITY gate — every local saving lever on, zero telemetry, zero network.
+ * COMMUNITY gate — free, zero telemetry, zero network.
  * A `licenseKey` (from savings.bivelio.com) turns on the paid surfaces: cloud
  * metering, license renewal/revocation and org entitlements. An INVALID or
  * EXPIRED key still fails closed with {@link LicenseError}; only its absence is

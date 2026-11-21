@@ -320,11 +320,22 @@ describe("pasarela con licencia Medir · ahorra igual que el modo comunitario", 
 
   it("el cartel de arranque dice lo que pasa ahora (palancas encendidas), no «SHADOW mode»", async () => {
     const { AVISO_GATEWAY_MEDIR, AVISO_GATEWAY_SOLO_OBSERVAR } = await import("../gateway/servidor.js");
-    expect(AVISO_GATEWAY_MEDIR).toContain("every local saving lever is on");
+    expect(AVISO_GATEWAY_MEDIR).toContain("the same levers as with no BiVelio keys apply");
+    // No todas las palancas van encendidas por defecto: el cartel no puede decirlo (revisión de #612).
+    expect(AVISO_GATEWAY_MEDIR).not.toMatch(/every (local )?(saving )?lever/i);
     expect(AVISO_GATEWAY_MEDIR).toContain("BVSALA_GATEWAY_OBSERVE_ONLY=1");
     expect(AVISO_GATEWAY_MEDIR).not.toMatch(/SHADOW|byte for byte|upgrade/);
     expect(AVISO_GATEWAY_SOLO_OBSERVAR).toContain("OBSERVE-ONLY");
     expect(AVISO_GATEWAY_SOLO_OBSERVAR).toContain("byte for byte");
+  });
+
+  it("el JSDoc publicado de createSavingsLayer (viaja en dist/index.d.ts) no dice «every local saving lever on»", async () => {
+    // Revisión de #612: no todas las palancas van encendidas por defecto, así que
+    // ningún texto que viaja al cliente puede afirmarlo.
+    const { readFileSync } = await import("node:fs");
+    const fuente = readFileSync(new URL("../src/pipeline/create.ts", import.meta.url), "utf8");
+    expect(fuente).toContain("COMMUNITY gate — free, zero telemetry, zero network.");
+    expect(fuente).not.toMatch(/every local saving lever on/);
   });
 
   it("una org Medir BLOQUEADA por el control plane se sigue cortando con 402 (el canal de org no se ha soltado)", async () => {

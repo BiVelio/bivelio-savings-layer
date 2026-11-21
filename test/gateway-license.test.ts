@@ -108,6 +108,8 @@ describe("resolveStartupLicense — el arranque, en orden estricto", () => {
       const r = await arrancar({ serviceAccountKey, fetchImpl: f as unknown as typeof fetch });
       expect(r).toMatchObject({ ok: true, source: "community", license: null, status: "active" });
       expect(r.ok && r.line).toContain("COMMUNITY MODE");
+      // No todas las palancas van encendidas por defecto: la línea no lo afirma (revisión de #612).
+      expect(r.ok && r.line).toBe("COMMUNITY MODE (open core): free, zero telemetry - no BiVelio keys set");
       expect(llamadas(f)).toHaveLength(0);
     }
     // El fail-closed que queda: una clave PRESENTE pero inválida.

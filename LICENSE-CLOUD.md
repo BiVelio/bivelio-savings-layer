@@ -7,7 +7,7 @@ published under the Apache License, Version 2.0 (see LICENSE): the SDK, the loca
 gateway and the whole savings engine run without any key, in COMMUNITY mode, with
 zero telemetry. These Cloud Services Terms (the "Agreement") govern only the
 OPTIONAL paid cloud: the BiVelio dashboard, cloud metering, organization
-entitlements, shared caches, license management and support (the "Cloud
+entitlements, license management and support (the "Cloud
 Services"), which require an active BiVelio subscription and a valid license key
 ("License Key"). By configuring a BiVelio key, you agree to this Agreement. If
 you do not agree, do not configure a key; the open-source package keeps working

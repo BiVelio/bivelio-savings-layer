@@ -102,7 +102,7 @@ import { BV_SALA_VERSION } from "../src/version.js";
  * ahorra igual que el modo comunitario, y el cartel dice eso.
  */
 export const AVISO_GATEWAY_MEDIR =
-  "[bvsala gateway] Measure license (free): every local saving lever is on, exactly as with no BiVelio keys, " +
+  "[bvsala gateway] Measure license (free): the same levers as with no BiVelio keys apply, " +
   "and your usage and real savings are metered to your dashboard. Measure never bills anything. " +
   "To only observe without touching traffic, set BVSALA_GATEWAY_OBSERVE_ONLY=1.";
 
