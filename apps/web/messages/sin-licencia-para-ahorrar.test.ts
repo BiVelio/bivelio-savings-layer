@@ -95,7 +95,7 @@ describe("sin clave, el gasto de Claude Code no aparece en el panel", () => {
   });
 
   it("el código sigue diciendo al salir cuántas peticiones midió en local (si esto cambia, hay que reescribir la tarjeta)", () => {
-    expect(readFileSync(join(RAIZ, "gateway", "bin.ts"), "utf8")).toContain("resumenDeMedicion(arranque.medicion(), comando)");
+    expect(readFileSync(join(RAIZ, "gateway", "bin.ts"), "utf8")).toContain("resumenDeMedicion(arranque.medicion(), comando,");
     expect(readFileSync(join(RAIZ, "gateway", "recuento.ts"), "utf8")).toContain("request(s) metered with the provider's usage");
   });
 
