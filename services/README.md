@@ -20,7 +20,7 @@ lives only here; the SDK embeds the public key to verify **offline**.
 GET  /health
 GET  /public-key                     → { publicKey }              (embed in the SDK)
 POST /licenses/issue                 { orgId, plan, seats, features, termDays?, graceDays? } → { token, payload }
-POST /licenses/issue-measure         { orgId } → { token, payload }   (free «Measure» license: shadow mode, no features)
+POST /licenses/issue-measure         { orgId } → { token, payload }   (free «Measure» license: empty feature list; levers act as with no key)
 POST /licenses/validate              { token } → { status, entitlements }
 POST /licenses/revoke                { jti }   → { revoked: true }
 ```

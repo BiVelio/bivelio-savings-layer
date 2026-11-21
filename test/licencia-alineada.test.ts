@@ -456,4 +456,17 @@ describe("⛔ nada de lo que viaja en el tarball vuelve a «solo cuentas y coste
     expect(bin).toMatch(/Your prompts, completions and provider keys never reach BiVelio/);
     expect(bin).toMatch(/LICENSE-CLOUD\.md §5 lists every field/);
   });
+
+  it("ni LICENSE-CLOUD.md ni NOTICE cuentan «shared caches» entre los servicios de la nube: no existen", () => {
+    // Decisión del dueño (21-11-2026, revisión de #612): la nube es panel,
+    // medición, entitlements de la organización y gestión de licencias. Una
+    // licencia que enumera un servicio que no hay promete de más.
+    for (const [nombre, texto] of [["LICENSE-CLOUD.md", licencia], ["NOTICE", leer("../NOTICE")]] as const) {
+      expect(plano(texto), nombre).not.toMatch(/shared caches?/i);
+    }
+    expect(plano(licencia)).toContain(
+      "the BiVelio dashboard, cloud metering, organization entitlements, license management and support (the \"Cloud Services\")",
+    );
+    expect(plano(leer("../NOTICE"))).toContain("(dashboard, metering, organization entitlements, license management)");
+  });
 });

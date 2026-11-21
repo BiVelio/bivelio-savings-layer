@@ -10,12 +10,14 @@
 /**
  * Commercial plans. `free` is the self-hosted, locally-capped tier.
  *
- * `measure` («Medir») es la licencia GRATUITA y PERMANENTE, sin tarjeta: el SDK
- * y la pasarela funcionan EN SOMBRA —calculan lo que habrían ahorrado— y NINGUNA
- * palanca se aplica: la petición del cliente sale intacta al proveedor y nada se
- * sirve de caché. Sigue siendo una licencia firmada y verificada offline, así que
- * el fail-closed no cambia: sin clave, no hay capa. Se pasa a pago para activar
- * palancas. Ver {@link MEASURE_PLAN} y {@link MEASURE_LIMITS}.
+ * `measure` («Medir») es la licencia GRATUITA y PERMANENTE, sin tarjeta: el plan
+ * gratuito de la NUBE. Desde la 1.2.4 el SDK y la pasarela aplican con ella las
+ * mismas palancas que sin clave (open core) y el panel enseña el ahorro real;
+ * hasta la 1.2.3 funcionaban EN SOMBRA (ninguna palanca), y esas versiones lo
+ * siguen haciendo con el mismo token. La sombra es hoy una opción explícita
+ * (`observeOnly`), en cualquier plan. Sigue siendo una licencia firmada y
+ * verificada offline. Nunca genera comisión. Ver {@link MEASURE_PLAN} y
+ * {@link MEASURE_LIMITS}.
  */
 export type Plan = "free" | "measure" | "pro" | "team" | "enterprise";
 
@@ -31,8 +33,8 @@ export const MEASURE_PLAN = "measure" as const satisfies Plan;
  *    acepta por mes natural. 5 = un equipo piloto real (un responsable y unos
  *    pocos desarrolladores o servicios), suficiente para una medición
  *    representativa y por debajo de cualquier despliegue de producción de más
- *    de un equipo. Pasado el tope, la capa sigue funcionando (en sombra no hay
- *    nada que quitarle) y lo que deja de pasar es la MEDICIÓN de esos asientos.
+ *    de un equipo. Pasado el tope, la capa sigue funcionando y ahorrando (las
+ *    palancas son locales) y lo que deja de pasar es la MEDICIÓN de esos asientos.
  *  · `orgsPerAccount`: organizaciones con licencia Medir por cuenta verificada.
  *  · `dailyRequests`: peticiones ingeridas por organización y día (UTC). Acota
  *    el coste de servir un panel gratis a quien lo use como observabilidad de

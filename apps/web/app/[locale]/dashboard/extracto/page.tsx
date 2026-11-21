@@ -181,8 +181,9 @@ export default async function ExtractoPage() {
   // precio publicado lista con ella. La vista no afirma ni lo uno ni lo otro:
   // pinta el aviso neutro (lo que se cobra es lo que figura en las facturas).
   // «medir»: sin plan vivo, pero con la licencia gratuita Measure (`ctx.medir`,
-  // ver ../medir.ts). Modo sombra: ahorro ESTIMADO, que nunca se factura ni
-  // entra en comisión alguna (LICENSE-CLOUD §1).
+  // ver ../medir.ts). Desde la 1.2.4 su ahorro es REAL (Measure aplica las
+  // palancas), y nunca se factura ni entra en comisión alguna (LICENSE-CLOUD §1;
+  // el cierre la marca exenta: lib/billing/plan-de-la-org.ts).
   const conSuscripcion = ctx.subscription != null && ESTADOS_CON_PLAN.includes(ctx.subscription.status);
   const regimenBase: "fija" | "exenta" | "legado" | "ninguno" | "indeterminado" = lecturaFallida
     ? "indeterminado"
@@ -200,7 +201,9 @@ export default async function ExtractoPage() {
               ? "indeterminado"
               : "ninguno";
   const regimen: RegimenDelExtracto = regimenBase === "ninguno" && ctx.medir === "solo-medir" ? "medir" : regimenBase;
-  const e = extractoEnSombra("panel", usage, periodo, esExento);
+  // En Measure la simulación se calcula como la de una cuenta EXENTA: con ahorro
+  // real, la cabecera diría «cargo 12 €» a quien no se le cobra nada, nunca.
+  const e = extractoEnSombra("panel", usage, periodo, esExento || regimen === "medir");
   const cerrados = orgId ? await periodosCerrados(orgId) : [];
 
   return (

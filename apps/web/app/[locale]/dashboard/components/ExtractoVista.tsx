@@ -342,7 +342,7 @@ export async function ExtractoVista({
                 {t("extracto.simulacionTitulo")}
               </span>
               {/* «No se aplica» solo se afirma cuando se SABE (cuota fija o
-                  exenta). En Measure es una estimación que nunca se factura;
+                  exenta). En Measure es una simulación que nunca se factura;
                   sin poder confirmar la modalidad, puede aplicarse según el
                   contrato. */}
               <span className="pcu-sim-nota">

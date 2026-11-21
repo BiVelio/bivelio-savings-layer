@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { ahorroEnSombra, estadoMedir } from "./medir";
+import { ahorroEnSombra, ahorroRealDeMedir, estadoMedir } from "./medir";
 import type { UsageRollup } from "./data";
 
 const AHORA = Date.UTC(2026, 8, 29);
@@ -37,5 +37,38 @@ describe("ahorroEnSombra", () => {
   });
   it("sin columnas sombra: null («no disponible»), nunca 0", () => {
     expect(ahorroEnSombra([fila({})]).habriasAhorradoUsd).toBeNull();
+  });
+});
+
+// 1.2.4 · Medir ahorra de verdad: la tarjeta enseña el ahorro REAL, y la sombra aparte.
+describe("ahorroRealDeMedir", () => {
+  const fila = (o: Partial<UsageRollup>): UsageRollup =>
+    ({ day: "2026-11-21", requests: 10, actualCost: 1, baselineCost: 1, ...o }) as UsageRollup;
+
+  it("separa lo MEDIDO (contador del proveedor) de lo estimado (llamadas evitadas), sin sumarlos", () => {
+    const r = ahorroRealDeMedir([
+      // 3 $ de base, 1 $ pagado: 1,5 $ medidos con contador + 0,5 $ de llamadas evitadas.
+      fila({ baselineCost: 3, actualCost: 1, measuredBaselineCost: 2.5, measuredActualCost: 1 }),
+    ]);
+    expect(r.medidoUsd).toBeCloseTo(1.5, 10);
+    expect(r.estimadoUsd).toBeCloseTo(0.5, 10);
+    expect(r.hay).toBe(true);
+  });
+
+  it("un cliente ≤ 1.2.3 en sombra (baseline == actual) no tiene ahorro real, aunque tenga sombra", () => {
+    const uso = [fila({ baselineCost: 1, actualCost: 1, measuredBaselineCost: 1, measuredActualCost: 1, shadowBaselineCost: 0.4, shadowActualCost: 0 })];
+    expect(ahorroRealDeMedir(uso)).toEqual({ medidoUsd: 0, estimadoUsd: 0, hay: false });
+    expect(ahorroEnSombra(uso).habriasAhorradoUsd).toBeCloseTo(0.4, 10);
+  });
+
+  it("la sombra NUNCA entra en el ahorro real", () => {
+    const r = ahorroRealDeMedir([fila({ baselineCost: 2, actualCost: 1, shadowBaselineCost: 50, shadowActualCost: 0 })]);
+    expect(r.medidoUsd).toBe(0);
+    expect(r.estimadoUsd).toBeCloseTo(1, 10);
+  });
+
+  it("sin uso, o con ruido de coma flotante, no hay nada que enseñar", () => {
+    expect(ahorroRealDeMedir([]).hay).toBe(false);
+    expect(ahorroRealDeMedir([fila({ baselineCost: 1.000000001, actualCost: 1 })]).hay).toBe(false);
   });
 });
