@@ -34,17 +34,50 @@
   `BVSALA_GATEWAY_ELISION=0` still turns them all off, and a blocked, expired or
   revoked license still answers 402. The startup lines say "free on every plan"
   instead of "ON if your organization's licence includes …; fail-closed".
+- **A system prompt that changes…» hasta «…the console warning says so.», ambos incluidos).
+
+2) AÑADE el de la elisión (no existe todavía en la entrada 1.2.4).
+
+Cifras: proveedor falso que caduca la caché (5 min; una lectura renueva) y reloj simulado,
+coste con capa frente a sin capa, 1.2.3 (tarball de npm) → esta rama. Ver gate-medir/.
+-->
+
 - **A system prompt that changes on every request stops paying the cache-write
-  premium.** With a value that changes on every request inside the system prompt
-  (the current time, for example), 1.2.3 marked the prefix for provider caching on
-  every Anthropic request and never read it back: in a run of 60 such requests all
-  60 were marked, +21.6 % against not using the layer. The prefix-cache gate now also counts per class of request (model,
-  tools and placement) when per-request content is
-  detected in the system prompt: 8 of 60 are marked, +2.9 %, and it re-checks only
-  occasionally afterwards. Sessions that each have their own stable system prompt
-  are marked as in 1.2.3. To get the cache discount on such a prompt, put the
-  changing value on a line of its own and set `savings.cachePrefix: true`, or move
-  it to the end of the prompt; the console warning says so.
+  premium once the layer has seen it does not come back.** With a value that
+  changes on every request inside the system prompt (the current time in any
+  format, a request ID, a per-request UUID), 1.2.3 marked the prefix for provider
+  caching on every Anthropic request and never read it back: +21 % against not
+  using the layer. The prefix-cache gate now watches, without marking anything,
+  whether each system header (tools plus system prompt) is sent again before its
+  cache entry expires (5 minutes, or 1 hour for a one-hour write). Once at least
+  90 % of the recent headers for a model and tool set have expired without coming
+  back, it stops marking headers it has not seen before; a header that is sent
+  again is marked as in 1.2.3, and new headers are marked again as soon as headers
+  start coming back. Measured over 600 requests with a fake provider that expires
+  its cache: one every 2 seconds with the time to the second, +21.0 % → +5.8 %;
+  one a minute with "10:42 AM", +21.0 % → +0.7 %; one a second with a UUID v7 or a
+  request ID, +21.0 % → +11.0 %. Until the first headers have had time to expire
+  the layer marks exactly as 1.2.3 did, so a short run of such requests costs what
+  it did in 1.2.3. A session ID, today's date or a customer number in the system
+  prompt comes back on the next turn, before its cache entry expires, so those
+  conversations are marked as in 1.2.3. To get the cache discount on such a
+  prompt, move the changing value out of the system prompt (into the user turn),
+  or write it as an ISO 8601 timestamp, Unix epoch or UUID v4 on a line of its
+  own and set `savings.cachePrefix: true` (that option only moves values it
+  recognises); the console warning says so.
+
+- **Tool-result elision no longer replaces an old result when that would break a
+  prompt cache the provider is already reading.** Replacing an old tool result
+  with a stub changes the middle of the history, so everything after it is billed
+  again at full price. On models that cache the whole prompt automatically and
+  bill cached input at 10–25 % (gpt-5, gpt-4.1 and the o series), and with
+  `cacheBreakpoints: "auto"` on Anthropic, which places cache points inside the
+  history, elision now leaves the history untouched and the `elision` trace says
+  why. Measured on a 60-step agent loop with a fake provider: gpt-5 goes from
+  +12.2 % to 0 % against not using the layer, and Anthropic with `"auto"` from
+  −71.5 % to −84.4 %. Without a key this already happened in 1.2.3; since every
+  plan now elides, it would have reached Pro, Team, Enterprise and Measure too.
+  gpt-4o-mini and Anthropic with the default placement elide as before.
 - **`bvsala` shows the money when it exits.** The exit summary of the terminal
   wrappers adds the spend at list price and the saving by basis (measured, by
   reference, estimated). When nothing was saved it says why: on a subscription no
@@ -67,6 +100,11 @@
   answers 503 without storing the batch. The SDK and the gateway re-queue a batch
   on any 5xx (up to 1,000 records per process; beyond that the oldest are dropped),
   so a short outage loses no usage; it arrives on the next flush.
+- **Commission is billed only to organizations on a commission plan.** The monthly
+  billing run now invoices commission only when the organization had a subscription
+  on a commission-plan price in the billed period; Measure, Pro and Team are never
+  billed a commission, and any other case is held for manual review instead of
+  being invoiced.
 
 ### Fixed
 
