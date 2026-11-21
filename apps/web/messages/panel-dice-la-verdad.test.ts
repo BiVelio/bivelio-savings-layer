@@ -110,17 +110,23 @@ describe("el panel no promete lo que no hay", () => {
         "On by default: exact cache, deduplication, local resolvers, provider cache placement and trimming of superseded tool results; the rest you switch on.",
       );
     }
-    expect(en["dashboard.measurePlan.keyLabel"]).toContain("the same levers as with no key, one exception in the README");
-    // 1.2.4 · con clave el recorte de resultados sustituidos solo actúa en el bucle
-    // de herramientas de Anthropic (decisión del dueño): el panel no dice «las
-    // mismas palancas» sin la excepción (verificación 4).
-    expect(en["dashboard.measurePlan.card.empty"]).toContain(
-      "Measure applies the same levers as with no key, except trimming of superseded tool results outside an Anthropic tool loop.",
-    );
+    // 1.2.4 · decisión del dueño (21-11-2026, 21:45 UTC): Measure aplica
+    // EXACTAMENTE las mismas palancas que sin clave, también el recorte de
+    // resultados de herramientas; la excepción del recorte es solo de las
+    // licencias de pago, y el panel de Measure no la menciona.
+    expect(en["dashboard.measurePlan.keyLabel"]).toContain("(free: exactly the same levers as with no key)");
+    expect(en["dashboard.measurePlan.card.empty"]).toContain("Measure applies exactly the same levers as with no key.");
     expect(en["dashboard.measurePlan.body"]).toContain(
-      "the layer applies the same levers as with no key, except that trimming of superseded tool results only acts inside a tool loop on Anthropic",
+      "the layer applies exactly the same levers as with no key, and your dashboard shows the real savings.",
     );
     expect(en["dashboard.measurePlan.body"]).not.toContain("saves exactly as it does with no key");
+  });
+
+  it.each(LOCALES)("%s · el plan Measure no lleva la excepción del recorte (es solo de las licencias de pago)", (loc) => {
+    const t = cargar(loc);
+    for (const k of ["dashboard.measurePlan.body", "dashboard.measurePlan.keyLabel", "dashboard.measurePlan.card.empty"]) {
+      expect(t[k], `${loc} ${k}`).not.toMatch(/Anthropic|README/);
+    }
   });
 
   it("en · Measure no se describe como modo sombra: la sombra es la excepción, nombrada como tal", () => {

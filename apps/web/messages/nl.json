@@ -1200,10 +1200,10 @@
     },
     "measurePlan": {
       "title": "Of begin gratis: de Measure-licentie, zonder kaart",
-      "body": "Het gratis cloudplan voor 1 organisatie en tot {seats} plaatsen: de laag past dezelfde hefbomen toe als zonder sleutel, behalve dat het inkorten van achterhaalde toolresultaten alleen binnen een toollus op Anthropic werkt, en je dashboard toont de echte besparing. Nooit gefactureerd, geen commissie.",
+      "body": "Het gratis cloudplan voor 1 organisatie en tot {seats} plaatsen: de laag past precies dezelfde hefbomen toe als zonder sleutel, en je dashboard toont de echte besparing. Nooit gefactureerd, geen commissie.",
       "claim": "Mijn gratis Measure-licentie ophalen",
       "claiming": "Bezig met uitgeven…",
-      "keyLabel": "Je Measure-licentiesleutel (gratis: dezelfde hefbomen als zonder sleutel, één uitzondering staat in de README)",
+      "keyLabel": "Je Measure-licentiesleutel (gratis: precies dezelfde hefbomen als zonder sleutel)",
       "keyHint": "Gebruik hem als BIVELIO_LICENSE_KEY, precies zoals een betaalde sleutel. Als je upgradet, haalt de laag de betaalde licentie zelf op.",
       "errEmailNotVerified": "Bevestig eerst je e-mailadres en probeer het dan opnieuw.",
       "errDisposableEmail": "Wegwerp-e-mailadressen kunnen de Measure-licentie niet aanvragen. Registreer je met een vast adres (bijvoorbeeld je werkadres) en probeer het opnieuw.",
@@ -1225,7 +1225,7 @@
         "shadowTitle": "Wat je zou hebben bespaard",
         "amount": "{amount} die je niet zou hebben uitgegeven",
         "context": "Hypothetisch, en los van je echte besparing. Het komt van machines die alleen observeren (alleen-observeren-modus, of een oudere client met een Measure-sleutel), gewaardeerd met de teller van je eigen provider. Werk die machines bij, of zet de alleen-observeren-modus uit, om het echt te besparen. Er wordt niets gefactureerd.",
-        "empty": "Nog geen besparing: die verschijnt zodra je laag een aanroep vermijdt of goedkoper maakt. Measure past dezelfde hefbomen toe als zonder sleutel, behalve het inkorten van achterhaalde toolresultaten buiten een toollus op Anthropic.",
+        "empty": "Nog geen besparing: die verschijnt zodra je laag een aanroep vermijdt of goedkoper maakt. Measure past precies dezelfde hefbomen toe als zonder sleutel.",
         "limits": "Gratis voor 1 organisatie, tot {seats} plaatsen en {requests} verzoeken per dag.",
         "cta": "Meer plaatsen of volume nodig? Bekijk de plannen"
       }

@@ -35,9 +35,10 @@ npx @bivelio/savings-layer claude    # or meter Claude Code through the local ga
   telemetry, and nothing is sent to BiVelio.
 - **The cloud is the optional part.** A BiVelio key adds the team dashboard, shared
   measurement, seats and license management: free on Measure, a fixed subscription on
-  Pro and Team, and never a commission on what you save. A key only adds the cloud
-  (with two exceptions: trimming of superseded tool results in the SDK, and paid
-  licenses in the gateway, which work as in 1.2.3), and it ties the layer
+  Pro and Team, and never a commission on what you save. A key only adds the cloud:
+  the free Measure license applies exactly the same levers as no key (paid licenses
+  have two exceptions: trimming of superseded tool results in the SDK, and the
+  gateway, which works as in 1.2.3), and a key ties the layer
   to savings.bivelio.com (see [Community vs Cloud](#community-vs-cloud)). Prices below.
 - **The evidence is public.** [The paper](https://savings.bivelio.com/paper) (v2.3-r1,
   revised after an external pre-publication review) gives the method, the results and
@@ -60,8 +61,7 @@ tool-output and context compaction, the model cascade, the cacheable-prefix reor
 (`savings.cachePrefix`) and the rest of
 [the optional levers](#optional-levers-and-integrations). The package ships no
 compressor: compaction is a lossless rewrite of JSON tool outputs that runs only when you
-switch it on, and no compression figure is published. In the local gateway:
-Every gateway lever is free, with no key; one is on by default (cache TTL tuning) and the others you switch on.
+switch it on, and no compression figure is published. In the local gateway, every gateway lever is free, with no key; one is on by default (cache TTL tuning) and the others you switch on.
 
 How much it saves depends on your traffic. Identical or simultaneous requests are not
 paid twice, and a long, stable system prompt on Anthropic is billed at the cached rate.
@@ -166,8 +166,8 @@ reports, is at **[savings.bivelio.com/en/benchmarks](https://savings.bivelio.com
 | Team dashboard, shared measurement, seats and license management | — | ✅ |
 | Anything sent to BiVelio | **Nothing** | Per-request usage only (counts, cost, model id, opaque ids — [LICENSE-CLOUD.md](https://github.com/BiVelio/bivelio-savings-layer/blob/main/LICENSE-CLOUD.md) §5), never prompts or keys |
 
-Both columns have the same levers. In the SDK, a BiVelio key only adds the cloud: the free Measure license and a paid one apply the same levers as no key, except trimming of superseded tool results, which with a key only acts inside a tool loop on Anthropic.
-With a key, that trimming acts with `AnthropicProvider` and the default cache placement, never with `cacheBreakpoints: "auto"` or `AnthropicProvider({ automaticCache: true })`, and only on results after your last user message; with any other provider (Claude through an OpenAI-compatible endpoint included) it stays off, as in 1.2.3 with a paid key. With no key that trimming runs as in 1.2.3: on a long agent loop on gpt-5, Gemini, DeepSeek or Qwen, or with `cacheBreakpoints: "auto"` or `automaticCache`, or on Anthropic in a chat that re-reads the same tool output on every user turn, compare with `savings: { elision: false }`.
+Both columns have the same levers. In the SDK, a BiVelio key only adds the cloud: the free Measure license applies exactly the same levers as no key. A paid license (Pro, Team, Enterprise) does too, except trimming of superseded tool results, which with a paid license only acts inside a tool loop on Anthropic.
+With a paid license, that trimming acts with `AnthropicProvider` and the default cache placement, never with `cacheBreakpoints: "auto"` or `AnthropicProvider({ automaticCache: true })`, and only on results after your last user message; with any other provider (Claude through an OpenAI-compatible endpoint included) it stays off, as in 1.2.3 with a paid key. With no key and with Measure that trimming runs as in 1.2.3: on a long agent loop on gpt-5, Gemini, DeepSeek or Qwen, or with `cacheBreakpoints: "auto"` or `automaticCache`, or on Anthropic in a chat that re-reads the same tool output on every user turn, compare with `savings: { elision: false }`.
 In the `bvsala` gateway the free Measure license applies the same levers as no key, and a paid license works as in 1.2.3: each lever also needs your organization's license to include it, checked fail-closed.
 One dependency comes with a key, the free Measure key included: with `licenseServerUrl` set (as in the recipe your dashboard and `init` print), a layer that goes 72 hours without an answer from savings.bivelio.com fails closed with `LicenseError` on every call until it gets one or you remove the key. With no key there is no such dependency.
 What the gateway needs instead, and every timeout: [SECURITY.md, Availability](https://github.com/BiVelio/bivelio-savings-layer/blob/main/SECURITY.md#availability-what-happens-if-our-servers-do-not-respond).
@@ -191,9 +191,8 @@ save (see [LICENSE-CLOUD.md](https://github.com/BiVelio/bivelio-savings-layer/bl
 
 The cloud subscription is a fixed fee, paid whether or not you save: **Pro
 €15 / seat / month** or **€150 / seat / year**; **Team €129 / month with 10 seats included** (**€12 per extra seat**; **€1,290 / year, €120 per extra seat**), EUR, VAT not included. **No commission on your savings — you keep every euro you save.** No trial. The free
-**Measure** license (no card) is the free cloud plan: the layer applies the same
-levers as with no key, except that trimming of superseded tool results only acts
-inside a tool loop on Anthropic, and your dashboard shows the real savings. It is
+**Measure** license (no card) is the free cloud plan: the layer applies exactly the
+same levers as with no key, and your dashboard shows the real savings. It is
 never billed and never part of any commission.
 
 **Legacy plans, closed to new customers.** An earlier modality charged a lower per-seat fee plus a tiered commission on measured savings only: the first month carries no commission, and the commission runs from **10 % down to 4 %** by volume — keeping you **at least 90 % of every euro saved**, never from estimates, and shadow-mode usage was never part of any commission. It is closed to new customers; a subscription already on it keeps it unchanged. Your
@@ -213,8 +212,7 @@ your savings. The prices are above, in [LICENSE-CLOUD.md](https://github.com/BiV
 the Published Pricing it refers to,
 **[savings.bivelio.com/pricing](https://savings.bivelio.com/pricing)**. No trial. There is one free license,
 **Measure** — no card, one organization per verified account, up to 5 seats and 20,000
-requests a day: the layer applies the same levers as with no key, except that
-trimming of superseded tool results only acts inside a tool loop on Anthropic, and your
+requests a day: the layer applies exactly the same levers as with no key, and your
 dashboard shows the real savings — never billed, never part of any commission. What a paid
 plan adds is the cloud beyond those limits (more seats and more volume), not the saving.
 This is new in 1.2.4: up to 1.2.3 a Measure key ran the layer in shadow mode, so update
@@ -433,7 +431,8 @@ from the measured figures — the SDK warns once when the tokenizer is missing.
 **2 · The cloud (optional)** — a [BiVelio key](https://savings.bivelio.com/dashboard/install)
 adds the team dashboard, shared measurement, seats and license management. Skip this
 step and nothing changes except the dashboard: the layer keeps working, fully, offline.
-Take it and no lever is switched off.
+Take the free Measure key and no lever is switched off (a paid license has one exception in
+the SDK, trimming of superseded tool results: see [Community vs Cloud](#community-vs-cloud)).
 One dependency comes with a key, the free Measure key included: with `licenseServerUrl` set (as in the recipe your dashboard and `init` print), a layer that goes 72 hours without an answer from savings.bivelio.com fails closed with `LicenseError` on every call until it gets one or you remove the key. With no key there is no such dependency.
 Details: [SECURITY.md, Availability](https://github.com/BiVelio/bivelio-savings-layer/blob/main/SECURITY.md#availability-what-happens-if-our-servers-do-not-respond).
 
@@ -441,8 +440,8 @@ One recipe, the same one your dashboard and `npx @bivelio/savings-layer init` pr
 two keys in the environment, and three lines in `createSavingsLayer` (step 3).
 
 ```bash
-export BIVELIO_LICENSE_KEY=…   # optional: a key that IS set but invalid still fails closed
-export BIVELIO_SERVICE_KEY=…   # optional: usage to your dashboard + license auto-renewal
+# export BIVELIO_LICENSE_KEY=…   # OPTIONAL: a key that IS set but invalid still fails closed
+# export BIVELIO_SERVICE_KEY=…   # OPTIONAL: usage to your dashboard + license auto-renewal
 ```
 
 **3 · Wrap the call** — this is the entire code change. The package is ESM only:

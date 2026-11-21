@@ -1200,10 +1200,10 @@
     },
     "measurePlan": {
       "title": "Or start free: the Measure license, no card",
-      "body": "The free cloud plan for 1 organization and up to {seats} seats: the layer applies the same levers as with no key, except that trimming of superseded tool results only acts inside a tool loop on Anthropic, and your dashboard shows the real savings. Never billed, no commission.",
+      "body": "The free cloud plan for 1 organization and up to {seats} seats: the layer applies exactly the same levers as with no key, and your dashboard shows the real savings. Never billed, no commission.",
       "claim": "Get my free Measure license",
       "claiming": "Issuing…",
-      "keyLabel": "Your Measure license key (free: the same levers as with no key, one exception in the README)",
+      "keyLabel": "Your Measure license key (free: exactly the same levers as with no key)",
       "keyHint": "Use it as BIVELIO_LICENSE_KEY, exactly like a paid key. If you upgrade, the layer picks up the paid license by itself.",
       "errEmailNotVerified": "Confirm your email address first, then try again.",
       "errDisposableEmail": "Disposable email addresses can't claim the Measure license. Sign up with a permanent address (your work email, for example) and try again.",
@@ -1225,7 +1225,7 @@
         "shadowTitle": "What you would have saved",
         "amount": "{amount} you would not have spent",
         "context": "Hypothetical, shown apart from your real savings. It comes from machines that only observe (observe-only mode, or an older client on a Measure key), valued with your provider's own counter. Update those machines, or turn observe-only off, to save it for real. Nothing is billed.",
-        "empty": "No savings yet: they appear as soon as your layer avoids a call or makes one cheaper. Measure applies the same levers as with no key, except trimming of superseded tool results outside an Anthropic tool loop.",
+        "empty": "No savings yet: they appear as soon as your layer avoids a call or makes one cheaper. Measure applies exactly the same levers as with no key.",
         "limits": "Free for 1 organization, up to {seats} seats and {requests} requests a day.",
         "cta": "Need more seats or volume? See plans"
       }

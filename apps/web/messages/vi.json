@@ -1200,10 +1200,10 @@
     },
     "measurePlan": {
       "title": "Hoặc bắt đầu miễn phí: giấy phép Measure, không cần thẻ",
-      "body": "Gói đám mây miễn phí cho 1 tổ chức và tối đa {seats} chỗ: lớp áp dụng cùng các đòn bẩy như khi không có khóa, ngoại trừ việc cắt bớt kết quả công cụ đã bị thay thế chỉ hoạt động bên trong một vòng lặp công cụ trên Anthropic, và bảng điều khiển cho thấy khoản tiết kiệm thực. Không bao giờ bị tính phí, không hoa hồng.",
+      "body": "Gói đám mây miễn phí cho 1 tổ chức và tối đa {seats} chỗ: lớp áp dụng chính xác cùng các đòn bẩy như khi không có khóa, và bảng điều khiển cho thấy khoản tiết kiệm thực. Không bao giờ bị tính phí, không hoa hồng.",
       "claim": "Nhận giấy phép Measure miễn phí",
       "claiming": "Đang cấp…",
-      "keyLabel": "Khóa giấy phép Measure của bạn (miễn phí: cùng các đòn bẩy như khi không có khóa, một ngoại lệ ghi trong README)",
+      "keyLabel": "Khóa giấy phép Measure của bạn (miễn phí: chính xác cùng các đòn bẩy như khi không có khóa)",
       "keyHint": "Dùng làm BIVELIO_LICENSE_KEY, giống hệt một khóa trả phí. Nếu bạn nâng cấp, lớp tự nhận giấy phép trả phí.",
       "errEmailNotVerified": "Hãy xác nhận địa chỉ email trước, rồi thử lại.",
       "errDisposableEmail": "Địa chỉ email dùng một lần không thể nhận giấy phép Measure. Hãy đăng ký bằng một địa chỉ cố định (ví dụ email công việc) rồi thử lại.",
@@ -1225,7 +1225,7 @@
         "shadowTitle": "Số tiền lẽ ra bạn đã tiết kiệm",
         "amount": "{amount} lẽ ra bạn đã không phải chi",
         "context": "Giả định, và hiển thị tách khỏi khoản tiết kiệm thực của bạn. Con số này đến từ các máy chỉ quan sát (chế độ chỉ quan sát, hoặc một máy khách cũ dùng khóa Measure), tính bằng bộ đếm của chính nhà cung cấp của bạn. Hãy cập nhật các máy đó, hoặc tắt chế độ chỉ quan sát, để tiết kiệm thật. Không có gì bị tính phí.",
-        "empty": "Chưa có khoản tiết kiệm nào: chúng xuất hiện ngay khi lớp của bạn tránh được một lệnh gọi hoặc làm cho nó rẻ hơn. Measure áp dụng cùng các đòn bẩy như khi không có khóa, ngoại trừ việc cắt bớt kết quả công cụ đã bị thay thế bên ngoài một vòng lặp công cụ trên Anthropic.",
+        "empty": "Chưa có khoản tiết kiệm nào: chúng xuất hiện ngay khi lớp của bạn tránh được một lệnh gọi hoặc làm cho nó rẻ hơn. Measure áp dụng chính xác cùng các đòn bẩy như khi không có khóa.",
         "limits": "Miễn phí cho 1 tổ chức, tối đa {seats} chỗ và {requests} yêu cầu mỗi ngày.",
         "cta": "Cần thêm chỗ hoặc dung lượng? Xem các gói"
       }

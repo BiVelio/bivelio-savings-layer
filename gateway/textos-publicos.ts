@@ -48,14 +48,44 @@ export const FRASE_PALANCAS_GATEWAY =
 export const LO_QUE_ANADE_LA_NUBE = "the team dashboard, shared measurement, seats and license management";
 
 /**
- * La clave solo añade, con una excepción en el SDK (decisión del dueño,
- * 21-11-2026): con cualquier clave, el recorte de resultados de herramientas
- * sustituidos solo actúa dentro del bucle de herramientas en Anthropic. README,
- * PyPI e `init`.
+ * La clave solo añade. Decisiones del dueño (21-11-2026): la licencia gratuita
+ * Measure aplica EXACTAMENTE las mismas palancas que sin clave (21:45 UTC, también
+ * el recorte); la única excepción en el SDK es de las licencias de pago: con
+ * ellas, el recorte de resultados de herramientas sustituidos solo actúa dentro
+ * del bucle de herramientas en Anthropic. README, PyPI e `init`.
  */
 export const FRASE_LA_CLAVE_SOLO_ANADE =
-  "In the SDK, a BiVelio key only adds the cloud: the free Measure license and a paid one apply the same levers as no key, " +
-  "except trimming of superseded tool results, which with a key only acts inside a tool loop on Anthropic.";
+  "In the SDK, a BiVelio key only adds the cloud: the free Measure license applies exactly the same levers as no key. " +
+  "A paid license (Pro, Team, Enterprise) does too, except trimming of superseded tool results, which with a paid " +
+  "license only acts inside a tool loop on Anthropic.";
+
+/**
+ * Los adaptadores de marco (AI SDK, Mastra, LangChain, Anthropic SDK) no tienen
+ * ese recorte ni ninguna palanca que reescriba la petición, así que en ellos la
+ * clave solo añade la nube, sin excepción. `init` en esas pilas.
+ */
+export const FRASE_LA_CLAVE_SOLO_ANADE_ADAPTADOR =
+  "A BiVelio key only adds the cloud: with the free Measure license or a paid one, the adapter applies the same " +
+  "levers as no key.";
+
+/**
+ * Qué hace un adaptador sin clave (auditoría de lo gratis, 21-11-2026: `init`
+ * prometía a los adaptadores la colocación de caché, el recorte, la
+ * serialización y `observeOnly`, que no tienen). Lo mismo que el README en
+ * «Inside your framework». Mastra no comparte las peticiones idénticas en vuelo.
+ */
+export function frasePalancasAdaptador(enMastra: boolean): string {
+  return (
+    "Every lever is included and free, with no key. The adapter answers exact repeats, " +
+    (enMastra ? "" : "identical requests already in flight, ") +
+    "and the questions the layer computes locally, without calling the model; it never rewrites what your framework " +
+    "sends (prompt-cache placement, trimming of superseded tool results and serialization run in `createSavingsLayer`)."
+  );
+}
+
+/** El README lo dice igual («Inside your framework» y el párrafo de solo observar). */
+export const FRASE_ADAPTADOR_SIN_SOLO_OBSERVAR =
+  "The framework adapters have no observe-only mode: switch their levers off with `savings`.";
 
 /**
  * Lo mismo para el gateway (`--help`), que no tiene ese recorte. Decisiones del

@@ -7,10 +7,13 @@ import {
   FRASE_CLAVE_DE_SERVICIO_Y_PALANCAS,
   FRASE_DEPENDENCIA_GATEWAY,
   FRASE_DEPENDENCIA_SDK,
+  FRASE_ADAPTADOR_SIN_SOLO_OBSERVAR,
   FRASE_LA_CLAVE_SOLO_ANADE,
+  FRASE_LA_CLAVE_SOLO_ANADE_ADAPTADOR,
   FRASE_LA_CLAVE_SOLO_ANADE_GATEWAY,
   FRASE_PALANCAS_GATEWAY,
   FRASE_PALANCAS_SDK,
+  frasePalancasAdaptador,
   LINEA_MODO_COMUNITARIO,
   LINEA_PALANCAS_SIN_CLAVE,
   LINEA_PALANCAS_SOLO_OBSERVAR,
@@ -128,11 +131,12 @@ describe("m01 · la clave solo añade la nube; Measure ya no apaga nada; la somb
     expect(readme).not.toMatch(/levers need a paid plan/);
     // Los dos párrafos de Measure son, palabra por palabra, los de la rama
     // fix/measure-ahorra-de-verdad (para que las dos ramas se fusionen sin conflicto).
-    // 1.2.4: con la excepción del recorte (con clave, solo en el bucle de herramientas de Anthropic).
-    expect(readme).toContain(
-      "the layer applies the same levers as with no key, except that trimming of superseded tool results only acts " +
-        "inside a tool loop on Anthropic, and your dashboard shows the real savings",
-    );
+    // 1.2.4 · decisión del dueño (21-11-2026, 21:45 UTC): Measure aplica EXACTAMENTE
+    // las mismas palancas que sin clave; la excepción del recorte es solo de las
+    // licencias de pago, y los párrafos de Measure no la mencionan.
+    expect(readme.split("the layer applies exactly the same levers as with no key, and your dashboard shows the real savings").length - 1).toBe(2);
+    expect(readme).not.toMatch(/Measure[^.]*except that trimming/);
+    expect(readme).not.toContain("the free Measure license and a paid one apply the same levers");
     // Verificación 3: el panel ya es gratis con Measure, así que no es lo que añade el pago.
     expect(readme).toContain("What a paid plan adds is the cloud beyond those limits (more seats and more volume), not the saving.");
     expect(readme).toContain("a lower bound, shown apart from measured savings");
@@ -256,7 +260,9 @@ describe("hallazgo 42 · una sola receta para conectar el SDK a la nube: la del 
   it("`init` la escribe en el cableado de todas las pilas", () => {
     const codigo = cableado("sdk", "openai");
     for (const linea of RECETA) expect(codigo).toContain(linea);
-    expect(codigo).toContain("A key only adds the cloud, except that with");
+    expect(codigo).toContain("A key only adds the cloud: the free Measure");
+    expect(plano(codigo)).toContain("license applies exactly the same levers as no key (with a paid license, the SDK only trims superseded");
+    expect(codigo).not.toContain("except that with");
     expect(codigo).not.toContain("switches no");
     expect(codigo).not.toMatch(/every local/);
   });
@@ -303,6 +309,46 @@ describe("`bvsala doctor` e `init` (grupo 3)", () => {
     expect(claves).toHaveLength(2);
     for (const l of claves) expect(l).toMatch(/OPTIONAL/);
     expect(claves.join("\n")).toContain("a key only adds the cloud");
+  });
+
+  // Auditoría de lo gratis (21-11-2026): `init` prometía a los adaptadores la
+  // colocación de caché, el recorte, la serialización y `observeOnly: true`, que
+  // no tienen (anthropicSavings({ observeOnly: true }) lo ignora y sirve de caché).
+  it.each([
+    ["ai-sdk", { ai: "^6.0.0", "@ai-sdk/openai": "^2.0.0" }],
+    ["mastra", { "@mastra/core": "^1.68.0" }],
+    ["langchain", { langchain: "^1.1.0", "@langchain/core": "^1.1.0", "@langchain/openai": "^1.0.0" }],
+    ["anthropic-sdk", { "@anthropic-ai/sdk": "^0.103.0" }],
+  ] as const)("init en la pila %s: las palancas del adaptador, sin observeOnly ni palancas que no tiene", (capa, deps) => {
+    const s: SondaDeProyecto = {
+      leer: (ruta) => (ruta === "/p/app/package.json" ? JSON.stringify({ name: "app", type: "module", dependencies: deps }) : undefined),
+      existe: (ruta) => ruta === "/p/app/package.json",
+    };
+    const d = detectar("/p/app", s);
+    if (!d.ok) throw new Error(d.mensaje);
+    const p = planear(d.valor, { capa }, { node: "22.14.0", env: () => false });
+    if (!p.ok) throw new Error(p.mensaje);
+    expect(p.valor.capa).toBe(capa);
+    const junto = plano(textoDelPlan(conFicheros(p.valor, s), "bvsala init", "bvsala init"));
+    expect(junto).toContain(frasePalancasAdaptador(capa === "mastra"));
+    expect(junto).toContain(FRASE_LA_CLAVE_SOLO_ANADE_ADAPTADOR);
+    expect(junto).toContain(FRASE_ADAPTADOR_SIN_SOLO_OBSERVAR);
+    expect(junto).toContain(FRASE_DEPENDENCIA_SDK);
+    expect(junto).not.toContain(FRASE_PALANCAS_SDK);
+    expect(junto).not.toContain(FRASE_LA_CLAVE_SOLO_ANADE);
+    expect(junto).not.toContain("On by default:");
+    expect(junto).not.toContain("To only observe");
+    expect(junto).not.toContain(`${OPCION_SDK_SOLO_OBSERVAR}: true`);
+    if (capa === "mastra") expect(junto).not.toContain("in flight");
+    else expect(junto).toContain("identical requests already in flight");
+  });
+
+  it("las frases del adaptador son las del README (Inside your framework y solo observar)", () => {
+    expect(readme).toContain(FRASE_ADAPTADOR_SIN_SOLO_OBSERVAR);
+    expect(readme).toContain("They never rewrite what your framework sends.");
+    expect(readme).toContain("identical requests in flight are not shared here");
+    expect(frasePalancasAdaptador(false)).toContain("it never rewrites what your framework sends");
+    expect(frasePalancasAdaptador(true)).not.toContain("in flight");
   });
 
   it("enLineas parte por palabras, respeta el ancho y no pierde ni una", () => {
@@ -399,7 +445,7 @@ describe("verificación final 1.2.4 · la clave trae una dependencia, y se dice"
     expect(leer("SECURITY.md")).toMatch(/^## Availability: what happens if our servers do not respond$/m);
     // El resumen de arriba no promete «solo añade» sin el matiz.
     expect(readme).toContain(
-      "A key only adds the cloud (with two exceptions: trimming of superseded tool results in the SDK, and paid licenses in the gateway, which work as in 1.2.3), and it ties the layer to savings.bivelio.com",
+      "A key only adds the cloud: the free Measure license applies exactly the same levers as no key (paid licenses have two exceptions: trimming of superseded tool results in the SDK, and the gateway, which works as in 1.2.3), and a key ties the layer to savings.bivelio.com",
     );
     expect(readme).not.toContain("Take it and nothing is switched off either");
   });
@@ -545,5 +591,61 @@ describe("verificación 2 · los .md que se publican no llevan notas internas", 
         /\b(que|los|las|del|para|hasta|esta|rama|cifras|ambos|incluidos|proveedor|coste|frente|reloj|una|lectura|caduca|elisión|todavía|existe|añade|verja|recorte)\b/gi,
       ),
     ).toBeNull();
+  });
+});
+
+/**
+ * AUDITORÍA DE LO GRATIS (21-11-2026). Un bloque que se pega entero tiene que
+ * arrancar gratis: una línea de ejemplo con la clave SIN COMENTAR deja el
+ * marcador (`bvk_…`, `…`) como clave, y entonces el gateway sale con exit 1 («does
+ * not start without a verified license») y el SDK falla cerrado con
+ * LicenseError. Además, la tabla de palancas de la guía y la forma del README.
+ */
+describe("auditoría de lo gratis · los bloques que se pegan arrancan sin clave", () => {
+  const ASIGNACION = /^\s*(?:export\s+|\$env:|set\s+)BIVELIO_(?:SERVICE|LICENSE)_KEY\s*=/;
+
+  /** Las líneas de los bloques de código (```…```) de un .md. */
+  const lineasDeCodigo = (md: string): string[] => {
+    const fuera: string[] = [];
+    let dentro = false;
+    for (const l of md.split("\n")) {
+      if (/^\s*```/.test(l)) {
+        dentro = !dentro;
+        continue;
+      }
+      if (dentro) fuera.push(l);
+    }
+    return fuera;
+  };
+
+  it("⛔ ningún bloque del README, de PyPI ni de docs/terminales asigna una clave de BiVelio sin comentar", () => {
+    const medios: Record<string, string> = { "README.md": leer("README.md"), "packages/python/README.md": leer("packages/python/README.md") };
+    for (const g of guias) medios[`docs/terminales/${g}`] = leer(`docs/terminales/${g}`);
+    for (const [nombre, md] of Object.entries(medios)) {
+      for (const l of lineasDeCodigo(md)) expect(l, `${nombre}: ${l}`).not.toMatch(ASIGNACION);
+    }
+  });
+
+  it("las líneas comentadas siguen ahí y dicen que son OPCIONALES", () => {
+    const crudo = leer("README.md");
+    expect(crudo).toContain("# export BIVELIO_LICENSE_KEY=…   # OPTIONAL: a key that IS set but invalid still fails closed");
+    expect(crudo).toContain("# export BIVELIO_SERVICE_KEY=…   # OPTIONAL: usage to your dashboard + license auto-renewal");
+    for (const g of ["README.md", "claude-code.md", "codex.md", "kilo.md", "qwen-code.md", "goose.md", "opencode.md"]) {
+      expect(leer(`docs/terminales/${g}`), g).toMatch(/^# export BIVELIO_SERVICE_KEY=bvk_… +# OPTIONAL: only adds the cloud dashboard; uncomment it with your real key/m);
+    }
+    expect(leer("docs/terminales/README.md")).toMatch(/^# \$env:BIVELIO_SERVICE_KEY = "bvk_…" +# OPTIONAL/m);
+  });
+
+  it("la tabla de palancas de la guía dice cuándo va armada la de TTL: sin clave y con Measure; con pago, si la licencia la incluye", () => {
+    expect(guiaDeTerminales).toContain(
+      "Cache TTL (`cache_ttl_tuning`, armed by default with no key and with Measure; with a paid license, only if the license includes it (fail-closed))",
+    );
+    expect(guiaDeTerminales).not.toContain("armed by default in community and PRO");
+  });
+
+  it("README: «In the local gateway, every gateway lever…» va en la misma frase, sin una mayúscula a media línea", () => {
+    const crudo = leer("README.md");
+    expect(crudo).toContain("no compression figure is published. In the local gateway, every gateway lever is free, with no key;");
+    expect(crudo).not.toMatch(/In the local gateway:\nEvery gateway lever/);
   });
 });

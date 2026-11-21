@@ -1200,10 +1200,10 @@
     },
     "measurePlan": {
       "title": "Ou comece grátis: a licença Measure, sem cartão",
-      "body": "O plano gratuito da cloud para 1 organização e até {seats} assentos: a camada aplica as mesmas alavancas que sem chave, exceto que o corte de resultados de ferramentas substituídos só atua dentro de um ciclo de ferramentas na Anthropic, e o seu painel mostra a poupança real. Nunca é faturado, sem comissão.",
+      "body": "O plano gratuito da cloud para 1 organização e até {seats} assentos: a camada aplica exatamente as mesmas alavancas que sem chave e o seu painel mostra a poupança real. Nunca é faturado, sem comissão.",
       "claim": "Obter a minha licença Measure grátis",
       "claiming": "A emitir…",
-      "keyLabel": "A sua chave de licença Measure (gratuita: as mesmas alavancas que sem chave, com uma exceção no README)",
+      "keyLabel": "A sua chave de licença Measure (gratuita: exatamente as mesmas alavancas que sem chave)",
       "keyHint": "Use-a como BIVELIO_LICENSE_KEY, tal como uma chave paga. Se passar a um plano pago, a camada recolhe sozinha a licença paga.",
       "errEmailNotVerified": "Confirme primeiro o seu endereço de email e tente novamente.",
       "errDisposableEmail": "Endereços de e-mail descartáveis não podem obter a licença Measure. Registe-se com um endereço permanente (o do trabalho, por exemplo) e tente novamente.",
@@ -1225,7 +1225,7 @@
         "shadowTitle": "O que teria poupado",
         "amount": "{amount} que não teria gastado",
         "context": "Hipotético, e à parte da sua poupança real. Vem de máquinas que só observam (modo só-observar ou um cliente antigo com uma chave Measure), valorizado com o contador do seu próprio fornecedor. Atualize essas máquinas, ou desligue o modo só-observar, para o poupar de verdade. Nada é faturado.",
-        "empty": "Ainda não há poupança: aparece assim que a sua camada evita uma chamada ou a torna mais barata. O Measure aplica as mesmas alavancas que sem chave, exceto o corte de resultados de ferramentas substituídos fora de um ciclo de ferramentas na Anthropic.",
+        "empty": "Ainda não há poupança: aparece assim que a sua camada evita uma chamada ou a torna mais barata. O Measure aplica exatamente as mesmas alavancas que sem chave.",
         "limits": "Grátis para 1 organização, até {seats} assentos e {requests} pedidos por dia.",
         "cta": "Precisa de mais assentos ou volume? Ver planos"
       }

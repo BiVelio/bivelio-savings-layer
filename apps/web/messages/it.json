@@ -1200,10 +1200,10 @@
     },
     "measurePlan": {
       "title": "Oppure inizia gratis: la licenza Measure, senza carta",
-      "body": "Il piano cloud gratuito per 1 organizzazione e fino a {seats} postazioni: il livello applica le stesse leve di senza chiave, salvo che il taglio dei risultati degli strumenti superati agisce solo dentro un ciclo di strumenti su Anthropic, e la dashboard mostra il risparmio reale. Mai fatturato, nessuna commissione.",
+      "body": "Il piano cloud gratuito per 1 organizzazione e fino a {seats} postazioni: il livello applica esattamente le stesse leve di senza chiave e la dashboard mostra il risparmio reale. Mai fatturato, nessuna commissione.",
       "claim": "Ottieni la mia licenza Measure gratuita",
       "claiming": "Emissione…",
-      "keyLabel": "La tua chiave di licenza Measure (gratuita: le stesse leve di senza chiave, con un'eccezione nel README)",
+      "keyLabel": "La tua chiave di licenza Measure (gratuita: esattamente le stesse leve di senza chiave)",
       "keyHint": "Usala come BIVELIO_LICENSE_KEY, esattamente come una chiave a pagamento. Se passi a un piano a pagamento, il livello recupera da solo la licenza a pagamento.",
       "errEmailNotVerified": "Conferma prima il tuo indirizzo email, poi riprova.",
       "errDisposableEmail": "Gli indirizzi email usa e getta non possono ottenere la licenza Measure. Registrati con un indirizzo permanente (quello di lavoro, per esempio) e riprova.",
@@ -1225,7 +1225,7 @@
         "shadowTitle": "Quanto avresti risparmiato",
         "amount": "{amount} che non avresti speso",
         "context": "Ipotetico, e separato dal tuo risparmio reale. Viene da macchine che osservano soltanto (modalità sola osservazione, o un client meno recente con una chiave Measure), valutato con il contatore del tuo stesso fornitore. Aggiorna quelle macchine, o disattiva la modalità sola osservazione, per risparmiarlo davvero. Nulla viene fatturato.",
-        "empty": "Ancora nessun risparmio: compare non appena il tuo livello evita una chiamata o la rende meno cara. Measure applica le stesse leve di senza chiave, tranne il taglio dei risultati degli strumenti superati fuori da un ciclo di strumenti su Anthropic.",
+        "empty": "Ancora nessun risparmio: compare non appena il tuo livello evita una chiamata o la rende meno cara. Measure applica esattamente le stesse leve di senza chiave.",
         "limits": "Gratis per 1 organizzazione, fino a {seats} postazioni e {requests} richieste al giorno.",
         "cta": "Ti servono più postazioni o volume? Vedi i piani"
       }
