@@ -18,9 +18,14 @@ import { ahorroEnSombra, ahorroRealDeMedir } from "../medir";
  * sombra hasta actualizar) y quien enciende la sombra opcional. HIPOTÉTICO: va
  * con su etiqueta y jamás se suma a lo real.
  *
- * Nada de esta tarjeta se factura: Medir no lleva comisión.
+ * Medir no lleva comisión. PERO una organización que tuvo la modalidad con
+ * comisión y volvió a Medir (cancelada a mitad de mes) ve aquí también el
+ * ahorro de sus días de pago, y ese sí entra en su comisión: para ella
+ * (`conComision`, ver ../comision-del-panel.ts) la frase no es «Measure never
+ * bills any of it» sino la que separa las dos cosas. Sin poder leerlo (`null`),
+ * tampoco se afirma «nunca».
  */
-export async function MedirSavingsCard({ usage }: { usage: UsageRollup[] }) {
+export async function MedirSavingsCard({ usage, conComision }: { usage: UsageRollup[]; conComision: boolean | null }) {
   const t = await getTranslations("dashboard.measurePlan");
   const s = ahorroEnSombra(usage);
   const real = ahorroRealDeMedir(usage);
@@ -35,7 +40,12 @@ export async function MedirSavingsCard({ usage }: { usage: UsageRollup[] }) {
           {real.estimadoUsd >= 0.00005 ? (
             <h3 className="t-section">{t("card.realEstimated", { amount: money(real.estimadoUsd) })}</h3>
           ) : null}
-          <p className="ck-note">{t("card.realContext", { spend: money(s.gastoUsd), requests: intfmt(s.peticiones) })}</p>
+          <p className="ck-note">
+            {t(conComision === false ? "card.realContext" : "card.realContextComision", {
+              spend: money(s.gastoUsd),
+              requests: intfmt(s.peticiones),
+            })}
+          </p>
         </div>
       ) : null}
       {haySombra ? (
