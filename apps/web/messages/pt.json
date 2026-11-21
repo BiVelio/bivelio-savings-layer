@@ -156,6 +156,7 @@
     "workEmail": "Email profissional",
     "password": "Palavra-passe",
     "createAccountCta": "Criar conta →",
+    "signupLegal": "Ao criar a conta, aceitas as <terms>condições do Savings Cloud</terms> e a <privacy>política de privacidade</privacy>.",
     "signInCta": "Iniciar sessão →",
     "loadingEllipsis": "…",
     "notWired": "O início de sessão ainda não está configurado — define NEXT_PUBLIC_SUPABASE_ANON_KEY no deploy.",
@@ -614,7 +615,7 @@
       "advanced": "Ajustes avançados",
       "projFriendly": "Sua fatura passaria de {baseline} para {opt} — {pct}% a menos.",
       "onlyChatTitle": "Só usa ChatGPT ou Claude?",
-      "onlyChatBody": "O ChatGPT é mesmo fechado: mensalidade fixa, sem fatura nem tetos de tokens para cortar. Mas se usas Claude, já te ajudamos a poupar: a skill savings-mode (gratuita, na página inicial) estica os teus tetos de subscrição. E se desenvolves uma app com chave de API, é aí que o BV-SALA mede e reduz gasto a sério.",
+      "onlyChatBody": "O ChatGPT é mesmo fechado: mensalidade fixa, sem fatura nem tetos de tokens para cortar. Mas se usas Claude, a skill savings-mode (gratuita, na página inicial) foi pensada para esticar os teus tetos de subscrição; o seu efeito ainda não está medido. E se desenvolves uma app com chave de API, é aí que o BV-SALA mede e reduz gasto a sério.",
       "onlyChatCta": "Desenvolve um app? Vá para Instalar",
       "notInvoice": "Estimativa, não fatura",
       "notInvoiceBody": "Resulta dos pressupostos à esquerda, não do teu tráfego. O que poupas de facto é medido na tua Visão geral.",
@@ -632,7 +633,7 @@
       "errPaymentPending": "O teu pagamento ainda está a ser confirmado. A tua chave de licença aparece aqui assim que isso acontecer; não precisas de pagar outra vez.",
       "keyLabel": "a tua chave de licença{suffix} — mostrada uma só vez, copia-a agora",
       "validUntil": " · válida até {date}",
-      "pasteHint": "Cola-a em <code></code> para desbloquear o SDK. Expira no final do período de faturação: adiciona uma chave de conta de serviço abaixo e o SDK renova-a sozinho.",
+      "pasteHint": "Cola-a em <code></code> para ligar o SDK ao teu plano da nuvem. Expira no final do período de faturação: adiciona uma chave de conta de serviço abaixo e o SDK renova-a sozinho.",
       "issuing": "A emitir…",
       "getKey": "Obtém a tua chave de licença →",
       "priceNote": "{monthly} por lugar por mês ou {yearly} por lugar por ano. Ainda não tens subscrição nesta conta? Começa uma em Conta."
@@ -677,12 +678,12 @@
       "hint": "Sessões e subagentes dos teus terminais de código (ids opacos — nunca uma pessoa). Requer o gateway a partir da 0.4.7."
     },
     "gatewayVersion": {
-      "title": "Algumas máquinas não produziram poupança medida nos últimos 7 dias",
+      "title": "Algumas máquinas mediram gasto mas nenhuma poupança nos últimos 7 dias",
       "summary": "{n} de {total} máquinas com gateway (ou sem declarar) ativas nos últimos 7 dias não produziram poupança medida.",
       "outdated": "{n, plural, one {# máquina corre} other {# máquinas correm}} um gateway anterior a {minima}, a primeira versão com a alavanca de tarifa: atualiza-o.",
       "undeclared": "{n, plural, one {# máquina não declara} other {# máquinas não declaram}} versão (gateway anterior ao canal de versão). Se for anterior a {minima}, não tem alavanca de tarifa.",
-      "noLever": "{n, plural, one {# máquina está atualizada} other {# máquinas estão atualizadas}}, mas a alavanca não atuou aí. Se continuar igual depois de atualizar, escreve para support@bivelio.com.",
-      "action": "Atualiza @bivelio/savings-layer nessa máquina e reinicia o terminal; a tabela de máquinas abaixo mostra o que cada uma declara."
+      "noLever": "{n, plural, one {# máquina está atualizada e não mediu poupança} other {# máquinas estão atualizadas e não mediram poupança}}. É o esperado quando o cliente pede a cache de cinco minutos (o que o Claude Code faz por defeito com chave de API), quando a máquina só mede ou com uma subscrição de Claude ou de ChatGPT.",
+      "action": "Se uma máquina estiver desatualizada, atualiza @bivelio/savings-layer nessa máquina e reinicia o terminal; a tabela de máquinas abaixo mostra o que cada uma declara."
     },
     "gatewayBruto": {
       "title": "A poupança de algumas máquinas ainda é reportada em bruto",
@@ -695,7 +696,7 @@
       "action": "Atualiza o SDK para {minima} ou posterior nessa máquina e reinicia o processo:"
     },
     "migrar05": {
-      "note": "A versão mais recente é a 0.5, que traz alterações incompatíveis.",
+      "note": "Atualizas a partir de uma versão anterior à 0.5? A 0.5 traz alterações incompatíveis.",
       "link": "Lê o guia de migração antes de atualizar →"
     },
     "maquinas": {
@@ -745,7 +746,7 @@
       "doctorComment": "outros agentes e SDK: a configuração exata de cada um",
       "agentsNote": "Cada wrapper prepara o seu agente apenas para essa sessão — nada na configuração muda — e ao sair diz-te quantos pedidos mediu, quais não conseguiu medir e porquê. <code>bvsala copilot</code> precisa da tua própria chave da Anthropic (BYOK): os modelos alojados pela GitHub nunca passam por um base URL, por isso não há nada a medir. Para o Crush, Droid, Cline, Continue ou Copilot no VS Code, o <code>bvsala doctor</code> imprime a configuração exata. <b>Cursor (BYOK)</b>: funciona através da substituição do URL base da OpenAI com a tua própria chave; os seus modelos nunca chegam a um gateway na tua máquina. <b>Gemini CLI</b>: lança-a com <code>bvsala gemini</code>.",
       "pythonNote": "<b>Python?</b> O cliente <code>bvsala</code> para Python faz passar os SDK oficiais da OpenAI e da Anthropic por este mesmo gateway (<code>bvsala gateway</code>) e devolve ao teu código o relatório de cada pedido — os mesmos números que este painel recebe. Precisa de um gateway 0.4.26 ou posterior e de Python 3.10 ou posterior. Instala-se a partir do PyPI com <code>pip install bivelio-savings-layer</code>; no teu código, <code>import bvsala</code>.",
-      "finalNote": "É tudo. Uma chave definida mas inválida → <code>generate()</code> recusa. Se o teu plano for cancelado, o SDK para em ~15 min através de <code>licenseServerUrl</code> — sem reiniciar, e nunca inutiliza a tua produção se estivermos inacessíveis.",
+      "finalNote": "É tudo. Uma chave definida mas inválida → <code>generate()</code> recusa. Se o teu plano for cancelado, o SDK para em ~15 min através de <code>licenseServerUrl</code> — sem reiniciar, e nunca inutiliza a tua produção se estivermos inacessíveis. Remove as chaves e a camada volta a correr em modo Community.",
       "terminal": "Terminal",
       "sdkEyebrow": "Aplicação",
       "sdkTitle": "Integrar uma aplicação (SDK)",
@@ -900,7 +901,7 @@
       "graceTitle": "Licença expirada — ainda a funcionar",
       "graceBody": "A tua licença expirou a {date} e continua a funcionar mais {days, plural, one {# dia} other {# dias}}. Renova-a para não haver interrupção.",
       "expiredTitle": "Licença expirada",
-      "expiredBody": "A tua licença expirou a {date}. O BV-SALA é fail-closed, por isso o SDK parou.",
+      "expiredBody": "A tua licença expirou a {date}. Uma camada arrancada com essa chave de licença recusa agora os pedidos. Renova-a, ou remove as chaves da BiVelio para continuar em modo Community (grátis, sem painel).",
       "revokedTitle": "Licença revogada",
       "revokedBody": "Esta licença foi revogada. Escreve para support@bivelio.com se achares que é um erro."
     },
@@ -1309,8 +1310,8 @@
     ],
     "skill": {
       "eyebrow": "savings-mode · skill gratuita",
-      "title": "A skill que estica os teus limites de subscrição",
-      "body": "Sem fatura não quer dizer sem dor: a janela de cinco horas e o teto semanal. savings-mode é uma skill de instruções puras — sem proxy, o teu tráfego intacto — que corta as duas massas que realmente queimam o teto: a saída do modelo e os resultados de ferramentas. É gratuita; o que se paga com o Savings é saber quanto te poupa.",
+      "title": "Uma skill pensada para esticar os teus limites de subscrição — efeito ainda por medir",
+      "body": "Sem fatura não quer dizer sem dor: a janela de cinco horas e o teto semanal. savings-mode é uma skill de instruções puras — sem proxy, o teu tráfego intacto — que visa as duas massas que realmente queimam o teto: a saída do modelo e os resultados de ferramentas. É gratuita.",
       "mLectura": "leituras de cache",
       "mLecturaDesc": "O contexto inteiro é relido a cada turno — por isso mantê-lo magro importa.",
       "mEscritura": "escrita de cache (uma hora)",
@@ -1337,7 +1338,7 @@
     "gateway": {
       "eyebrow": "Gateway · terminais de código",
       "title": "Claude Code com chave de API? Vê o gasto real, token a token.",
-      "body": "Um único comando põe um medidor local à frente do teu terminal, sem tocar no teu código: exportas a tua chave de serviço e arrancas o teu agente através do bvsala. Os teus prompts não passam pelos servidores da BiVelio: vão para o fornecedor que configurares, e ao teu painel só chegam contagens e custo.",
+      "body": "Um único comando põe um medidor local à frente do teu terminal, sem tocar no teu código e sem chave: arrancas o teu agente através do bvsala. Adiciona uma chave de serviço só se quiseres ver o gasto no teu painel do Savings Cloud. Os teus prompts não passam pelos servidores da BiVelio: vão para o fornecedor que configurares, e ao teu painel só chegam contagens e custo.",
       "note": "O gateway mede, com o contador do teu fornecedor, cada pedido cujo uso este reporta (nos modelos do nosso catálogo de preços) e, tal como o SDK, arranca sem nenhuma chave (modo Community): uma chave de serviço opcional acrescenta o painel e os direitos da org. Em modelos da Anthropic aplica também uma alavanca por defeito, sem licença nem conta: passa as escritas da cache do TTL de uma hora para o de cinco minutos só nos turnos em que uma boa parte do prompt é nova — como o primeiro turno de uma sessão ou uma compactação — e deixa como estão os turnos encadeados. Isso muda o preço, nunca o conteúdo que o modelo lê. Só tem algo a baixar quando o teu cliente paga por token e pede a cache de uma hora: o Claude Code com chave de API pede a de cinco minutos se não o mudares, e então o gateway apenas mede. As restantes alavancas ficam desligadas até as ativares. O skill savings-mode está disponível para os teus limites, com o efeito ainda por medir. O gateway funciona também com Codex CLI, Goose, Qwen Code, opencode, Kilo, Aider e, com a tua própria chave da Anthropic, GitHub Copilot CLI; para outros, como Cline ou Continue, o bvsala doctor imprime a configuração exata. O Cursor funciona através da substituição do URL base OpenAI com a tua própria chave, e a Gemini CLI arranca com bvsala gemini.",
       "pythonNote": "Python ou qualquer outra linguagem? Aponta o SDK oficial da OpenAI ou da Anthropic para o gateway e cada pedido cujo uso o fornecedor reporte, de um modelo com preço de tabela, fica registado neste painel a esse preço; o log do gateway avisa quando um não é medido. O bvsala doctor imprime o base URL de cada SDK. Em streaming com a OpenAI, pede o uso no pedido (stream_options.include_usage).",
       "cta": "Vê como funciona →"
@@ -2276,7 +2277,7 @@
     "title": "Motor open source.",
     "titleAccent": "Controlo cloud para a tua equipa.",
     "titleMark": "equipa",
-    "governs": "Esta página descreve como o serviço funciona hoje; prevalecem a <license>LICENSE</license> e os <terms>Termos da BiVelio</terms>.",
+    "governs": "Esta página descreve como o serviço funciona hoje; prevalecem as <license>condições do Savings Cloud (LICENSE-CLOUD.md)</license> e os <terms>Termos da BiVelio</terms>.",
     "lede": "O motor é open source: não precisa de chaves. Esta página dá preço ao Savings Cloud, a nuvem opcional — Measure grátis, depois Pro por lugar ou um plano Team, sem comissão sobre a tua poupança. Cada número desta página vem do mesmo código que te fatura, e muda quando o preço muda.",
     "plans": {
       "title": "Planos",
@@ -2430,7 +2431,7 @@
     "metaDescription": "A lista exata do que o SDK e o gateway local enviam à BiVelio, do que nunca enviam e de quanto tempo a BiVelio o guarda.",
     "eyebrow": "Privacidade",
     "title": "O que sai da sua infraestrutura",
-    "governs": "Esta página descreve como o serviço funciona hoje; prevalecem a <license>LICENSE</license> e os <terms>Termos da BiVelio</terms>.",
+    "governs": "Esta página descreve como o serviço funciona hoje; prevalecem as <license>condições do Savings Cloud (LICENSE-CLOUD.md)</license> e os <terms>Termos da BiVelio</terms>.",
     "lede": "O que o Software (o SDK e o gateway local) envia à BiVelio, o que nunca envia e durante quanto tempo a BiVelio o guarda.",
     "never": {
       "title": "O que nunca é enviado à BiVelio",
@@ -2440,7 +2441,7 @@
     },
     "usage": {
       "title": "Registos de uso",
-      "when": "O SDK só envia registos de uso quando configura um servidor de licenças ou um URL de medição; o gateway local envia sempre. Cada lote leva a sua chave de conta de serviço da BiVelio, que identifica a sua organização, e a superfície e a versão do Software no cabeçalho <b>{header}</b>.",
+      "when": "O SDK só envia registos de uso quando configura um servidor de licenças ou um URL de medição; o gateway local, só quando configura uma chave de conta de serviço. Sem nenhuma chave da BiVelio, nenhum dos dois envia nada à BiVelio. Cada lote leva a sua chave de conta de serviço da BiVelio, que identifica a sua organização, e a superfície e a versão do Software no cabeçalho <b>{header}</b>.",
       "limit": "Cada registo limita-se aos campos abaixo. <b>A ingestão da BiVelio rejeita qualquer registo que traga um campo que não esteja nesta lista.</b>",
       "groups": {
         "ids": {

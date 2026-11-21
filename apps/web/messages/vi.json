@@ -156,6 +156,7 @@
     "workEmail": "Email công việc",
     "password": "Mật khẩu",
     "createAccountCta": "Tạo tài khoản →",
+    "signupLegal": "Khi tạo tài khoản, bạn chấp nhận <terms>điều khoản của Savings Cloud</terms> và <privacy>chính sách quyền riêng tư</privacy>.",
     "signInCta": "Đăng nhập →",
     "loadingEllipsis": "…",
     "notWired": "Tính năng đăng nhập chưa được kết nối — hãy đặt NEXT_PUBLIC_SUPABASE_ANON_KEY trong bản triển khai.",
@@ -614,7 +615,7 @@
       "advanced": "Cài đặt nâng cao",
       "projFriendly": "Hóa đơn của bạn sẽ giảm từ {baseline} xuống {opt} — ít hơn {pct}%.",
       "onlyChatTitle": "Bạn chỉ dùng ChatGPT hoặc Claude?",
-      "onlyChatBody": "ChatGPT thực sự đóng: phí cố định, không có hóa đơn hay giới hạn token để cắt. Nhưng nếu bạn dùng Claude, chúng tôi đã giúp bạn tiết kiệm: skill savings-mode (miễn phí, ở trang chủ) kéo giãn giới hạn thuê bao. Còn nếu bạn xây ứng dụng với API key, chính ở đó BV-SALA đo và cắt giảm chi tiêu thật.",
+      "onlyChatBody": "ChatGPT thực sự đóng: phí cố định, không có hóa đơn hay giới hạn token để cắt. Nhưng nếu bạn dùng Claude, skill savings-mode (miễn phí, ở trang chủ) được thiết kế để kéo giãn giới hạn thuê bao; hiệu quả của nó chưa được đo. Còn nếu bạn xây ứng dụng với API key, chính ở đó BV-SALA đo và cắt giảm chi tiêu thật.",
       "onlyChatCta": "Bạn đang phát triển ứng dụng? Đến trang Cài đặt",
       "notInvoice": "Ước tính, không phải hoá đơn",
       "notInvoiceBody": "Con số này đến từ các giả định bên trái, không phải từ lưu lượng của bạn. Khoản bạn thực sự tiết kiệm được đo trong mục Tổng quan.",
@@ -632,7 +633,7 @@
       "errPaymentPending": "Khoản thanh toán của bạn vẫn đang được xác nhận. Khóa cấp phép của bạn sẽ hiện ở đây ngay khi xong; bạn không cần thanh toán lại.",
       "keyLabel": "khóa cấp phép của bạn{suffix} — chỉ hiển thị một lần, hãy sao chép ngay",
       "validUntil": " · có hiệu lực đến {date}",
-      "pasteHint": "Dán nó vào <code></code> để mở khóa SDK. Nó hết hạn vào cuối kỳ thanh toán: hãy thêm một khóa tài khoản dịch vụ bên dưới và SDK sẽ tự mình gia hạn nó.",
+      "pasteHint": "Dán nó vào <code></code> để kết nối SDK với gói Cloud của bạn. Nó hết hạn vào cuối kỳ thanh toán: hãy thêm một khóa tài khoản dịch vụ bên dưới và SDK sẽ tự mình gia hạn nó.",
       "issuing": "Đang cấp…",
       "getKey": "Nhận khóa cấp phép của bạn →",
       "priceNote": "{monthly} mỗi ghế mỗi tháng hoặc {yearly} mỗi ghế mỗi năm. Tài khoản này chưa có gói đăng ký? Hãy bắt đầu ở mục Tài khoản."
@@ -677,12 +678,12 @@
       "hint": "Các phiên và agent con từ terminal lập trình của bạn (id ẩn danh — không bao giờ là một người). Cần gateway từ bản 0.4.7."
     },
     "gatewayVersion": {
-      "title": "Một số máy không tạo ra tiết kiệm đo được trong 7 ngày qua",
+      "title": "Một số máy đo được chi tiêu nhưng không có tiết kiệm trong 7 ngày qua",
       "summary": "{n} trong {total} máy có gateway (hoặc chưa khai báo) hoạt động trong 7 ngày qua không tạo ra khoản tiết kiệm đã đo.",
       "outdated": "{n, plural, other {# máy đang chạy}} gateway cũ hơn {minima}, phiên bản đầu tiên có đòn bẩy biểu phí: hãy cập nhật.",
       "undeclared": "{n, plural, other {# máy không khai báo}} phiên bản (gateway cũ hơn kênh phiên bản). Nếu cũ hơn {minima}, máy đó không có đòn bẩy biểu phí.",
-      "noLever": "{n, plural, other {# máy đã cập nhật}}, nhưng đòn bẩy chưa hoạt động ở đó. Nếu vẫn vậy sau khi cập nhật, hãy viết cho support@bivelio.com.",
-      "action": "Cập nhật @bivelio/savings-layer trên máy đó và khởi động lại terminal; bảng máy bên dưới cho thấy mỗi máy khai báo gì."
+      "noLever": "{n, plural, other {# máy đã cập nhật và không đo được tiết kiệm}}. Điều này là bình thường khi client yêu cầu cache năm phút (mặc định của Claude Code với API key), khi máy chỉ đo, hoặc với gói thuê bao Claude hay ChatGPT.",
+      "action": "Nếu một máy chưa được cập nhật, hãy cập nhật @bivelio/savings-layer trên máy đó và khởi động lại terminal; bảng máy bên dưới cho thấy mỗi máy khai báo gì."
     },
     "gatewayBruto": {
       "title": "Khoản tiết kiệm của một số máy vẫn được báo cáo ở dạng gộp",
@@ -695,7 +696,7 @@
       "action": "Hãy cập nhật SDK trên máy đó lên {minima} trở lên và khởi động lại tiến trình:"
     },
     "migrar05": {
-      "note": "Phiên bản mới nhất là 0.5, có các thay đổi không tương thích.",
+      "note": "Bạn cập nhật từ phiên bản trước 0.5? Phiên bản 0.5 có các thay đổi không tương thích.",
       "link": "Đọc hướng dẫn chuyển đổi trước khi cập nhật →"
     },
     "maquinas": {
@@ -745,7 +746,7 @@
       "doctorComment": "agent và SDK khác: cấu hình chính xác cho từng loại",
       "agentsNote": "Mỗi wrapper chuẩn bị agent chỉ cho phiên đó — không có gì trong cấu hình thay đổi — và khi thoát sẽ cho biết đã đo bao nhiêu yêu cầu, yêu cầu nào không đo được và vì sao. <code>bvsala copilot</code> cần khóa Anthropic của riêng bạn (BYOK): các mô hình do GitHub lưu trữ không bao giờ đi qua URL cơ sở, nên không có gì để đo. Với Crush, Droid, Cline, Continue hoặc Copilot trong VS Code, <code>bvsala doctor</code> in cấu hình chính xác. <b>Cursor (BYOK)</b>: hoạt động qua ghi đè URL cơ sở OpenAI bằng khóa của riêng bạn; các mô hình của nó không bao giờ đến được gateway trên máy bạn. <b>Gemini CLI</b>: chạy nó bằng <code>bvsala gemini</code>.",
       "pythonNote": "<b>Python?</b> Client <code>bvsala</code> cho Python đưa các SDK chính thức của OpenAI và Anthropic đi qua chính gateway này (<code>bvsala gateway</code>) và trả về cho mã của bạn báo cáo của từng yêu cầu — cùng những con số mà bảng điều khiển này nhận được. Client cần gateway 0.4.26 trở lên và Python 3.10 trở lên. Cài từ PyPI bằng <code>pip install bivelio-savings-layer</code>; trong mã của bạn, <code>import bvsala</code>.",
-      "finalNote": "Chỉ vậy thôi. Khóa được đặt nhưng không hợp lệ → <code>generate()</code> sẽ từ chối. Nếu gói của bạn bị hủy, SDK sẽ dừng trong khoảng 15 phút thông qua <code>licenseServerUrl</code> — không cần khởi động lại, và nó không bao giờ làm hỏng môi trường sản xuất của bạn nếu chúng tôi không thể kết nối được.",
+      "finalNote": "Chỉ vậy thôi. Khóa được đặt nhưng không hợp lệ → <code>generate()</code> sẽ từ chối. Nếu gói của bạn bị hủy, SDK sẽ dừng trong khoảng 15 phút thông qua <code>licenseServerUrl</code> — không cần khởi động lại, và nó không bao giờ làm hỏng môi trường sản xuất của bạn nếu chúng tôi không thể kết nối được. Gỡ các khóa và lớp sẽ chạy lại ở chế độ Community.",
       "terminal": "Terminal",
       "sdkEyebrow": "Ứng dụng",
       "sdkTitle": "Tích hợp một ứng dụng (SDK)",
@@ -900,7 +901,7 @@
       "graceTitle": "Giấy phép đã hết hạn — vẫn đang chạy",
       "graceBody": "Giấy phép của bạn đã hết hạn vào {date} và vẫn chạy thêm {days, plural, other {# ngày}}. Hãy gia hạn để tránh gián đoạn.",
       "expiredTitle": "Giấy phép đã hết hạn",
-      "expiredBody": "Giấy phép của bạn đã hết hạn vào {date}. BV-SALA hoạt động theo cơ chế fail-closed, nên SDK đã dừng.",
+      "expiredBody": "Giấy phép của bạn đã hết hạn vào {date}. Lớp được khởi chạy với khóa giấy phép đó giờ từ chối các yêu cầu. Hãy gia hạn, hoặc gỡ các khóa BiVelio để tiếp tục chạy ở chế độ Community (miễn phí, không có bảng điều khiển).",
       "revokedTitle": "Giấy phép đã bị thu hồi",
       "revokedBody": "Giấy phép này đã bị thu hồi. Hãy viết thư tới support@bivelio.com nếu bạn cho rằng đây là nhầm lẫn."
     },
@@ -1309,8 +1310,8 @@
     ],
     "skill": {
       "eyebrow": "savings-mode · skill miễn phí",
-      "title": "Skill kéo giãn giới hạn gói thuê bao của bạn",
-      "body": "Không có hóa đơn không có nghĩa là không đau: cửa sổ năm giờ và giới hạn tuần. savings-mode là một skill thuần chỉ dẫn — không proxy, lưu lượng của bạn nguyên vẹn — cắt hai khối thực sự đốt giới hạn: đầu ra của mô hình và kết quả công cụ. Nó miễn phí; điều bạn trả cho Savings là biết nó tiết kiệm cho bạn bao nhiêu.",
+      "title": "Skill được thiết kế để kéo giãn giới hạn gói thuê bao của bạn — hiệu quả chưa được đo",
+      "body": "Không có hóa đơn không có nghĩa là không đau: cửa sổ năm giờ và giới hạn tuần. savings-mode là một skill thuần chỉ dẫn — không proxy, lưu lượng của bạn nguyên vẹn — nhắm vào hai khối thực sự đốt giới hạn: đầu ra của mô hình và kết quả công cụ. Nó miễn phí.",
       "mLectura": "đọc bộ đệm",
       "mLecturaDesc": "Toàn bộ ngữ cảnh được đọc lại mỗi lượt — vì thế giữ nó gọn rất quan trọng.",
       "mEscritura": "ghi bộ đệm (một giờ)",
@@ -1337,7 +1338,7 @@
     "gateway": {
       "eyebrow": "Gateway · terminal lập trình",
       "title": "Dùng Claude Code với khóa API? Xem chi tiêu thật, từng token một.",
-      "body": "Một lệnh duy nhất đặt một bộ đo cục bộ trước terminal của bạn, không cần sửa mã: bạn xuất khóa dịch vụ và khởi chạy agent qua bvsala. Prompt của bạn không đi qua máy chủ của BiVelio: chúng được gửi tới nhà cung cấp mà bạn cấu hình, và bảng điều khiển của bạn chỉ nhận số đếm và chi phí.",
+      "body": "Một lệnh duy nhất đặt một bộ đo cục bộ trước terminal của bạn, không cần sửa mã và không cần khóa: bạn khởi chạy agent qua bvsala. Chỉ thêm khóa dịch vụ nếu bạn muốn xem chi tiêu trong bảng điều khiển Savings Cloud của mình. Prompt của bạn không đi qua máy chủ của BiVelio: chúng được gửi tới nhà cung cấp mà bạn cấu hình, và bảng điều khiển của bạn chỉ nhận số đếm và chi phí.",
       "note": "Gateway đo, bằng chính bộ đếm của nhà cung cấp, mọi yêu cầu mà nhà cung cấp của bạn có báo cáo mức sử dụng (với các mô hình trong danh mục giá của chúng tôi) và, giống như SDK, khởi động mà không cần khóa nào (chế độ Community): khóa dịch vụ tùy chọn thêm bảng điều khiển và quyền của tổ chức. Trên các mô hình Anthropic, nó còn áp dụng mặc định một đòn bẩy, không cần giấy phép hay tài khoản: chuyển các lần ghi bộ nhớ đệm từ TTL một giờ sang TTL năm phút, chỉ ở những lượt mà một phần lớn prompt là mới — như lượt đầu tiên của một phiên hoặc sau khi nén ngữ cảnh — và giữ nguyên các lượt nối tiếp. Điều này thay đổi giá, không bao giờ thay đổi nội dung mà mô hình đọc. Nó chỉ có thứ để giảm khi client của bạn trả theo token và yêu cầu bộ nhớ đệm một giờ: Claude Code dùng API key sẽ yêu cầu bộ nhớ đệm năm phút nếu bạn không thay đổi, và khi đó gateway chỉ đo. Các đòn bẩy khác vẫn tắt cho đến khi bạn bật chúng. Skill savings-mode đã sẵn sàng cho các giới hạn của bạn, hiệu quả còn chờ đo. Gateway cũng hoạt động với Codex CLI, Goose, Qwen Code, opencode, Kilo, Aider và, với khóa Anthropic của riêng bạn, GitHub Copilot CLI; với các công cụ khác như Cline hoặc Continue, bvsala doctor in ra cấu hình chính xác. Cursor hoạt động thông qua tùy chọn ghi đè URL gốc OpenAI với khóa của riêng bạn, còn Gemini CLI được bọc bằng bvsala gemini.",
       "pythonNote": "Python hay bất kỳ ngôn ngữ nào khác? Trỏ SDK chính thức của OpenAI hoặc Anthropic tới gateway và mọi yêu cầu mà nhà cung cấp báo cáo mức sử dụng, với mô hình có giá niêm yết, đều được ghi vào bảng điều khiển này theo giá đó; log của gateway sẽ báo khi có yêu cầu không được đo. bvsala doctor in ra base URL cho từng SDK. Với streaming của OpenAI, hãy yêu cầu mức sử dụng ngay trong yêu cầu (stream_options.include_usage).",
       "cta": "Xem cách hoạt động →"
@@ -2276,7 +2277,7 @@
     "title": "Engine mã nguồn mở.",
     "titleAccent": "Kiểm soát trên cloud cho nhóm của bạn.",
     "titleMark": "nhóm của bạn",
-    "governs": "Trang này mô tả cách dịch vụ hoạt động hiện nay; văn bản có hiệu lực là <license>LICENSE</license> và <terms>Điều khoản của BiVelio</terms>.",
+    "governs": "Trang này mô tả cách dịch vụ hoạt động hiện nay; văn bản có hiệu lực là <license>điều khoản của Savings Cloud (LICENSE-CLOUD.md)</license> và <terms>Điều khoản của BiVelio</terms>.",
     "lede": "Engine là mã nguồn mở: không cần khóa. Trang này định giá Savings Cloud, phần cloud tùy chọn — Measure miễn phí, rồi Pro theo chỗ hoặc gói Team, không hoa hồng trên khoản tiết kiệm của bạn. Mọi con số ở đây đọc từ chính mã tính phí bạn, nên nó đổi khi giá đổi.",
     "plans": {
       "title": "Các gói",
@@ -2430,7 +2431,7 @@
     "metaDescription": "Danh sách chính xác những gì SDK và gateway cục bộ gửi tới BiVelio, những gì chúng không bao giờ gửi, và BiVelio lưu giữ bao lâu.",
     "eyebrow": "Quyền riêng tư",
     "title": "Những gì rời khỏi hạ tầng của bạn",
-    "governs": "Trang này mô tả cách dịch vụ hoạt động hiện nay; văn bản có hiệu lực là <license>LICENSE</license> và <terms>Điều khoản của BiVelio</terms>.",
+    "governs": "Trang này mô tả cách dịch vụ hoạt động hiện nay; văn bản có hiệu lực là <license>điều khoản của Savings Cloud (LICENSE-CLOUD.md)</license> và <terms>Điều khoản của BiVelio</terms>.",
     "lede": "Những gì Phần mềm (SDK và gateway cục bộ) gửi tới BiVelio, những gì nó không bao giờ gửi, và BiVelio lưu giữ chúng bao lâu.",
     "never": {
       "title": "Không bao giờ gửi tới BiVelio",
@@ -2440,7 +2441,7 @@
     },
     "usage": {
       "title": "Bản ghi sử dụng",
-      "when": "SDK chỉ gửi bản ghi sử dụng khi bạn cấu hình máy chủ giấy phép hoặc URL đo lường; gateway cục bộ thì luôn gửi. Mỗi lô mang khóa tài khoản dịch vụ BiVelio của bạn, dùng để xác định tổ chức của bạn, cùng bề mặt và phiên bản của Phần mềm trong header <b>{header}</b>.",
+      "when": "SDK chỉ gửi bản ghi sử dụng khi bạn cấu hình máy chủ giấy phép hoặc URL đo lường; gateway cục bộ chỉ gửi khi bạn cấu hình khóa tài khoản dịch vụ. Không có khóa BiVelio nào thì cả hai đều không gửi gì đến BiVelio. Mỗi lô mang khóa tài khoản dịch vụ BiVelio của bạn, dùng để xác định tổ chức của bạn, cùng bề mặt và phiên bản của Phần mềm trong header <b>{header}</b>.",
       "limit": "Mỗi bản ghi chỉ gồm các trường bên dưới. <b>Hệ thống tiếp nhận của BiVelio từ chối mọi bản ghi mang một trường không có trong danh sách này.</b>",
       "groups": {
         "ids": {

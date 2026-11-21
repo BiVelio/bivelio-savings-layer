@@ -6,8 +6,10 @@ import { useRouter } from "@/i18n/navigation";
 import { useState } from "react";
 
 import { authConfigured } from "@/lib/supabase/env";
+import { corporateUrl } from "@/lib/corporate";
 import { safeNextPath } from "@/app/auth/safe-next";
 import { textoDeErrorDeAuth } from "@/lib/auth/error-de-auth";
+import { LICENSE_CLOUD_URL } from "@/app/components/LegalGoverns";
 
 import { Button } from "@/vendor/affectui/button-clean";
 import { TextField } from "@/vendor/affectui/text-field-clean";
@@ -238,6 +240,27 @@ export default function AuthForm({ mode }: { mode: "signup" | "login" }) {
       <Button className="acc-enviar" type="submit" variant="primary" size="xl" block loading={loading}>
         {loading ? t("working") : enReset ? t("sendResetLink") : mode === "signup" ? t("createAccountCta") : t("signInCta")}
       </Button>
+      {/* Bajo el botón de alta, qué se acepta al crear la cuenta: las
+          condiciones de la nube (LICENSE-CLOUD.md) y la política de privacidad
+          de BiVelio, que es la que cubre el correo y la organización
+          (`privacyPage.account`). Mismo estilo que «¿Has olvidado la
+          contraseña?» en el login: no cambia el diseño de la tarjeta. */}
+      {mode === "signup" ? (
+        <p className="auth-alt acc-olvido">
+          {t.rich("signupLegal", {
+            terms: (c) => (
+              <a href={LICENSE_CLOUD_URL} target="_blank" rel="noopener noreferrer">
+                {c}
+              </a>
+            ),
+            privacy: (c) => (
+              <a href={corporateUrl("/privacy", locale)} target="_blank" rel="noopener noreferrer">
+                {c}
+              </a>
+            ),
+          })}
+        </p>
+      ) : null}
       {mode === "login" ? (
         <p className="auth-alt acc-olvido">
           <button
