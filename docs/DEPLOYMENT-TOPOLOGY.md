@@ -7,7 +7,7 @@
 Launch on **Vercel** (same place the corporate site lives) for least maintenance;
 **Hetzner is the scale option**, adopted later only when volume makes the €-savings
 worth the ops work. The subdomain model below is identical either way — only the
-"Host" column changes. See `docs/COMMERCIALIZATION-PLAN.md` §0.
+"Host" column changes.
 
 ## The core idea
 
