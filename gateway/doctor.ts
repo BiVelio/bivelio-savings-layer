@@ -2,7 +2,7 @@ import { existsSync } from "node:fs";
 import { homedir } from "node:os";
 import { delimiter, join } from "node:path";
 
-import { FRASE_PALANCAS_GATEWAY, LO_QUE_ANADE_LA_NUBE } from "./textos-publicos.js";
+import { FRASE_DEPENDENCIA_GATEWAY, FRASE_PALANCAS_GATEWAY, LO_QUE_ANADE_LA_NUBE, enLineas } from "./textos-publicos.js";
 
 /**
  * `bvsala doctor`: detecta qué terminales de codificación hay en la máquina e
@@ -426,6 +426,7 @@ export async function doctor(puerto: number, opts: OpcionesDoctor = {}): Promise
     "The gateway starts with no keys at all (COMMUNITY mode: free, nothing sent to BiVelio) and meters every request.",
     FRASE_PALANCAS_GATEWAY,
     `BIVELIO_SERVICE_KEY only adds the cloud (${LO_QUE_ANADE_LA_NUBE}); it switches no lever off.`,
+    ...enLineas(FRASE_DEPENDENCIA_GATEWAY, 112),
     "",
   ];
 

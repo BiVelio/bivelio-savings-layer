@@ -29,10 +29,13 @@ import {
   upstreamHeredado,
 } from "./envoltorios.js";
 import { resumenDeMedicion } from "./recuento.js";
+import { UMBRAL_REESCRITURA } from "./tarifa.js";
 import {
+  FRASE_DEPENDENCIA_GATEWAY,
   FRASE_LA_CLAVE_SOLO_ANADE,
   FRASE_PALANCAS_GATEWAY,
   LINEA_MODO_COMUNITARIO,
+  LINEA_PALANCAS_SOLO_OBSERVAR,
   LO_QUE_ANADE_LA_NUBE,
   VARIABLE_GATEWAY_SOLO_OBSERVAR,
   enLineas,
@@ -101,10 +104,13 @@ const decision = decidirArranque(process.argv.slice(2));
 
 /** Las frases comunes de textos-publicos.ts, al ancho de la ayuda. */
 const PIE_DE_PALANCAS = enLineas(
-  `${FRASE_PALANCAS_GATEWAY} ${FRASE_LA_CLAVE_SOLO_ANADE} To only observe, without changing any request, set ` +
-    `${VARIABLE_GATEWAY_SOLO_OBSERVAR}=1.`,
+  `${FRASE_PALANCAS_GATEWAY} ${FRASE_LA_CLAVE_SOLO_ANADE} ${FRASE_DEPENDENCIA_GATEWAY} To only observe, without ` +
+    `changing any request, set ${VARIABLE_GATEWAY_SOLO_OBSERVAR}=1.`,
   98,
 ).join("\n");
+
+/** El umbral de la rebaja de TTL, el MISMO número que decide (gateway/tarifa.ts), en %. */
+const UMBRAL_TTL_PCT = Math.round(UMBRAL_REESCRITURA * 100);
 
 function ayuda(): void {
   console.log(`bvsala ${BV_SALA_VERSION} — BiVelio Savings Layer
@@ -226,15 +232,18 @@ Environment:
                              are OFF unless you also set BVSALA_GATEWAY_DIALES_ELISION=1: they
                              measured as a net loss.
                            · cache_ttl_tuning — lowers the cache-write TTL from 1h (2x the
-                             input price) to 5m (1.25x) while the session stays warm. It does
-                             NOT touch a single token the model reads: it changes the rate,
-                             not the content. API-key traffic only: a Claude Pro/Max
-                             subscription has no write surcharge and travels untouched. It
-                             only has something to lower when the client asks for the 1h
+                             input price) to 5m (1.25x) only on turns where a large part of
+                             the request is new (at least ${UMBRAL_TTL_PCT}% of the body: a
+                             session's first turn, a compaction); chained turns keep the 1h
+                             cache. It does NOT touch a single token the model reads: it
+                             changes the rate, not the content. API-key traffic only: a Claude
+                             Pro/Max subscription has no write surcharge and travels untouched.
+                             It only has something to lower when the client asks for the 1h
                              cache: Claude Code on an API key asks for 5m unless you set
-                             promptCacheTtl to 1h, and then the gateway only measures. In
-                             measured Claude Code traffic, 99.1% of turns chain within 5
-                             minutes, and at API list prices that surcharge was 8.0% of the cost.
+                             promptCacheTtl to 1h, and then the gateway only measures. On our
+                             own Claude Code traffic (one organization, a counterfactual
+                             replay, not an A/B) it left a net 2.49% of the list-price bill:
+                             savings.bivelio.com/en/benchmarks.
                          When in doubt, the request travels untouched. (Up to 0.4.13 the flag
                          was inverted: "=1 arms". In an A/B always pass it explicitly, =1 or
                          =0, so you do not depend on the installed version.)
@@ -281,6 +290,9 @@ More: savings.bivelio.com`);
 }
 
 if (decision.tipo === "ayuda") {
+  if (decision.desconocido !== undefined) {
+    console.error(`[bvsala] unknown command \`${decision.desconocido}\`. The commands are listed below.`);
+  }
   ayuda();
   process.exit(decision.salida);
 }
@@ -314,6 +326,8 @@ if (comando === "gateway" || comando === "doctor") {
   }
 }
 const effortEnv = process.env.BVSALA_GATEWAY_EFFORT;
+/** BVSALA_GATEWAY_OBSERVE_ONLY=1: paso limpio, en cualquier plan (servidor.ts `soloObservar`). */
+const soloObservar = process.env.BVSALA_GATEWAY_OBSERVE_ONLY === "1";
 const siblingModelEnv = process.env.BVSALA_GATEWAY_SIBLING_MODEL;
 
 if (comando === "mcp") {
@@ -623,7 +637,7 @@ try {
     ...(process.env.BVSALA_GATEWAY_SHADOW === "1" ? { sombra: true } : {}),
     // El modo SOLO-OBSERVAR: paso limpio, en cualquier plan. No es
     // BVSALA_GATEWAY_SHADOW (que solo estima la elisión con el resto actuando).
-    ...(process.env.BVSALA_GATEWAY_OBSERVE_ONLY === "1" ? { soloObservar: true } : {}),
+    ...(soloObservar ? { soloObservar: true } : {}),
     // S4a · las palancas, ARMADAS POR DEFECTO: el ahorro en el terminal tiene que
     // funcionar SOLO. Desde la 1.2.4 no las verja la lista de features de la org:
     // son gratis en cualquier plan y el servidor las concede localmente, como sin
@@ -710,21 +724,27 @@ if (process.env.BVSALA_GATEWAY_USAGE_INJECT === "1") {
   // conceda, así que `hayCanal` es siempre cierto.
   const comunidad = licencia.license === null;
   const hayCanal = true;
-  const estado = describirEstadoDeElision(
-    elisionPedida,
-    hayCanal,
-    process.env.BVSALA_GATEWAY_DIALES_ELISION === "1",
-    comunidad,
-  );
-  (estado.aviso ? console.error : salida)(`[bvsala gateway] ${estado.linea}`);
-  // Palanca C dicha en voz alta, por la misma razón: una bandera puesta en un
-  // terminal sin clave (o con el canal cerrado) es control en silencio.
-  const estadoHermano = describirEstadoDeHermano(siblingModelEnv, hayCanal, elisionPedida !== "0", comunidad);
-  (estadoHermano.aviso ? console.error : salida)(`[bvsala gateway] ${estadoHermano.linea}`);
-  // Palanca D dicha en voz alta por la misma razón que las otras: una palanca
-  // que se cree encendida y no lo está es la trampa muda que ya costó un A/B.
-  const estadoEsfuerzo = describirEstadoDeEsfuerzo(effortEnv, hayCanal, elisionPedida !== "0", comunidad);
-  (estadoEsfuerzo.aviso ? console.error : salida)(`[bvsala gateway] ${estadoEsfuerzo.linea}`);
+  if (soloObservar) {
+    // En modo solo-observar no actúa ninguna palanca (servidor.ts, `enMedicion`):
+    // una sola línea que lo dice, en vez de «TTL tuning ON» y «ARMED» encima.
+    salida(`[bvsala gateway] ${LINEA_PALANCAS_SOLO_OBSERVAR}`);
+  } else {
+    const estado = describirEstadoDeElision(
+      elisionPedida,
+      hayCanal,
+      process.env.BVSALA_GATEWAY_DIALES_ELISION === "1",
+      comunidad,
+    );
+    (estado.aviso ? console.error : salida)(`[bvsala gateway] ${estado.linea}`);
+    // Palanca C dicha en voz alta, por la misma razón: una bandera puesta en un
+    // terminal sin clave (o con el canal cerrado) es control en silencio.
+    const estadoHermano = describirEstadoDeHermano(siblingModelEnv, hayCanal, elisionPedida !== "0", comunidad);
+    (estadoHermano.aviso ? console.error : salida)(`[bvsala gateway] ${estadoHermano.linea}`);
+    // Palanca D dicha en voz alta por la misma razón que las otras: una palanca
+    // que se cree encendida y no lo está es la trampa muda que ya costó un A/B.
+    const estadoEsfuerzo = describirEstadoDeEsfuerzo(effortEnv, hayCanal, elisionPedida !== "0", comunidad);
+    (estadoEsfuerzo.aviso ? console.error : salida)(`[bvsala gateway] ${estadoEsfuerzo.linea}`);
+  }
   if (planAnillo2.linea) {
     (planAnillo2.aviso ? console.error : salida)(`[bvsala gateway] ${planAnillo2.linea}`);
   }
@@ -757,7 +777,7 @@ function imprimirResumenes(): void {
   resumido = true;
   const degradado = resumenDeDegradaciones(arranque.degradaciones());
   if (degradado) console.error(degradado);
-  console.error(resumenDeMedicion(arranque.medicion(), comando, { logVisible: !silencioso }));
+  console.error(resumenDeMedicion(arranque.medicion(), comando, { logVisible: !silencioso, soloObservar }));
 }
 
 /** El terminal envuelto, mientras viva: las señales se deciden con él (A2-11). */

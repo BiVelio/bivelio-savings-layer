@@ -78,7 +78,7 @@ const AVISO_TOKENIZADOR =
   "[bvsala] `gpt-tokenizer` is not installed, so token counts for OpenAI models are " +
   "ESTIMATED with a built-in heuristic and the reconstructed savings are less accurate. " +
   "Savings where the layer removed something are reported as `estimated` either way, " +
-  "and estimated savings are never billed. Install it once (`npm i gpt-tokenizer`) and " +
+  "and estimated savings are always shown apart from measured ones. Install it once (`npm i gpt-tokenizer`) and " +
   "the SDK loads it automatically.";
 
 /** The public handle returned by {@link createSavingsLayer}. */

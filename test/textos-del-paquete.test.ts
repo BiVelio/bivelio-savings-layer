@@ -4,16 +4,22 @@ import { spawnSync } from "node:child_process";
 import { beforeAll, describe, expect, it } from "vitest";
 
 import {
+  FRASE_DEPENDENCIA_GATEWAY,
+  FRASE_DEPENDENCIA_SDK,
   FRASE_LA_CLAVE_SOLO_ANADE,
   FRASE_PALANCAS_GATEWAY,
   FRASE_PALANCAS_SDK,
   LINEA_MODO_COMUNITARIO,
   LINEA_PALANCAS_SIN_CLAVE,
+  LINEA_PALANCAS_SOLO_OBSERVAR,
   LO_QUE_ANADE_LA_NUBE,
   OPCION_SDK_SOLO_OBSERVAR,
+  URL_DISPONIBILIDAD,
   VARIABLE_GATEWAY_SOLO_OBSERVAR,
   enLineas,
 } from "../gateway/textos-publicos.js";
+import { DEFAULT_MAX_STALENESS_SECONDS } from "../src/pipeline/create.js";
+import { UMBRAL_REESCRITURA } from "../gateway/tarifa.js";
 import { doctor } from "../gateway/doctor.js";
 import { cableado } from "../gateway/init-fragmentos.js";
 import { conFicheros, detectar, planear, textoDelPlan, type SondaDeProyecto } from "../gateway/init.js";
@@ -252,6 +258,7 @@ describe("`bvsala doctor` e `init` (grupo 3)", () => {
     const { texto } = await doctor(8402, { home: "/casa/prueba", path: "", existe: () => false, enPath: () => false });
     expect(texto).toContain(FRASE_PALANCAS_GATEWAY);
     expect(texto).toContain(`BIVELIO_SERVICE_KEY only adds the cloud (${LO_QUE_ANADE_LA_NUBE}); it switches no lever off.`);
+    expect(plano(texto)).toContain(FRASE_DEPENDENCIA_GATEWAY);
     expect(texto).not.toMatch(/every local saving lever|org entitlements/);
   });
 
@@ -268,6 +275,7 @@ describe("`bvsala doctor` e `init` (grupo 3)", () => {
     const junto = plano(texto);
     expect(junto).toContain(FRASE_PALANCAS_SDK);
     expect(junto).toContain(FRASE_LA_CLAVE_SOLO_ANADE);
+    expect(junto).toContain(FRASE_DEPENDENCIA_SDK);
     expect(junto).toContain(`add ${LO_QUE_ANADE_LA_NUBE}.`);
     expect(junto).toContain(`To only observe, without changing any request: \`${OPCION_SDK_SOLO_OBSERVAR}: true\`.`);
     expect(junto).not.toMatch(/every local lever|team metering/);
@@ -301,6 +309,7 @@ describe.skipIf(process.platform === "win32")("`bvsala --help` (grupo 3), ejecut
   it("dice las dos frases comunes y nombra la variable de solo observar", () => {
     expect(ayuda).toContain(FRASE_PALANCAS_GATEWAY);
     expect(ayuda).toContain(FRASE_LA_CLAVE_SOLO_ANADE);
+    expect(ayuda).toContain(FRASE_DEPENDENCIA_GATEWAY);
     expect(ayuda).toContain(`To only observe, without changing any request, set ${VARIABLE_GATEWAY_SOLO_OBSERVAR}=1.`);
     expect(ayuda).toContain(`BIVELIO_SERVICE_KEY only adds the cloud: ${LO_QUE_ANADE_LA_NUBE}.`);
   });
@@ -310,6 +319,18 @@ describe.skipIf(process.platform === "win32")("`bvsala --help` (grupo 3), ejecut
     expect(ayuda).not.toMatch(/with an organization license, only if it includes/);
     expect(ayuda).not.toMatch(/every local (saving )?lever|all local levers|arms every local/);
     expect(ayuda).toContain("It switches no lever off.");
+  });
+
+  it("⛔ describe la rebaja de TTL como la decide el código: solo con mucho cuerpo nuevo, nunca en turnos encadenados", () => {
+    // Verificación final de la 1.2.4, bloqueante 4: decía «while the session stays
+    // warm» (lo contrario de gateway/tarifa.ts decidirRebaja) y citaba un 99,1 % y
+    // un 8,0 % sin fuente en el repositorio.
+    expect(ayuda).toContain(`at least ${Math.round(UMBRAL_REESCRITURA * 100)}% of the body`);
+    expect(ayuda).toContain("chained turns keep the 1h cache");
+    expect(ayuda).not.toMatch(/stays warm|99\.1%|8\.0% of the cost/);
+    // La cifra que sí cita tiene fuente: el replay de la página de benchmarks (apps/web/lib/portada/palanca-ttl.ts).
+    expect(ayuda).toContain("a counterfactual replay, not an A/B) it left a net 2.49% of the list-price bill");
+    expect(leer("apps/web/lib/portada/palanca-ttl.ts")).toContain("neto: { point: 0.0249,");
   });
 
   it("dice que con suscripción solo mide, que los diales van apagados y qué imprime al salir", () => {
@@ -323,5 +344,123 @@ describe("los nombres de solo observar que cita el paquete existen en el código
   it("⛔ `observeOnly` (SDK) y `BVSALA_GATEWAY_OBSERVE_ONLY` (gateway) están en src/ y gateway/: este PR no puede publicarse sin el de Measure", () => {
     expect(leer("src/pipeline/config.ts")).toMatch(/observeOnly\??:/);
     expect(leer("gateway/bin.ts")).toContain("BVSALA_GATEWAY_OBSERVE_ONLY");
+  });
+});
+
+/**
+ * VERIFICACIÓN FINAL DE LA 1.2.4 (lente de textos, bloqueantes 2, 3 y 4).
+ *
+ * Lo que una persona que llega desde Product Hunt lee antes que nada: las dos
+ * cifras de cabecera con su condición, qué dependencia trae una clave y cómo
+ * actúa la única palanca del gateway que va encendida por defecto.
+ */
+describe("verificación final 1.2.4 · la clave trae una dependencia, y se dice", () => {
+  it("las 72 h del texto son las del código (DEFAULT_MAX_STALENESS_SECONDS)", () => {
+    expect(DEFAULT_MAX_STALENESS_SECONDS / 3600).toBe(72);
+    expect(FRASE_DEPENDENCIA_SDK).toContain(`${DEFAULT_MAX_STALENESS_SECONDS / 3600} hours`);
+    expect(FRASE_DEPENDENCIA_SDK).toContain("`licenseServerUrl`");
+    expect(FRASE_DEPENDENCIA_SDK).toContain("`LicenseError`");
+    expect(FRASE_DEPENDENCIA_SDK).toContain("the free Measure key included");
+    expect(FRASE_DEPENDENCIA_SDK).toContain("With no key there is no such dependency.");
+    expect(FRASE_DEPENDENCIA_GATEWAY).toContain("With no key there is no such dependency.");
+  });
+
+  it("el README la dice en «Community vs Cloud» y en el paso 2, con enlace a SECURITY.md (Availability)", () => {
+    expect(readme.split(FRASE_DEPENDENCIA_SDK).length - 1).toBe(2);
+    expect(readme).toContain(URL_DISPONIBILIDAD);
+    // El ancla existe en SECURITY.md.
+    expect(leer("SECURITY.md")).toMatch(/^## Availability: what happens if our servers do not respond$/m);
+    // El resumen de arriba no promete «solo añade» sin el matiz.
+    expect(readme).toContain("A key only adds the cloud: it switches no lever off, though it does tie the layer to savings.bivelio.com");
+    expect(readme).not.toContain("Take it and nothing is switched off either");
+  });
+
+  it("la ficha de PyPI y la guía de terminales dicen la del gateway (arrancar, no 72 h)", () => {
+    expect(pypi).toContain(FRASE_DEPENDENCIA_GATEWAY);
+    expect(guiaDeTerminales).toContain(FRASE_DEPENDENCIA_GATEWAY);
+  });
+
+  it("el cableado de `init` lo dice junto a las tres líneas de la receta", () => {
+    const codigo = plano(cableado("sdk", "openai"));
+    expect(codigo).toContain("with a key the layer // needs savings.bivelio.com: 72 hours with no answer from it");
+  });
+
+  it("la tarjeta de la nube ya no dice «a fixed fee per seat» sin más: Measure es gratis", () => {
+    expect(readme).toContain("free on Measure, a fixed subscription on Pro and Team, and never a commission on what you save");
+    expect(readme).not.toContain("The cloud is the paid, optional part.");
+  });
+});
+
+describe("verificación final 1.2.4 · las cifras de cabecera llevan su condición", () => {
+  it("README: carga construida con preguntas de GSM8K, 30 % de repeticiones exactas, ~41 puntos de caché de Anthropic", () => {
+    expect(readme).not.toContain("Pooled reductions on the public GSM8K benchmark");
+    expect(readme).toContain("**Pooled reductions on a public workload built from GSM8K questions, 30 % of them exact repeats**");
+    expect(readme).toContain("SDK 0.4.31 artifacts from September 2026, recomputed offline with no new provider calls");
+    expect(readme).toContain("about 41 points of which are a descriptive contrast of Anthropic's cache pricing");
+    expect(readme).toContain("pooled reductions of **31.50 %** and **75.08 %** on a workload with 30 % exact repeats");
+    // El −82,76 % dice con qué versión y cuándo se midió.
+    expect(readme).toContain("−82.76 % cost per request in that constructed sequence (measured with 1.2.0 on 15 Nov 2026;");
+  });
+
+  it("PyPI: lo mismo en su titular", () => {
+    expect(pypi).toContain("31.50 % / 75.08 % on a public workload built from GSM8K questions, 30 % of them exact repeats");
+    expect(pypi).toContain("about 41 points of the 75.08 % are Anthropic's cache pricing");
+  });
+
+  it("las cifras que se citan son las del paper (30 % de repeticiones, 41,08 puntos)", () => {
+    const paper = plano(leer("docs/PAPER.md"));
+    expect(paper).toContain("30 % exact-repeat");
+    expect(paper).toContain("41.08 percentage points");
+    expect(paper).toContain("SDK 0.4.31");
+  });
+});
+
+describe("verificación final 1.2.4 · la guía de terminales describe la palanca de TTL como el código", () => {
+  it("solo con mucho cuerpo nuevo; los turnos encadenados no se tocan; sin «stays warm»", () => {
+    expect(guiaDeTerminales).toContain(
+      "lowers the cache-write TTL from one hour to five minutes only on turns where a large part of the prompt is new " +
+        `(at least ${Math.round(UMBRAL_REESCRITURA * 100)} % of the request body`,
+    );
+    expect(guiaDeTerminales).toContain("leaves chained turns as they are");
+    for (const g of guias) expect(plano(leer(`docs/terminales/${g}`)), g).not.toMatch(/stays warm|99\.1 ?%/);
+  });
+
+  it("la línea de ejemplo de suscripción es la que imprime recuento.ts", () => {
+    expect(guiaDeTerminales).toContain(
+      "saved $0.00: no saving is credited on a subscription (there is no per-token invoice); with the defaults the gateway changes nothing there.",
+    );
+    expect(guiaDeTerminales).not.toContain("on a subscription the gateway only measures and changes nothing");
+  });
+});
+
+describe("verificación final 1.2.4 · el cartel y los ejemplos", () => {
+  it("el cartel nombra la variable de los diales", () => {
+    expect(leer("docs/terminales/README.md")).toContain("context elision dials OFF (BVSALA_GATEWAY_DIALES_ELISION=1 turns them on)");
+    expect(readme).toContain("except `BVSALA_GATEWAY_DIALES_ELISION` (the context elision dials, off by default)");
+  });
+
+  it("en modo solo-observar el cartel no dice que la rebaja de TTL va encendida", () => {
+    expect(LINEA_PALANCAS_SOLO_OBSERVAR).toContain("OBSERVE-ONLY");
+    expect(LINEA_PALANCAS_SOLO_OBSERVAR).toContain(`${VARIABLE_GATEWAY_SOLO_OBSERVAR}=1`);
+    expect(LINEA_PALANCAS_SOLO_OBSERVAR).toContain("no lever is applied");
+    expect(LINEA_PALANCAS_SOLO_OBSERVAR).not.toMatch(/ON by default|ARMED/);
+  });
+
+  it("⛔ los ejemplos del repositorio ya no dicen que el paquete necesita licencia", () => {
+    for (const f of ["examples/stacks/README.md", "examples/stacks/nextjs/run.ts"]) {
+      const texto = plano(leer(f));
+      expect(texto, f).not.toMatch(/no unlicensed mode|needs? `?BIVELIO_LICENSE_KEY`?/);
+      expect(texto, f).toMatch(/COMMUNITY mode: free, nothing sent to BiVelio/);
+    }
+  });
+
+  it("el README no dice que el SDK y el gateway sean lo mismo: el gateway es un proxy local", () => {
+    expect(readme).toContain("the SDK is a library inside your code, never a middleman server (the optional gateway is a local proxy on your own machine)");
+  });
+
+  it("solo observar: el README dice qué informa cada uno, y que los adaptadores no lo tienen", () => {
+    expect(readme).toContain("In the SDK, `report.measure.wouldHaveSaved`");
+    expect(readme).toContain("In the gateway, a `measure (shadow)` log line says what cache TTL tuning and the sibling model would have saved");
+    expect(readme).toContain("The framework adapters have no observe-only mode");
   });
 });

@@ -79,6 +79,12 @@ export interface OpcionesDeResumen {
    * con BVSALA_GATEWAY_LOG=1). Si no, la línea dice cómo verlo la próxima vez.
    */
   logVisible?: boolean;
+  /**
+   * `BVSALA_GATEWAY_OBSERVE_ONLY=1`: ninguna palanca actuó, así que el «saved
+   * $0.00» lo explica ESO y no la regla de la rebaja de TTL (verificación final
+   * de la 1.2.4: la línea daba un motivo falso a una sesión que sí pedía 1 h).
+   */
+  soloObservar?: boolean;
 }
 
 /** Tope de motivos distintos que se guardan: un motivo lleva el id del modelo. */
@@ -172,7 +178,7 @@ export function dolares(usd: number): string {
  * era suscripción, o ninguna palanca cambió nada); si las palancas salieron
  * caras lo dice igual, con la variable que las apaga. Vacía si nada se midió.
  */
-export function fraseDeDinero(e: EstadoDeMedicion): string {
+export function fraseDeDinero(e: EstadoDeMedicion, opciones?: OpcionesDeResumen): string {
   if (e.medidas === 0 && e.replicas === 0) return "";
   const d = e.dinero;
   const todoSuscripcion = e.medidas > 0 && d.deSuscripcion === e.medidas;
@@ -196,7 +202,10 @@ export function fraseDeDinero(e: EstadoDeMedicion): string {
   }
   if (partes.length === 0) {
     partes.push(
-      todoSuscripcion
+      opciones?.soloObservar
+        ? "saved $0.00: observe-only mode (BVSALA_GATEWAY_OBSERVE_ONLY=1) applies no lever; what they would have " +
+            "saved is in the per-request `measure (shadow)` lines, never counted as a saving"
+        : todoSuscripcion
         ? "saved $0.00: no saving is credited on a subscription (there is no per-token invoice); " +
             "with the defaults the gateway changes nothing there"
         : "saved $0.00: nothing was credited (cache TTL tuning is credited only on Anthropic API-key traffic " +
@@ -234,7 +243,7 @@ export function resumenDeMedicion(e: EstadoDeMedicion, quien: string, opciones?:
       "those calls went straight to the provider and were not metered: check its guide in docs/terminales/."
     );
   }
-  const dinero = fraseDeDinero(e);
+  const dinero = fraseDeDinero(e, opciones);
   const medidas =
     (e.recibidas > 0 ? `${e.recibidas} inference request(s) went through the gateway · ` : "") +
     `${e.medidas} request(s) metered with the provider's usage` +

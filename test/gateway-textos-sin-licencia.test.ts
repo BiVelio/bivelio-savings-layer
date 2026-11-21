@@ -82,6 +82,10 @@ describe.skipIf(process.platform === "win32")("A2-14/A2-23/A2-29 · sin clave, n
     );
     // La frase del 8,0 % no describe tráfico de suscripción como factura de API.
     expect(r.stdout).not.toContain("8.0% of the bill");
-    expect(r.stdout).toMatch(/at API list prices that surcharge was 8\.0% of the cost/);
+    // Verificación final de la 1.2.4: el 99,1 % y el 8,0 % no tenían fuente en el
+    // repositorio y describían una regla que el código no aplica («while the
+    // session stays warm»). La cifra que queda es la del replay publicado.
+    expect(r.stdout).not.toMatch(/surcharge was 8\.0% of the cost|99\.1% of turns|stays warm/);
+    expect(r.stdout).toMatch(/it left a net 2\.49% of the list-price bill/);
   });
 });
