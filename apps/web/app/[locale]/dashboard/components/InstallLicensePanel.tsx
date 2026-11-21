@@ -283,7 +283,7 @@ export async function InstallLicensePanel({ ctx }: { ctx: OrgContext }) {
           </p>
           <TrialKeyButton monthly={precioMensual} yearly={precioAnual} />
 
-          {/* La alternativa gratuita y sin tarjeta: la licencia Medir (modo sombra).
+          {/* La alternativa gratuita y sin tarjeta: la licencia Medir (ahorra igual que sin clave).
               No se le ofrece a quien ya paga. */}
           {ctx.medir !== "de-pago" ? (
             <div className="ins-measure">
