@@ -1234,7 +1234,7 @@
       "ctaStart": "Mit Measure starten",
       "ctaBench": "Reproduzierbare Ergebnisse ansehen",
       "panelAlt": "Das Savings-Dashboard mit den Daten des öffentlichen Benchmarks: die gemessene Einsparung und ihre Aufteilung nach Modell.",
-      "panelCaption": "Demo-Dashboard mit dem {bateria}-Lauf des öffentlichen Benchmarks: Die {titular} beziehen sich auf alle vier Modelle zusammen, ohne den Cache-Preis-Kontrast. Der Beleg zeigt nur {modelo}.",
+      "panelCaption": "Demo-Dashboard mit dem {bateria}-Lauf des öffentlichen Benchmarks: Die {titular} beziehen sich auf alle vier Modelle zusammen. Der Beleg zeigt nur {modelo}.",
       "medidoEnVivo": "Live gemessen mit dem Zähler jedes Anbieters",
       "note": "In Minuten installiert. Deine Nachrichten laufen nie über unsere Server.",
       "proofTitle": "Gegen echten Provider gemessen",
@@ -1758,7 +1758,7 @@
     "title": "Unser A/B-Benchmark, offen einsehbar.",
     "titleAccent": "Messen Sie uns.",
     "titleMark": "Messen Sie uns",
-    "lede": "Wir veröffentlichen jeden Lauf: vier Testreihen mit öffentlichen Datensätzen, {modelos} Modelle, und beide Arme gemessen mit dem eigenen Nutzungszähler des Anbieters. Jede Zahl trägt ihr n, ihr Intervall und ihr Datum. Was nicht einspart, steht auch hier.",
+    "lede": "Wir veröffentlichen die unten aufgeführten Läufe: vier Testreihen mit öffentlichen Datensätzen, {modelos} Modelle, und beide Arme gemessen mit dem eigenen Nutzungszähler des Anbieters. Jede Zahl trägt ihr n, ihr Intervall und ihr Datum. Was nicht einspart, steht auch hier.",
     "stats": {
       "batteries": "Testreihen",
       "models": "getestete Modelle",
@@ -1779,7 +1779,7 @@
     },
     "weekly": {
       "title": "Wöchentlicher Live-Benchmark",
-      "intro": "Jede Woche, und immer wenn wir ihn von Hand starten, schickt ein Lauf alle Batterien durch alle Modelle: Arm A geht direkt zum Anbieter, Arm B durch die Schicht, gebaut aus dem Quellcode von main zu diesem Zeitpunkt. Das ist keine veröffentlichte Version, sondern das, was gleich veröffentlicht wird. Der Lauf schlägt fehl, wenn irgendeine Regel verletzt wird, und eine Zelle, die nicht gemessen werden konnte, sagt, warum.",
+      "intro": "Ein Lauf schickt alle Batterien durch alle Modelle: Arm A geht direkt zum Anbieter, Arm B durch die Schicht, gebaut aus dem Quellcode von main zu diesem Zeitpunkt. Das ist keine veröffentlichte Version, sondern das, was gleich veröffentlicht wird. Der Lauf schlägt fehl, wenn irgendeine Regel verletzt wird, und eine Zelle, die nicht gemessen werden konnte, sagt, warum.",
       "meta": "Lauf vom {fecha} · Quellcode von main bei Commit {commit} (Paketversion {version}) · ausgegeben {gasto} von einem Limit von {tope} · {medidas} von {celdas} Zellen gemessen.",
       "verdictOk": "Ergebnis: keine Regressionen.",
       "verdictFailed": "Ergebnis: der Lauf ist fehlgeschlagen (verletzte Regeln: {n}).",

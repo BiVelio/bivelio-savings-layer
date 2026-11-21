@@ -1234,7 +1234,7 @@
       "ctaStart": "Measure ile başlayın",
       "ctaBench": "Tekrarlanabilir sonuçları görün",
       "panelAlt": "Herkese açık test tezgâhının verileriyle Savings paneli: ölçülen tasarruf ve modele göre dağılımı.",
-      "panelCaption": "Herkese açık test tezgâhının {bateria} koşusuyla demo paneli: {titular} dört modelin birlikte sonucudur, önbellek fiyatlandırma kontrastı hariç. Fiş yalnızca {modelo} içindir.",
+      "panelCaption": "Herkese açık test tezgâhının {bateria} koşusuyla demo paneli: {titular} dört modelin birlikte sonucudur. Fiş yalnızca {modelo} içindir.",
       "medidoEnVivo": "Her sağlayıcının kendi sayacıyla canlı ölçüldü",
       "note": "Dakikalar içinde kurulur. Mesajlarınız asla bizim sunucularımızdan geçmez.",
       "proofTitle": "Gerçek sağlayıcıya karşı ölçüldü",
@@ -1758,7 +1758,7 @@
     "title": "A/B testimiz, açıkta.",
     "titleAccent": "Bizi ölçün.",
     "titleMark": "Bizi ölçün",
-    "lede": "Her koşuyu yayınlıyoruz: herkese açık veri kümeleri üzerinde dört batarya, {modelos} model ve her iki kol da sağlayıcının kendi kullanım sayacıyla ölçülüyor. Her sayı kendi n değerini, aralığını ve tarihini taşır. Tasarruf sağlamayan da burada.",
+    "lede": "Aşağıda listelenen koşuları yayınlıyoruz: herkese açık veri kümeleri üzerinde dört batarya, {modelos} model ve her iki kol da sağlayıcının kendi kullanım sayacıyla ölçülüyor. Her sayı kendi n değerini, aralığını ve tarihini taşır. Tasarruf sağlamayan da burada.",
     "stats": {
       "batteries": "batarya",
       "models": "denenen model",
@@ -1779,7 +1779,7 @@
     },
     "weekly": {
       "title": "Haftalık canlı test",
-      "intro": "Her hafta ve elle her başlattığımızda, bir koşu tüm bataryaları tüm modellerden geçirir: A kolu doğrudan sağlayıcıya gider, B kolu o anki main kaynak kodundan derlenen katmandan geçer. Bu yayımlanmış bir sürüm değildir: yayımlanmak üzere olan şeydir. Herhangi bir kural bozulursa koşu başarısız olur ve ölçülemeyen bir hücre nedenini söyler.",
+      "intro": "Bir koşu tüm bataryaları tüm modellerden geçirir: A kolu doğrudan sağlayıcıya gider, B kolu o anki main kaynak kodundan derlenen katmandan geçer. Bu yayımlanmış bir sürüm değildir: yayımlanmak üzere olan şeydir. Herhangi bir kural bozulursa koşu başarısız olur ve ölçülemeyen bir hücre nedenini söyler.",
       "meta": "{fecha} koşusu · {commit} commit'indeki main kaynak kodu (paket sürümü {version}) · {tope} tavanın {gasto} kadarı harcandı · {celdas} hücreden {medidas} tanesi ölçüldü.",
       "verdictOk": "Karar: gerileme yok.",
       "verdictFailed": "Karar: koşu başarısız (bozulan kurallar: {n}).",

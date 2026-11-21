@@ -794,10 +794,10 @@ describe("el héroe: las cifras van en la captura del banco público, y el texto
 
   it("el pie dice de dónde salen los datos del panel y por qué su titular no es la cifra del recibo (auditoría m10)", () => {
     expect(cargar("es")["landing.hero.panelCaption"]).toBe(
-      "Panel de demostración con la tirada {bateria} del banco público: el {titular} es el de los cuatro modelos juntos, sin el contraste de precios de caché. El recibo es solo {modelo}.",
+      "Panel de demostración con la tirada {bateria} del banco público: el {titular} es el de los cuatro modelos juntos. El recibo es solo {modelo}.",
     );
     expect(cargar("en")["landing.hero.panelCaption"]).toBe(
-      "Demo dashboard with the public bench's {bateria} run: {titular} is for the four models together, without the cache-pricing contrast. The receipt is {modelo} alone.",
+      "Demo dashboard with the public bench's {bateria} run: {titular} is for the four models together. The receipt is {modelo} alone.",
     );
     // Los doce, con sus tres marcadores (las cifras llegan por parámetro).
     for (const loc of LOCALES) {
