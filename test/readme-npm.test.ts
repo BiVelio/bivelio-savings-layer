@@ -242,3 +242,39 @@ describe("la entrada 1.2.3 del CHANGELOG dice lo que hace el catálogo", () => {
     expect(precioDeLista(modelo), modelo).toBeDefined();
   });
 });
+
+/**
+ * AUDITORÍA DE MEDIOS PÚBLICOS (m04, m07, m20): lo que el README y las guías
+ * dicen tiene que ser lo que el paper y la web sostienen.
+ */
+describe("el README dice lo que el paper y la web sostienen", () => {
+  const plano = readme.replace(/\s+/g, " ");
+
+  it("m07 · el titular es «recomputed from the public artifacts» y el −82,76 % va como A/B exploratorio, no como titular", () => {
+    expect(plano).not.toMatch(/independently re-checked/i);
+    expect(readme).toContain("### Measured, not promised — recomputed from the public artifacts");
+    expect(plano).toContain("**Exploratory live A/B (20 requests per arm)**");
+    expect(plano).not.toMatch(/\*\*82[.,]76/);
+    expect(plano).not.toMatch(/no quality loss/i);
+    const python = leer("packages/python/README.md").replace(/\s+/g, " ");
+    expect(python).toContain("exploratory live A/B (20 requests per arm)");
+    expect(python).not.toMatch(/> Live A\/B/);
+  });
+
+  it("m20 · el banco publicado se enlaza en /en/benchmarks con sus informes JSON, no en /how-it-works con un CSV", () => {
+    expect(plano).not.toMatch(/raw CSV/i);
+    expect(plano.match(/raw JSON reports/g)).toHaveLength(2);
+    expect(plano.match(/\(https:\/\/savings\.bivelio\.com\/en\/benchmarks\)/g)).toHaveLength(2);
+  });
+
+  it("m20 · la guía de persistencia avisa de que @bivelio/persistence-postgres aún no está en npm", () => {
+    expect(leer("docs/guias/persistencia.md").replace(/\s+/g, " ")).toContain("**Not on npm yet** (release candidate)");
+  });
+
+  it("m04 · «Licensing & privacy» dice qué es Apache-2.0 y qué se publica solo por transparencia", () => {
+    const legal = seccionLegal().replace(/\s+/g, " ");
+    expect(legal).toContain("**What the Apache-2.0 license covers.**");
+    expect(legal).toContain("the Python client (`packages/python`) are Apache-2.0");
+    expect(legal).toContain("for transparency only");
+  });
+});

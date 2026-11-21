@@ -90,6 +90,9 @@ deletion controls as the original data. Breakpoints contain fingerprints,
 timestamps and counters, never prompt text. Constraint learning stores only a
 hash of tenant, scope, provider, served model and contract.
 
+**Not on npm yet** (release candidate): until it is published, build it from
+`packages/persistence-postgres` in this repository.
+
 The breakpoint adapter uses revisions and compare-and-set. Semantic calibration
 uses short transactions and idempotent observation IDs, so concurrent instances
 continue one history instead of spending the same confidence budget independently.
