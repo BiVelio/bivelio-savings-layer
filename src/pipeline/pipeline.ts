@@ -1819,6 +1819,31 @@ export class SavingsPipeline {
     };
   }
 
+  /**
+   * ¿Borrar un tool_result VIEJO rompería una caché de prefijo que el proveedor
+   * ya está leyendo? Entonces lo que se ahorra en el muñón se paga con creces
+   * re-leyendo a precio pleno todo lo que va detrás. Devuelve el motivo, o null.
+   *
+   *  · `cacheBreakpoints: "auto"` en un modelo que cobra la escritura (Anthropic):
+   *    el colocador pone puntos dentro del historial.
+   *  · Modelos con caché automática de TODO el prompt que cobran la lectura al
+   *    10-25 % (gpt-5, gpt-4.1, serie o): cualquier cambio a mitad del historial
+   *    vuelve a cobrar entero lo que va detrás.
+   *
+   * Medido (agente de 60 pasos, proveedor falso): con Pro en la 1.2.4, gpt-5
+   * pasaba de 0 % a +12,2 % frente a no llevar capa, y "auto" en Anthropic de
+   * −84,4 % a −71,5 %.
+   */
+  private elisionRompeLaCacheDelProveedor(modelo: string): string | null {
+    if (this.config.cacheBreakpoints === "auto" && tramoDeCache(modelo, this.config.compressionEconomics).cacheWriteMultiplier > 1) {
+      return 'cacheBreakpoints "auto" places cache points inside the history: replacing an old tool result would re-bill everything after it';
+    }
+    const desnudo = modelo.toLowerCase().replace(/^.*\//, "");
+    if (/^(gpt-5|gpt-4\.1|o[1-9](-|$))/.test(desnudo)) {
+      return "this model caches the whole prompt automatically and bills cached input at 10-25%: replacing an old tool result would re-bill everything after it at the full price";
+    }
+    return null;
+  }
 
   /** La huella de un prefijo, la misma que la colocación fija (viaja como `prompt_cache_key`). */
   private huellaDelPrefijo(
@@ -3258,8 +3283,19 @@ export class SavingsPipeline {
     //   · `policy.allowElision` (declina con herramientas de escritura, datos
     //     frescos, personalizado, estocástico o frescura de día);
     //   · `ELISION_EN_VIVO` (apagado, solo traza);
-    //   · el opt-out explícito por petición: `savings: { elision: false }`.
+    //   · el opt-out explícito por petición: `savings: { elision: false }`;
+    //   · que recortar ROMPA una caché que el proveedor ya está leyendo
+    //     (`elisionRompeLaCacheDelProveedor`): entonces no se toca nada y la
+    //     traza dice por qué.
+    const elisionRompeCache = this.elisionRompeLaCacheDelProveedor(request.model);
     if (
+      toggles.elision !== false &&
+      policy.allowElision &&
+      this.entitled("tool_result_elision") &&
+      elisionRompeCache !== null
+    ) {
+      trace.record("elision", "skipped", { reason: elisionRompeCache });
+    } else if (
       toggles.elision !== false &&
       policy.allowElision &&
       this.entitled("tool_result_elision")
