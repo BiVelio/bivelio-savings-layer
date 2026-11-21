@@ -1,0 +1,36 @@
+name: Question
+description: A question about how the package behaves, or a gap in the documentation.
+labels: ["question"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Open questions, ideas and "how do I…" get the fastest answer in [Discussions](https://github.com/BiVelio/bivelio-savings-layer/discussions). Account, billing and onboarding questions: **support@bivelio.com**.
+
+        **Never paste API keys, license keys, service keys (`bvk_…`), prompts or customer data.**
+  - type: textarea
+    id: question
+    attributes:
+      label: Your question
+      description: What you are trying to do, and what you read in the README, the guides or the paper.
+    validations:
+      required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - SDK in my TypeScript/JavaScript app
+        - Local gateway (bvsala) and coding agents
+        - Python client
+        - Measurement, reports and the four ledgers
+        - Benchmarks and the paper
+        - Licensing and the optional cloud
+        - Other
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Package version, if you have it installed
+      placeholder: "@bivelio/savings-layer 1.2.3"
