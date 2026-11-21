@@ -110,8 +110,17 @@ describe("el panel no promete lo que no hay", () => {
         "On by default: exact cache, deduplication, local resolvers, provider cache placement and trimming of superseded tool results; the rest you switch on.",
       );
     }
-    expect(en["dashboard.measurePlan.keyLabel"]).toContain("the same levers as with no key");
-    expect(en["dashboard.measurePlan.card.empty"]).toContain("Measure applies the same levers as with no key.");
+    expect(en["dashboard.measurePlan.keyLabel"]).toContain("the same levers as with no key, one exception in the README");
+    // 1.2.4 · con clave el recorte de resultados sustituidos solo actúa en el bucle
+    // de herramientas de Anthropic (decisión del dueño): el panel no dice «las
+    // mismas palancas» sin la excepción (verificación 4).
+    expect(en["dashboard.measurePlan.card.empty"]).toContain(
+      "Measure applies the same levers as with no key, except trimming of superseded tool results outside an Anthropic tool loop.",
+    );
+    expect(en["dashboard.measurePlan.body"]).toContain(
+      "the layer applies the same levers as with no key, except that trimming of superseded tool results only acts inside a tool loop on Anthropic",
+    );
+    expect(en["dashboard.measurePlan.body"]).not.toContain("saves exactly as it does with no key");
   });
 
   it("en · Measure no se describe como modo sombra: la sombra es la excepción, nombrada como tal", () => {

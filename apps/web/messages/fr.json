@@ -1200,10 +1200,10 @@
     },
     "measurePlan": {
       "title": "Ou commencez gratuitement : la licence Measure, sans carte",
-      "body": "L'offre cloud gratuite pour 1 organisation et jusqu'à {seats} postes : la couche économise exactement comme sans clé, et votre tableau de bord montre les économies réelles. Jamais facturé, sans commission.",
+      "body": "L'offre cloud gratuite pour 1 organisation et jusqu'à {seats} postes : la couche applique les mêmes leviers que sans clé, sauf que l'élagage des résultats d'outils remplacés n'agit qu'à l'intérieur d'une boucle d'outils sur Anthropic, et votre tableau de bord montre les économies réelles. Jamais facturé, sans commission.",
       "claim": "Obtenir ma licence Measure gratuite",
       "claiming": "Émission…",
-      "keyLabel": "Votre clé de licence Measure (gratuite : les mêmes leviers que sans clé)",
+      "keyLabel": "Votre clé de licence Measure (gratuite : les mêmes leviers que sans clé, une exception dans le README)",
       "keyHint": "Utilisez-la comme BIVELIO_LICENSE_KEY, exactement comme une clé payante. Si vous passez à une offre payante, la couche récupère seule la licence payante.",
       "errEmailNotVerified": "Confirmez d'abord votre adresse e-mail, puis réessayez.",
       "errDisposableEmail": "Les adresses e-mail jetables ne peuvent pas obtenir la licence Measure. Inscris-toi avec une adresse permanente (celle du travail, par exemple) et réessaie.",
@@ -1225,7 +1225,7 @@
         "shadowTitle": "Ce que vous auriez économisé",
         "amount": "{amount} que vous n'auriez pas dépensés",
         "context": "Hypothétique, et à part de vos économies réelles. Cela vient de machines qui ne font qu'observer (mode observation seule, ou un ancien client avec une clé Measure), valorisé avec le compteur de votre propre fournisseur. Mettez ces machines à jour, ou désactivez le mode observation seule, pour l'économiser réellement. Rien n'est facturé.",
-        "empty": "Pas encore d'économies : elles apparaissent dès que votre couche évite un appel ou le rend moins cher. Measure applique les mêmes leviers que sans clé.",
+        "empty": "Pas encore d'économies : elles apparaissent dès que votre couche évite un appel ou le rend moins cher. Measure applique les mêmes leviers que sans clé, sauf l'élagage des résultats d'outils remplacés en dehors d'une boucle d'outils sur Anthropic.",
         "limits": "Gratuit pour 1 organisation, jusqu'à {seats} postes et {requests} requêtes par jour.",
         "cta": "Besoin de plus de postes ou de volume ? Voir les offres"
       }

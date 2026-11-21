@@ -4,6 +4,7 @@ import { spawnSync } from "node:child_process";
 import { beforeAll, describe, expect, it } from "vitest";
 
 import {
+  FRASE_CLAVE_DE_SERVICIO_Y_PALANCAS,
   FRASE_DEPENDENCIA_GATEWAY,
   FRASE_DEPENDENCIA_SDK,
   FRASE_LA_CLAVE_SOLO_ANADE,
@@ -84,6 +85,9 @@ describe("m17 · una sola frase sobre qué palancas van encendidas, igual en tod
     expect(readme).toContain(FRASE_PALANCAS_GATEWAY);
     expect(pypi).toContain(FRASE_PALANCAS_GATEWAY);
     expect(guiaDeTerminales).toContain(FRASE_PALANCAS_GATEWAY);
+    // 1.2.4 · Medir = sin clave; con una licencia de pago, el gateway como la 1.2.3.
+    expect(guiaDeTerminales).toContain(FRASE_CLAVE_DE_SERVICIO_Y_PALANCAS);
+    expect(guiaDeTerminales).not.toContain("It switches no lever off: the free Measure license");
   });
 
   it("⛔ nadie vuelve a decir que todo va encendido", () => {
@@ -109,6 +113,12 @@ describe("m01 · la clave solo añade la nube; Measure ya no apaga nada; la somb
   it("el README y PyPI dicen que la clave no apaga ninguna palanca, con la misma frase", () => {
     expect(readme).toContain(FRASE_LA_CLAVE_SOLO_ANADE);
     expect(pypi).toContain(FRASE_LA_CLAVE_SOLO_ANADE);
+    // 1.2.4 · y que en el gateway una licencia de pago va como en la 1.2.3 (decisión del dueño).
+    const gateway =
+      "In the `bvsala` gateway the free Measure license applies the same levers as no key, and a paid license works " +
+      "as in 1.2.3: each lever also needs your organization's license to include it, checked fail-closed.";
+    expect(readme).toContain(gateway);
+    expect(pypi).toContain(gateway);
   });
 
   it("⛔ el párrafo de Measure ya no dice sombra forzada, ni «a lower bound, never part of any commission», ni «the levers need a paid plan»", () => {
@@ -123,7 +133,8 @@ describe("m01 · la clave solo añade la nube; Measure ya no apaga nada; la somb
       "the layer applies the same levers as with no key, except that trimming of superseded tool results only acts " +
         "inside a tool loop on Anthropic, and your dashboard shows the real savings",
     );
-    expect(readme).toContain("What a paid plan adds is the cloud beyond those limits (more seats, more volume, the team dashboard), not the saving.");
+    // Verificación 3: el panel ya es gratis con Measure, así que no es lo que añade el pago.
+    expect(readme).toContain("What a paid plan adds is the cloud beyond those limits (more seats and more volume), not the saving.");
     expect(readme).toContain("a lower bound, shown apart from measured savings");
   });
 
@@ -245,7 +256,8 @@ describe("hallazgo 42 · una sola receta para conectar el SDK a la nube: la del 
   it("`init` la escribe en el cableado de todas las pilas", () => {
     const codigo = cableado("sdk", "openai");
     for (const linea of RECETA) expect(codigo).toContain(linea);
-    expect(codigo).toContain("A key only adds the cloud: it switches no");
+    expect(codigo).toContain("A key only adds the cloud, except that with");
+    expect(codigo).not.toContain("switches no");
     expect(codigo).not.toMatch(/every local/);
   });
 
@@ -262,7 +274,10 @@ describe("`bvsala doctor` e `init` (grupo 3)", () => {
   it("doctor: una palanca por defecto, y la clave solo añade la nube", async () => {
     const { texto } = await doctor(8402, { home: "/casa/prueba", path: "", existe: () => false, enPath: () => false });
     expect(texto).toContain(FRASE_PALANCAS_GATEWAY);
-    expect(texto).toContain(`BIVELIO_SERVICE_KEY only adds the cloud (${LO_QUE_ANADE_LA_NUBE}); it switches no lever off.`);
+    expect(texto).toContain(`BIVELIO_SERVICE_KEY only adds the cloud (${LO_QUE_ANADE_LA_NUBE}).`);
+    // 1.2.4 · Medir = sin clave; con una licencia de pago, como en la 1.2.3 (decisión del dueño).
+    expect(plano(texto)).toContain(FRASE_CLAVE_DE_SERVICIO_Y_PALANCAS);
+    expect(texto).not.toContain("it switches no lever off.");
     expect(plano(texto)).toContain(FRASE_DEPENDENCIA_GATEWAY);
     expect(texto).not.toMatch(/every local saving lever|org entitlements/);
   });
@@ -322,11 +337,15 @@ describe.skipIf(process.platform === "win32")("`bvsala --help` (grupo 3), ejecut
     expect(ayuda).toContain(`BIVELIO_SERVICE_KEY only adds the cloud: ${LO_QUE_ANADE_LA_NUBE}.`);
   });
 
-  it("⛔ ya no dice que una licencia de organización decide qué palancas aplican, ni que todo va encendido", () => {
+  it("⛔ no dice que todo va encendido; con Medir no apaga nada y con pago, como en la 1.2.3", () => {
+    // 1.2.4 · decisiones del dueño (21-11-2026): Medir = sin clave; con una
+    // licencia de pago, el gateway como en la 1.2.3 de pago. Una rama previa
+    // decía «It switches no lever off.» para cualquier licencia, y con pago y la
+    // nube caída no era cierto.
     expect(ayuda).not.toMatch(/feature list decide/);
-    expect(ayuda).not.toMatch(/with an organization license, only if it includes/);
     expect(ayuda).not.toMatch(/every local (saving )?lever|all local levers|arms every local/);
-    expect(ayuda).toContain("It switches no lever off.");
+    expect(ayuda).not.toContain("It switches no lever off.");
+    expect(ayuda).toContain("With the free Measure license it switches no lever off; with a paid license the levers follow that license, as in 1.2.3");
   });
 
   it("⛔ describe la rebaja de TTL como la decide el código: solo con mucho cuerpo nuevo, nunca en turnos encadenados", () => {

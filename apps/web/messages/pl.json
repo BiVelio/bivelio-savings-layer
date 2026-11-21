@@ -1200,10 +1200,10 @@
     },
     "measurePlan": {
       "title": "Albo zacznij za darmo: licencja Measure, bez karty",
-      "body": "Bezpłatny plan chmurowy dla 1 organizacji i do {seats} stanowisk: warstwa oszczędza dokładnie tak jak bez klucza, a panel pokazuje rzeczywiste oszczędności. Nigdy niefakturowane, bez prowizji.",
+      "body": "Bezpłatny plan chmurowy dla 1 organizacji i do {seats} stanowisk: warstwa stosuje te same dźwignie co bez klucza, z tym że przycinanie zastąpionych wyników narzędzi działa tylko wewnątrz pętli narzędzi na Anthropic, a panel pokazuje rzeczywiste oszczędności. Nigdy niefakturowane, bez prowizji.",
       "claim": "Pobierz moją darmową licencję Measure",
       "claiming": "Wystawianie…",
-      "keyLabel": "Twój klucz licencji Measure (bezpłatny: te same dźwignie co bez klucza)",
+      "keyLabel": "Twój klucz licencji Measure (bezpłatny: te same dźwignie co bez klucza, jeden wyjątek opisany w README)",
       "keyHint": "Użyj go jako BIVELIO_LICENSE_KEY, dokładnie tak jak klucza płatnego. Jeśli przejdziesz na płatny plan, warstwa sama pobierze płatną licencję.",
       "errEmailNotVerified": "Najpierw potwierdź swój adres e-mail, a potem spróbuj ponownie.",
       "errDisposableEmail": "Jednorazowe adresy e-mail nie mogą otrzymać licencji Measure. Zarejestruj się stałym adresem (na przykład służbowym) i spróbuj ponownie.",
@@ -1225,7 +1225,7 @@
         "shadowTitle": "Ile byś zaoszczędził",
         "amount": "{amount}, których byś nie wydał",
         "context": "Hipotetyczne i pokazane osobno od rzeczywistych oszczędności. Pochodzi z maszyn, które tylko obserwują (tryb samej obserwacji albo starszy klient z kluczem Measure), wycenione licznikiem Twojego własnego dostawcy. Zaktualizuj te maszyny albo wyłącz tryb samej obserwacji, aby naprawdę to zaoszczędzić. Nic nie jest fakturowane.",
-        "empty": "Jeszcze brak oszczędności: pojawią się, gdy tylko warstwa uniknie wywołania albo je potani. Measure stosuje te same dźwignie co bez klucza.",
+        "empty": "Jeszcze brak oszczędności: pojawią się, gdy tylko warstwa uniknie wywołania albo je potani. Measure stosuje te same dźwignie co bez klucza, z wyjątkiem przycinania zastąpionych wyników narzędzi poza pętlą narzędzi na Anthropic.",
         "limits": "Za darmo dla 1 organizacji, do {seats} stanowisk i {requests} żądań dziennie.",
         "cta": "Potrzebujesz więcej stanowisk lub wolumenu? Zobacz plany"
       }

@@ -20,8 +20,10 @@ telemetry, and the measurement stays on this machine: one log line per request,
 the summary on exit and the local `/_bvsala` routes—.
 Every gateway lever is free, with no key; one is on by default (cache TTL tuning) and the others you switch on.
 `BIVELIO_SERVICE_KEY` (optional) only adds the cloud: the dashboard and license
-collection. It switches no lever off: the free Measure license applies the same
-levers as no key. One dependency comes with a key, the free Measure key included:
+collection. With the free Measure license it switches no lever off; with a paid
+license the levers follow that license, as in 1.2.3 (checked fail-closed: with no
+service key, or while savings.bivelio.com cannot confirm it, requests travel
+untouched). One dependency comes with a key, the free Measure key included:
 with BIVELIO_SERVICE_KEY set, the gateway needs savings.bivelio.com to start (or a
 valid BIVELIO_LICENSE_KEY as a fallback); once running it keeps serving without it.
 With no key there is no such dependency. A license that is PRESENT but expired or
@@ -137,10 +139,10 @@ does not start (it exits with code 1), the message says exactly what is missing:
 | Message | What is happening | Fix |
 |---|---|---|
 | `BIVELIO_SERVICE_KEY is not recognised` | the key was deleted, rotated or only half copied | create another one |
-| `your organization has no active BiVelio license` | there is no subscription | subscribe in Account and start again |
-| `your BiVelio license expired on …` | the license expired and its grace period is over | renew in Account |
+| `your organization has no active BiVelio license` | there is no subscription | subscribe in Account and start again, or unset the keys and relaunch, free |
+| `your BiVelio license expired on …` | the license expired and its grace period is over | renew in Account, or unset the keys and relaunch, free |
 | `could not collect your license from savings.bivelio.com` | savings.bivelio.com cannot be reached | check the connection; as a fallback, `BIVELIO_LICENSE_KEY` (verified offline and replaced by hand every period) |
-| an HTTP 402 in the terminal in the middle of a session | the license expired or was revoked with the session open | renew; the requests already in flight were not cut |
+| an HTTP 402 in the terminal in the middle of a session | the license expired or was revoked with the session open | renew, or unset the keys and relaunch, free; the requests already in flight were not cut |
 
 If you run `bvsala gateway` as a service (launchd/systemd), a license failure
 ends up in the service log with exit code 1 and the terminal only sees
@@ -172,7 +174,7 @@ other lines mean:
 |---|---|---|
 | `[gateway] POST /v1/v1/messages → 404` | the base URL has one `/v1` **too many** for that terminal | remove the `/v1` |
 | `[gateway] POST /messages → 404` | the base URL is **missing** `/v1` (the SDK only appends `/messages`) | add the `/v1` |
-| `[gateway] POST /v1/messages → 402 (license expired)` | the license expired, was revoked or the org is blocked: NEW requests are refused (the ones in flight finished) | renew in Account; the terminal shows the reason |
+| `[gateway] POST /v1/messages → 402 (license expired)` | the license expired, was revoked or the org is blocked: NEW requests are refused (the ones in flight finished) | renew in Account, or unset the keys and relaunch, free; the terminal shows the reason |
 | nothing at all | the terminal is not pointed at the gateway (config not read, env overridden by config, another port) | check the pitfall in its guide |
 
 Every request the gateway forwards **without metering** leaves its own line with

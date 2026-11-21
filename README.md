@@ -89,8 +89,7 @@ cloud key sends are in [LICENSE-CLOUD.md](https://github.com/BiVelio/bivelio-sav
   itself without that option — not against calling the provider directly: the
   cacheable-prefix reorder took a poisoned prompt cache from 0 % → 95 % hit-rate,
   −82.76 % cost per request in that constructed sequence (measured with 1.2.0 on
-  15 Nov 2026; later versions changed the arm without the option, so the same sequence
-  now shows a smaller gap).
+  15 Nov 2026; the arm without the option gives the same result in 1.2.4).
 
 📄 **The paper:** [Verifiable Measurement of Cost Savings in LLM Applications
 (open-core edition, v2.3-r1)](https://github.com/BiVelio/bivelio-savings-layer/blob/main/docs/PAPER.md) — revised after an external
@@ -166,8 +165,9 @@ reports, is at **[savings.bivelio.com/en/benchmarks](https://savings.bivelio.com
 | Team dashboard, shared measurement, seats and license management | — | ✅ |
 | Anything sent to BiVelio | **Nothing** | Per-request usage only (counts, cost, model id, opaque ids — [LICENSE-CLOUD.md](https://github.com/BiVelio/bivelio-savings-layer/blob/main/LICENSE-CLOUD.md) §5), never prompts or keys |
 
-Both columns run the same levers. A BiVelio key only adds the cloud: the free Measure license and a paid one apply the same levers as no key, except trimming of superseded tool results, which with a key only acts inside a tool loop on Anthropic.
-With a key, that trimming acts on Anthropic models with the default cache placement, never with `cacheBreakpoints: "auto"` or `AnthropicProvider({ automaticCache: true })`, and only on results after your last user message; everywhere else it stays off, as in 1.2.3 with a paid key. With no key that trimming runs as in 1.2.3: on a long agent loop on gpt-5, Gemini, DeepSeek or Qwen, or with `cacheBreakpoints: "auto"` or `automaticCache`, compare with `savings: { elision: false }`.
+Both columns have the same levers. A BiVelio key only adds the cloud: the free Measure license and a paid one apply the same levers as no key, except trimming of superseded tool results, which with a key only acts inside a tool loop on Anthropic.
+With a key, that trimming acts with `AnthropicProvider` and the default cache placement, never with `cacheBreakpoints: "auto"` or `AnthropicProvider({ automaticCache: true })`, and only on results after your last user message; with any other provider (Claude through an OpenAI-compatible endpoint included) it stays off, as in 1.2.3 with a paid key. With no key that trimming runs as in 1.2.3: on a long agent loop on gpt-5, Gemini, DeepSeek or Qwen, or with `cacheBreakpoints: "auto"` or `automaticCache`, or on Anthropic in a chat that re-reads the same tool output on every user turn, compare with `savings: { elision: false }`.
+In the `bvsala` gateway the free Measure license applies the same levers as no key, and a paid license works as in 1.2.3: each lever also needs your organization's license to include it, checked fail-closed.
 One dependency comes with a key, the free Measure key included: with `licenseServerUrl` set (as in the recipe your dashboard and `init` print), a layer that goes 72 hours without an answer from savings.bivelio.com fails closed with `LicenseError` on every call until it gets one or you remove the key. With no key there is no such dependency.
 What the gateway needs instead, and every timeout: [SECURITY.md, Availability](https://github.com/BiVelio/bivelio-savings-layer/blob/main/SECURITY.md#availability-what-happens-if-our-servers-do-not-respond).
 BiVelio hosts no cache. Want several machines to share one? Give the layer a store you
@@ -215,10 +215,11 @@ the Published Pricing it refers to,
 requests a day: the layer applies the same levers as with no key, except that
 trimming of superseded tool results only acts inside a tool loop on Anthropic, and your
 dashboard shows the real savings — never billed, never part of any commission. What a paid
-plan adds is the cloud beyond those limits (more seats, more volume, the team dashboard),
-not the saving. This is new in 1.2.4: up to 1.2.3 a Measure key ran the layer in shadow
-mode, so update to save with it. Once you upgrade, a layer with `serviceAccountKey` and
-`licenseServerUrl` picks up the paid license by itself, without a restart.
+plan adds is the cloud beyond those limits (more seats and more volume), not the saving.
+This is new in 1.2.4: up to 1.2.3 a Measure key ran the layer in shadow mode, so update
+to save with it. When you move from Measure to a paid plan, a layer started with
+`licenseKey`, `serviceAccountKey` and `licenseServerUrl` picks up the new license by
+itself, without a restart.
 
 If you only want to watch before the layer touches your traffic, **observe-only mode** is
 an explicit option on any plan — `observeOnly: true` in the SDK,
@@ -913,7 +914,7 @@ BVSALA_SEAT_ID=worker-03   # stable per replica; [A-Za-z0-9._:/-], max 128 chars
 <summary><b>Requirements</b></summary>
 
 - **Node ≥ 20.19.** The package is **ESM‑only** (`"type": "module"`); from CommonJS,
-  `require()` works on Node ≥ 22.
+  `require()` works on Node 20.19+ and 22.12+.
 - Framework adapters: `ai` 6 or 7, `@mastra/core` ≥ 1.68 < 2, `langchain` ≥ 1.1 < 2
   with `@langchain/core` ≥ 1.1 < 2, and `@anthropic-ai/sdk` ≥ 0.103 < 2 — optional
   peers, needed only for the adapter you import. `ai` 7 and `@mastra/core` declare
