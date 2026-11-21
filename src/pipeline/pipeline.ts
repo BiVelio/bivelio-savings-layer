@@ -400,7 +400,7 @@ function mensajeSinLicencia(): string {
     return (
       "BiVelio license required: none was configured. Pass { licenseKey } — the signed token " +
       "from your subscription, verified offline. This published package has no unlicensed mode. " +
-      "To try it without paying, the free Measure license (no card) runs the layer in shadow mode. " +
+      "The free Measure license (no card) turns every lever on and adds the cloud dashboard. " +
       "Copy your key and a ready-to-paste snippet at " +
       "https://savings.bivelio.com/dashboard/install (license status: none)"
     );
@@ -1986,14 +1986,15 @@ export class SavingsPipeline {
   }
 
   // Lo mismo para una superficie que ES una palanca por sí misma (enviar un
-  // lote): con la licencia Medir no se aplica ninguna, y se dice cómo pasar a pago.
+  // lote): en modo solo-observar (`observeOnly: true`) no se aplica ninguna, y un
+  // lote cambiaría cómo viaja el tráfico. NO es un error de licencia: desde la
+  // 1.2.4 la licencia Medir envía lotes igual que una capa sin clave; quien lo
+  // impide es la opción que el propio cliente encendió, y se le dice cuál.
   exigirPalancas(): void {
     if (this.enSombra()) {
-      throw new LicenseError(
-        "[bvsala] Batches are a savings lever, and the Measure license runs the layer in shadow mode: " +
-          `no lever is applied. Upgrade to a paid plan at ${URL_DE_PAGO} to submit batches. ` +
-          "(license status: measure)",
-        "measure",
+      throw new Error(
+        "[bvsala] Batches are a savings lever, and this layer was created with `observeOnly: true`: " +
+          "no lever is applied in observe-only mode. Remove `observeOnly` (or set it to false) to submit batches.",
       );
     }
   }
@@ -2226,9 +2227,10 @@ export class SavingsPipeline {
     // idempotente con la llamada de generate().
     this.assertLicensed();
     this.comprobarInterrupcion(testigo);
-    // LA LICENCIA MEDIR: antes de cualquier etapa. Nada de lo que viene después
-    // (resolvers, cachés, singleflight, cascada, compresión, marcas de caché…)
-    // llega a mirar la petición: sale intacta por la llamada directa.
+    // EL MODO SOLO-OBSERVAR (`observeOnly: true`): antes de cualquier etapa. Nada
+    // de lo que viene después (resolvers, cachés, singleflight, cascada,
+    // compresión, marcas de caché…) llega a mirar la petición: sale intacta por
+    // la llamada directa.
     if (this.enSombra()) return this.generarEnSombra<T>(request, testigo, sumidero);
     const trace = new TraceCollector(this.now);
     const ledger = new SavingsLedger();
@@ -6176,13 +6178,13 @@ export class SavingsPipeline {
             credited: false,
             creditedLedger: "none",
             latency: medir
-              ? "unchanged: on the Measure license (shadow mode) no processing tier is requested, so " +
+              ? "unchanged: in observe-only mode no processing tier is requested, so " +
                 "this request was scheduled exactly as an ordinary one."
               : "unchanged: the fail-open path asks for no processing tier, so this request was " +
                 "scheduled exactly as an ordinary one.",
             reason: medir
-              ? "the Measure license runs the layer in shadow mode: the request goes to the provider " +
-                "unchanged, so no cheaper tier is asked for; upgrade to a paid plan to turn the lever on"
+              ? "the layer runs in observe-only mode (`observeOnly: true`): the request goes to the provider " +
+                "unchanged, so no cheaper tier is asked for; turn `observeOnly` off to apply the lever"
               : "the optimizer failed and this request went out on the direct fail-open path, which " +
                 "asks for no cheaper tier: that tier can be refused for lack of capacity, and " +
                 "trading availability for a discount on a last-resort call is the wrong trade",
@@ -6195,7 +6197,7 @@ export class SavingsPipeline {
             mode: "provider-default",
             breakpoints: 0,
             reason: medir
-              ? "the Measure license runs the layer in shadow mode: the request went out unchanged, so " +
+              ? "the layer runs in observe-only mode (`observeOnly: true`): the request went out unchanged, so " +
                 "the provider chose where to write its prompt cache, as it does by default"
               : "the optimizer failed and this request went out unchanged on the direct fail-open path, " +
                 "so the provider chose where to write its prompt cache, as it does by default",
@@ -6218,20 +6220,20 @@ export class SavingsPipeline {
   }
 
   /**
-   * ¿Corre esta capa con la licencia Medir? Se pregunta EN CADA PETICIÓN, no al
-   * construir: el gate es conmutable y, al recoger la licencia de pago que la
-   * sustituye, la siguiente petición ya sale optimizada sin reiniciar.
+   * ¿Corre esta capa en modo SOLO-OBSERVAR? Lo decide ÚNICAMENTE la opción
+   * explícita `observeOnly: true`, en cualquier plan (sin clave, Medir o de pago).
+   *
+   * Hasta la 1.2.3 lo decidía el plan: una licencia Medir («measure») forzaba la
+   * sombra, y poner la clave gratuita de la nube era peor que no poner ninguna
+   * (un resto del modelo cerrado anterior a la 1.0.0). Desde la 1.2.4 el plan no
+   * interviene: con Medir las palancas actúan igual que sin clave.
    */
   private enSombra(): boolean {
-    try {
-      return this.config.licenseGate?.plan?.() === "measure";
-    } catch {
-      return false;
-    }
+    return this.config.observeOnly === true;
   }
 
   /**
-   * EL MODO SOMBRA (licencia Medir). La petición va al proveedor por la llamada
+   * EL MODO SOLO-OBSERVAR (`observeOnly: true`). La petición va al proveedor por la llamada
    * directa —intacta, sin una sola palanca— y al lado se calcula qué habrían
    * evitado la caché exacta y la coalescencia en vuelo, valorado con el contador
    * de ESTA llamada. Ver `pipeline/medir.ts`.
@@ -6245,7 +6247,7 @@ export class SavingsPipeline {
     const trace = new TraceCollector(this.now);
     trace.record(
       "measure",
-      "shadow mode (Measure license): the request goes to the provider unchanged and nothing is served from cache",
+      "observe-only mode (`observeOnly: true`): the request goes to the provider unchanged and nothing is served from cache",
     );
     const toggles = request.savings ?? {};
     // Las claves se calculan con las MISMAS funciones que el camino optimizado:

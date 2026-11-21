@@ -17,7 +17,16 @@ import {
 import { alertar } from "@/lib/observabilidad/alerta";
 import { getStripe } from "@/lib/stripe/client";
 import { billingConfigured, preciosSinComision } from "@/lib/stripe/env";
-import { idsSinComision, orgsSinComisionPorPlan, ESTADOS_CON_PLAN, type SuscripcionDeOrg } from "@/lib/billing/plan-de-la-org";
+import {
+  idsSinComision,
+  orgsExentasPorMedir,
+  orgsSinComisionPorPlan,
+  ESTADOS_CON_PLAN,
+  type LicenciaMedirDeOrg,
+  type SuscripcionConPrecio,
+  type SuscripcionDeOrg,
+} from "@/lib/billing/plan-de-la-org";
+import { PLAN_MEDIR } from "@/lib/license/medir";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { leerTodo } from "@/lib/supabase/leer-todo";
 
@@ -212,7 +221,38 @@ export async function GET(req: Request): Promise<NextResponse> {
         if (errSubs) throw new Error(`plan de ${e.org_id} ilegible: ${errSubs.message}`);
         sinComisionPorPlan = orgsSinComisionPorPlan((subs ?? []) as SuscripcionDeOrg[], precios).has(e.org_id);
       }
-      if ((org as { comision_exenta?: boolean } | null)?.comision_exenta || sinComisionPorPlan) {
+      // Y la de la licencia gratuita MEDIR (1.2.4): una organización con Medir y
+      // sin historia de comisión NUNCA recibe factura de comisión, diga lo que
+      // diga el extracto. La primera verja es el cargo 0 del cierre; esta
+      // cubre un extracto cerrado antes de ese cambio o por cualquier otra vía.
+      const finDelPeriodo = (() => {
+        const [a, m] = e.periodo.split("-").map(Number);
+        return new Date(Date.UTC(a!, m!, 1)).toISOString().slice(0, 10);
+      })();
+      const { data: licMedir, error: errMedir } = await supabase
+        .schema("bvsala")
+        .from("licenses")
+        .select("org_id, issued_at")
+        .eq("org_id", e.org_id)
+        .eq("plan", PLAN_MEDIR);
+      // Falla CERRADA, como el resto de la verja: sin poder leerlo no se factura.
+      if (errMedir) throw new Error(`licencia Medir de ${e.org_id} ilegible: ${errMedir.message}`);
+      let exentaPorMedir = false;
+      if (((licMedir ?? []) as LicenciaMedirDeOrg[]).length > 0) {
+        const { data: todas, error: errTodas } = await supabase
+          .schema("bvsala")
+          .from("subscriptions")
+          .select("org_id, price_id")
+          .eq("org_id", e.org_id);
+        if (errTodas) throw new Error(`suscripciones de ${e.org_id} ilegibles: ${errTodas.message}`);
+        exentaPorMedir = orgsExentasPorMedir(
+          (licMedir ?? []) as LicenciaMedirDeOrg[],
+          (todas ?? []) as SuscripcionConPrecio[],
+          precios,
+          finDelPeriodo,
+        ).has(e.org_id);
+      }
+      if ((org as { comision_exenta?: boolean } | null)?.comision_exenta || sinComisionPorPlan || exentaPorMedir) {
         if (seco) ensayo.push(ensayoDeCargo(e, "exenta", undefined));
         else console.warn(`[facturar-extractos] ${e.org_id} ${e.periodo}: organización exenta de comisión, no se factura`);
         continue;

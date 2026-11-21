@@ -387,8 +387,16 @@ function plataformaFalsa(lotes: unknown[][]): Promise<number> {
   );
 }
 
-async function gateway(upstream: number, plataforma: number, plan: string, lineas: string[]): Promise<GatewayArrancado> {
+async function gateway(
+  upstream: number,
+  plataforma: number,
+  plan: string,
+  lineas: string[],
+  soloObservar = false,
+): Promise<GatewayArrancado> {
   const g = await arrancarGateway({
+    // BVSALA_GATEWAY_OBSERVE_ONLY=1: la sombra opcional (hasta la 1.2.3 la forzaba el plan `measure`).
+    ...(soloObservar ? { soloObservar: true } : {}),
     license: testLicense({ plan, features: plan === "measure" ? [] : TODAS }),
     puerto: 0,
     ...oficialHaciaElMock(upstream),
@@ -479,12 +487,15 @@ describe("la pasarela, de punta a punta: el panel recibe el NETO", () => {
     expect(neto(registros[1]!)).toBe(0);
   });
 
-  it("MEDIR · la sombra también es neta: el turno que con la rebaja habría fallado se registra más caro", async () => {
+  // Hasta la 1.2.3 este caso era «MEDIR»: la licencia gratuita forzaba la sombra.
+  // Desde la 1.2.4 Medir aplica la rebaja como cualquier plan, y la sombra neta
+  // es la del modo solo-observar (aquí, encendido sobre la misma licencia Medir).
+  it("SOLO-OBSERVAR · la sombra también es neta: el turno que con la rebaja habría fallado se registra más caro", async () => {
     const recibidos: string[] = [];
     const lotes: unknown[][] = [];
     // Nada se reescribe: el arranque escribe a 1h y el turno siguiente lo LEE.
     const up = await upstreamPorTurnos(recibidos, [sse(0, 0, 100_000), sse(100_000, 0, 500)]);
-    const g = await gateway(up, await plataformaFalsa(lotes), "measure", []);
+    const g = await gateway(up, await plataformaFalsa(lotes), "measure", [], true);
     relojEn(T0);
     await pedir(g.puerto, TURNO_1);
     vi.setSystemTime(T0 + 6 * MIN);

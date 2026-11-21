@@ -107,8 +107,9 @@ export type EntitlementReason =
   | "active-subscription"
   /**
    * Solo la licencia gratuita «Medir»: NO bloquea (su uso se ingiere para el
-   * panel), pero la ingesta lo neutraliza para que jamás genere comisión ni una
-   * referencia cobrable (`neutralizarParaMedir`), y le aplica los topes.
+   * panel, con su ahorro real desde la 1.2.4), pero jamás genera comisión ni una
+   * referencia cobrable (`protegerIngestaDeMedir` en la ingesta y la exención
+   * del cierre, lib/billing/plan-de-la-org.ts), y se le aplican los topes.
    */
   | "measure-license"
   | "no-license"

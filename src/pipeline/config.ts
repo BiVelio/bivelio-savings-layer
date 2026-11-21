@@ -256,6 +256,27 @@ export interface SavingsLayerConfig {
   serviceAccountKey?: string;
 
   /**
+   * OBSERVE-ONLY MODE (opt-in, any plan, off by default).
+   *
+   * With `observeOnly: true` the layer applies NO lever: every request goes to
+   * your provider exactly as you built it, nothing is served from any cache,
+   * duplicates are not coalesced and batches are refused. Next to each call the
+   * layer works out what the exact cache and in-flight coalescing WOULD have
+   * avoided and publishes it in `report.measure` (`basis: "shadow"`, a lower
+   * bound, never added to measured money). With a `serviceAccountKey` that
+   * hypothetical travels to your dashboard as a separate `shadow` record.
+   *
+   * Use it to watch what the layer would do before letting it touch traffic.
+   * Leave it off to actually save: that is the default with no key, with the
+   * free Measure license and with a paid license alike. (Up to 1.2.3 the Measure
+   * license forced this mode; since 1.2.4 it is only ever a choice.)
+   *
+   * Not to be confused with `modelCascade: "shadow"` or
+   * `savings.crossProviderShadow`, which shadow ONE lever while the rest act.
+   */
+  observeOnly?: boolean;
+
+  /**
    * Automatic licence-renewal pickup (on by default when {@link serviceAccountKey}
    * and {@link licenseServerUrl} are both set).
    *

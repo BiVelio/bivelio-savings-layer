@@ -10,20 +10,30 @@ import { loadPrivateKey, signCompact } from "./sign";
 /**
  * LA LICENCIA «MEDIR» (plan `measure`) — gratuita, permanente, sin tarjeta.
  *
- * Decisión del dueño (docs/COMPETENCIA-2026-09-26.md §8, n.º 2 y 5): el SDK y la
- * pasarela funcionan EN SOMBRA —calculan lo que habrían ahorrado— y SIN
- * palancas: la petición del cliente sale intacta al proveedor y nada se sirve de
- * caché. Para UNA organización, con un tope de asientos y de volumen. Se pasa a
- * pago al activar palancas.
+ * QUÉ ES DESDE LA 1.2.4 (decisión del dueño, 2026-11-21: «solo debemos cobrar si
+ * utilizan nuestro CLOUD»). El SDK y la pasarela aplican con ella TODAS las
+ * palancas, igual que sin clave (open core), y además envían el uso a la nube:
+ * el panel enseña el ahorro REAL. Para UNA organización, con un tope de asientos
+ * y de volumen; lo que se paga es pasar de esos topes y el panel de equipo.
  *
- * Revierte EN PARTE #314 (el free tier cerrado): aquel cierre sigue en pie para
- * quien no tiene NINGUNA licencia (402 `no-license`); lo que se abre es una
- * licencia firmada más, verificada offline como las otras, así que el
- * fail-closed del SDK no cambia. Lo que NO se abre es el dinero: el uso de una
- * org que solo tiene Medir se ingiere para el panel, pero la ingesta lo
- * neutraliza antes de la RPC (`neutralizarParaMedir`) y no puede generar
- * comisión ni una referencia cobrable. Ese candado vive en el servidor, que es
- * lo único que un cliente no puede parchear.
+ * QUÉ ERA (2026-09-29, #417, docs/COMPETENCIA-2026-09-26.md §8): el producto era
+ * cerrado y Medir corría EN SOMBRA —calculaba lo que habría ahorrado— sin
+ * palancas. Los clientes ≤ 1.2.3 siguen comportándose así con el mismo token
+ * (deciden por el nombre del plan), y sus registros `shadow` se siguen
+ * aceptando igual.
+ *
+ * LO QUE NO CAMBIA NUNCA: el dinero. Una organización que solo tiene Medir no
+ * genera comisión, cargo ni referencia cobrable. Tres candados, todos en el
+ * servidor, que es lo único que un cliente no puede parchear:
+ *   1. la ingesta degrada sus `reference` a `estimated` (ninguna fila en
+ *      `reference_hits`, ni un céntimo en `reference_*`): `protegerIngestaDeMedir`;
+ *   2. el cierre mensual la marca EXENTA (cargo 0) y la facturación la salta en
+ *      su segunda verja: `orgsExentasPorMedir` (lib/billing/plan-de-la-org.ts);
+ *   3. si la organización tiene o tuvo la modalidad con comisión (cerrada a
+ *      clientes nuevos), la ingesta la sigue NEUTRALIZANDO como antes de la
+ *      1.2.4, de modo que su extracto y su cierre no cambian en nada.
+ *
+ * Sigue en pie de #314: quien no tiene NINGUNA licencia recibe 402 `no-license`.
  */
 
 export const PLAN_MEDIR = "measure" as const;
@@ -61,8 +71,37 @@ export const esLicenciaMedir = (l: { plan?: string | null }): boolean => l.plan 
 // ── La ingesta de una org Medir ──────────────────────────────────────────────
 
 /**
- * NUNCA COMISIÓN, NUNCA REFERENCIA COBRABLE. Reescribe EN SITIO los registros de
- * una org que solo tiene Medir, antes de la RPC:
+ * EL CANDADO DE LA INGESTA para una org que solo tiene Medir. Reescribe EN SITIO
+ * los registros, antes de la RPC:
+ *
+ *  · SIEMPRE: `reference` → `estimated` (sin sus dos campos). Ninguna fila nace
+ *    en `reference_hits` ni un céntimo en `reference_*`: Medir no genera
+ *    referencias cobrables. El ahorro de esa repetición sigue contando en los
+ *    totales del panel, como estimado.
+ *  · Si la organización NO tiene historia de comisión (lo normal): nada más. Su
+ *    ahorro MEDIDO entra tal cual y el panel lo enseña. Que no se cobre lo
+ *    garantizan el cierre y la facturación (`orgsExentasPorMedir`).
+ *  · Si la organización tiene o tuvo la modalidad con comisión: se NEUTRALIZA
+ *    como hasta la 1.2.3 (`neutralizarParaMedir`). Es el caso de quien canceló
+ *    esa modalidad y volvió a Medir: su último extracto se cierra con comisión
+ *    sobre lo que ahorró pagando, y lo que ahorre gratis después no puede entrar
+ *    en esa base. Para ella nada cambia respecto a antes.
+ *
+ * `shadow` pasa siempre tal cual: es el carril hipotético (0021) de los clientes
+ * ≤ 1.2.3 y de la sombra opcional, que ningún cierre lee.
+ */
+export function protegerIngestaDeMedir(
+  records: UsageRecord[],
+  opciones: { historiaDeComision: boolean },
+): { neutralizados: number; referencias: number } {
+  if (opciones.historiaDeComision) return neutralizarParaMedir(records);
+  return { neutralizados: 0, referencias: degradarReferencias(records) };
+}
+
+/**
+ * LA NEUTRALIZACIÓN COMPLETA (el candado único hasta la 1.2.3). Hoy solo se
+ * aplica a una org Medir CON historia de comisión (ver `protegerIngestaDeMedir`).
+ * Reescribe EN SITIO los registros, antes de la RPC:
  *
  *  · `reference` → `estimated` (sin sus dos campos): no nace ninguna fila en
  *    `reference_hits` ni un céntimo en `reference_*`;
@@ -72,10 +111,6 @@ export const esLicenciaMedir = (l: { plan?: string | null }): boolean => l.plan 
  *    panel necesita— pero su ahorro medido es cero por construcción.
  *  · `shadow` pasa tal cual: es el carril hipotético (0021), que la RPC acumula
  *    solo en shadow_* y que ningún cierre lee.
- *
- * Con el SDK honrado esto no cambia nada (en sombra no hay palanca que ahorre).
- * Existe por el SDK parcheado: quien encienda palancas con una licencia Medir no
- * convierte ese ahorro en una base de comisión ni en un extracto.
  */
 export function neutralizarParaMedir(records: UsageRecord[]): { neutralizados: number; referencias: number } {
   const referencias = degradarReferencias(records);
@@ -126,8 +161,9 @@ export const asientoDe = (r: { seatId?: string }): string => (r.seatId && r.seat
  * TODOS los asientos, también los de CI y el `unknown` (sin `seatId`): si CI
  * quedara fuera, marcar `ci: true` bastaría para saltarse el tope.
  *
- * Pasado el tope, la capa del cliente sigue funcionando —en sombra no hay nada
- * que quitarle— y lo que no pasa es la MEDICIÓN de ese asiento de más.
+ * Pasado el tope, la capa del cliente sigue funcionando y ahorrando —las
+ * palancas son locales y gratis— y lo que no pasa es la MEDICIÓN en la nube de
+ * ese asiento de más.
  */
 export function aplicarTopeDeAsientos<T extends { seatId?: string }>(
   records: T[],
@@ -214,8 +250,10 @@ export interface LicenciaMedirEmitida {
 }
 
 /**
- * Firma y persiste una licencia Medir. Sin features (no concede ninguna palanca),
- * con el tope de asientos firmado y la vigencia larga. FAIL-CLOSED: si no se
+ * Firma y persiste una licencia Medir. `features: []`, como siempre: desde la
+ * 1.2.4 el cliente concede las palancas por el PLAN (igual que sin clave), y los
+ * clientes ≤ 1.2.3 las siguen leyendo como sombra. Con el tope de asientos
+ * firmado y la vigencia larga. FAIL-CLOSED: si no se
  * puede persistir, lanza y no se devuelve ningún token (un token sin fila no se
  * podría revocar por organización).
  *
@@ -239,11 +277,11 @@ export async function emitirLicenciaMedir(
     seats: LIMITES_MEDIR.asientos,
     features: [] as string[],
     issued_at: now,
-    // CADUCADA para cualquier verificador que no conozca el plan: un SDK o una
-    // pasarela anteriores al modo sombra encenderían las palancas que no van por
-    // feature (caché exacta, resolvers, singleflight…). La vigencia real va en
-    // sus campos propios, que solo leen los que saben que `measure` = sombra
-    // (src/license/verify.ts#vigenciaEfectiva). La FILA guarda la real.
+    // CADUCADA para cualquier verificador que no conozca el plan (SDK ≤ 0.4.32).
+    // Se conserva tal cual: cambiar la forma del token la víspera de un
+    // lanzamiento no aporta nada, y los clientes que conocen el plan leen la
+    // vigencia real de sus campos propios (src/license/verify.ts#vigenciaEfectiva).
+    // La FILA guarda la real.
     expires_at: now,
     grace_days: 0,
     measure_expires_at: expiresAt,
@@ -299,8 +337,8 @@ export type VueltaAMedir =
 
 /**
  * AL CANCELAR O DEJAR DE PAGAR, LA ORGANIZACIÓN VUELVE A MEDIR (decisión del
- * dueño, 2026-09-29): sigue viendo lo que habría ahorrado en vez de quedarse sin
- * capa. Se llama DESPUÉS de cortar lo pagado —la revocación de la cancelación
+ * dueño, 2026-09-29): sigue con la capa y con su panel en vez de quedarse sin
+ * nada. Se llama DESPUÉS de cortar lo pagado —la revocación de la cancelación
  * (webhook `customer.subscription.deleted`) o la degradación del barrido de
  * impago (`/api/cron/dunning`)—, nunca antes: una Medir recién emitida es la
  * licencia MÁS NUEVA de la org, y `/api/license/current` entrega la más nueva.
