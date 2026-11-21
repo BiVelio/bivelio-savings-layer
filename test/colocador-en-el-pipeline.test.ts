@@ -159,19 +159,29 @@ describe("chat a ritmo humano (8 min entre turnos): la hora", () => {
     expect(auto.sim.cuerpos.some((c) => JSON.stringify(c).includes('"ttl":"1h"'))).toBe(true);
   });
 
-  it("⛔ con la fija, la verja no llega a medir en una conversación: cada turno estrena huella", async () => {
-    // La verja aprende por huella del prefijo estable, que crece en cada turno.
-    // Ninguna se ve dos veces, así que todas se quedan en «exploring (0/8)» y
-    // se marca siempre, pierda o no. Con el colocador la llave es la clase.
+  it("con la fija, la verja mide por CLASE: cada turno estrena huella, pero tras 8 escrituras sin lectura deja de marcar el historial", async () => {
+    // ESTE TEST FIJABA EL COMPORTAMIENTO ANTERIOR A PROPÓSITO, COMO HUECO
+    // CONOCIDO («⛔ … la verja no llega a medir»): la verja aprendía solo por
+    // huella del prefijo estable, que crece en cada turno; ninguna se veía dos
+    // veces, todas se quedaban en «exploring (0/8)» y se marcaba siempre,
+    // perdiera o no (aquí: 41 turnos marcados, 211.516 tokens escritos, 0
+    // leídos). Es el mismo fallo que subía la factura un 21,6 % con una fecha
+    // en el `system`. Ahora la verja lleva además un contador por clase
+    // (modelo + herramientas + forma, sin el texto): tras 8 turnos con historial
+    // escritos y ninguno leído, los turnos siguientes dejan de marcarse.
+    // Medido en esta carga: 55.276 tokens escritos en vez de 211.516, y la
+    // factura de la fija baja un 11,8 %. `auto` con la hora sigue siendo lo que
+    // de verdad arregla el chat lento (test de arriba).
     const fija = await correr("fixed", CHAT_LENTO);
     const razones = fija.trazas("prefix-cache").map((t) => String(t.detail?.["reason"] ?? ""));
-    // 10 conversaciones × 6 turnos: 50 turnos con historial. El segundo de cada
-    // conversación ya no marca el historial (primer seguimiento, sin evidencia
-    // de reenvío); los 40 restantes siguen estrenando huella.
-    expect(razones.filter((r) => /exploring the prefix cache \(0\/8\)/.test(r)).length).toBeGreaterThanOrEqual(40);
+    // Las 8 de exploración de la clase «historial» (más la de la cabecera sola).
+    expect(razones.filter((r) => /exploring the prefix cache \(0\/8\)/.test(r)).length).toBeLessThanOrEqual(9);
+    // El resto de turnos con historial ya no se marca.
+    expect(razones.filter((r) => /marking OFF for prefixes not seen before/.test(r))).toHaveLength(32);
     // Solo la cabecera sola (el primer y el segundo turno de cada conversación)
-    // llega a medirse.
+    // llega a medirse por su propia huella.
     expect(razones.filter((r) => /measured hit rate/.test(r)).length).toBeLessThanOrEqual(20);
+    expect(fija.sim.total().write5m).toBeLessThan(60_000);
   });
 
   it("⛔ con 5 min, la fija escribe cada turno y no lee nunca: el hueco que la hora cierra", async () => {
