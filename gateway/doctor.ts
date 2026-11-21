@@ -2,7 +2,7 @@ import { existsSync } from "node:fs";
 import { homedir } from "node:os";
 import { delimiter, join } from "node:path";
 
-import { FRASE_DEPENDENCIA_GATEWAY, FRASE_PALANCAS_GATEWAY, LO_QUE_ANADE_LA_NUBE, enLineas } from "./textos-publicos.js";
+import { FRASE_CLAVE_DE_SERVICIO_Y_PALANCAS, FRASE_DEPENDENCIA_GATEWAY, FRASE_PALANCAS_GATEWAY, LO_QUE_ANADE_LA_NUBE, enLineas } from "./textos-publicos.js";
 
 /**
  * `bvsala doctor`: detecta qué terminales de codificación hay en la máquina e
@@ -425,7 +425,8 @@ export async function doctor(puerto: number, opts: OpcionesDoctor = {}): Promise
     "user configuration files); the contents of a file are never read.",
     "The gateway starts with no keys at all (COMMUNITY mode: free, nothing sent to BiVelio) and meters every request.",
     FRASE_PALANCAS_GATEWAY,
-    `BIVELIO_SERVICE_KEY only adds the cloud (${LO_QUE_ANADE_LA_NUBE}); it switches no lever off.`,
+    `BIVELIO_SERVICE_KEY only adds the cloud (${LO_QUE_ANADE_LA_NUBE}).`,
+    ...enLineas(FRASE_CLAVE_DE_SERVICIO_Y_PALANCAS, 112),
     ...enLineas(FRASE_DEPENDENCIA_GATEWAY, 112),
     "",
   ];

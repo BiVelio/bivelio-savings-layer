@@ -26,6 +26,13 @@ export interface OpcionesCanal {
   ttlMs?: number;
   fetchImpl?: typeof fetch;
   log?: (linea: string) => void;
+  /**
+   * ¿Las palancas cuelgan ahora de esta lista? (1.2.4) Sí con una licencia de
+   * PAGO, como en la 1.2.3; no con Medir, que las concede localmente como sin
+   * claves. Solo elige la línea que se escribe cuando el canal se cierra. Sin
+   * ella, se asume que sí (el comportamiento de la 1.2.3).
+   */
+  palancasDependen?: () => boolean;
 }
 
 const TTL_POR_DEFECTO_MS = 300_000;
@@ -58,10 +65,18 @@ export class CanalComunitario implements FuenteDeEntitlements {
   }
 }
 
-/** La clave dejó de valer con el proceso vivo (borrada o rotada). No corta nada. */
-const LINEA_401 =
+/**
+ * La clave dejó de valer con el proceso vivo (borrada o rotada). No corta nada.
+ * Con una licencia de pago, como en la 1.2.3, las palancas caen con las features
+ * (fail-closed); con Medir siguen, porque no cuelgan de la lista.
+ */
+const ARREGLO_401 = "create a new key at https://savings.bivelio.com/dashboard/install and relaunch";
+const LINEA_401_PAGO =
+  "[gateway] entitlements: BIVELIO_SERVICE_KEY is no longer recognised (HTTP 401): savings features disabled " +
+  `and usage is not being reported; ${ARREGLO_401}`;
+const LINEA_401_MEDIR =
   "[gateway] entitlements: BIVELIO_SERVICE_KEY is no longer recognised (HTTP 401): usage is not being reported " +
-  "to your dashboard (the savings levers keep working); create a new key at https://savings.bivelio.com/dashboard/install and relaunch";
+  `to your dashboard (the free Measure license keeps the levers working); ${ARREGLO_401}`;
 
 export class CanalDeEntitlements {
   private readonly url: string;
@@ -69,6 +84,7 @@ export class CanalDeEntitlements {
   private readonly ttlMs: number;
   private readonly fetchImpl: typeof fetch;
   private readonly log: (l: string) => void;
+  private readonly palancasDependen: () => boolean;
 
   private features = new Set<string>();
   private razonDeBloqueo: string | null = null;
@@ -82,6 +98,7 @@ export class CanalDeEntitlements {
     this.ttlMs = opts.ttlMs ?? TTL_POR_DEFECTO_MS;
     this.fetchImpl = opts.fetchImpl ?? fetch;
     this.log = opts.log ?? (() => {});
+    this.palancasDependen = opts.palancasDependen ?? (() => true);
     // Primer refresco en el arranque, sin bloquear a nadie.
     void this.refrescar();
   }
@@ -129,10 +146,10 @@ export class CanalDeEntitlements {
       if (res.status === 401) {
         // Una clave borrada o rotada NO se cura sola, y el emisor tampoco puede
         // reportar con ella: se dice una vez, con el arreglo. La licencia ya
-        // verificada sigue sirviendo. La caché de features del canal se vacía,
-        // pero desde la 1.2.4 las palancas no cuelgan de ella (servidor.ts las
-        // concede localmente, como sin claves): lo que se pierde es el reporte.
-        this.cerrar("entitlements HTTP 401", LINEA_401);
+        // verificada sigue sirviendo. La caché de features se vacía: con una
+        // licencia de pago caen con ella las palancas (fail-closed, como en la
+        // 1.2.3); con Medir no cuelgan de ella y lo que se pierde es el reporte.
+        this.cerrar("entitlements HTTP 401", this.palancasDependen() ? LINEA_401_PAGO : LINEA_401_MEDIR);
         return;
       }
       if (!res.ok) {
@@ -159,9 +176,9 @@ export class CanalDeEntitlements {
 
   /**
    * Fail-closed: sin respuesta fiable no hay features — y se reintenta pronto.
-   * (Desde la 1.2.4 las palancas del gateway NO dependen de esta lista: son
-   * gratis en cualquier plan y `servidor.ts` las concede localmente. La lista
-   * sigue siendo lo que la nube dice de la org; el bloqueo viaja en `reason`.)
+   * (1.2.4: con una licencia de pago las palancas del gateway cuelgan de esta
+   * lista, como en la 1.2.3; con Medir `servidor.ts` las concede localmente,
+   * como sin claves. El bloqueo viaja en `reason`.)
    * NO toca `razonDeBloqueo`: un fallo de red no es una revocación.
    */
   private cerrar(motivo: string, linea?: string): void {
@@ -172,7 +189,9 @@ export class CanalDeEntitlements {
       this.avisado = true;
       this.log(
         linea ??
-          `[gateway] entitlements unavailable (${motivo}) — the organization status could not be refreshed; the savings levers keep working and traffic keeps flowing`,
+          (this.palancasDependen()
+            ? `[gateway] entitlements unavailable (${motivo}) — savings features disabled (fail-closed); traffic keeps flowing`
+            : `[gateway] entitlements unavailable (${motivo}) — the organization status could not be refreshed; the free Measure license keeps the levers working and traffic keeps flowing`),
       );
     }
   }

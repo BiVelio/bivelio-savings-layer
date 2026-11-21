@@ -198,8 +198,10 @@ Commands:
 Environment:
   BIVELIO_SERVICE_KEY    Service key (bvk_…): OPTIONAL. It only adds the cloud: it identifies your
                          organization, collects its license (renewed by itself) and sends usage
-                         to your dashboard. It switches no lever off. Without it the gateway runs
-                         in COMMUNITY mode: free, metered on this machine, nothing sent to BiVelio.
+                         to your dashboard. With the free Measure license it switches no lever
+                         off; with a paid license the levers follow that license, as in 1.2.3
+                         (see BVSALA_GATEWAY_ELISION). Without it the gateway runs in COMMUNITY
+                         mode: free, metered on this machine, nothing sent to BiVelio.
   BIVELIO_LICENSE_KEY    License key (optional fallback): used only if savings.bivelio.com cannot be
                          reached at start; verified on this machine. Replace it every billing period.
   BVSALA_SEAT_ID         Stable seat identity per replica (optional).
@@ -221,11 +223,14 @@ Environment:
                          usage is still metered, and what the price levers would have saved is
                          reported separately as an estimate. Off by default: with no keys, with
                          the free Measure license and with a paid one alike, the levers act.
-  BVSALA_GATEWAY_ELISION =0 turns OFF the provider-side levers, which are on by default. With
-                         no BiVelio keys (COMMUNITY mode) they are free and need no license.
-                         A BiVelio key only adds the cloud: the free Measure license and a
-                         Pro or Team license apply the same levers as no key (a blocked or
-                         lapsed license stops the gateway: it answers 402).
+  BVSALA_GATEWAY_ELISION =0 turns OFF every gateway lever (only cache TTL tuning is on by
+                         default). With no BiVelio keys (COMMUNITY mode) they are free and need
+                         no license, and the free Measure license applies the same levers as no
+                         key. With a Pro, Team or Enterprise license the gateway works as in
+                         1.2.3: each lever also needs its feature in your organization's license,
+                         checked fail-closed (with no service key, or while savings.bivelio.com
+                         cannot confirm it, requests travel untouched). A blocked or lapsed
+                         license stops the gateway: it answers 402.
                          =0 does not affect the license status check:
                            · context_elision  — adjusts ONLY the context_management block
                              of each /v1/messages; the provider does the trimming. Its dials
@@ -252,16 +257,18 @@ Environment:
                          same input, output and cache-write rates; cache READS drop from
                          0.001 to 0.00025 per 1K tokens (catalog). The saving is the difference
                          of two prices over the same usage: measured without an A/B, and it
-                         counts as a measured saving. Free on every plan, with or without
-                         a BiVelio key.
+                         counts as a measured saving. Free with no keys and with the free
+                         Measure license; with a paid license, only if it includes
+                         sibling_model_routing (fail-closed), as in 1.2.3.
                          It CHANGES the model you see in the response (/cost, /status), and
                          turning it on mid-thread pays ONE cold write of the prefix (each
                          model has its own cache): start it together with the terminal.
                          Off = unset the variable or =0.
   BVSALA_GATEWAY_EFFORT  =low|medium sets a per-turn effort ceiling (experimental):
                          appends a message with output_config.effort to each /v1/messages
-                         without touching the root (does not reset the prefix cache). Free on
-                         every plan, with or without a BiVelio key. Only with
+                         without touching the root (does not reset the prefix cache). Free with
+                         no keys and with the free Measure license; with a paid license, only if
+                         it includes per_turn_effort (fail-closed), as in 1.2.3. Only with
                          claude-fable-5-1, claude-mythos-5-1, claude-opus-5-5 and claude-opus-5,
                          and only when the level is below the model's default (high; medium on
                          claude-opus-5-5): it never raises effort. Any other request travels
@@ -639,10 +646,10 @@ try {
     // BVSALA_GATEWAY_SHADOW (que solo estima la elisión con el resto actuando).
     ...(soloObservar ? { soloObservar: true } : {}),
     // S4a · las palancas, ARMADAS POR DEFECTO: el ahorro en el terminal tiene que
-    // funcionar SOLO. Desde la 1.2.4 no las verja la lista de features de la org:
-    // son gratis en cualquier plan y el servidor las concede localmente, como sin
-    // claves. `BVSALA_GATEWAY_ELISION=0` sigue siendo el freno de emergencia que
-    // las apaga todas de golpe.
+    // funcionar SOLO. Sin claves y con Medir el servidor las concede localmente;
+    // con una licencia de pago, como en la 1.2.3, cada una pide su feature en la
+    // licencia de la org (fail-closed). `BVSALA_GATEWAY_ELISION=0` sigue siendo el
+    // freno de emergencia que las apaga todas de golpe.
     elision: elisionPedida !== "0",
     // S4a-B · los DIALES, APAGADOS desde el 2026-09-09. Hasta hoy iban en la
     // misma bandera que la rebaja de TTL, así que no se podía apagar la palanca
@@ -655,8 +662,9 @@ try {
     // limpia. Se encienden a mano y a sabiendas.
     ...(process.env.BVSALA_GATEWAY_DIALES_ELISION === "1" ? { dialesElision: true } : {}),
     // Palanca C · el MODELO HERMANO (decisión del dueño, 2026-09-09: «haz el C»).
-    // Opt-in explícito del cliente porque cambia el `model` de la respuesta; desde
-    // la 1.2.4 no pide ningún feature de la licencia (gratis en cualquier plan)
+    // Opt-in explícito del cliente porque cambia el `model` de la respuesta; sin
+    // claves y con Medir no pide ningún feature; con una licencia de pago, el
+    // feature `sibling_model_routing` sigue verjando (fail-closed, como en la 1.2.3)
     // y `BVSALA_GATEWAY_ELISION=0` la apaga con las demás. NO la arma el anillo 2:
     // el ahorro se mide sin contrafactual, no hay A/B que hacer.
     ...(siblingModelEnv === "1" ? { modeloHermano: true } : {}),
@@ -719,11 +727,13 @@ if (process.env.BVSALA_GATEWAY_USAGE_INJECT === "1") {
   // A2-29 · el open core rompió la suposición de antes (que la verja de
   // licencia garantizaba la clave). Sin ninguna clave (modo comunitario)
   // las palancas las concede este proceso, gratis: la línea no habla de
-  // licencias. Con licencia (1.2.4) las palancas son las mismas y también se
-  // conceden localmente, con o sin clave de servicio: nunca falta quien las
-  // conceda, así que `hayCanal` es siempre cierto.
+  // licencias. Con la licencia Medir (1.2.4) las palancas son las mismas y
+  // también se conceden localmente, con o sin clave de servicio. Con una
+  // licencia de PAGO, como en la 1.2.3, manda la licencia de la org: solo una
+  // licencia de pago offline SIN clave de servicio deja al gateway sin canal.
   const comunidad = licencia.license === null;
-  const hayCanal = true;
+  const medir = licencia.license?.payload.plan === "measure";
+  const hayCanal = comunidad || medir || serviceAccountKey !== undefined;
   if (soloObservar) {
     // En modo solo-observar no actúa ninguna palanca (servidor.ts, `enMedicion`):
     // una sola línea que lo dice, en vez de «TTL tuning ON» y «ARMED» encima.
@@ -734,15 +744,16 @@ if (process.env.BVSALA_GATEWAY_USAGE_INJECT === "1") {
       hayCanal,
       process.env.BVSALA_GATEWAY_DIALES_ELISION === "1",
       comunidad,
+      medir,
     );
     (estado.aviso ? console.error : salida)(`[bvsala gateway] ${estado.linea}`);
     // Palanca C dicha en voz alta, por la misma razón: una bandera puesta en un
     // terminal sin clave (o con el canal cerrado) es control en silencio.
-    const estadoHermano = describirEstadoDeHermano(siblingModelEnv, hayCanal, elisionPedida !== "0", comunidad);
+    const estadoHermano = describirEstadoDeHermano(siblingModelEnv, hayCanal, elisionPedida !== "0", comunidad, medir);
     (estadoHermano.aviso ? console.error : salida)(`[bvsala gateway] ${estadoHermano.linea}`);
     // Palanca D dicha en voz alta por la misma razón que las otras: una palanca
     // que se cree encendida y no lo está es la trampa muda que ya costó un A/B.
-    const estadoEsfuerzo = describirEstadoDeEsfuerzo(effortEnv, hayCanal, elisionPedida !== "0", comunidad);
+    const estadoEsfuerzo = describirEstadoDeEsfuerzo(effortEnv, hayCanal, elisionPedida !== "0", comunidad, medir);
     (estadoEsfuerzo.aviso ? console.error : salida)(`[bvsala gateway] ${estadoEsfuerzo.linea}`);
   }
   if (planAnillo2.linea) {

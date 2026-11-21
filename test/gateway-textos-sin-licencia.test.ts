@@ -64,22 +64,29 @@ describe.skipIf(process.platform === "win32")("A2-14/A2-23/A2-29 · sin clave, n
     for (const re of VIEJAS) expect(r.stderr, String(re)).not.toMatch(re);
   });
 
-  it("`bvsala --help`: las palancas son gratis sin claves y con cualquier licencia (1.2.4: ninguna manda sobre ellas)", () => {
+  it("`bvsala --help`: las palancas son gratis sin claves y con Medir; con una licencia de pago, como en la 1.2.3", () => {
     const r = spawnSync(process.execPath, [BIN, "--help"], { encoding: "utf8", env: { PATH: process.env.PATH ?? "" } });
     expect(r.status).toBe(0);
     for (const re of [...VIEJAS, /only takes effect if your organization's licen[cs]e/i, /toward the fee/i, /commission/i]) {
       expect(r.stdout, String(re)).not.toMatch(re);
     }
-    expect(r.stdout).toMatch(/With\s+no BiVelio keys \(COMMUNITY mode\) they are free and need no license\./);
-    // Las dos palancas opt-in: gratis en cualquier plan, con o sin clave. Hasta la
-    // 1.2.3 decía «a Pro or Team license includes it (fail-closed)».
-    expect(r.stdout.match(/Free on\s+every plan, with or without\s+a BiVelio key\./g)).toHaveLength(2);
-    expect(r.stdout).not.toMatch(/fail-closed|license\s+includes (it|them)/);
-    // 1.2.4 · la clave solo añade la nube: ningún texto dice que una licencia decide qué palancas aplican.
-    expect(r.stdout).not.toMatch(/feature list decide|every local (saving )?lever|all local levers|arms every|org entitlements/);
-    expect(r.stdout).toMatch(
-      /A BiVelio key only adds the cloud: the free Measure license and a\s+Pro or Team license apply the same levers as no key \(a blocked or\s+lapsed license stops the gateway: it answers 402\)\./,
-    );
+    expect(r.stdout).toMatch(/With\s+no BiVelio keys \(COMMUNITY mode\) they are free and need\s+no license/);
+    // 1.2.4 · decisiones del dueño (21-11-2026): Medir = sin clave; con una licencia
+    // de pago, el gateway como en la 1.2.3 de pago (cada palanca pide su feature,
+    // fail-closed). Una rama previa decía «free on every plan» y concedía las
+    // palancas a cualquier licencia; con pago y la nube caída eso encarecía las
+    // sesiones con pausas largas. La ayuda dice ahora las dos cosas, sin pedir
+    // licencia a quien no tiene clave.
+    expect(r.stdout).not.toMatch(/Free on\s+every plan/);
+    const plano = r.stdout.replace(/\s+/g, " ");
+    for (const feature of ["sibling_model_routing", "per_turn_effort"]) {
+      expect(plano).toContain(
+        `Free with no keys and with the free Measure license; with a paid license, only if it includes ${feature} (fail-closed), as in 1.2.3.`,
+      );
+    }
+    expect(r.stdout).not.toMatch(/every local (saving )?lever|all local levers|arms every|org entitlements/);
+    expect(r.stdout).toMatch(/the free Measure license applies the same levers as no\s+key\. With a Pro, Team or Enterprise license the gateway works as in\s+1\.2\.3/);
+    expect(r.stdout).toMatch(/A blocked or lapsed\s+license stops the gateway: it answers 402\./);
     // La frase del 8,0 % no describe tráfico de suscripción como factura de API.
     expect(r.stdout).not.toContain("8.0% of the bill");
     // Verificación final de la 1.2.4: el 99,1 % y el 8,0 % no tenían fuente en el

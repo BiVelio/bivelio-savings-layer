@@ -25,8 +25,10 @@ import { testLicense } from "./helpers/test-license.js";
  *      aunque la nube sirva `features: []` para la organización;
  *   2. el modo solo-observar conserva, intacto, lo que antes hacía Medir: cuerpo
  *      byte a byte, sin coalescencia, y el hipotético como registro `shadow`;
- *   3. una licencia de PAGO sigue mandada por las features de su organización:
- *      Medir no ha abierto nada que no estuviera ya abierto sin clave.
+ *   3. una licencia de PAGO sigue mandada por las features de su organización,
+ *      como en la 1.2.3 (sin clave de servicio, con la nube caída o con la fila
+ *      sin features, nada se reescribe): Medir no ha abierto nada que no
+ *      estuviera ya abierto sin clave, ni el pago ha cambiado.
  */
 
 const PETICION = {
@@ -365,25 +367,23 @@ describe("pasarela · lo que NO cambia", () => {
   });
 });
 
-describe("pasarela · una licencia de PAGO lleva las mismas palancas que sin claves (1.2.4)", () => {
-  // Hasta la 1.2.3 estos dos casos decían «nada se reescribe»: una organización
-  // de pago con la fila sin literales, o sin clave de servicio, tenía MENOS
-  // palancas que quien no ponía ninguna clave.
-  it("licencia de PAGO sin las features en su organización: lo mismo que el modo comunitario", async () => {
-    const comunidad: string[] = [];
-    const gc = await gatewayComunitario(await upstreamFalso(comunidad, 0, SSE_ESCRITURA_1H), true, false);
-    await (await pedir(gc.puerto)).text();
+describe("pasarela · una licencia de PAGO, como la 1.2.3 de pago (1.2.4)", () => {
+  // Decisión del dueño (21-11-2026): «con clave de pago, nada peor que la 1.2.3
+  // de pago». Una rama previa de la 1.2.4 daba aquí las palancas de sin claves
+  // («lo mismo que el modo comunitario»); medido con un proveedor falso cuya
+  // caché caduca, la rebaja de TTL sin el feature de la org encarecía las
+  // sesiones de pago con pausas de más de 5 min (+36,5 % a +51,1 % frente al 0 %
+  // de la 1.2.3). Estos dos casos vuelven a fijar lo de la 1.2.3: una
+  // organización de pago con la fila sin literales, o sin clave de servicio,
+  // reenvía byte a byte. Medir, en cambio, ahorra como sin claves (arriba).
+  it("licencia de PAGO sin las features en su organización: nada se reescribe, como la 1.2.3", async () => {
     const recibidos: string[] = [];
     const g = await gatewayConLicencia(await upstreamFalso(recibidos, 0, SSE_ESCRITURA_1H), await plataformaFalsa([], []), "pro");
     await (await pedir(g.puerto)).text();
-    expect(recibidos).toEqual(comunidad);
-    expect(recibidos).not.toEqual([CUERPO]);
+    expect(recibidos).toEqual([CUERPO]);
   });
 
-  it("licencia de PAGO sin clave de servicio: lo mismo que el modo comunitario", async () => {
-    const comunidad: string[] = [];
-    const gc = await gatewayComunitario(await upstreamFalso(comunidad, 0, SSE_ESCRITURA_1H), true, false);
-    await (await pedir(gc.puerto)).text();
+  it("licencia de PAGO sin clave de servicio: nada se reescribe, como la 1.2.3 (no hay org que consultar)", async () => {
     const recibidos: string[] = [];
     const g = await arrancarGateway({
       license: testLicense({ plan: "pro", features: TODAS }),
@@ -394,8 +394,7 @@ describe("pasarela · una licencia de PAGO lleva las mismas palancas que sin cla
     });
     recursos.push(g);
     await (await pedir(g.puerto)).text();
-    expect(recibidos).toEqual(comunidad);
-    expect(recibidos).not.toEqual([CUERPO]);
+    expect(recibidos).toEqual([CUERPO]);
   });
 
   it.each([

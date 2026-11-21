@@ -239,10 +239,13 @@ export class AnthropicProvider implements Provider {
   readonly id: string;
   private readonly opts: AnthropicOptions;
   /**
-   * Whether this provider caches the whole history by itself (`automaticCache`).
-   * With a BiVelio key the layer then leaves superseded tool results untouched.
+   * @internal Whether this provider caches the whole history by itself
+   * (`automaticCache`). The layer reads it: with a BiVelio key, superseded tool
+   * results are only trimmed when this is `false`, which only an
+   * `AnthropicProvider` without `automaticCache` reports. Not part of the
+   * public API; it may change without notice.
    */
-  get cacheaElPromptEntero(): boolean {
+  get cachesWholePrompt(): boolean {
     return this.opts.automaticCache === true;
   }
   private readonly fetchImpl: typeof fetch;

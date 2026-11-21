@@ -172,13 +172,16 @@ export function reescribirModelo(
  * es la trampa muda que ya costó un día de A/B. Pura; `aviso` marca los casos
  * en que la intención del operador no se cumple. `comunidad` (A2-14): sin
  * ninguna clave de BiVelio la palanca es gratis y no depende de ninguna
- * licencia; solo con una licencia de organización manda su lista de features.
+ * licencia. `medir` (1.2.4): con la licencia gratuita Medir, igual que sin
+ * claves. Solo con una licencia de PAGO manda su lista de features (como en la
+ * 1.2.3).
  */
 export function describirEstadoDeHermano(
   bandera: string | undefined,
   hayClave: boolean,
   canalAbierto: boolean,
   comunidad = false,
+  medir = false,
 ): { linea: string; aviso: boolean } {
   const par = Object.entries(HERMANOS)
     .map(([a, b]) => `${a}→${b}`)
@@ -205,7 +208,9 @@ export function describirEstadoDeHermano(
       `sibling model routing: ARMED (${par}; ` +
       (comunidad
         ? "community mode: free, no key needed). "
-        : "free on every plan: a license only adds the cloud). ") +
+        : medir
+          ? "free Measure license: the same levers as no key). "
+          : "ON if your organization's licence includes sibling_model_routing; fail-closed). ") +
       "Changes the model you see in the response; cache reads cost 0.025× instead of 0.1× (list price). " +
       "Turning it on mid-conversation pays one cold prefix write, once. " +
       "If the provider rejects the rewritten request (400), it is re-sent unchanged once",

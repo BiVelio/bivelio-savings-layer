@@ -344,6 +344,36 @@ describe("con clave, el recorte solo actúa dentro del bucle de herramientas en 
     }
   });
 
+  it("Pro, Claude por OpenAICompatibleProvider, agente de 60 pasos: traza skipped y coste ≤ 1.2.3 Pro", async () => {
+    // Verificación 4, bloqueante 2: la guarda miraba la familia del MODELO (Claude
+    // tiene prima de escritura) y no el proveedor, así que con clave recortaba
+    // Claude servido por un endpoint compatible con OpenAI (OpenRouter, LiteLLM,
+    // pasarelas), que puede cachear el prompt por su cuenta. Medido con un
+    // proveedor falso que cachea el prefijo común: de la 1.2.3 Pro (no recorta) a
+    // la candidata, Sonnet 0 % → +12,67 % y Haiku 0 % → +23,31 %. Ahora decide el
+    // proveedor: solo AnthropicProvider sin automaticCache declara
+    // `cachesWholePrompt === false`; cualquier otro no recorta con clave.
+    for (const modelo of ["claude-sonnet-4-5", "claude-haiku-4-5", "anthropic/claude-sonnet-4-5"]) {
+      const pro = openaiFalso();
+      const a = await correr(openai, pro, modelo, pasos(60), licenciaPro());
+      // La 1.2.3 de pago no recortaba: es la misma capa con el recorte apagado.
+      const como123 = openaiFalso();
+      await correr(openai, como123, modelo, pasos(60), licenciaPro(), { savings: { elision: false } });
+      expect(pro.cuerpos.length).toBe(60);
+      expect(munones(pro.cuerpos)).toBe(0);
+      expect(historialSoloCrece(pro.cuerpos)).toBe(true);
+      expect(a.trazas.some((t) => t.startsWith("skipped") && /only acts inside a tool loop on Anthropic/.test(t))).toBe(true);
+      expect(pro.coste()).toBeLessThanOrEqual(como123.coste());
+      expect(pro.cuerpos).toEqual(como123.cuerpos);
+    }
+  });
+
+  it("solo AnthropicProvider sin automaticCache declara que no cachea el prompt entero (el getter es interno)", () => {
+    expect(new AnthropicProvider({ apiKey: "clave-inventada" }).cachesWholePrompt).toBe(false);
+    expect(new AnthropicProvider({ apiKey: "clave-inventada", automaticCache: true }).cachesWholePrompt).toBe(true);
+    expect((openai(fetch) as unknown as { cachesWholePrompt?: boolean }).cachesWholePrompt).toBeUndefined();
+  });
+
   it("Pro en soporte de 12 turnos con Sonnet y Haiku: conserva las lecturas del historial (E1) y cuesta lo mismo que con el recorte apagado", async () => {
     for (const modelo of ["anthropic/claude-sonnet-4-5", "anthropic/claude-haiku-4-5"]) {
       const pro = anthropicConCache();

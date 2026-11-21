@@ -188,13 +188,15 @@ export function conBetaDeEsfuerzo(betas: string | undefined): string {
  * La línea de arranque, hermana de las de A y C: una palanca que se cree
  * encendida y no lo está es la trampa muda que ya costó un día de A/B.
  * `comunidad` (A2-14): sin ninguna clave de BiVelio la palanca es gratis y no
- * depende de ninguna licencia; con una licencia de organización, manda la suya.
+ * depende de ninguna licencia. `medir` (1.2.4): con la licencia gratuita Medir,
+ * igual que sin claves. Con una licencia de PAGO, manda la suya (como en la 1.2.3).
  */
 export function describirEstadoDeEsfuerzo(
   nivel: string | undefined,
   hayClave: boolean,
   canalAbierto: boolean,
   comunidad = false,
+  medir = false,
 ): { linea: string; aviso: boolean } {
   if (nivel === undefined || nivel === "") {
     return {
@@ -239,7 +241,9 @@ export function describirEstadoDeEsfuerzo(
       `per-turn effort: ARMED at "${nivel}" (` +
       (comunidad
         ? "community mode: free, no key needed). "
-        : "free on every plan: a license only adds the cloud). ") +
+        : medir
+          ? "free Measure license: the same levers as no key). "
+          : "ON if your organization's licence includes per_turn_effort; fail-closed). ") +
       "Only fable-5-1, mythos-5-1, opus-5-5 and opus-5, and only below the model's default effort " +
       `(high; medium on opus-5-5${nivel === "medium" ? ", so opus-5-5 passes through unchanged at this level" : ""}); ` +
       "every other request passes through unchanged. " +
