@@ -30,9 +30,10 @@ function aplanar(o: unknown, p = ""): Plano {
 const cargar = (loc: string): Plano => aplanar(JSON.parse(readFileSync(new URL(`./${loc}.json`, import.meta.url), "utf8")));
 
 /**
- * Donde «BV-SALA» puede seguir. Las dos últimas son textos que revisa otra
- * investigación (las cachés compartidas y el plan; Claude y el skill) y no se
- * tocan desde aquí: cuando se reescriban, salen de esta lista.
+ * Donde «BV-SALA» puede seguir. Las tres últimas son textos que reescribe o
+ * revisa otro trabajo (las cachés compartidas y el plan; Claude y el skill; el
+ * aviso de licencia caducada, que reescribe fix/web-textos-auditoria-medios) y
+ * no se tocan desde aquí: cuando dejen de decir «BV-SALA», salen de la lista.
  */
 const BV_SALA_PERMITIDO = new Set([
   "landing.footer.badge",
@@ -40,6 +41,7 @@ const BV_SALA_PERMITIDO = new Set([
   "landing.pricing.features.0",
   "dashboard.accountPlanStrip.planBody",
   "dashboard.projectorVerifier.onlyChatBody",
+  "dashboard.billingState.expiredBody",
 ]);
 
 /** Textos donde «Savings» a secas nombraba el producto o el panel. */
@@ -48,7 +50,6 @@ const ANTES_SAVINGS_A_SECAS = [
   "app.tour.steps.welcome.title",
   "dashboard.proof.diagramB",
   "dashboard.yourBench.readout.armB",
-  "landing.hero.panelAlt",
   "landing.ways.title",
   "landing.ways.cloud.account",
   "landing.step2.body",
