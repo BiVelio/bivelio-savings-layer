@@ -357,8 +357,8 @@ describe("el README dice la versión de Node del paquete y no habla de comisión
 
   it("el banco publicado se enlaza a /benchmarks", () => {
     const plano = readme.replace(/\s+/g, " ");
-    expect(plano).not.toMatch(/benchmark, trial by trial[^.]*how-it-works/);
-    expect(plano.match(/benchmark, trial by trial[^.]*?savings\.bivelio\.com\/en\/benchmarks/g)?.length).toBe(2);
+    expect(plano).not.toMatch(/benchmark, (?:trial by trial|run by run)[^.]*how-it-works/);
+    expect(plano.match(/benchmark, run by run[^.]*?savings\.bivelio\.com\/en\/benchmarks/g)?.length).toBe(2);
   });
 
   it("⛔ ni «reach your invoice» ni «the commission base» ni «never carries commission»", () => {
@@ -396,8 +396,13 @@ describe("el CHANGELOG va en inglés y la ficha de PyPI no pide una clave ni se 
     const changelog = leer("CHANGELOG.md");
     expect(changelog).toContain("## 1.2.2 — the three READMEs tell the same story");
     expect(changelog).toContain("## 1.2.1 — README revised for the community, paper v2.3-r1 linked");
-    expect(changelog).not.toMatch(/[áéíóúñÁÉÍÓÚÑ¿¡«»]/);
-    expect(changelog).not.toMatch(/\b(Sin cambios de código|misma superficie|los tres READMEs|el README del)\b/);
+    // Solo las dos entradas que estaban en español: una entrada futura puede citar un nombre con tilde.
+    const desde = changelog.indexOf("## 1.2.2 — ");
+    const hasta = changelog.indexOf("\n## ", changelog.indexOf("## 1.2.1 — ") + 1);
+    expect(desde).toBeGreaterThanOrEqual(0);
+    const dos = changelog.slice(desde, hasta < 0 ? undefined : hasta);
+    expect(dos).not.toMatch(/[áéíóúñÁÉÍÓÚÑ¿¡«»]/);
+    expect(dos).not.toMatch(/\b(Sin cambios de código|misma superficie|los tres READMEs|el README del)\b/);
     // Las cifras son las mismas, con el punto decimal del resto del fichero.
     expect(changelog).toContain("(0→95 % −82.76 %; 31.50 %/75.08 %)");
   });
