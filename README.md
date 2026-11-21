@@ -55,14 +55,15 @@ unless you choose to add a key: **zero telemetry by default**, and prompts,
 completions and provider keys never reach BiVelio (the exact per-request fields a
 cloud key sends are in [LICENSE-CLOUD.md](./LICENSE-CLOUD.md) §5).
 
-### Measured, not promised — and independently re-checked
+### Measured, not promised — recomputed from the public artifacts
 
-- **Live A/B on the provider's own counters** (`claude-haiku-4-5`): the
-  cacheable-prefix reorder takes a poisoned prompt cache from **0 % → 95 %
-  hit-rate**, −**82.76 %** cost per request.
-- **Recomputed from the public artifacts**: **31.50 %** (gpt-4o-mini) and
-  **75.08 %** (claude-sonnet-5) pooled reductions with bootstrap intervals; the
-  equal-family means (22.88 % / 70.71 %) are reported separately, as they should be.
+- **Pooled reductions on the public GSM8K benchmark**: **31.50 %** (gpt-4o-mini) and
+  **75.08 %** (claude-sonnet-5), with bootstrap intervals; the equal-family means
+  (22.88 % / 70.71 %) are reported separately, as they should be.
+- **Exploratory live A/B (20 requests per arm)** on the provider's own counters
+  (`claude-haiku-4-5`, the opt-in `cachePrefix` lever): the cacheable-prefix reorder
+  took a poisoned prompt cache from 0 % → 95 % hit-rate, −82.76 % cost per request in
+  that constructed sequence.
 
 📄 **The paper:** [Verifiable Measurement of Cost Savings in LLM Applications
 (open-core edition, v2.3-r1)](https://github.com/BiVelio/bivelio-savings-layer/blob/main/docs/PAPER.md) — revised after an external
@@ -122,8 +123,8 @@ console.log(report.cost.basis);               // "estimated": nothing ran, so th
 `npx @bivelio/savings-layer init` prints the exact three steps for your stack
 (Next.js, Express, Vercel AI SDK, Mastra, LangChain.js, Anthropic/OpenAI SDK) and
 `npx @bivelio/savings-layer doctor` prints the exact configuration for every
-installed coding agent. The published benchmark, trial by trial, with the raw CSV,
-is at **[savings.bivelio.com/en/how-it-works](https://savings.bivelio.com/en/how-it-works)**.
+installed coding agent. The published benchmark, run by run, with the raw JSON
+reports, is at **[savings.bivelio.com/en/benchmarks](https://savings.bivelio.com/en/benchmarks)**.
 
 ### Community vs Cloud
 
@@ -199,6 +200,13 @@ each one is kept.
 Get a key at **[savings.bivelio.com](https://savings.bivelio.com)**.
 Onboarding & general questions: **support@bivelio.com** · licensing & compliance:
 **privacy@bivelio.com** · technical: **team@bivelio.com**.
+
+**What the Apache-2.0 license covers.** The npm package (`src/`, `gateway/`, `skills/`,
+`docs/terminales/`) and the Python client (`packages/python`) are Apache-2.0. The
+cloud's control plane (`services/`, `db/`, `deploy/`), the website (`apps/web`) and the
+packages marked `UNLICENSED` are in this repository for transparency only: you can read
+and audit them, but they are not licensed for reuse. Third-party code keeps its own
+license ([NOTICE](./NOTICE)).
 
 <details>
 <summary><b>Where it installs — the full story</b></summary>
@@ -325,8 +333,8 @@ provider, and a request without it is not changed at all:
 ## Check it before you install
 
 What you can check before installing is what we have measured: the published
-benchmark, trial by trial, with the raw CSV linked, at
-**[savings.bivelio.com/en/how-it-works](https://savings.bivelio.com/en/how-it-works)**.
+benchmark, run by run, with the raw JSON reports linked, at
+**[savings.bivelio.com/en/benchmarks](https://savings.bivelio.com/en/benchmarks)**.
 With no keys at all, the layer runs the full savings stack locally on your own
 traffic and reports per request — nothing leaves your machine.
 

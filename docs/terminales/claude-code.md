@@ -65,13 +65,16 @@ en este orden:
 
 ```
 [gateway] HEAD /api/hello → 200
-[gateway] POST /v1/messages  · <modelo> · $0.001234 (in 120, cache↑0 (1h 49268) cache↓43430, out 8)
+[gateway] POST /v1/messages  · <modelo> · $0.001234 (in 120, cache↑49268 cache↓43430, out 8)
 ```
 
 El `HEAD /api/hello` es la sonda de vida que Claude Code manda antes de la
-primera llamada. La línea con `$` es la inferencia medida. La cifra `cache↑ …
-(1h …)` es normal: Claude Code escribe caché a 1 h, y es más de la mitad de la
-entrada en sesiones reales.
+primera llamada. La línea con `$` es la inferencia medida. `cache↑` son todos
+los tokens que esa petición escribió en caché. Con API key y la configuración
+por defecto, Claude Code pide la caché de cinco minutos y la línea es como la de
+arriba. Si pones `promptCacheTtl` a `1h`, la parte escrita a una hora aparece
+entre paréntesis, `cache↑49268 (1h 49268)`, y nunca supera el total; lo que la
+rebaja de TTL pasó a cinco minutos ya no sale en ese paréntesis.
 
 ## Model discovery (opcional, solo con API key)
 
