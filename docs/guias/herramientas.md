@@ -186,7 +186,7 @@ reach, and the cached prompt prefix stays the same from one question to the next
   bounded; a turn it no longer remembers (another process, say) goes out as before and
   the model searches again.
 - **Whose saving.** The provider's. Your usage counter shows it; the layer credits
-  nothing for it and charges no commission on it.
+  nothing for it and charges nothing for it either.
 
 ```ts
 import { AnthropicProvider } from "@bivelio/savings-layer";

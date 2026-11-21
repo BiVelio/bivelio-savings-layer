@@ -10,7 +10,7 @@
 
 <p align="center">
   <a href="https://www.npmjs.com/package/@bivelio/savings-layer"><img src="https://img.shields.io/npm/v/%40bivelio%2Fsavings-layer?color=2F63D8&label=npm" alt="npm version"></a>
-  <img src="https://img.shields.io/badge/node-%E2%89%A520-14A06F" alt="Node ≥ 20">
+  <img src="https://img.shields.io/badge/node-%E2%89%A520.19-14A06F" alt="Node ≥ 20.19">
   <img src="https://img.shields.io/badge/license-Apache--2.0-2F63D8" alt="Apache-2.0">
   <img src="https://img.shields.io/badge/runtime%20dependencies-0-14A06F" alt="0 runtime dependencies">
   <img src="https://img.shields.io/badge/telemetry-off%20by%20default-0F1218" alt="Telemetry off by default">
@@ -123,7 +123,7 @@ console.log(report.cost.basis);               // "estimated": nothing ran, so th
 (Next.js, Express, Vercel AI SDK, Mastra, LangChain.js, Anthropic/OpenAI SDK) and
 `npx @bivelio/savings-layer doctor` prints the exact configuration for every
 installed coding agent. The published benchmark, trial by trial, with the raw CSV,
-is at **[savings.bivelio.com/en/how-it-works](https://savings.bivelio.com/en/how-it-works)**.
+is at **[savings.bivelio.com/en/benchmarks](https://savings.bivelio.com/en/benchmarks)**.
 
 ### Community vs Cloud
 
@@ -241,7 +241,7 @@ API key asks for five minutes unless you set `promptCacheTtl` to `1h`, so out of
 box the gateway measures it and that lever saves nothing. The other levers (sibling
 model, per-turn effort) switch on with their flags. On a Claude or ChatGPT subscription
 there is no per-token invoice, so that traffic is metered at list-price
-equivalent and never carries commission, and the TTL lever leaves Claude Max/Pro
+equivalent and is credited no saving, and the TTL lever leaves Claude Max/Pro
 traffic untouched: there is no write premium to save, and a 5-minute entry would
 be rewritten after any pause.
 
@@ -326,7 +326,7 @@ provider, and a request without it is not changed at all:
 
 What you can check before installing is what we have measured: the published
 benchmark, trial by trial, with the raw CSV linked, at
-**[savings.bivelio.com/en/how-it-works](https://savings.bivelio.com/en/how-it-works)**.
+**[savings.bivelio.com/en/benchmarks](https://savings.bivelio.com/en/benchmarks)**.
 With no keys at all, the layer runs the full savings stack locally on your own
 traffic and reports per request — nothing leaves your machine.
 
@@ -364,8 +364,8 @@ pnpm add @bivelio/savings-layer gpt-tokenizer
 `gpt-tokenizer` is optional, but install it if you call OpenAI models: it is the
 provider's own tokenizer, and the SDK loads it by itself. Without it, counts fall back
 to a built‑in estimate and the reconstructed savings are less accurate. Either way, a
-saving where the layer removed something is reported as `estimated`, and estimated
-savings are never billed — the SDK warns once when the tokenizer is missing.
+saving where the layer removed something is reported as `estimated` and kept apart
+from the measured figures — the SDK warns once when the tokenizer is missing.
 
 **2 · The cloud (optional)** — a [BiVelio key](https://savings.bivelio.com/dashboard/install)
 adds the team dashboard, shared caches and license management. Skip this step and
@@ -431,8 +431,8 @@ had no reasoning block), and then at 95 % of its counter, a margin for the small
 `"estimated"` when the layer removed something (the baseline is then reconstructed
 with the model's tokenizer, or with a calibrated estimate where no exact tokenizer
 exists, as for Anthropic models), and `"unmeasured"` when the provider returned no
-usage. Only `measured` and `reference` figures reach your invoice; estimated ones
-never do. A model with no list price in the catalog and none in your `costModels`
+usage. Only `measured` and `reference` figures are credited as savings in your report
+and dashboard; estimated ones are always shown apart. A model with no list price in the catalog and none in your `costModels`
 (or `defaultCostModel`) is priced at an illustrative rate: its token counts are still
 the provider's, but its dollar figures are `"estimated"`, never `"measured"`, and a
 `price` trace says `priceSource: "illustrative"`.
@@ -540,7 +540,7 @@ console.log(streamed.streaming?.delivery); // "live", or "whole" when the answer
 
 The SDK asks the provider for its final usage at the end of every stream (on
 OpenAI‑compatible endpoints, `stream_options.include_usage`); a stream that ends
-without it is reported as `unmeasured` and never billed. With an output contract, or
+without it is reported as `unmeasured` and credits no saving. With an output contract, or
 a request declared `deferrable`, the answer is produced exactly as `generate()` would
 and arrives as a single `text` event. Breaking out of the loop while the provider is
 still writing cancels its request, and nothing is cached or recorded; once its answer
@@ -768,7 +768,7 @@ report.nativeSavings;
 
 It is present only when a call ran and the provider reported cache reads or writes;
 a cache hit or a coalesced request never carries it. It is not in `cost.netSavingsRatio`,
-not in `cost.baselineEstimate`, and never in the commission base. Your dashboard shows
+not in `cost.baselineEstimate`, and never in the credited savings. Your dashboard shows
 it as its own card, **Native savings unlocked**, next to the credited savings.
 
 **Quality, kept apart from money.** `report.qualityLedger` records how the answer you
@@ -845,7 +845,7 @@ BVSALA_SEAT_ID=worker-03   # stable per replica; [A-Za-z0-9._:/-], max 128 chars
 <details>
 <summary><b>Requirements</b></summary>
 
-- **Node ≥ 20.** The package is **ESM‑only** (`"type": "module"`); from CommonJS,
+- **Node ≥ 20.19.** The package is **ESM‑only** (`"type": "module"`); from CommonJS,
   `require()` works on Node ≥ 22.
 - Framework adapters: `ai` 6 or 7, `@mastra/core` ≥ 1.68 < 2, `langchain` ≥ 1.1 < 2
   with `@langchain/core` ≥ 1.1 < 2, and `@anthropic-ai/sdk` ≥ 0.103 < 2 — optional
@@ -853,8 +853,8 @@ BVSALA_SEAT_ID=worker-03   # stable per replica; [A-Za-z0-9._:/-], max 128 chars
   Node ≥ 22 in their own `engines`.
 - Optional peer `gpt-tokenizer` (3 or 4) for exact OpenAI token counts, loaded automatically
   when installed — without it a built‑in estimator is used. It improves the accuracy
-  of estimated figures; what reaches your invoice is `measured` and `reference`, which
-  come from the provider's own counter either way.
+  of estimated figures; the `measured` and `reference` figures come from the provider's
+  own counter either way.
 - Every component (cache, vector store, tokenizer, compressor, constraint backend)
   ships with an in‑memory default and is independently swappable behind the same
   interfaces.

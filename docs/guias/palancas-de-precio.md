@@ -7,7 +7,7 @@ continue its quickstart: `provider`, `layer` and `createSavingsLayer` come from 
 
 Two request flags ask your provider for a lower price on the same tokens. Neither
 changes the answer, and what they are worth is reported next to the four ledgers:
-never folded into `cost.*`, never part of any commission.
+never folded into `cost.*`, never part of any charge.
 
 **`savings.deferrable`** asks for the provider's Flex tier: OpenAI, and Gemini through
 `GoogleProvider` (`serviceTier: "flex"`) or its OpenAI‑compatible endpoint. Anthropic has no cheaper synchronous tier: its
