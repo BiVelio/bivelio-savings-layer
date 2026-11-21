@@ -184,7 +184,7 @@ export class LicenseRefresher {
     // NI CON EL VIGENTE REVOCADO: al cancelar, el servidor revoca la licencia de
     // pago y devuelve la org a Medir (decisión del dueño, 2026-09-29). Esperar a
     // «cerca de caducar» dejaría la capa parada hasta el fin del período pagado;
-    // mirando ya, recoge la Medir y sigue midiendo en sombra.
+    // mirando ya, recoge la Medir y sigue funcionando (y ahorrando) con ella.
     const vigenteRevocado =
       this.currentJti !== undefined && this.opts.revocados?.snapshot().has(this.currentJti) === true;
     if (

@@ -16,7 +16,8 @@ const PIDE_AYUDA = new Set(["help", "--help", "-h"]);
 const PIDE_VERSION = new Set(["version", "--version", "-v"]);
 
 export type Decision =
-  | { tipo: "ayuda"; salida: 0 | 1 }
+  /** `desconocido`: el comando que no existe, para decirlo antes de la ayuda. */
+  | { tipo: "ayuda"; salida: 0 | 1; desconocido?: string }
   | { tipo: "version" }
   | { tipo: "arrancar"; comando: string; resto: string[] };
 
@@ -29,7 +30,9 @@ export function decidirArranque(args: readonly string[]): Decision {
   // enseñar la ayuda de Claude Code, y `bvsala codex --version` la de Codex.
   // Todo lo que va detrás del terminal es del terminal.
   if (esTerminalConEnvoltorio(comando)) return { tipo: "arrancar", comando, resto };
-  if (!(COMANDOS_PROPIOS as readonly string[]).includes(comando)) return { tipo: "ayuda", salida: 1 };
+  // Un comando que no existe se DICE (verificación final de la 1.2.4): con la
+  // ayuda sola, una errata como `bvsala claud` parecía haber ido bien.
+  if (!(COMANDOS_PROPIOS as readonly string[]).includes(comando)) return { tipo: "ayuda", salida: 1, desconocido: comando };
   // Un subcomando propio con -h/--help en cualquier posición es una pregunta,
   // no una orden: se responde ANTES de arrancar nada (ni proxy, ni doctor).
   if (resto.some((a) => PIDE_AYUDA.has(a))) return { tipo: "ayuda", salida: 0 };

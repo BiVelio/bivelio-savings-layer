@@ -374,6 +374,7 @@
     "SavingsLayerConfig.meteringUrl": "estable",
     "SavingsLayerConfig.modelCascade": "estable",
     "SavingsLayerConfig.now": "estable",
+    "SavingsLayerConfig.observeOnly": "estable",
     "SavingsLayerConfig.priceLevers": "estable",
     "SavingsLayerConfig.provider": "estable",
     "SavingsLayerConfig.reranker": "estable",

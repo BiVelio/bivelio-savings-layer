@@ -523,16 +523,24 @@ describe("describirEstadoDeElision — el brazo dicho al arrancar", () => {
     const linea = describirEstadoDeElision(undefined, true).linea;
     expect(linea).toContain("BVSALA_GATEWAY_ELISION=0 turns the levers off");
     expect(linea).not.toContain("(=0 ");
-    expect(linea).toContain("your organization's licence includes cache_ttl_tuning");
+    // 1.2.4 · la rebaja de TTL ya no cuelga de la lista de features de la org.
+    expect(linea).toContain("TTL tuning ON: the levers are free on every plan, a license only adds the cloud");
+    expect(linea).not.toMatch(/licence includes|fail-closed/);
   });
 
   it("A2-29 · en modo comunitario las palancas son gratis: ni «licence» ni «fail-closed», y dice cómo apagarlas", () => {
     for (const bandera of [undefined, "1"]) {
       const e = describirEstadoDeElision(bandera, true, false, true);
       expect(e.aviso).toBe(false);
-      expect(e.linea).toContain("savings levers: ON (community mode: free, no key needed)");
-      expect(e.linea).toContain("cache TTL tuning ON for Anthropic API-key traffic");
-      expect(e.linea).toContain("BVSALA_GATEWAY_ELISION=0");
+      // 1.2.4 · ya no dice «savings levers: ON» a secas: dice CUÁL actúa, cuándo, que
+      // con suscripción solo se mide, y la variable exacta de cada una de las demás.
+      expect(e.linea).not.toContain("savings levers: ON");
+      expect(e.linea).toContain("savings levers (community mode: free, no key needed)");
+      expect(e.linea).toContain("cache TTL tuning is the only one ON by default");
+      expect(e.linea).toContain("only acts on Anthropic API-key traffic that asks for the 1-hour cache");
+      expect(e.linea).toContain("on a Claude or ChatGPT subscription the default lever changes nothing and this run only measures");
+      expect(e.linea).toContain("BVSALA_GATEWAY_ELISION=0 turns it off");
+      expect(e.linea).toContain("opt-in: BVSALA_GATEWAY_SIBLING_MODEL=1, BVSALA_GATEWAY_EFFORT=low|medium");
       expect(e.linea).toContain("context elision dials OFF");
       expect(e.linea).not.toMatch(/licen[cs]e|fail-closed/i);
     }
@@ -673,7 +681,11 @@ describe("la palanca de punta a punta", () => {
     expect(recibidas[0]!.headers["anthropic-beta"]).toBe("oauth-2025-04-20");
   });
 
-  it("bandera local SIN feature en la licencia → intacto (medio opt-in no basta)", async () => {
+  // 1.2.4 · LAS PALANCAS SON GRATIS EN CUALQUIER PLAN. Hasta la 1.2.3 estos dos
+  // casos decían «intacto»: una fila de licencia sin el literal, o la plataforma
+  // caída, dejaban a quien paga con MENOS que quien no pone clave (sin clave, la
+  // bandera local basta). Ahora basta con la bandera también con licencia.
+  it("bandera local y una fila de licencia SIN el feature → los diales se aplican (como sin claves)", async () => {
     const recibidas: Recibida[] = [];
     const upstream = await arrancarUpstreamFalso(recibidas);
     const plataforma = await arrancarPlataformaFalsa({ features: ["semantic_cache"] });
@@ -681,15 +693,40 @@ describe("la palanca de punta a punta", () => {
     await esperarCanal();
 
     await pedir(g.puerto, CUERPO);
+    const json = JSON.parse(recibidas[0]!.body);
+    expect(json.context_management.edits[0].trigger.value).toBe(DIAL_TRIGGER_INPUT_TOKENS);
+    expect(recibidas[0]!.headers["anthropic-beta"]).toBe(BETA_CONTEXT_MANAGEMENT);
+  });
+
+  it("SIN la bandera local, con la fila que sea → intacto (las opcionales siguen pidiendo su opt-in)", async () => {
+    const recibidas: Recibida[] = [];
+    const upstream = await arrancarUpstreamFalso(recibidas);
+    const plataforma = await arrancarPlataformaFalsa({ features: ["context_elision"] });
+    const g = await gatewayCon({ upstream, plataforma, clave: "bvk_test", elision: true });
+    await esperarCanal();
+
+    await pedir(g.puerto, CUERPO);
     expect(recibidas[0]!.body).toBe(CUERPO);
     expect(recibidas[0]!.headers["anthropic-beta"]).toBeUndefined();
   });
 
-  it("FAIL-CLOSED: plataforma caída → intacto y el tráfico fluye", async () => {
+  it("plataforma caída → las palancas siguen (no dependen de la nube) y el tráfico fluye", async () => {
     const recibidas: Recibida[] = [];
     const upstream = await arrancarUpstreamFalso(recibidas);
     const plataforma = await arrancarPlataformaFalsa({ estado: 500 });
     const g = await gatewayCon({ upstream, plataforma, clave: "bvk_test", elision: true, dialesElision: true });
+    await esperarCanal();
+
+    const res = await pedir(g.puerto, CUERPO);
+    expect(res.status).toBe(200);
+    expect(JSON.parse(recibidas[0]!.body).context_management.edits[0].trigger.value).toBe(DIAL_TRIGGER_INPUT_TOKENS);
+  });
+
+  it("plataforma caída y BVSALA_GATEWAY_ELISION=0 → intacto", async () => {
+    const recibidas: Recibida[] = [];
+    const upstream = await arrancarUpstreamFalso(recibidas);
+    const plataforma = await arrancarPlataformaFalsa({ estado: 500 });
+    const g = await gatewayCon({ upstream, plataforma, clave: "bvk_test", elision: false, dialesElision: true });
     await esperarCanal();
 
     const res = await pedir(g.puerto, CUERPO);
@@ -728,12 +765,20 @@ describe("la palanca de punta a punta", () => {
     expect(recibidas[0]!.headers["anthropic-beta"]).toBeUndefined();
   });
 
-  it("sin clave de servicio la palanca ni se arma (no hay org que consultar)", async () => {
+  it("sin clave de servicio y sin la bandera de los diales: intacto (los diales son opt-in)", async () => {
     const recibidas: Recibida[] = [];
     const upstream = await arrancarUpstreamFalso(recibidas);
     const g = await gatewayCon({ upstream, elision: true }); // sin clave
     await pedir(g.puerto, CUERPO);
     expect(recibidas[0]!.body).toBe(CUERPO);
+  });
+
+  it("1.2.4 · licencia sin clave de servicio y con la bandera: los diales se aplican (antes no había canal)", async () => {
+    const recibidas: Recibida[] = [];
+    const upstream = await arrancarUpstreamFalso(recibidas);
+    const g = await gatewayCon({ upstream, elision: true, dialesElision: true }); // sin clave
+    await pedir(g.puerto, CUERPO);
+    expect(JSON.parse(recibidas[0]!.body).context_management.edits[0].trigger.value).toBe(DIAL_TRIGGER_INPUT_TOKENS);
   });
 });
 

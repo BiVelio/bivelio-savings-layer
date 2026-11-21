@@ -2,6 +2,8 @@ import { existsSync } from "node:fs";
 import { homedir } from "node:os";
 import { delimiter, join } from "node:path";
 
+import { FRASE_DEPENDENCIA_GATEWAY, FRASE_PALANCAS_GATEWAY, LO_QUE_ANADE_LA_NUBE, enLineas } from "./textos-publicos.js";
+
 /**
  * `bvsala doctor`: detecta qué terminales de codificación hay en la máquina e
  * imprime, para cada uno, el bloque exacto que lo enruta por el gateway local.
@@ -421,8 +423,10 @@ export async function doctor(puerto: number, opts: OpcionesDoctor = {}): Promise
     `bvsala doctor — local gateway at ${base}`,
     "Print only: it writes no configuration. Detection by existence (binaries on the PATH and",
     "user configuration files); the contents of a file are never read.",
-    "The gateway starts with no keys at all (COMMUNITY mode: every local saving lever on, nothing sent to BiVelio).",
-    "BIVELIO_SERVICE_KEY adds the cloud dashboard, org entitlements and team metering.",
+    "The gateway starts with no keys at all (COMMUNITY mode: free, nothing sent to BiVelio) and meters every request.",
+    FRASE_PALANCAS_GATEWAY,
+    `BIVELIO_SERVICE_KEY only adds the cloud (${LO_QUE_ANADE_LA_NUBE}); it switches no lever off.`,
+    ...enLineas(FRASE_DEPENDENCIA_GATEWAY, 112),
     "",
   ];
 

@@ -205,7 +205,7 @@ export function describirEstadoDeHermano(
       `sibling model routing: ARMED (${par}; ` +
       (comunidad
         ? "community mode: free, no key needed). "
-        : "ON if your organization's licence includes sibling_model_routing; fail-closed). ") +
+        : "free on every plan: a license only adds the cloud). ") +
       "Changes the model you see in the response; cache reads cost 0.025× instead of 0.1× (list price). " +
       "Turning it on mid-conversation pays one cold prefix write, once. " +
       "If the provider rejects the rewritten request (400), it is re-sent unchanged once",

@@ -9,12 +9,12 @@ all in the shape of the URL.
 
 - `goose` on the PATH, with the Anthropic provider chosen.
 - `ANTHROPIC_API_KEY` exported (Goose is BYOK only).
-- `bvsala` installed. Open core: with no keys the gateway starts in Community mode (all the local saving, zero telemetry); `BIVELIO_SERVICE_KEY` adds the dashboard and the org's entitlements (see [README](README.md)).
+- `bvsala` installed. Open core: with no keys the gateway starts in Community mode (free, zero telemetry: it measures every request, and one lever is on by default, cache TTL tuning); `BIVELIO_SERVICE_KEY` only adds the cloud dashboard (see [README](README.md)).
 
 ## Wrapper: `bvsala goose`
 
 ```bash
-export BIVELIO_SERVICE_KEY=bvk_…  # OPTIONAL: dashboard + org entitlements (without it: Community mode)
+export BIVELIO_SERVICE_KEY=bvk_…  # OPTIONAL: only adds the cloud dashboard (without it: Community mode)
 bvsala goose                       # an exact mirror of `bvsala claude`
 ```
 

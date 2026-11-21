@@ -1546,9 +1546,12 @@ export interface SavingsReport {
   };
 
   /**
-   * Present only when the layer runs on the free «Measure» license (shadow
-   * mode): what the levers would have saved on this request. Nothing was
+   * Present only in observe-only mode (`observeOnly: true` in the layer
+   * config): what the levers would have saved on this request. Nothing was
    * applied — `cost` is this call's measured spend with no saving claimed.
+   * (Up to 1.2.3 the free «Measure» license forced this mode; since 1.2.4 a
+   * Measure license applies the same levers as no key and this block is absent
+   * unless you opt in.)
    */
   measure?: MeasureReport;
 
@@ -1625,18 +1628,18 @@ export interface LicenseGate {
    */
   reason?(): string | undefined;
   /**
-   * The plan of the license in force, when there is one. `"measure"` (the free
-   * «Measure» license) puts the layer in SHADOW MODE: the request goes to the
-   * provider exactly as you built it, nothing is served from any cache, and
-   * `report.measure` says what the levers would have saved. Optional because a
-   * gate is implemented by the caller; without it, the layer is not in shadow.
+   * The plan of the license in force, when there is one (`"community"` with no
+   * key, `"measure"` for the free «Measure» cloud license, or a paid plan).
+   * Informational: since 1.2.4 the plan never changes which levers act — a
+   * Measure license saves exactly like no key at all. Optional because a gate
+   * is implemented by the caller.
    */
   plan?(): string | undefined;
 }
 
 /**
- * What a layer running on the free «Measure» license would have saved on this
- * request. Present ONLY in shadow mode. Nothing here was applied: the request
+ * What a layer in observe-only mode (`observeOnly: true`) would have saved on
+ * this request. Present ONLY in that mode. Nothing here was applied: the request
  * went to your provider untouched and nothing was served from a cache.
  *
  * Every figure is HYPOTHETICAL (`basis: "shadow"`): it is never part of
@@ -1645,7 +1648,7 @@ export interface LicenseGate {
  */
 export interface MeasureReport {
   mode: "shadow";
-  /** Always false: in shadow mode no lever changes the request or avoids a call. */
+  /** Always false: in observe-only mode no lever changes the request or avoids a call. */
   applied: false;
   wouldHaveSaved: {
     /** USD this request would not have cost with the simulated levers on. */
@@ -1664,10 +1667,10 @@ export interface MeasureReport {
   };
   /**
    * Levers this shadow does NOT simulate, so `wouldHaveSaved` is a LOWER bound:
-   * they need a model call, an embedding, or a paid entitlement to estimate.
+   * they need a model call or an embedding to estimate.
    */
   notSimulated: string[];
-  /** Where to turn the levers on. */
+  /** The organization account page. Kept for compatibility: the levers turn on by removing `observeOnly`. */
   upgradeUrl: string;
 }
 

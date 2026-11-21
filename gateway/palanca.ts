@@ -20,6 +20,7 @@
 
 import { BETA_CONTEXT_MANAGEMENT, TRIGGER_POR_DEFECTO_DE_LA_API, configDeDiales } from "./diales.js";
 import { parsearParaReescribir } from "./reserializacion.js";
+import { LINEA_PALANCAS_SIN_CLAVE } from "./textos-publicos.js";
 
 /**
  * Ajusta el cuerpo de una petición /v1/messages: fusiona nuestros diales en su
@@ -186,7 +187,9 @@ export function fusionarDiales(cm: unknown): { edits: unknown[] } & Record<strin
  * licencia offline sin clave de servicio. `comunidad` (A2-29): sin ninguna
  * clave de BiVelio las palancas son gratis y las concede este proceso
  * (CanalComunitario): la línea no habla de ninguna licencia. Con una licencia
- * de organización, manda la lista de features de esa licencia.
+ * de organización (1.2.4) las palancas son las MISMAS y también se conceden
+ * localmente: la lista de features de la org ya no apaga ninguna, y el canal
+ * solo sirve para el estado de la licencia. `bin.ts` pasa `hayCanal = true`.
  */
 export function describirEstadoDeElision(
   bandera: string | undefined,
@@ -199,10 +202,10 @@ export function describirEstadoDeElision(
   // cuelgan la rebaja de TTL (A, la que gana) y los diales (B, la que pierde).
   // Los diales tienen bandera propia y nacen apagados: decir "ARMADA" por
   // tener el canal abierto era mentirle al dueño cada mañana.
-  const cola = " (TTL tuning ON if your organization's licence includes cache_ttl_tuning; fail-closed)";
+  const cola = " (TTL tuning ON: the levers are free on every plan, a license only adds the cloud)";
   const diales = dialesArmados
     ? " · context elision dials FORCED ON BY HAND (BVSALA_GATEWAY_DIALES_ELISION=1): they measure as a net loss, R=4.05 vs R*=0.0127"
-    : " · context elision dials OFF";
+    : " · context elision dials OFF (BVSALA_GATEWAY_DIALES_ELISION=1 turns them on)";
   if (bandera === "0") {
     // Desde que la licencia verja el gateway, =0 apaga las PALANCAS pero no el
     // canal: por él llega el bloqueo del control plane (`reason`), y cerrarlo
@@ -215,11 +218,12 @@ export function describirEstadoDeElision(
     };
   }
   if (comunidad) {
+    // 1.2.4 · hasta la 1.2.3 decía «savings levers: ON» y debajo salían tres
+    // OFF: con Claude Code de fábrica (suscripción, o clave con caché de 5 min)
+    // no había nada que rebajar y el cartel se leía como «estoy ahorrando». La
+    // línea dice ahora cuál actúa, cuándo, y la variable de cada una de las demás.
     return {
-      linea:
-        "savings levers: ON (community mode: free, no key needed) · cache TTL tuning ON for Anthropic API-key traffic " +
-        "(subscription traffic is never touched) · BVSALA_GATEWAY_ELISION=0 turns them off" +
-        diales,
+      linea: LINEA_PALANCAS_SIN_CLAVE + diales,
       aviso: dialesArmados,
     };
   }

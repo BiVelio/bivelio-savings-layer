@@ -44,7 +44,11 @@ import type {
 import { canonicalize, sha256, stableStringify } from "../canonicalization/canonicalize.js";
 import { buildExactKey, buildInflightKey } from "../canonicalization/keys.js";
 import type { CacheTier } from "../economics/cache-tier.js";
-import { VerjaDeCacheDePrefijo } from "../economics/prefix-cache-gate.js";
+import {
+  VerjaDeCacheDePrefijo,
+  type CabeceraDePeticion,
+  type VistazoDeCabecera,
+} from "../economics/prefix-cache-gate.js";
 import { ahorroNativo } from "../economics/ahorro-nativo.js";
 import {
   EspejoDeCache,
@@ -99,7 +103,7 @@ import {
   seleccionarCompactables,
   type ToolOutputCompactionSettings,
 } from "../compression/cola.js";
-import { seleccionarSupersesion, aplicarElision, MUNON_ELISION } from "./elision.js";
+import { seleccionarSupersesion, aplicarElision, eleccionDesde, MUNON_ELISION } from "./elision.js";
 import { politicaDeCompresion, tramoDeCache } from "../economics/politica-compresion.js";
 import { TraceCollector } from "../telemetry/traces.js";
 import type { CachedAnswer } from "../cache/exact.js";
@@ -188,11 +192,14 @@ declare const __BV_SALA_DEMO_ONLY__: boolean | undefined;
  * 100,0 % sobre los casos con elisión (1 y 2 recursos supersedidos); los casos de
  * recursos distintos declinan y no tocan nada (los que rompían v0).
  *
- * Encender esto NO cambia el tráfico de NINGÚN cliente actual: el borrado exige
- * además el entitlement `tool_result_elision` (abajo, `this.entitled`), que NO
- * lleva ninguna licencia PRO firmada todavía. Es el anillo-0: la máquina queda
- * armada y verificada; conceder el feature a una org (re-emitir su token) es la
- * válvula deliberada, separada de este flag.
+ * QUIÉN LA TIENE (1.2.4): todo el mundo. El borrado pide además el entitlement
+ * `tool_result_elision` (abajo, `this.entitled`), y lo concede cualquier gate
+ * vivo: el comunitario (sin clave) y, desde la 1.2.4, toda licencia válida del
+ * plan que sea (license/live-gate.ts ya no mira la lista firmada del token).
+ * Hasta la 1.2.3 ninguna licencia PRO llevaba ese literal, así que quien pagaba
+ * tenía una palanca MENOS que quien no ponía clave: era un resto del anillo-0
+ * (la máquina armada y el feature sin conceder), no una decisión de producto.
+ * Una licencia caducada o revocada no llega aquí: la entrada falla cerrado.
  */
 const ELISION_EN_VIVO: boolean = true;
 
@@ -339,22 +346,23 @@ export function mensajeDeLicencia(
       // Aquí sí hay algo que gestionar, pero no es "renovar": es entender por qué.
       return (
         "BiVelio license has been revoked. If this is unexpected, check your billing status " +
-        "at https://savings.bivelio.com/dashboard/account or write to support@bivelio.com " +
-        "(license status: revoked)"
+        "at https://savings.bivelio.com/dashboard/account or write to support@bivelio.com; or remove " +
+        "`licenseKey` to keep running free in COMMUNITY mode, with every lever. (license status: revoked)"
       );
     case "stale":
       // La licencia está PAGADA y VIGENTE. El problema es la red.
       return (
         "BiVelio could not confirm your license with the control plane in time — this is a " +
         "connectivity problem, not a billing one: your license is still valid. Allow outbound " +
-        "HTTPS to your `licenseServerUrl` (https://savings.bivelio.com by default) and retry. " +
-        "(license status: stale)"
+        "HTTPS to your `licenseServerUrl` (https://savings.bivelio.com by default) and retry, or remove " +
+        "`licenseKey` to keep running free in COMMUNITY mode, with every lever. (license status: stale)"
       );
     case "expired":
     case "grace":
       return (
         "BiVelio license is not active. Renew your subscription at " +
-        `https://savings.bivelio.com/dashboard/account (license status: ${st})`
+        "https://savings.bivelio.com/dashboard/account, or remove `licenseKey` to keep running free in " +
+        `COMMUNITY mode, with every lever. (license status: ${st})`
       );
     default:
       return (
@@ -400,7 +408,7 @@ function mensajeSinLicencia(): string {
     return (
       "BiVelio license required: none was configured. Pass { licenseKey } — the signed token " +
       "from your subscription, verified offline. This published package has no unlicensed mode. " +
-      "To try it without paying, the free Measure license (no card) runs the layer in shadow mode. " +
+      "The free Measure license (no card) applies the same levers as no key and adds the cloud dashboard. " +
       "Copy your key and a ready-to-paste snippet at " +
       "https://savings.bivelio.com/dashboard/install (license status: none)"
     );
@@ -483,8 +491,10 @@ export class SavingsPipeline {
    * Vive en la instancia por la misma razón que `contratosQueIncumplen`: lo que
    * aprende es una MEDICIÓN (la tasa de aciertos real de un prefijo), y una
    * medición hay que acumularla entre peticiones o no se llega a tener nunca.
+   * Su reloj es el de la capa (`config.now`): la cabecera que no vuelve madura
+   * por el TTL de la caché, y eso se prueba sin esperar cinco minutos.
    */
-  private readonly verjaDeCache = new VerjaDeCacheDePrefijo();
+  private readonly verjaDeCache = new VerjaDeCacheDePrefijo({ ahora: () => this.now() });
 
   /**
    * El espejo de la caché de prefijo (`cacheBreakpoints: "auto"`): mide, sin
@@ -1106,6 +1116,19 @@ export class SavingsPipeline {
       });
       return nada;
     }
+    // LA CABECERA DE ESTA PETICIÓN (herramientas + `system`, sin historial), UNA
+    // vez por petición y antes de cualquier colocación: la verja aprende si las
+    // cabeceras de esta clase vuelven antes de caducar. Se apunta aunque luego no
+    // se marque nada, porque lo que mide es si la cabecera VUELVE, no si se leyó.
+    const cabecera = this.verjaDeCache.observarCabecera(
+      this.cabeceraDeLaPeticion(
+        modeloServido,
+        toolSelection.tools,
+        messages,
+        explicita ? "explicit" : this.config.cacheBreakpoints === "auto" ? "auto" : "fija",
+      ),
+    );
+
     // EL COLOCADOR (opt-in). Solo con la colocación automática y sin modo
     // explícito DECLARADO: lo que el cliente declara manda sobre lo que la capa
     // mide. Devuelve la decisión entera, o la observación a apuntar cuando la
@@ -1114,7 +1137,7 @@ export class SavingsPipeline {
     let observacion: ColocacionEnCurso | null = null;
     if (this.config.cacheBreakpoints === "auto" && !explicita) {
       const colocado = this.colocarConEspejo(
-        request, modeloServido, messages, toolSelection, mensajesDePrefijo, tier, trace, espejoCargado,
+        request, modeloServido, messages, toolSelection, mensajesDePrefijo, tier, trace, espejoCargado, cabecera,
       );
       if ("marcado" in colocado) return colocado.marcado;
       observacion = colocado.observacion;
@@ -1163,8 +1186,9 @@ export class SavingsPipeline {
           patrones: mutable.map((f) => f.patron),
           muestras: mutable.map((f) => f.muestra),
           razon:
-            "the system header carries per-request content (timestamp or UUID): the provider prompt " +
-            "cache can never hit on this prefix — move it to the query tail",
+            "the system header carries a value that often changes on every request (timestamp or UUID); " +
+            "if it does, the provider prompt cache can never hit on this prefix — set savings.cachePrefix: true " +
+            "or move it to the query tail",
         });
         // Un aviso POR PATRÓN y por proceso (la clave es el patrón, no el texto,
         // que cambiaría en cada petición y haría saltar el aviso sin parar):
@@ -1204,11 +1228,11 @@ export class SavingsPipeline {
     );
 
     const claveDeVerja = explicita ? `${huella}|explicit` : huella;
-    const decision = this.verjaDeCache.decidir(claveDeVerja, {
-      totalTokens,
-      stablePrefixTokens,
-      tier: tramoExplicito ?? tier,
-    });
+    const decision = this.verjaDeCache.decidir(
+      claveDeVerja,
+      { totalTokens, stablePrefixTokens, tier: tramoExplicito ?? tier },
+      cabecera,
+    );
     trace.record("prefix-cache", decision.marcar ? "marked" : "skipped", {
       reason: decision.razon,
       stablePrefixTokens,
@@ -1333,6 +1357,7 @@ export class SavingsPipeline {
     tier: CacheTier,
     trace: TraceCollector,
     espejoCargado: EspejoCargado | null = null,
+    cabecera?: VistazoDeCabecera,
   ): { marcado: MarcadoDeCache } | { observacion: ColocacionEnCurso | null } {
     const { tramoOpenAI, conPrima } = this.primasDelColocador(request, modeloServido, tier);
     if (!conPrima && !tramoOpenAI) return { observacion: null };
@@ -1387,11 +1412,14 @@ export class SavingsPipeline {
       }
       const tipo: TipoDeTramo = frontera === S ? "S" : "H";
       const claveDeVerja = `${clase}|explicit|${tipo}`;
-      const decision = this.verjaDeCache.decidir(claveDeVerja, {
-        totalTokens: tokensHasta(T),
-        stablePrefixTokens: tokensHasta(frontera),
-        tier: tramoOpenAI,
-      });
+      // `clase` (la del espejo) lleva el texto del `system`: con uno que cambia
+      // en cada petición es nueva siempre. Lo que la verja mira para no pagar
+      // escrituras que nadie leerá es si la CABECERA vuelve (`cabecera`).
+      const decision = this.verjaDeCache.decidir(
+        claveDeVerja,
+        { totalTokens: tokensHasta(T), stablePrefixTokens: tokensHasta(frontera), tier: tramoOpenAI },
+        cabecera,
+      );
       trace.record("prefix-cache", decision.marcar ? "marked" : "skipped", {
         reason: decision.razon,
         breakEvenHitRate: decision.umbral,
@@ -1458,12 +1486,22 @@ export class SavingsPipeline {
     // contador del proveedor, a la prima del TTL elegido (2× con la hora).
     const tierDeLaForma: CacheTier =
       c.ttl === "1h" ? { ...tier, cacheWriteMultiplier: unaHora } : tier;
-    const claveDeVerja = `${clase}|${frontera === 0 ? "-" : frontera === S ? "S" : "H"}${c.cola ? "+T" : ""}@${c.ttl}`;
-    const decision = this.verjaDeCache.decidir(claveDeVerja, {
-      totalTokens: tokens.T,
-      stablePrefixTokens: c.cola ? tokens.T : frontera === S ? tokens.S : tokens.H,
-      tier: tierDeLaForma,
-    });
+    const forma = `${frontera === 0 ? "-" : frontera === S ? "S" : "H"}${c.cola ? "+T" : ""}@${c.ttl}`;
+    const claveDeVerja = `${clase}|${forma}`;
+    // Igual que arriba: la clase del espejo lleva el texto del `system`, así que
+    // con uno que cambia en cada petición es nueva siempre (medido: con "auto"
+    // también eran 60 de 60). Si esta petición escribe a 1 h, su cabecera tarda
+    // una hora en contar como «no volvió».
+    if (c.ttl === "1h") cabecera?.conTtl(60 * 60_000);
+    const decision = this.verjaDeCache.decidir(
+      claveDeVerja,
+      {
+        totalTokens: tokens.T,
+        stablePrefixTokens: c.cola ? tokens.T : frontera === S ? tokens.S : tokens.H,
+        tier: tierDeLaForma,
+      },
+      cabecera,
+    );
     trace.record("prefix-cache", decision.marcar ? "marked" : "skipped", {
       reason: decision.razon,
       stablePrefixTokens: c.cola ? tokens.T : frontera === S ? tokens.S : tokens.H,
@@ -1752,6 +1790,80 @@ export class SavingsPipeline {
     return huellasDePrefijos(raiz, messages);
   }
 
+  /**
+   * LA CABECERA DE UNA PETICIÓN, para la verja: su CLASE (modelo servido +
+   * herramientas + modo de colocar, SIN texto) y su HUELLA (lo mismo más el
+   * `system`, sin historial). La huella de un `system` con la hora de cada
+   * petición es nueva en cada llamada (60 de 60 marcadas, +21,6 % de factura en
+   * la 1.2.3); la clase sí se repite, y en ella la verja ve si las cabeceras
+   * vuelven antes de caducar. La clase NO separa la cabecera sola del historial
+   * ni la forma de colocar de cada petición: una conversación estrena su
+   * cabecera con una forma y la repite con otra, y separarlas la haría parecer
+   * de un solo uso.
+   */
+  private cabeceraDeLaPeticion(
+    modelo: string,
+    tools: SavingsRequest["tools"],
+    messages: readonly ChatMessage[],
+    modo: "fija" | "auto" | "explicit",
+  ): CabeceraDePeticion {
+    const ids = (tools ?? []).map((t) => t.id);
+    const S = cabeceraDeSistema(messages as ChatMessage[]);
+    return {
+      clase: sha256(stableStringify({ claseDeCabeceras: modo, model: modelo, tools: ids })),
+      huella: sha256(
+        stableStringify({ cabecera: modo, model: modelo, tools: ids, system: messages.slice(0, S).map((m) => `${m.role}:${m.content}`) }),
+      ),
+    };
+  }
+
+  /**
+   * ¿Borrar un tool_result VIEJO rompería una caché de prefijo que el proveedor
+   * ya está leyendo? Entonces lo que se ahorra en el muñón se paga con creces
+   * re-leyendo a precio pleno todo lo que va detrás. Devuelve el motivo, o null.
+   *
+   *  · `cacheBreakpoints: "auto"` en un modelo que cobra la escritura (Anthropic):
+   *    el colocador pone puntos dentro del historial.
+   *  · Modelos con caché automática de TODO el prompt que cobran la lectura al
+   *    10-25 % (gpt-5, gpt-4.1, serie o): cualquier cambio a mitad del historial
+   *    vuelve a cobrar entero lo que va detrás.
+   *
+   *  · (E2, verificación 2) Modelos SIN prima de escritura que cachean solos y
+   *    cobran la lectura al 25 % o menos según su tramo (Gemini, o el tramo que
+   *    declare el cliente en `compressionEconomics.cacheTier`).
+   *  · (E3, verificación 2) Con licencia y un proveedor que la capa no reconoce
+   *    (tramo desconocido: lectura a 1× y mínimo declarado): puede cachear solo
+   *    sin que lo sepamos, y la 1.2.3 de pago no recortaba. Sin clave sigue como
+   *    en la 1.2.3.
+   *
+   * Medido (agente de 60 pasos, proveedor falso): con Pro en la 1.2.4, gpt-5
+   * pasaba de 0 % a +12,2 % frente a no llevar capa, y "auto" en Anthropic de
+   * −84,4 % a −71,5 %; Gemini de 0 % a +11,9 % y DeepSeek de 0 % a +13,7 %.
+   */
+  private elisionRompeLaCacheDelProveedor(modelo: string): string | null {
+    if (this.config.cacheBreakpoints === "auto" && tramoDeCache(modelo, this.config.compressionEconomics).cacheWriteMultiplier > 1) {
+      return 'cacheBreakpoints "auto" places cache points inside the history: replacing an old tool result would re-bill everything after it';
+    }
+    const tramo = tramoDeCache(modelo, this.config.compressionEconomics);
+    if (tramo.cacheWriteMultiplier <= 1 && tramo.cacheReadMultiplier <= 0.25) {
+      return "this model caches the prompt automatically and bills cached input at 25% or less: replacing an old tool result would re-bill everything after it at the full price";
+    }
+    let plan: string | undefined;
+    try {
+      plan = this.config.licenseGate?.plan?.();
+    } catch {
+      plan = undefined;
+    }
+    if (plan != null && plan !== "community" && tramo.cacheReadMultiplier >= 1 && tramo.minimumCacheTokens != null) {
+      return "unrecognised provider, which may cache the prompt automatically: with a license, elision stays off as in 1.2.3";
+    }
+    const desnudo = modelo.toLowerCase().replace(/^.*\//, "");
+    if (/^(gpt-5|gpt-4\.1|o[1-9](-|$))/.test(desnudo)) {
+      return "this model caches the whole prompt automatically and bills cached input at 10-25%: replacing an old tool result would re-bill everything after it at the full price";
+    }
+    return null;
+  }
+
   /** La huella de un prefijo, la misma que la colocación fija (viaja como `prompt_cache_key`). */
   private huellaDelPrefijo(
     modelo: string,
@@ -1986,14 +2098,15 @@ export class SavingsPipeline {
   }
 
   // Lo mismo para una superficie que ES una palanca por sí misma (enviar un
-  // lote): con la licencia Medir no se aplica ninguna, y se dice cómo pasar a pago.
+  // lote): en modo solo-observar (`observeOnly: true`) no se aplica ninguna, y un
+  // lote cambiaría cómo viaja el tráfico. NO es un error de licencia: desde la
+  // 1.2.4 la licencia Medir envía lotes igual que una capa sin clave; quien lo
+  // impide es la opción que el propio cliente encendió, y se le dice cuál.
   exigirPalancas(): void {
     if (this.enSombra()) {
-      throw new LicenseError(
-        "[bvsala] Batches are a savings lever, and the Measure license runs the layer in shadow mode: " +
-          `no lever is applied. Upgrade to a paid plan at ${URL_DE_PAGO} to submit batches. ` +
-          "(license status: measure)",
-        "measure",
+      throw new Error(
+        "[bvsala] Batches are a savings lever, and this layer was created with `observeOnly: true`: " +
+          "no lever is applied in observe-only mode. Remove `observeOnly` (or set it to false) to submit batches.",
       );
     }
   }
@@ -2226,9 +2339,10 @@ export class SavingsPipeline {
     // idempotente con la llamada de generate().
     this.assertLicensed();
     this.comprobarInterrupcion(testigo);
-    // LA LICENCIA MEDIR: antes de cualquier etapa. Nada de lo que viene después
-    // (resolvers, cachés, singleflight, cascada, compresión, marcas de caché…)
-    // llega a mirar la petición: sale intacta por la llamada directa.
+    // EL MODO SOLO-OBSERVAR (`observeOnly: true`): antes de cualquier etapa. Nada
+    // de lo que viene después (resolvers, cachés, singleflight, cascada,
+    // compresión, marcas de caché…) llega a mirar la petición: sale intacta por
+    // la llamada directa.
     if (this.enSombra()) return this.generarEnSombra<T>(request, testigo, sumidero);
     const trace = new TraceCollector(this.now);
     const ledger = new SavingsLedger();
@@ -3159,7 +3273,7 @@ export class SavingsPipeline {
       };
     }
 
-    // --- Etapa 9-bis: elisión por SUPERSESIÓN de tool_results (opt-in, license-gated, fidelidad primero). ---
+    // --- Etapa 9-bis: elisión por SUPERSESIÓN de tool_results (encendida por defecto, fidelidad primero). ---
     //
     // Reescribe por un muñón estable el cuerpo de un tool_result SOLO cuando un
     // tool_result ESTRICTAMENTE MÁS NUEVO vuelve a pedir el MISMO recurso (misma
@@ -3175,26 +3289,54 @@ export class SavingsPipeline {
     // redundante. Va DESPUÉS de la compresión: son ortogonales sobre `messages`.
     //
     // FIDELIDAD PRIMERO (ver `ELISION_EN_VIVO`). Con el flag apagado, esta etapa NO
-    // toca `messages` ni acredita: solo TRAZA lo que HABRÍA elidido. El borrado
-    // real arranca solo con la verja de fidelidad en verde (`pnpm fidelidad`) y,
-    // por entitlement `tool_result_elision`, primero en el anillo-0 (ninguna
-    // licencia PRO lo lleva todavía: encenderlo no cambia nada del tráfico actual).
+    // toca `messages` ni acredita: solo TRAZA lo que HABRÍA elidido. El flag está
+    // encendido desde que la verja de fidelidad pasó en verde (`pnpm fidelidad`).
     //
-    // AUTOMÁTICA POR DEFECTO (`!== false`, no `=== true`). El ahorro de entrada tiene
-    // que funcionar SOLO, sin opt-in por petición: en cuanto un token entitled llega,
-    // la elisión corre sin que la app pida nada. Sigue triplemente gateada —
-    // `policy.allowElision` (declina con herramientas de escritura, datos frescos,
-    // personalizado, estocástico o frescura de día), el entitlement `tool_result_elision`
-    // (que NINGÚN token PRO/Stripe lleva: fuera de PRO_FEATURES, solo lo firma la ruta
-    // interna del anillo-0), y `ELISION_EN_VIVO`. El opt-out explícito es por petición:
-    // `savings:{elision:false}`. Como el entitlement no viaja en tráfico de clientes,
-    // este default-on no cambia nada de lo que ven hoy los clientes de pago.
+    // VA ENCENDIDA POR DEFECTO (`!== false`, no `=== true`). El ahorro de entrada
+    // tiene que funcionar SOLO, sin pedirlo en cada petición, y lo hace para
+    // todo el mundo: sin `licenseKey` la capa corre con la verja de comunidad
+    // (`communityGate`, `isEntitled: () => true`), y con una licencia viva de
+    // cualquier plan (Measure, Pro, Team, Enterprise) el gate concede lo mismo
+    // (1.2.4: `live-gate.ts` ya no mira la lista firmada del token). Lo que
+    // sigue pudiendo apagarla:
+    //   · `policy.allowElision` (declina con herramientas de escritura, datos
+    //     frescos, personalizado, estocástico o frescura de día);
+    //   · `ELISION_EN_VIVO` (apagado, solo traza);
+    //   · el opt-out explícito por petición: `savings: { elision: false }`;
+    //   · que recortar ROMPA una caché que el proveedor ya está leyendo
+    //     (`elisionRompeLaCacheDelProveedor`): entonces no se toca nada y la
+    //     traza dice por qué.
+    const elisionRompeCache = this.elisionRompeLaCacheDelProveedor(request.model);
     if (
+      toggles.elision !== false &&
+      policy.allowElision &&
+      this.entitled("tool_result_elision") &&
+      elisionRompeCache !== null
+    ) {
+      trace.record("elision", "skipped", { reason: elisionRompeCache });
+    } else if (
       toggles.elision !== false &&
       policy.allowElision &&
       this.entitled("tool_result_elision")
     ) {
-      const eleccion = seleccionarSupersesion(messages);
+      let eleccion = seleccionarSupersesion(messages);
+      // E1 (verificación 2): con la colocación fija y prima de escritura
+      // (Anthropic), recortar un tool_result ANTERIOR al último turno del usuario
+      // cambia el historial que se marca, y `comprimioElPrefijo` deja la marca en
+      // el `system` el resto de la conversación: el historial no se vuelve a leer
+      // de la caché. Solo se recortan los posteriores (el bucle en curso).
+      if (
+        this.config.cacheBreakpoints !== "auto" &&
+        tramoDeCache(request.model, this.config.compressionEconomics).cacheWriteMultiplier > 1 &&
+        eleccion.indices.some((i) => i < finDelPrefijo)
+      ) {
+        const fuera = eleccionDesde(messages, eleccion, finDelPrefijo);
+        trace.record("elision", "partial", {
+          reason: "a superseded tool result before the last user turn is part of the history the prefix cache marks; it is kept",
+          keptInPrefix: eleccion.indices.length - fuera.indices.length,
+        });
+        eleccion = fuera;
+      }
       if (eleccion.indices.length > 0) {
         // Se cuenta con el MISMO ensamblador que el baseline (`tokensFor`), byte a
         // byte, igual que el drop del tool-selector (libro 2): medir el muñón de
@@ -6176,13 +6318,13 @@ export class SavingsPipeline {
             credited: false,
             creditedLedger: "none",
             latency: medir
-              ? "unchanged: on the Measure license (shadow mode) no processing tier is requested, so " +
+              ? "unchanged: in observe-only mode no processing tier is requested, so " +
                 "this request was scheduled exactly as an ordinary one."
               : "unchanged: the fail-open path asks for no processing tier, so this request was " +
                 "scheduled exactly as an ordinary one.",
             reason: medir
-              ? "the Measure license runs the layer in shadow mode: the request goes to the provider " +
-                "unchanged, so no cheaper tier is asked for; upgrade to a paid plan to turn the lever on"
+              ? "the layer runs in observe-only mode (`observeOnly: true`): the request goes to the provider " +
+                "unchanged, so no cheaper tier is asked for; turn `observeOnly` off to apply the lever"
               : "the optimizer failed and this request went out on the direct fail-open path, which " +
                 "asks for no cheaper tier: that tier can be refused for lack of capacity, and " +
                 "trading availability for a discount on a last-resort call is the wrong trade",
@@ -6195,7 +6337,7 @@ export class SavingsPipeline {
             mode: "provider-default",
             breakpoints: 0,
             reason: medir
-              ? "the Measure license runs the layer in shadow mode: the request went out unchanged, so " +
+              ? "the layer runs in observe-only mode (`observeOnly: true`): the request went out unchanged, so " +
                 "the provider chose where to write its prompt cache, as it does by default"
               : "the optimizer failed and this request went out unchanged on the direct fail-open path, " +
                 "so the provider chose where to write its prompt cache, as it does by default",
@@ -6218,20 +6360,20 @@ export class SavingsPipeline {
   }
 
   /**
-   * ¿Corre esta capa con la licencia Medir? Se pregunta EN CADA PETICIÓN, no al
-   * construir: el gate es conmutable y, al recoger la licencia de pago que la
-   * sustituye, la siguiente petición ya sale optimizada sin reiniciar.
+   * ¿Corre esta capa en modo SOLO-OBSERVAR? Lo decide ÚNICAMENTE la opción
+   * explícita `observeOnly: true`, en cualquier plan (sin clave, Medir o de pago).
+   *
+   * Hasta la 1.2.3 lo decidía el plan: una licencia Medir («measure») forzaba la
+   * sombra, y poner la clave gratuita de la nube era peor que no poner ninguna
+   * (un resto del modelo cerrado anterior a la 1.0.0). Desde la 1.2.4 el plan no
+   * interviene: con Medir las palancas actúan igual que sin clave.
    */
   private enSombra(): boolean {
-    try {
-      return this.config.licenseGate?.plan?.() === "measure";
-    } catch {
-      return false;
-    }
+    return this.config.observeOnly === true;
   }
 
   /**
-   * EL MODO SOMBRA (licencia Medir). La petición va al proveedor por la llamada
+   * EL MODO SOLO-OBSERVAR (`observeOnly: true`). La petición va al proveedor por la llamada
    * directa —intacta, sin una sola palanca— y al lado se calcula qué habrían
    * evitado la caché exacta y la coalescencia en vuelo, valorado con el contador
    * de ESTA llamada. Ver `pipeline/medir.ts`.
@@ -6245,7 +6387,7 @@ export class SavingsPipeline {
     const trace = new TraceCollector(this.now);
     trace.record(
       "measure",
-      "shadow mode (Measure license): the request goes to the provider unchanged and nothing is served from cache",
+      "observe-only mode (`observeOnly: true`): the request goes to the provider unchanged and nothing is served from cache",
     );
     const toggles = request.savings ?? {};
     // Las claves se calculan con las MISMAS funciones que el camino optimizado:

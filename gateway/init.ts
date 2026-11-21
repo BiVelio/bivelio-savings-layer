@@ -1,3 +1,11 @@
+import {
+  FRASE_DEPENDENCIA_SDK,
+  FRASE_LA_CLAVE_SOLO_ANADE,
+  FRASE_PALANCAS_SDK,
+  LO_QUE_ANADE_LA_NUBE,
+  OPCION_SDK_SOLO_OBSERVAR,
+  enLineas,
+} from "./textos-publicos.js";
 import { dirname, join, posix } from "node:path";
 
 import {
@@ -460,7 +468,7 @@ export function planear(
   if (!d.ts && !d.esm && d.anfitrion !== "next") {
     avisos.push(
       'Your package.json has no "type": "module" and the package is ESM-only. The check is a .mjs file and runs as is; ' +
-        "from your own CommonJS files, load it with `await import(…)`, or with require() on Node ≥ 22.",
+        "from your own CommonJS files, load it with `await import(…)`, or with require() on Node 20.19+ or 22.12+.",
     );
   }
 
@@ -468,15 +476,17 @@ export function planear(
     {
       nombre: "BIVELIO_LICENSE_KEY",
       puesta: entorno.env("BIVELIO_LICENSE_KEY"),
-      para: "OPTIONAL (open core): without it the layer runs in COMMUNITY mode with every local lever on; a key adds cloud dashboard + team metering",
+      para: "OPTIONAL: the license of your Savings Cloud plan. Without it the layer runs free in COMMUNITY mode; a key only adds the cloud",
     },
-    { nombre: "BIVELIO_SERVICE_KEY", puesta: entorno.env("BIVELIO_SERVICE_KEY"), para: "OPTIONAL: seat metering, license auto-renewal and the cloud dashboard" },
+    { nombre: "BIVELIO_SERVICE_KEY", puesta: entorno.env("BIVELIO_SERVICE_KEY"), para: "OPTIONAL: sends usage to your cloud dashboard and renews the license by itself" },
   ];
   if (capa === "anthropic-sdk") {
     claves.push({
       nombre: "ANTHROPIC_API_KEY",
       puesta: entorno.env("ANTHROPIC_API_KEY") || entorno.env("ANTHROPIC_AUTH_TOKEN"),
-      para: "needed even by the free check: the Anthropic SDK builds no request without credentials",
+      para:
+        "needed even by the free check: the Anthropic SDK builds no request without credentials " +
+        "(for the check any value works; nothing is sent)",
     });
   } else {
     const nombre = proveedor === "openai" ? "OPENAI_API_KEY" : "ANTHROPIC_API_KEY";
@@ -484,7 +494,8 @@ export function planear(
     // imprime un aviso con traza aunque la capa conteste (medido con 1.71.0).
     const para =
       capa === "mastra"
-        ? "your provider key; the free check works without it, but Mastra logs a warning with a stack trace"
+        ? 'your provider key; the free check works without it, but Mastra first prints a "Could not find API key" ' +
+          "warning with a stack trace you can ignore (or set it to any value)"
         : "your provider key; the free check does not need it";
     claves.push({ nombre, puesta: entorno.env(nombre), para });
   }
@@ -578,7 +589,7 @@ export function conFicheros(plan: Plan, sonda: SondaDeProyecto): Plan {
   }
   comoComprobar.push(
     "The question (2 + 2 * 3) is answered on your machine: with the layer in place the model is not called, so your provider bills nothing for it,",
-    "and the saving is `estimated`, which is never billed. Delete the check once it says ok.",
+    "and the saving is `estimated`, always shown apart from measured savings. Delete the check once it says ok.",
   );
   let compactacion = plan.compactacion;
   if (compactacion?.efectivo === "measure") {
@@ -702,9 +713,15 @@ export function textoDelPlan(plan: Plan, cabecera: string, invocacion: string, o
   const ancho = Math.max(...plan.claves.map((k) => k.nombre.length));
   for (const k of plan.claves) out.push(`  ${k.nombre.padEnd(ancho)}  ${k.puesta ? "set    " : "not set"}  ${k.para}`);
   out.push(
-    "  OPEN CORE: no keys are required — without them the layer runs in COMMUNITY mode with every local lever on",
-    "  and nothing sent to BiVelio. The BiVelio keys (https://savings.bivelio.com/dashboard/install) add the cloud",
-    "  dashboard, team metering and license auto-renewal.",
+    "  OPEN CORE: no keys are required, and without them nothing is sent to BiVelio.",
+    ...enLineas(FRASE_PALANCAS_SDK, 112, "  "),
+    ...enLineas(
+      `The BiVelio keys (https://savings.bivelio.com/dashboard/install) add ${LO_QUE_ANADE_LA_NUBE}. ` +
+        `${FRASE_LA_CLAVE_SOLO_ANADE} ${FRASE_DEPENDENCIA_SDK} ` +
+        `To only observe, without changing any request: \`${OPCION_SDK_SOLO_OBSERVAR}: true\`.`,
+      112,
+      "  ",
+    ),
     `  ${plan.dondeVanLasClaves}`,
   );
 

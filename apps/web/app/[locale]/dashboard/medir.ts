@@ -5,9 +5,11 @@ import type { UsageRollup } from "./data";
  *
  * Qué licencia manda en esta organización, visto desde el panel:
  *  · `de-pago`       — una licencia de pago viva o una suscripción que cubre.
- *                      No se le ofrece Medir ni se le enseña la tarjeta sombra.
- *  · `solo-medir`    — solo la licencia gratuita Medir: el panel enseña «esto
- *                      habrías ahorrado» y el CTA a pago.
+ *                      No se le ofrece Medir ni se le enseña su tarjeta.
+ *  · `solo-medir`    — solo la licencia gratuita Medir: el panel enseña su
+ *                      ahorro REAL (desde la 1.2.4 Medir aplica las palancas)
+ *                      y, aparte, «esto habrías ahorrado» solo por los
+ *                      registros de sombra (clientes ≤ 1.2.3 o sombra opcional).
  *  · `sin-licencia`  — nada vivo: se le ofrece el alta Medir sin tarjeta.
  */
 export type EstadoMedir = "de-pago" | "solo-medir" | "sin-licencia";
@@ -69,4 +71,37 @@ export function ahorroEnSombra(usage: readonly UsageRollup[]): AhorroEnSombra {
     }
   }
   return { habriasAhorradoUsd: conSombra ? Math.max(0, ahorro) : null, gastoUsd: gasto, peticiones };
+}
+
+export interface AhorroRealDeMedir {
+  /** Ahorro MEDIDO con el contador del proveedor (USD): Σ(measured_baseline − measured_actual). */
+  medidoUsd: number;
+  /** El resto del ahorro real (USD): llamadas evitadas y demás, valoradas a precio de catálogo. */
+  estimadoUsd: number;
+  /** ¿Hay algún ahorro real que enseñar? */
+  hay: boolean;
+}
+
+/**
+ * EL AHORRO REAL de una organización Medir (1.2.4): lo que las palancas, ya
+ * aplicadas, ahorraron de verdad. Dos cifras que NUNCA se suman en una sola,
+ * por la misma doctrina que el resto del panel:
+ *  · medido   = Σ(measured_baseline − measured_actual): contador del proveedor;
+ *  · estimado = Σ(baseline − actual) − medido: lo que no tiene contador propio
+ *    (una llamada evitada no deja ninguno).
+ * El carril sombra NO entra en ninguna de las dos: es hipotético y va aparte
+ * (`ahorroEnSombra`). Nada de esto se factura: Medir no lleva comisión.
+ */
+export function ahorroRealDeMedir(usage: readonly UsageRollup[]): AhorroRealDeMedir {
+  let total = 0;
+  let medido = 0;
+  for (const d of usage) {
+    total += (d.baselineCost ?? 0) - (d.actualCost ?? 0);
+    medido += (d.measuredBaselineCost ?? 0) - (d.measuredActualCost ?? 0);
+  }
+  const medidoUsd = Math.max(0, medido);
+  const estimadoUsd = Math.max(0, total - medidoUsd);
+  // Por debajo de una centésima de céntimo no hay nada que enseñar (ruido de coma flotante).
+  const visible = (x: number) => x >= 0.00005;
+  return { medidoUsd, estimadoUsd, hay: visible(medidoUsd) || visible(estimadoUsd) };
 }

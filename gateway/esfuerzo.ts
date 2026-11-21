@@ -239,7 +239,7 @@ export function describirEstadoDeEsfuerzo(
       `per-turn effort: ARMED at "${nivel}" (` +
       (comunidad
         ? "community mode: free, no key needed). "
-        : "ON if your organization's licence includes per_turn_effort; fail-closed). ") +
+        : "free on every plan: a license only adds the cloud). ") +
       "Only fable-5-1, mythos-5-1, opus-5-5 and opus-5, and only below the model's default effort " +
       `(high; medium on opus-5-5${nivel === "medium" ? ", so opus-5-5 passes through unchanged at this level" : ""}); ` +
       "every other request passes through unchanged. " +

@@ -304,7 +304,9 @@ describe("el arnés contra el gateway de BV-SALA (en proceso)", () => {
   async function montar(): Promise<{ u: UpstreamFalso; g: GatewayArrancado }> {
     const u = await arrancarUpstreamFalso({ trozos: 2, entreTrozosMs: 0 });
     recursos.push(u);
-    const g = await arrancarGateway({ puerto: 0, upstream: `http://127.0.0.1:${u.puerto}`, license: testLicense(), log: () => {}, warn: () => {} });
+    // `elision: false` como en lanzar-bvsala.ts: el arnés mide el reenvío «sin
+    // palancas», y desde la 1.2.4 una licencia las lleva por defecto.
+    const g = await arrancarGateway({ puerto: 0, upstream: `http://127.0.0.1:${u.puerto}`, license: testLicense(), elision: false, log: () => {}, warn: () => {} });
     recursos.push(g);
     return { u, g };
   }

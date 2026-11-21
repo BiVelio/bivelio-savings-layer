@@ -5,7 +5,7 @@
 </p>
 
 > **BV-SALA cuts your LLM bill — and proves it on your provider's own meter.**
-> Recomputed pooled reductions 31.50 % / 75.08 % with bootstrap intervals · exploratory live A/B (20 requests per arm): 0 % → 95 % hit-rate, −82.76 % per request · paper v2.3-r1, DOI [10.5281/zenodo.24278852](https://doi.org/10.5281/zenodo.24278852).
+> Recomputed pooled reductions 31.50 % / 75.08 % on a public workload built from GSM8K questions, 30 % of them exact repeats (about 41 points of the 75.08 % are Anthropic's cache pricing), with bootstrap intervals · exploratory live A/B (20 requests per arm) measured with 1.2.0 on 15 Nov 2026, TypeScript SDK with the opt-in `savings.cachePrefix: true` against the layer itself without that option: 0 % → 95 % hit-rate, −82.76 % per request · paper v2.3-r1, DOI [10.5281/zenodo.24278852](https://doi.org/10.5281/zenodo.24278852).
 
 **This package is the Python client of BV-SALA.** The full product — the TypeScript SDK, the local gateway, every saving lever and the measured evidence — lives in the GitHub repository at
 **[github.com/BiVelio/bivelio-savings-layer](https://github.com/BiVelio/bivelio-savings-layer)**; its README is the canonical documentation (install, levers, paper, benchmarks, pricing). The same README is what npm shows for
@@ -22,9 +22,10 @@ from (`cost.basis`).
   (Apache-2.0), forwards each request to your provider and
   measures it with the provider's usage counter. This package prices nothing
   itself, so its numbers are exactly the dashboard's.
-- **Open core.** The gateway starts with no keys at all (COMMUNITY mode: every
-  local lever on, zero telemetry). Without a running gateway, `wrap()` raises;
-  it never falls back to calling your provider directly.
+- **Open core.** The gateway starts with no keys at all (COMMUNITY mode: free,
+  zero telemetry). Every gateway lever is free, with no key; one is on by default (cache TTL tuning) and the others you switch on.
+  Without a running gateway, `wrap()` raises; it never falls back to calling
+  your provider directly.
 - **No dependencies.** Standard library only. It does not import the OpenAI or
   Anthropic SDKs; you bring them.
 - **Your prompts never reach BiVelio.** The client only talks to the gateway on
@@ -35,7 +36,16 @@ from (`cost.basis`).
 
 This package measures. The saving levers of the TypeScript SDK do not run in
 Python; the gateway's own levers apply to Anthropic `/v1/messages` traffic, free
-and with no key.
+and with no key, and by default only one acts: cache TTL tuning, which saves
+only when your client pays per token and asks for the one-hour cache. OpenAI
+traffic is measured when the request reports usage, and by default it is never
+changed. In the TypeScript SDK:
+Every lever is included and free, with no key. On by default: exact cache, deduplication, local resolvers, prompt-cache placement, trimming of superseded tool results and compact serialization of the structured data you pass. The rest you switch on, one line each.
+
+A BiVelio key only adds the cloud and switches no lever off: the free Measure license applies the same levers as no key.
+One dependency comes with a key, the free Measure key included: with BIVELIO_SERVICE_KEY set, the gateway needs savings.bivelio.com to start (or a valid BIVELIO_LICENSE_KEY as a fallback); once running it keeps serving without it. With no key there is no such dependency.
+What the paid cloud adds is the team dashboard, shared measurement, seats and
+license management. BiVelio hosts no cache.
 
 ## Requirements
 

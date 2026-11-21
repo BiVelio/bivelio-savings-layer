@@ -1,20 +1,33 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { construirExtracto, type FilaDiaria } from "@/lib/billing/extracto";
+import { cerrarPeriodo } from "@/lib/billing/cierre";
+import type { FilaDiaria } from "@/lib/billing/extracto";
+import { orgsExentasPorMedir } from "@/lib/billing/plan-de-la-org";
 
 /**
  * POST /api/metering/usage con una org que SOLO tiene la licencia Medir.
  *
- * Lo que fija, y es lo que el dueño pidió como test del servidor:
- *  · su uso SE INGIERE (el panel lo necesita), pero NUNCA genera comisión ni una
- *    referencia cobrable: todo registro no-sombra llega a la RPC con baseline ==
- *    actual y sin `reference`, aunque el cliente (un SDK parcheado) mande ahorro
- *    medido y repeticiones por referencia;
- *  · el hipotético (`basis: "shadow"`) pasa intacto al carril sombra;
- *  · el extracto que saldría de esos registros cobra 0;
- *  · los topes: asientos por mes (402 `measure-seat-limit`) y volumen diario
- *    (429 `measure-volume-limit`), y fail-open si no se pueden leer;
- *  · una org de PAGO no se toca (el mismo lote conserva su ahorro).
+ * POR QUÉ CAMBIÓ ESTE FICHERO (1.2.4). Hasta la 1.2.3 fijaba que TODO registro
+ * de una org Medir llegaba a la RPC con baseline == actual: su ahorro se ponía a
+ * cero, porque Medir corría en sombra y cualquier ahorro era de un SDK
+ * parcheado. Desde la 1.2.4 Medir ahorra de verdad (decisión del dueño,
+ * 21-11-2026) y el panel tiene que enseñar ese ahorro: la ingesta lo GUARDA.
+ *
+ * Lo que fija ahora:
+ *  · el ahorro MEDIDO de una org Medir entra intacto;
+ *  · NUNCA una referencia cobrable: `reference` → `estimated`, sin puntero;
+ *  · NUNCA comisión: el extracto que sale de esos registros, cerrado con la
+ *    exención de Medir (la que aplican el cierre y la facturación), cobra 0;
+ *  · una org Medir CON historia de la modalidad con comisión se sigue
+ *    neutralizando exactamente como antes (para ella nada cambia);
+ *  · el hipotético (`basis: "shadow"`) de los clientes ≤ 1.2.3 y de la sombra
+ *    opcional pasa intacto al carril sombra, como siempre;
+ *  · los topes NO cambian: asientos por mes (402 `measure-seat-limit`) y volumen
+ *    diario (429 `measure-volume-limit`), y fail-open si no se pueden leer;
+ *  · una org de PAGO no se toca (el mismo lote conserva su ahorro y su referencia);
+ *  · si la lectura de licencias o suscripciones falla, se reintenta UNA vez y,
+ *    si sigue fallando, 503 sin tocar la RPC: nunca un lote a ciegas (revisión
+ *    de #612; antes era fail-open y una org ex-comisión en Measure acababa con cargo).
  */
 
 const ORG = "99999999-9999-4999-8999-999999999999";
@@ -22,9 +35,18 @@ const MEDIR = [{ revoked: false, expires_at: "2099-01-01T00:00:00Z", grace_days:
 const PRO = [{ revoked: false, expires_at: "2099-01-01T00:00:00Z", grace_days: 14, plan: "pro" }];
 
 let licencias: unknown[] = MEDIR;
+/** Las suscripciones de la org, en cualquier estado (por defecto, ninguna: una org Medir pura). */
+let suscripciones: Array<{ status: string; current_period_end: string | null; price_id: string | null }> = [];
+const PRECIOS = { pro: ["price_pro_m"], equipo: ["price_team_m"] };
+/** Una suscripción CANCELADA de la modalidad con comisión: no cubre, pero es historia de comisión. */
+const COMISION_CANCELADA = [{ status: "canceled", current_period_end: "2026-10-01T00:00:00Z", price_id: "price_comision_antiguo" }];
 let asientosDelMes: { seat_id: string }[] = [];
 let peticionesHoy = 0;
 let fallarLecturaDeTopes = false;
+/** Cuántas lecturas de cada tabla del entitlement fallan antes de responder bien (0 = ninguna). */
+let fallosDeLectura: { licenses: number; subscriptions: number } = { licenses: 0, subscriptions: 0 };
+/** Cuántas veces se leyó cada tabla del entitlement en la petición. */
+let lecturas: { licenses: number; subscriptions: number } = { licenses: 0, subscriptions: 0 };
 let rpc: { args: { p_org: string; records: Array<Record<string, unknown>> } } | null = null;
 
 function consulta(tabla: string) {
@@ -36,8 +58,14 @@ function consulta(tabla: string) {
     );
   q["eq"] = () => {
     if (tabla === "service_accounts") return { maybeSingle: async () => ({ data: { org_id: ORG }, error: null }) };
-    if (tabla === "licenses") return Promise.resolve({ data: licencias, error: null });
-    if (tabla === "subscriptions") return Promise.resolve({ data: [], error: null });
+    if (tabla === "licenses" || tabla === "subscriptions") {
+      lecturas[tabla] += 1;
+      if (fallosDeLectura[tabla] > 0) {
+        fallosDeLectura[tabla] -= 1;
+        return Promise.resolve({ data: null, error: { message: "boom" } });
+      }
+      return Promise.resolve({ data: tabla === "licenses" ? licencias : suscripciones, error: null });
+    }
     return q;
   };
   q["maybeSingle"] = async () =>
@@ -62,6 +90,7 @@ vi.mock("next/server", async (importOriginal) => ({
   after: () => {},
 }));
 vi.mock("@/lib/observabilidad/alerta", () => ({ alertar: async () => {} }));
+vi.mock("@/lib/stripe/env", () => ({ preciosSinComision: () => PRECIOS }));
 
 import { POST } from "./route";
 
@@ -121,29 +150,77 @@ const peticion = (cuerpo: unknown) =>
 
 beforeEach(() => {
   licencias = MEDIR;
+  suscripciones = [];
   asientosDelMes = [];
   peticionesHoy = 0;
   fallarLecturaDeTopes = false;
+  fallosDeLectura = { licenses: 0, subscriptions: 0 };
+  lecturas = { licenses: 0, subscriptions: 0 };
   rpc = null;
 });
 
-describe("ingesta de una org Medir · nunca comisión, nunca referencia cobrable", () => {
-  it("el uso entra, pero cada registro medido llega con baseline == actual y sin ahorro", async () => {
+/** Las filas de usage_daily que la RPC acumularía con estos registros (sus mismos carriles). */
+function filaDiariaDe(registros: Array<Record<string, unknown>>): FilaDiaria {
+  const fila: FilaDiaria & { reference_requests: number; reference_baseline_cost: number; reference_actual_cost: number } = {
+    day: "2026-11-15",
+    requests: 0,
+    baseline_cost: 0,
+    actual_cost: 0,
+    measured_requests: 0,
+    measured_baseline_cost: 0,
+    measured_actual_cost: 0,
+    reference_requests: 0,
+    reference_baseline_cost: 0,
+    reference_actual_cost: 0,
+  };
+  for (const r of registros) {
+    if (r["basis"] === "shadow") continue;
+    fila.requests += 1;
+    fila.baseline_cost += Number(r["baselineCost"]);
+    fila.actual_cost += Number(r["actualCost"]);
+    if (r["basis"] === "measured") {
+      fila.measured_requests += 1;
+      fila.measured_baseline_cost += Number(r["baselineCost"]);
+      fila.measured_actual_cost += Number(r["actualCost"]);
+    }
+    if (r["basis"] === "reference") {
+      fila.reference_requests += 1;
+      fila.reference_baseline_cost += Number(r["baselineCost"]);
+      fila.reference_actual_cost += Number(r["actualCost"]);
+    }
+  }
+  return fila;
+}
+
+describe("ingesta de una org Medir · guarda el ahorro REAL", () => {
+  it("el ahorro medido entra INTACTO: baseline, tokens eliminados y netSavings como los mandó el cliente", async () => {
     const res = await POST(peticion([registro(), registro({ eliminatedInputFloorCost: 0.0001 })]));
     expect(res.status).toBe(202);
     expect(rpc?.args.records).toHaveLength(2);
     for (const r of rpc!.args.records) {
       expect(r["basis"]).toBe("measured");
-      expect(r["baselineCost"]).toBe(r["actualCost"]);
-      expect(r["baselineInputTokens"]).toBe(r["actualInputTokens"]);
-      expect(r["baselineOutputTokens"]).toBe(r["actualOutputTokens"]);
-      expect(r["eliminatedInputTokens"]).toBe(0);
-      expect(r["compressedInputTokens"]).toBe(0);
-      expect(r["netSavings"]).toBe(0);
-      expect("eliminatedInputFloorCost" in r).toBe(false);
+      expect(r["baselineCost"]).toBe(0.02);
+      expect(r["actualCost"]).toBe(0.008);
+      expect(r["baselineInputTokens"]).toBe(1000);
+      expect(r["eliminatedInputTokens"]).toBe(500);
+      expect(r["compressedInputTokens"]).toBe(100);
+      expect(r["netSavings"]).toBe(0.6);
     }
+    expect(rpc!.args.records[1]!["eliminatedInputFloorCost"]).toBe(0.0001);
   });
 
+  it("una llamada EVITADA (caché exacta, estimated) conserva su ahorro: es lo que el panel no enseñaba", async () => {
+    const evitada = registro({ cacheResult: "exact", avoidedLlm: 1, actualLlm: 0, actualInputTokens: 0, actualOutputTokens: 0, eliminatedInputTokens: 0, compressedInputTokens: 0, baselineCost: 0.00016695, actualCost: 0, netSavings: 1, basis: "estimated" });
+    await POST(peticion([evitada]));
+    const r = rpc!.args.records[0]!;
+    expect(r["baselineCost"]).toBe(0.00016695);
+    expect(r["actualCost"]).toBe(0);
+    expect(r["avoidedLlm"]).toBe(1);
+    expect(r["netSavings"]).toBe(1);
+  });
+});
+
+describe("ingesta de una org Medir · nunca comisión, nunca referencia cobrable", () => {
   it("una repetición por referencia entra como estimated, sin puntero: ninguna fila de reference_hits", async () => {
     const res = await POST(peticion([referencia()]));
     expect(res.status).toBe(202);
@@ -151,11 +228,12 @@ describe("ingesta de una org Medir · nunca comisión, nunca referencia cobrable
     expect(r["basis"]).toBe("estimated");
     expect("referenceRequestId" in r).toBe(false);
     expect("referenceAt" in r).toBe(false);
-    expect(r["baselineCost"]).toBe(r["actualCost"]);
-    expect(r["avoidedLlm"]).toBe(0);
+    // Su ahorro sigue contando en los totales del panel, como estimado.
+    expect(r["baselineCost"]).toBe(0.0005);
+    expect(r["avoidedLlm"]).toBe(1);
   });
 
-  it("el registro sombra (lo que HABRÍA ahorrado) pasa intacto", async () => {
+  it("el registro sombra (lo que HABRÍA ahorrado, clientes ≤ 1.2.3 y sombra opcional) pasa intacto", async () => {
     const sombra = registro({ requestId: "req-x:shadow", basis: "shadow", baselineCost: 0.01, actualCost: 0, netSavings: 1 });
     await POST(peticion([registro({ requestId: "req-x" }), sombra]));
     const s = rpc!.args.records.find((r) => r["basis"] === "shadow")!;
@@ -163,37 +241,54 @@ describe("ingesta de una org Medir · nunca comisión, nunca referencia cobrable
     expect(s["actualCost"]).toBe(0);
   });
 
-  it("el extracto que sale de esos registros cobra CERO (base medida = actual medido)", async () => {
-    await POST(peticion([registro(), registro(), referencia()]));
-    const fila: FilaDiaria = {
-      day: "2026-09-15",
-      requests: 0,
-      baseline_cost: 0,
-      actual_cost: 0,
-      measured_requests: 0,
-      measured_baseline_cost: 0,
-      measured_actual_cost: 0,
-    };
+  it("el extracto que sale de esos registros cobra CERO, aunque el ahorro medido sea real y grande", async () => {
+    // Un mes de ahorro serio (1 200 $ de ahorro medido), para que la comisión NO sea cero por pequeña.
+    await POST(peticion([registro({ baselineCost: 2000, actualCost: 800 }), registro({ baselineCost: 0.02, actualCost: 0.008 }), referencia()]));
+    const fila = filaDiariaDe(rpc!.args.records);
+    expect(fila.measured_baseline_cost - fila.measured_actual_cost).toBeGreaterThan(1000);
+    expect(fila.reference_requests).toBe(0);
+
+    // Lo que hacen el cierre (cargo) y la facturación (segunda verja) con esta org:
+    const exentas = orgsExentasPorMedir([{ org_id: ORG, issued_at: "2026-11-01T00:00:00Z" }], suscripciones.map((s) => ({ org_id: ORG, ...s })), PRECIOS, "2026-12-01");
+    expect(exentas.has(ORG)).toBe(true);
+    const [cierre] = cerrarPeriodo(
+      [{ orgId: ORG, filas: [fila], primerPeriodoConUso: "2026-10", comisionExenta: exentas.has(ORG) }],
+      "2026-11",
+      { eurPorUsd: 0.9, fuente: "test" },
+    );
+    expect(cierre!.ahorro_medido_usd).toBeGreaterThan(1000);
+    expect(cierre!.es_exento).toBe(true);
+    expect(cierre!.cargo_eur).toBe(0);
+  });
+
+  it("CON HISTORIA DE COMISIÓN (canceló esa modalidad y volvió a Medir): se neutraliza EXACTAMENTE como antes", async () => {
+    suscripciones = COMISION_CANCELADA;
+    const res = await POST(peticion([registro(), registro({ eliminatedInputFloorCost: 0.0001 }), referencia()]));
+    expect(res.status).toBe(202);
     for (const r of rpc!.args.records) {
-      fila.requests += 1;
-      fila.baseline_cost += Number(r["baselineCost"]);
-      fila.actual_cost += Number(r["actualCost"]);
-      if (r["basis"] === "measured") {
-        fila.measured_requests += 1;
-        fila.measured_baseline_cost += Number(r["baselineCost"]);
-        fila.measured_actual_cost += Number(r["actualCost"]);
-      }
+      expect(r["basis"]).not.toBe("reference");
+      expect(r["baselineCost"]).toBe(r["actualCost"]);
+      expect(r["baselineInputTokens"]).toBe(r["actualInputTokens"]);
+      expect(r["baselineOutputTokens"]).toBe(r["actualOutputTokens"]);
+      expect(r["eliminatedInputTokens"]).toBe(0);
+      expect(r["compressedInputTokens"]).toBe(0);
+      expect(r["avoidedLlm"]).toBe(0);
+      expect(r["netSavings"]).toBe(0);
+      expect("eliminatedInputFloorCost" in r).toBe(false);
     }
-    const e = construirExtracto({
-      orgId: ORG,
-      periodo: "2026-09",
-      filas: [fila],
-      esCalibracion: false,
-      versionPrecios: "test",
-      fx: { eurPorUsd: 0.9, fuente: "test" },
-    });
-    expect(e.comision.ahorroMedidoEur).toBe(0);
-    expect(e.cargoEur).toBe(0);
+    // Y como no está exenta por Medir, su extracto sigue cobrando 0 por lo mismo que antes: no hay ahorro en la base.
+    const fila = filaDiariaDe(rpc!.args.records);
+    expect(fila.measured_baseline_cost).toBe(fila.measured_actual_cost);
+    const exentas = orgsExentasPorMedir([{ org_id: ORG, issued_at: "2026-11-01T00:00:00Z" }], suscripciones.map((s) => ({ org_id: ORG, ...s })), PRECIOS, "2026-12-01");
+    expect(exentas.has(ORG)).toBe(false);
+    const [cierre] = cerrarPeriodo([{ orgId: ORG, filas: [fila], primerPeriodoConUso: "2026-10" }], "2026-11", { eurPorUsd: 0.9, fuente: "test" });
+    expect(cierre!.cargo_eur).toBe(0);
+  });
+
+  it("una suscripción Pro cancelada NO es historia de comisión: su ahorro real se guarda", async () => {
+    suscripciones = [{ status: "canceled", current_period_end: "2026-10-01T00:00:00Z", price_id: "price_pro_m" }];
+    await POST(peticion([registro()]));
+    expect(rpc!.args.records[0]!["baselineCost"]).toBe(0.02);
   });
 
   it("CONTRASTE: la misma carga en una org de PAGO conserva su ahorro y su referencia", async () => {
@@ -250,15 +345,120 @@ describe("ingesta de una org Medir · los topes", () => {
     expect(rpc!.args.records.map((r) => r["requestId"])).toEqual(["a", "a:shadow"]);
   });
 
-  it("si los topes no se pueden leer, fail-open: el lote entra (neutralizado igual)", async () => {
+  it("si los topes no se pueden leer, fail-open: el lote entra (y las referencias siguen degradadas)", async () => {
     fallarLecturaDeTopes = true;
-    const res = await POST(peticion([registro()]));
+    const res = await POST(peticion([registro(), referencia()]));
     expect(res.status).toBe(202);
-    expect(rpc!.args.records[0]!["baselineCost"]).toBe(rpc!.args.records[0]!["actualCost"]);
+    expect(rpc!.args.records).toHaveLength(2);
+    expect(rpc!.args.records.some((r) => r["basis"] === "reference")).toBe(false);
   });
 
   it("el lote vacío (la sonda «Test my key») sigue siendo 202 para una org Medir", async () => {
     const res = await POST(peticion([]));
     expect(res.status).toBe(202);
+  });
+});
+
+describe("ingesta · la lectura del entitlement falla: reintento y, si no, 503 (nunca a ciegas)", () => {
+  it.each(["licenses", "subscriptions"] as const)("%s falla DOS veces → 503 `entitlement lookup failed` y la RPC sin llamar", async (tabla) => {
+    fallosDeLectura[tabla] = 2;
+    const res = await POST(peticion([registro(), referencia()]));
+    expect(res.status).toBe(503);
+    expect(await res.json()).toEqual({ error: "entitlement lookup failed" });
+    expect(rpc).toBeNull();
+    // Exactamente UN reintento de las dos lecturas, no un bucle.
+    expect(lecturas).toEqual({ licenses: 2, subscriptions: 2 });
+  });
+
+  it.each(["licenses", "subscriptions"] as const)("%s falla UNA vez y la segunda va bien → ingesta normal, con topes y candado", async (tabla) => {
+    fallosDeLectura[tabla] = 1;
+    const res = await POST(peticion([registro(), referencia()]));
+    expect(res.status).toBe(202);
+    expect(lecturas).toEqual({ licenses: 2, subscriptions: 2 });
+    expect(rpc!.args.records).toHaveLength(2);
+    // Org Medir pura: el ahorro medido entra intacto y la referencia, degradada.
+    expect(rpc!.args.records[0]!["baselineCost"]).toBe(0.02);
+    expect(rpc!.args.records.some((r) => r["basis"] === "reference")).toBe(false);
+  });
+
+  it("sin fallo, las dos tablas se leen UNA sola vez (el reintento no es el camino normal)", async () => {
+    await POST(peticion([registro()]));
+    expect(lecturas).toEqual({ licenses: 1, subscriptions: 1 });
+  });
+
+  it("una org de PAGO con la lectura caída también recibe 503: su emisor reencola el lote ante 5xx y lo reenvía", async () => {
+    licencias = PRO;
+    fallosDeLectura.licenses = 2;
+    const res = await POST(peticion([registro(), referencia()]));
+    expect(res.status).toBe(503);
+    expect(rpc).toBeNull();
+    // La lectura vuelve y el mismo lote, reenviado, entra completo.
+    const otra = await POST(peticion([registro(), referencia()]));
+    expect(otra.status).toBe(202);
+    expect(rpc!.args.records.map((r) => r["basis"])).toEqual(["measured", "reference"]);
+  });
+
+  /**
+   * EL ATAQUE DEL REVISOR. Una org que tuvo la modalidad con comisión y volvió a
+   * Measure, con un cliente 1.2.4 (que ahorra de verdad), y la lectura caída. Con
+   * el fail-open el lote entraba sin neutralizar y con referencias: 4 000 $ de
+   * ahorro medido en la base, exenta=false, cargo_eur=308. Su único candado es
+   * la neutralización de la ingesta (el cierre no la exime a propósito).
+   */
+  const ataque = () => [registro({ baselineCost: 5000, actualCost: 1000 }), referencia()];
+  const cargoDe = (registros: Array<Record<string, unknown>>) => {
+    const exentas = orgsExentasPorMedir([{ org_id: ORG, issued_at: "2026-11-01T00:00:00Z" }], suscripciones.map((s) => ({ org_id: ORG, ...s })), PRECIOS, "2026-12-01");
+    const [cierre] = cerrarPeriodo(
+      [{ orgId: ORG, filas: [filaDiariaDe(registros)], primerPeriodoConUso: "2026-10", comisionExenta: exentas.has(ORG) }],
+      "2026-11",
+      { eurPorUsd: 0.9, fuente: "test" },
+    );
+    return cierre!;
+  };
+
+  it("EL ARNÉS MUERDE: ese mismo lote, si entrara sin neutralizar, SÍ generaría cargo", () => {
+    suscripciones = COMISION_CANCELADA;
+    const cierre = cargoDe(ataque());
+    expect(cierre.es_exento).toBe(false);
+    expect(cierre.cargo_eur).toBeGreaterThan(0);
+  });
+
+  it("org ex-comisión en Measure + cliente 1.2.4 + lectura fallida: 503, nada en la base, ningún cargo", async () => {
+    suscripciones = COMISION_CANCELADA;
+    fallosDeLectura.licenses = 2;
+    const res = await POST(
+      new Request("https://savings.bivelio.com/api/metering/usage", {
+        method: "POST",
+        headers: { "content-type": "application/json", authorization: "Bearer bvk_test", "x-bvsala-version": "sdk/1.2.4" },
+        body: JSON.stringify(ataque()),
+      }),
+    );
+    expect(res.status).toBe(503);
+    expect(rpc).toBeNull();
+
+    // El emisor lo reenvía; con la lectura de vuelta entra NEUTRALIZADO y el extracto cobra 0.
+    const reenvio = await POST(
+      new Request("https://savings.bivelio.com/api/metering/usage", {
+        method: "POST",
+        headers: { "content-type": "application/json", authorization: "Bearer bvk_test", "x-bvsala-version": "sdk/1.2.4" },
+        body: JSON.stringify(ataque()),
+      }),
+    );
+    expect(reenvio.status).toBe(202);
+    for (const r of rpc!.args.records) {
+      expect(r["basis"]).not.toBe("reference");
+      expect(r["baselineCost"]).toBe(r["actualCost"]);
+    }
+    const cierre = cargoDe(rpc!.args.records);
+    expect(cierre.es_exento).toBe(false);
+    expect(cierre.cargo_eur).toBe(0);
+  });
+
+  it("y si la lectura falla solo la primera vez, ese lote entra ya neutralizado: ningún cargo", async () => {
+    suscripciones = COMISION_CANCELADA;
+    fallosDeLectura.subscriptions = 1;
+    const res = await POST(peticion(ataque()));
+    expect(res.status).toBe(202);
+    expect(cargoDe(rpc!.args.records).cargo_eur).toBe(0);
   });
 });

@@ -10,6 +10,7 @@ import { loadDashboard } from "../load";
 import { ExtractoVista, type RegimenDelExtracto } from "../components/ExtractoVista";
 import { ESTADOS_CON_PLAN, idsSinComision, orgsSinComisionPorPlan, type SuscripcionDeOrg } from "@/lib/billing/plan-de-la-org";
 import { preciosSinComision } from "@/lib/stripe/env";
+import { comisionLlegaA, regimenSinPlanVivo } from "../comision-del-panel";
 
 /** Una fila del historial: el extracto cerrado con el estado de su cobro. */
 interface PeriodoCerrado {
@@ -181,8 +182,14 @@ export default async function ExtractoPage() {
   // precio publicado lista con ella. La vista no afirma ni lo uno ni lo otro:
   // pinta el aviso neutro (lo que se cobra es lo que figura en las facturas).
   // «medir»: sin plan vivo, pero con la licencia gratuita Measure (`ctx.medir`,
-  // ver ../medir.ts). Modo sombra: ahorro ESTIMADO, que nunca se factura ni
-  // entra en comisión alguna (LICENSE-CLOUD §1).
+  // ver ../medir.ts). Desde la 1.2.4 su ahorro es REAL (Measure aplica las
+  // palancas), y nunca se factura ni entra en comisión alguna (LICENSE-CLOUD §1;
+  // el cierre la marca exenta: lib/billing/plan-de-la-org.ts).
+  // «legado-fin»: sin plan vivo, pero con una suscripción de la modalidad con
+  // comisión cuyo período llega a este mes (cancelada a mitad de mes, aunque ya
+  // esté en Measure): el día 1 este mes se factura con comisión, y la página no
+  // puede decirle «nunca se factura». Misma regla que la tercera verja de
+  // facturar-extractos (../comision-del-panel.ts).
   const conSuscripcion = ctx.subscription != null && ESTADOS_CON_PLAN.includes(ctx.subscription.status);
   const regimenBase: "fija" | "exenta" | "legado" | "ninguno" | "indeterminado" = lecturaFallida
     ? "indeterminado"
@@ -199,8 +206,17 @@ export default async function ExtractoPage() {
             : conSuscripcion
               ? "indeterminado"
               : "ninguno";
-  const regimen: RegimenDelExtracto = regimenBase === "ninguno" && ctx.medir === "solo-medir" ? "medir" : regimenBase;
-  const e = extractoEnSombra("panel", usage, periodo, esExento);
+  // Solo se consulta cuando hace falta: sin plan vivo y con organización. Lee
+  // TODAS sus suscripciones (cualquier estado) con su precio y su fin de período,
+  // y mira si alguna de comisión llega al período de esta misma simulación.
+  const comisionEsteMes =
+    regimenBase === "ninguno" && orgId
+      ? await comisionLlegaA(await createReadOnlyClient(), orgId, Date.parse(`${periodo}-01T00:00:00Z`))
+      : false;
+  const regimen: RegimenDelExtracto = regimenSinPlanVivo(regimenBase, comisionEsteMes, ctx.medir === "solo-medir");
+  // En Measure la simulación se calcula como la de una cuenta EXENTA: con ahorro
+  // real, la cabecera diría «cargo 12 €» a quien no se le cobra nada, nunca.
+  const e = extractoEnSombra("panel", usage, periodo, esExento || regimen === "medir");
   const cerrados = orgId ? await periodosCerrados(orgId) : [];
 
   return (

@@ -1,10 +1,10 @@
 # Publishing `@bivelio/savings-layer`
 
 **PUBLIC npm, open core.** `pnpm add @bivelio/savings-layer` works for anyone with zero
-auth — the friction-free path — and the package runs with **no key**: every local saving
-lever is on (COMMUNITY mode), with zero telemetry. The package is Apache-2.0 and its code
-is readable; the repository is public. A BiVelio key is optional and only governs
-**Savings Cloud** (dashboard, team metering, org entitlements, license management). The
+auth — the friction-free path — and the package runs with **no key**: every lever is
+included and free (COMMUNITY mode), with zero telemetry. The package is Apache-2.0 and its
+code is readable; the repository is public. A BiVelio key is optional and only adds
+**Savings Cloud** (the team dashboard, shared measurement, seats and license management). The
 public registry was chosen over a private one (2026-07-20) because the SDK runs
 client-side, so gating *install* buys nothing while adding real onboarding friction.
 
@@ -198,6 +198,15 @@ already checked**, never a new build, as in BITACORA-2026-08-11:
 
 A manual publish carries no provenance, and SECURITY.md has to list that version as
 published by hand.
+
+**File modes.** `npm pack` copies each file's mode from disk. A tree created with a
+restrictive umask (077) would pack `-rw-------` files, which another user (Docker's
+`USER node`, `sudo npm i -g`) cannot read. The `prepack` script
+(`scripts/permisos-del-paquete.mjs`) adds read for everyone, and execute where the owner
+already has it, to what `files` lists before every `npm pack`; in CI (umask 022) it
+changes nothing. Check any tarball with
+`tar tvzf bivelio-savings-layer-X.Y.Z.tgz | awk '{print $1}' | sort | uniq -c`: only
+`-rw-r--r--` and `-rwxr-xr-x`.
 
 ## Customer install (zero friction)
 

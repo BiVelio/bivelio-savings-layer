@@ -166,7 +166,8 @@ export interface EnsayoDeCargo {
   org_id: string;
   periodo: string;
   cargo_eur: number;
-  accion: "facturar" | "omitir" | "nada" | "exenta";
+  /** «revisar»: la tercera verja lo para (sin la modalidad con comisión en el período). */
+  accion: "facturar" | "omitir" | "nada" | "exenta" | "revisar";
   detalle: string;
   centimos: number | null;
   cliente: string | null;
@@ -175,12 +176,22 @@ export interface EnsayoDeCargo {
 
 export function ensayoDeCargo(
   e: ExtractoFacturable,
-  decision: DecisionDeCargo | "exenta",
+  decision: DecisionDeCargo | "exenta" | "sin_modalidad",
   medio: MedioDePago | undefined,
 ): EnsayoDeCargo {
   const base = { org_id: e.org_id, periodo: e.periodo, cargo_eur: e.cargo_eur };
   if (decision === "exenta") {
     return { ...base, accion: "exenta", detalle: "organization exempt from commission", centimos: null, cliente: null, medio_de_pago: null };
+  }
+  if (decision === "sin_modalidad") {
+    return {
+      ...base,
+      accion: "revisar",
+      detalle: "no commission-plan subscription in this period: not invoiced, an alert asks for a human review",
+      centimos: null,
+      cliente: null,
+      medio_de_pago: null,
+    };
   }
   if (decision.accion === "nada") return { ...base, accion: "nada", detalle: decision.motivo, centimos: null, cliente: null, medio_de_pago: null };
   if (decision.accion === "omitir") return { ...base, accion: "omitir", detalle: decision.estado, centimos: null, cliente: null, medio_de_pago: null };
