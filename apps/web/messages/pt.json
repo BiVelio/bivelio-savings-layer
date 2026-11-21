@@ -571,7 +571,7 @@
       "coveragePartial": "Cobertura parcial: o desdobramento inclui {attributed} de {total} pedidos SHADOW ({coverage}); o histórico sem modelo fica de fora.",
       "coverageUnavailable": "A cobertura não está disponível porque o total diário SHADOW não pôde ser lido.",
       "note": "Estimativa hipotética: baseline − custo SHADOW. Nunca medida, faturada ou somada à poupança acreditada.",
-      "action": "Revê Conta para ativar as alavancas de poupança ou conclui a instalação SDK/gateway. Alavanca e superfície não estão disponíveis: o wire atual não as conserva; exigem uma alteração servidor-primeiro.",
+      "action": "Para o poupar de verdade, atualize essas máquinas ou desligue o modo só-observar: as alavancas não precisam de nenhum plano. Esta tabela não pode dizer de que alavanca nem de que superfície vem cada número: os registos de uso não os trazem.",
       "accountCta": "Rever Conta",
       "installCta": "Concluir instalação",
       "exportCsv": "Exportar CSV",
@@ -735,7 +735,7 @@
     "installLicensePanel": {
       "eyebrow": "Começar",
       "heading": "Três passos. Os teus prompts nunca tocam nos nossos servidores.",
-      "step1": "<b>1 · As tuas chaves (opcionais)</b> — o SDK é open core: sem chave corre em modo Community (todas as alavancas incluídas e grátis, zero telemetria). Ligadas por omissão: cache exata, deduplicação, resolvedores locais, colocação da cache do fornecedor e corte de resultados de ferramentas substituídos; o resto liga-se. Uma chave definida mas inválida continua fail-closed. Passada como <code>licenseKey</code>.",
+      "step1": "<b>1 · As tuas chaves (opcionais)</b> — o SDK é open core: sem chave corre em modo Community (todas as alavancas incluídas e grátis, zero telemetria). Ligadas por omissão: cache exata, deduplicação, resolvedores locais, colocação da cache do fornecedor, corte de resultados de ferramentas substituídos e serialização compacta dos dados estruturados que passas; o resto liga-se. Uma chave definida mas inválida continua fail-closed. Passada como <code>licenseKey</code>.",
       "step2": "<b>2 · Cria e verifica uma chave de conta de serviço</b> — uma credencial de máquina (<code>bvk_…</code>) com duas funções: reporta a utilização só por contagens (os teus lugares e poupança) e permite que o SDK e o gateway <b>recolham sozinhos a tua licença renovada</b> em cada período de faturação. Separada da chave de licença; apenas o seu hash é armazenado. Cria uma e depois <b>Testar a minha chave</b> para confirmar que está ativa.",
       "currentKey": "chave de conta de serviço atual",
       "noneYet": "ainda nenhuma — clica acima",
@@ -745,7 +745,7 @@
       "initNote": "Lê o teu <code>package.json</code> (Next.js, Express, Vercel AI SDK, Mastra, LangChain.js, o SDK da Anthropic ou o da OpenAI) e imprime o que a tua stack precisa: a linha de instalação para o teu gestor de pacotes, as chaves que ainda faltam, o código exato do teu adaptador e uma verificação que não gasta tokens — é a camada que lhe responde, na tua máquina, sem chamar o modelo. Não escreve nada: <code>--write</code> só cria ficheiros novos, depois de te perguntar, e nunca substitui um que já exista.",
       "manualInstall": "<b>Preferes ligá-lo à mão?</b> Instala o pacote — público no npm, sem token, sem configuração:",
       "manualWire": "…e depois liga o teu fornecedor e lê o SavingsReport:",
-      "gatewayNote": "<b>Agente de código em vez de uma app?</b> O mesmo pacote traz um gateway medidor local: <code>bvsala claude</code> lança o Claude Code através dele e este painel mostra o gasto, token a token. Arranca sem nenhuma chave (modo Community); a chave de serviço opcional do passo 2 acrescenta este painel e os direitos da org.",
+      "gatewayNote": "<b>Agente de código em vez de uma app?</b> O mesmo pacote traz um gateway medidor local: <code>bvsala claude</code> lança o Claude Code através dele e este painel mostra o gasto, token a token. Arranca sem nenhuma chave (modo Community); a chave de serviço opcional do passo 2 acrescenta este painel e os direitos da org. Com essa chave, o gateway precisa de savings.bivelio.com para arrancar; depois de arrancar, continua a servir sem ele.",
       "doctorComment": "outros agentes e SDK: a configuração exata de cada um",
       "agentsNote": "Cada wrapper prepara o seu agente apenas para essa sessão — nada na configuração muda — e ao sair diz-te quantos pedidos mediu, quais não conseguiu medir e porquê. <code>bvsala copilot</code> precisa da tua própria chave da Anthropic (BYOK): os modelos alojados pela GitHub nunca passam por um base URL, por isso não há nada a medir. Para o Crush, Droid, Cline, Continue ou Copilot no VS Code, o <code>bvsala doctor</code> imprime a configuração exata. <b>Cursor (BYOK)</b>: funciona através da substituição do URL base da OpenAI com a tua própria chave; os seus modelos nunca chegam a um gateway na tua máquina. <b>Gemini CLI</b>: lança-a com <code>bvsala gemini</code>.",
       "pythonNote": "<b>Python?</b> O cliente <code>bvsala</code> para Python faz passar os SDK oficiais da OpenAI e da Anthropic por este mesmo gateway (<code>bvsala gateway</code>) e devolve ao teu código o relatório de cada pedido — os mesmos números que este painel recebe. Precisa de Python 3.10 ou posterior. Instala-se a partir do PyPI com <code>pip install bivelio-savings-layer</code>; no teu código, <code>import bvsala</code>.",
@@ -758,7 +758,7 @@
       "gatewayTitle": "Ligar um agente (gateway)",
       "gatewayLede": "Lança o teu agente de código através do gateway local, sem tocar no código dele.",
       "modeLocalTitle": "Modo local",
-      "modeLocalBody": "O motor aberto funciona sem conta nem chaves: todas as alavancas incluídas e grátis, zero telemetria. Ligadas por omissão: cache exata, deduplicação, resolvedores locais, colocação da cache do fornecedor e corte de resultados de ferramentas substituídos; o resto liga-se. O relatório fica na tua máquina.",
+      "modeLocalBody": "O motor aberto funciona sem conta nem chaves: todas as alavancas incluídas e grátis, zero telemetria. Ligadas por omissão: cache exata, deduplicação, resolvedores locais, colocação da cache do fornecedor, corte de resultados de ferramentas substituídos e serialização compacta dos dados estruturados que passas; o resto liga-se. O relatório fica na tua máquina.",
       "modeCloudTitle": "Ligação Cloud",
       "modeCloudBody": "Com licença e chave de serviço, este painel recebe contagens e custos — nunca os teus prompts — e a tua organização partilha medição e lugares.",
       "modeCloudLink": "Ir para as credenciais",
@@ -981,7 +981,7 @@
     "sombraElision": {
       "title": "Elisão em sombra (hipotético)",
       "detalle": "≈{usd} em {requests} pedidos simulados",
-      "nota": "O que a elisão de contexto teria poupado no seu tráfego real, calculado pelo gateway sem tocar num único byte. Nunca se soma ao título nem conta como poupança creditada: a alavanca só liga quando este número o justificar.",
+      "nota": "O que a elisão de contexto teria poupado no seu tráfego real, calculado pelo gateway sem tocar num único byte. Nunca se soma ao título nem conta como poupança creditada: a alavanca fica desligada a menos que a ligue com a sua própria variável.",
       "notaNegativa": "No seu tráfego, a elisão teria custado dinheiro: reescrever blocos invalida a cache de prefixo do fornecedor. Esta via existe exatamente para ver isto antes de ligar o que quer que seja — e por isso continua desligada."
     },
     "elisionProveedor": {
@@ -1039,7 +1039,7 @@
       "colComision": "Comissão",
       "estimadoExcluido": "Economia estimada excluída da base (contexto, nunca faturável): {usd}.",
       "sombraElision": "Via sombra: a elisão teria poupado {usd} em {requests} pedidos simulados. Hipotético — nunca entra na base.",
-      "sombraElisionNegativa": "Via sombra: a elisão teria custado {usd} a mais em {requests} pedidos simulados. Por isso está desligada: só se liga o que poupa de verdade.",
+      "sombraElisionNegativa": "Via sombra: a elisão teria custado {usd} a mais em {requests} pedidos simulados. Fica desligada a menos que a ligue; com este tráfego, deixe-a desligada.",
       "elisionProveedor": "Faixa do apagamento do fornecedor: {requests} pedidos em que os nossos ajustes fizeram o fornecedor apagar contexto. Uma contagem, não uma poupança — nunca entra na base.",
       "referencia": "Medido por referência: {usd} em {requests, plural, one {# pedido repetido servido} other {# pedidos repetidos servidos}} sem chamar o teu fornecedor. Cada um é valorizado com o contador que o teu fornecedor devolveu para o pedido idêntico que já foi executado —está no relatório desse pedido e no uso do teu fornecedor desse dia— ao preço de entrada em cache, o mais baixo que o teu fornecedor cobra para repetir um prompt; a saída só conta se a amostragem tiver sido determinística e o pedido executado não tiver levado raciocínio oculto (o teu fornecedor declarou zero tokens de raciocínio ou, se não os discrimina, a sua resposta não trazia bloco de raciocínio). Entra na base.",
       "referenciaExcluida": "Medido por referência: {usd} em {requests, plural, one {# pedido repetido} other {# pedidos repetidos}}. Mostra-se como contexto: por agora fica fora da base.",
@@ -1274,7 +1274,7 @@
         },
         {
           "title": "Open core: poupa sem chaves",
-          "body": "Todas as alavancas vêm incluídas e grátis, sem chave. Ligadas por defeito: cache exata, deduplicação de pedidos simultâneos, resolvedores locais, colocação da cache de prompt, corte de resultados de ferramentas já substituídos e serialização compacta dos dados estruturados que passas. As restantes ligam-se com uma linha cada. Duas máquinas podem partilhar cache grátis com um armazenamento teu (Redis, por exemplo). Zero telemetria, e uma chave definida mas inválida continua fail-closed. A nuvem é opcional: painel de equipa, medição partilhada, lugares e licenças por uma taxa fixa por lugar — e sem comissão sobre a tua poupança."
+          "body": "Todas as alavancas vêm incluídas e grátis, sem chave. Ligadas por defeito: cache exata, deduplicação de pedidos simultâneos, resolvedores locais, colocação da cache de prompt, corte de resultados de ferramentas já substituídos e serialização compacta dos dados estruturados que passas. As restantes ligam-se com uma linha cada. Duas máquinas podem partilhar cache grátis com um armazenamento teu (Redis, por exemplo). Zero telemetria, e uma chave definida mas inválida continua fail-closed. A nuvem é opcional: painel de equipa, medição partilhada, lugares e licenças — grátis com o Measure e, com o Pro e o Team, por uma taxa fixa, poupes ou não, sem comissão sobre a tua poupança."
         }
       ],
       "nota": "As animações ilustram a ideia. Os números a sério — medidos contra fornecedores reais — estão logo abaixo."
@@ -1646,7 +1646,7 @@
         },
         {
           "q": "Qual é a diferença entre o Measure e o Community?",
-          "a": "O Community é o motor open source na tua infraestrutura: sem conta, sem chave da BiVelio e sem telemetria por defeito. O Measure é o plano gratuito do Savings Cloud para equipas pequenas: precisa de conta, aplica as mesmas alavancas que o Community (com uma exceção no corte de resultados de ferramentas, descrita no README) e acrescenta o painel com a tua poupança real. Com versões antigas do pacote só observa; a página de preços diz a partir de que versão poupa."
+          "a": "O Community é o motor open source na tua infraestrutura: sem conta, sem chave da BiVelio, sem telemetria por defeito e sem depender dos servidores da BiVelio. O Measure é o plano gratuito do Savings Cloud para equipas pequenas: precisa de conta e de chave, aplica as mesmas alavancas que o Community (com uma exceção no corte de resultados de ferramentas, descrita no README) e acrescenta o painel com a tua poupança real; com essa chave, uma camada que passa três dias sem resposta de savings.bivelio.com recusa todas as chamadas até a receber ou até removeres a chave. Com versões antigas do pacote só observa; a página de preços diz a partir de que versão poupa."
         },
         {
           "q": "Serve para uma subscrição como o ChatGPT Plus?",
@@ -2298,7 +2298,7 @@
       "pro": {
         "name": "Pro",
         "amount": "<b>{monthly}</b> por assento e mês, ou <b>{yearly}</b> por assento e ano, em {currency}.",
-        "body": "Tudo o que o Measure tem, para mais máquinas e pedidos: painel de equipa, medição partilhada, lugares e licenças. O motor e as suas alavancas continuam grátis sem chave. <b>Sem comissão</b> sobre a poupança: pagas os lugares, poupes ou não."
+        "body": "Tudo o que o Measure tem, para mais máquinas e pedidos: painel de equipa, medição partilhada, lugares e licenças. O motor e as suas alavancas continuam grátis sem chave. No gateway local, cada alavanca precisa ainda de estar incluída na licença da tua organização, verificada em fail-closed: se essa verificação não puder ser feita, os pedidos seguem intactos. <b>Sem comissão</b> sobre a poupança: pagas os lugares, poupes ou não."
       },
       "team": {
         "name": "Team",
@@ -2374,7 +2374,7 @@
       "cloud": {
         "tag": "Opcional · com planos",
         "name": "Savings Cloud",
-        "body": "O painel, a medição partilhada, a organização e as licenças. O Measure é o seu plano gratuito, para equipas pequenas; o Pro e o Team pagam-se com uma mensalidade fixa por lugar, sem comissão sobre a poupança."
+        "body": "O painel, a medição partilhada, a organização e as licenças. O Measure é o seu plano gratuito, para equipas pequenas; o Pro e o Team pagam-se com uma mensalidade fixa por lugar, sem comissão sobre a poupança. Uma chave, incluindo a chave gratuita do Measure, liga a camada a savings.bivelio.com: com licenseServerUrl definido, como o painel o configura, uma camada que passa {horas} horas sem resposta recusa todas as chamadas (LicenseError) até a receber ou até removeres a chave. O Community não tem essa dependência."
       }
     },
     "cards": {

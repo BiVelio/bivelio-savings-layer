@@ -12,7 +12,7 @@ import { URL_DEL_CODIGO } from "@/app/components/sitio";
 import { Link } from "@/i18n/navigation";
 import { absolute, languageAlternates, tarjetaSocial } from "@/i18n/site";
 import { terminosDeLosPlanes, terminosDePrecio } from "@/lib/legal/precios-publicados";
-import { LIMITES_MEDIR, VERSION_MEDIR_AHORRA, VERSION_MINIMA_MEDIR } from "@/lib/license/medir-publico";
+import { HORAS_SIN_RESPUESTA_CON_CLAVE, LIMITES_MEDIR, VERSION_MEDIR_AHORRA, VERSION_MINIMA_MEDIR } from "@/lib/license/medir-publico";
 import { preciosDelPlan, tarifasDeLosPlanes } from "@/lib/stripe/pricing";
 import { Badge } from "@/vendor/affectui/badge-clean";
 import { DataTable } from "@/vendor/affectui/data-table-clean";
@@ -142,7 +142,7 @@ export default async function PricingPage({ params }: { params: Promise<{ locale
             <article className="modo" data-cloud="">
               <span className="modo-etiqueta">{t("modes.cloud.tag")}</span>
               <h3>{t("modes.cloud.name")}</h3>
-              <p>{t("modes.cloud.body")}</p>
+              <p>{t("modes.cloud.body", { horas: HORAS_SIN_RESPUESTA_CON_CLAVE })}</p>
             </article>
           </div>
         </section>

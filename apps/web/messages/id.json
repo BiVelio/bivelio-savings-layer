@@ -571,7 +571,7 @@
       "coveragePartial": "Cakupan sebagian: rincian mencakup {attributed} dari {total} permintaan SHADOW ({coverage}); riwayat tanpa model dikecualikan.",
       "coverageUnavailable": "Cakupan tidak tersedia karena total SHADOW harian tidak dapat dibaca.",
       "note": "Estimasi hipotetis: baseline − biaya SHADOW. Tidak pernah diukur, ditagih, atau ditambahkan ke penghematan terakreditasi.",
-      "action": "Tinjau Akun untuk mengaktifkan tuas penghematan atau selesaikan pemasangan SDK/gateway. Tuas dan permukaan tidak tersedia: wire saat ini tidak menyimpannya; keduanya memerlukan perubahan server-first.",
+      "action": "Untuk benar-benar menghematnya, perbarui mesin tersebut atau matikan mode hanya-mengamati: tuas tidak memerlukan paket apa pun. Tabel ini tidak dapat menyebutkan dari tuas atau permukaan mana setiap angka berasal: catatan penggunaan tidak memuatnya.",
       "accountCta": "Tinjau Akun",
       "installCta": "Selesaikan pemasangan",
       "exportCsv": "Ekspor CSV",
@@ -735,7 +735,7 @@
     "installLicensePanel": {
       "eyebrow": "Mulai",
       "heading": "Tiga langkah. Prompt Anda tidak pernah menyentuh server kami.",
-      "step1": "<b>1 · Kunci Anda (opsional)</b> — SDK bersifat open core: tanpa kunci ia berjalan dalam mode Community (semua tuas sudah termasuk dan gratis, nol telemetri). Aktif secara bawaan: cache eksak, deduplikasi, resolver lokal, penempatan cache penyedia, dan pemangkasan hasil alat yang sudah tergantikan; sisanya Anda aktifkan sendiri. Kunci yang diatur tetapi tidak valid tetap fail-closed. Diberikan sebagai <code>licenseKey</code>.",
+      "step1": "<b>1 · Kunci Anda (opsional)</b> — SDK bersifat open core: tanpa kunci ia berjalan dalam mode Community (semua tuas sudah termasuk dan gratis, nol telemetri). Aktif secara bawaan: cache eksak, deduplikasi, resolver lokal, penempatan cache penyedia, pemangkasan hasil alat yang sudah tergantikan, dan serialisasi ringkas data terstruktur yang Anda kirim; sisanya Anda aktifkan sendiri. Kunci yang diatur tetapi tidak valid tetap fail-closed. Diberikan sebagai <code>licenseKey</code>.",
       "step2": "<b>2 · Buat & verifikasi kunci akun layanan</b> — kredensial mesin (<code>bvk_…</code>) dengan dua tugas: melaporkan penggunaan berbasis-hitungan (kursi & penghematan Anda), dan memungkinkan SDK dan gateway <b>mengambil sendiri lisensi Anda yang diperbarui</b> pada setiap periode penagihan. Terpisah dari kunci lisensi; hanya hash-nya yang disimpan. Buat satu, lalu <b>Uji kunci saya</b> untuk memastikannya aktif.",
       "currentKey": "kunci akun layanan saat ini",
       "noneYet": "belum ada — klik di atas",
@@ -745,7 +745,7 @@
       "initNote": "Perintah ini membaca <code>package.json</code> Anda (Next.js, Express, Vercel AI SDK, Mastra, LangChain.js, SDK Anthropic, atau SDK OpenAI) lalu mencetak apa yang dibutuhkan stack Anda: baris instalasi untuk manajer paket Anda, kunci yang masih belum ada, kode persis untuk adaptor Anda, dan sebuah pemeriksaan yang tidak memakai token — lapisan menjawabnya di mesin Anda, tanpa memanggil model. Perintah ini tidak menulis apa pun: <code>--write</code> hanya membuat file baru, setelah bertanya kepada Anda, dan tidak pernah menimpa file yang sudah ada.",
       "manualInstall": "<b>Lebih suka menyambungkannya secara manual?</b> Pasang paketnya — publik di npm, tanpa token, tanpa konfigurasi:",
       "manualWire": "…lalu sambungkan penyedia Anda dan baca SavingsReport:",
-      "gatewayNote": "<b>Agen pemrograman alih-alih aplikasi?</b> Paket yang sama membawa gateway pengukur lokal: <code>bvsala claude</code> menjalankan Claude Code melaluinya dan panel ini menampilkan pengeluaran, token demi token. Ia berjalan tanpa kunci apa pun (mode Community); kunci layanan opsional dari langkah 2 menambahkan dasbor ini dan hak organisasi.",
+      "gatewayNote": "<b>Agen pemrograman alih-alih aplikasi?</b> Paket yang sama membawa gateway pengukur lokal: <code>bvsala claude</code> menjalankan Claude Code melaluinya dan panel ini menampilkan pengeluaran, token demi token. Ia berjalan tanpa kunci apa pun (mode Community); kunci layanan opsional dari langkah 2 menambahkan dasbor ini dan hak organisasi. Dengan kunci itu, gateway membutuhkan savings.bivelio.com untuk mulai; setelah berjalan, ia tetap melayani tanpanya.",
       "doctorComment": "agen dan SDK lain: konfigurasi persis untuk masing-masing",
       "agentsNote": "Setiap pembungkus menyiapkan agennya hanya untuk sesi itu — tidak ada yang berubah dalam konfigurasinya — dan saat keluar memberi tahu berapa permintaan yang diukurnya, mana yang tidak bisa diukur, dan mengapa. <code>bvsala copilot</code> memerlukan kunci Anthropic Anda sendiri (BYOK): model yang dihosting GitHub tidak pernah lewat URL dasar, jadi tidak ada yang perlu diukur. Untuk Crush, Droid, Cline, Continue, atau Copilot di VS Code, <code>bvsala doctor</code> mencetak konfigurasi persisnya. <b>Cursor (BYOK)</b>: bekerja lewat penggantian URL dasar OpenAI dengan kunci Anda sendiri; modelnya sendiri tidak pernah mencapai gateway di mesin Anda. <b>Gemini CLI</b>: jalankan dengan <code>bvsala gemini</code>.",
       "pythonNote": "<b>Python?</b> Klien <code>bvsala</code> untuk Python mengarahkan SDK resmi OpenAI dan Anthropic melalui gateway yang sama ini (<code>bvsala gateway</code>) dan mengembalikan laporan setiap permintaan ke kode Anda — angka yang sama dengan yang diterima panel ini. Klien ini memerlukan Python 3.10 atau lebih baru. Pasang dari PyPI dengan <code>pip install bivelio-savings-layer</code>; di kode Anda, <code>import bvsala</code>.",
@@ -758,7 +758,7 @@
       "gatewayTitle": "Hubungkan agen (gateway)",
       "gatewayLede": "Jalankan agen koding Anda melalui gateway lokal, tanpa menyentuh kodenya.",
       "modeLocalTitle": "Mode lokal",
-      "modeLocalBody": "Mesin terbuka berjalan tanpa akun dan tanpa kunci: semua tuas sudah termasuk dan gratis, nol telemetri. Aktif secara bawaan: cache eksak, deduplikasi, resolver lokal, penempatan cache penyedia, dan pemangkasan hasil alat yang sudah tergantikan; sisanya Anda aktifkan sendiri. Laporan tetap berada di mesin Anda.",
+      "modeLocalBody": "Mesin terbuka berjalan tanpa akun dan tanpa kunci: semua tuas sudah termasuk dan gratis, nol telemetri. Aktif secara bawaan: cache eksak, deduplikasi, resolver lokal, penempatan cache penyedia, pemangkasan hasil alat yang sudah tergantikan, dan serialisasi ringkas data terstruktur yang Anda kirim; sisanya Anda aktifkan sendiri. Laporan tetap berada di mesin Anda.",
       "modeCloudTitle": "Koneksi Cloud",
       "modeCloudBody": "Dengan lisensi dan kunci layanan, dasbor ini menerima hitungan dan biaya — tidak pernah prompt Anda — dan organisasi Anda berbagi pengukuran serta kursi.",
       "modeCloudLink": "Buka kredensial",
@@ -981,7 +981,7 @@
     "sombraElision": {
       "title": "Elisi bayangan (hipotetis)",
       "detalle": "≈{usd} pada {requests} permintaan tersimulasi",
-      "nota": "Berapa yang akan dihemat elisi konteks pada trafik nyata Anda, dihitung oleh gateway tanpa menyentuh satu byte pun. Tidak pernah ditambahkan ke tajuk dan tidak pernah dihitung sebagai penghematan yang dikreditkan: tuas hanya dinyalakan bila angka ini membenarkannya.",
+      "nota": "Berapa yang akan dihemat elisi konteks pada trafik nyata Anda, dihitung oleh gateway tanpa menyentuh satu byte pun. Tidak pernah ditambahkan ke tajuk dan tidak pernah dihitung sebagai penghematan yang dikreditkan: tuas tetap mati kecuali Anda menyalakannya dengan variabelnya sendiri.",
       "notaNegativa": "Pada trafik Anda, elisi justru akan menambah biaya: menulis ulang blok membatalkan cache prefiks penyedia. Jalur ini ada persis untuk melihat hal itu sebelum menyalakan apa pun — karena itulah tetap mati."
     },
     "elisionProveedor": {
@@ -1039,7 +1039,7 @@
       "colComision": "Komisi",
       "estimadoExcluido": "Penghematan estimasi dikecualikan dari basis (konteks, tak pernah ditagih): {usd}.",
       "sombraElision": "Jalur bayangan: elisi akan menghemat {usd} pada {requests} permintaan tersimulasi. Hipotetis — tidak pernah masuk basis.",
-      "sombraElisionNegativa": "Jalur bayangan: elisi akan menambah biaya {usd} pada {requests} permintaan tersimulasi. Karena itu tetap mati: hanya yang benar-benar menghemat yang dinyalakan.",
+      "sombraElisionNegativa": "Jalur bayangan: elisi akan menambah biaya {usd} pada {requests} permintaan tersimulasi. Elisi tetap mati kecuali Anda menyalakannya; dengan trafik ini, biarkan mati.",
       "elisionProveedor": "Jalur penghapusan oleh penyedia: {requests} permintaan di mana pengaturan kami membuat penyedia menghapus konteks. Sebuah hitungan, bukan penghematan — tidak pernah masuk ke basis.",
       "referencia": "Diukur berdasarkan referensi: {usd} dari {requests, number} permintaan berulang yang dilayani tanpa memanggil penyedia Anda. Masing-masing dinilai dengan penghitung yang dikembalikan penyedia Anda untuk permintaan identik yang sudah dijalankan — ada di laporan permintaan itu dan di penggunaan penyedia Anda pada hari itu — pada tarif input ter-cache, tarif terendah yang ditagihkan penyedia Anda untuk mengulang sebuah prompt; output hanya dihitung jika sampling-nya deterministik dan permintaan yang dijalankan tidak membawa penalaran tersembunyi (penyedia Anda melaporkan nol token penalaran atau, jika tidak merincinya, jawabannya tidak memuat blok penalaran). Termasuk dalam basis.",
       "referenciaExcluida": "Diukur berdasarkan referensi: {usd} dari {requests, number} permintaan berulang. Ditampilkan sebagai konteks — untuk saat ini tidak dimasukkan ke basis.",
@@ -1274,7 +1274,7 @@
         },
         {
           "title": "Open core: hemat tanpa kunci",
-          "body": "Semua tuas sudah termasuk dan gratis, tanpa kunci. Aktif secara bawaan: cache persis, deduplikasi permintaan bersamaan, resolver lokal, penempatan cache prompt, pemangkasan hasil alat yang sudah tergantikan, dan serialisasi ringkas data terstruktur yang Anda kirim. Sisanya Anda aktifkan, masing-masing satu baris. Dua mesin bisa berbagi cache secara gratis dengan penyimpanan yang Anda jalankan (Redis, misalnya). Nol telemetri, dan kunci yang diatur tetapi tidak valid tetap fail-closed. Cloud bersifat opsional: dasbor tim, pengukuran bersama, kursi, dan lisensi dengan biaya tetap per kursi — tanpa komisi atas penghematan Anda."
+          "body": "Semua tuas sudah termasuk dan gratis, tanpa kunci. Aktif secara bawaan: cache persis, deduplikasi permintaan bersamaan, resolver lokal, penempatan cache prompt, pemangkasan hasil alat yang sudah tergantikan, dan serialisasi ringkas data terstruktur yang Anda kirim. Sisanya Anda aktifkan, masing-masing satu baris. Dua mesin bisa berbagi cache secara gratis dengan penyimpanan yang Anda jalankan (Redis, misalnya). Nol telemetri, dan kunci yang diatur tetapi tidak valid tetap fail-closed. Cloud bersifat opsional: dasbor tim, pengukuran bersama, kursi, dan lisensi — gratis dengan Measure, dan dengan Pro serta Team dengan biaya tetap, baik Anda berhemat maupun tidak, tanpa komisi atas penghematan Anda."
         }
       ],
       "nota": "Animasi ini menggambarkan idenya. Angka sesungguhnya — diukur terhadap penyedia sungguhan — ada tepat di bawah."
@@ -1646,7 +1646,7 @@
         },
         {
           "q": "Apa bedanya Measure dan Community?",
-          "a": "Community adalah mesin open source di infrastruktur Anda: tanpa akun, tanpa kunci BiVelio, dan tanpa telemetri secara bawaan. Measure adalah paket gratis Savings Cloud untuk tim kecil: butuh akun, menerapkan tuas yang sama seperti Community (dengan satu pengecualian untuk pemangkasan hasil alat, lihat README), dan menambahkan dasbor dengan penghematan nyata Anda. Dengan versi paket yang lama ia hanya mengamati; halaman harga menyebutkan sejak versi mana ia berhemat."
+          "a": "Community adalah mesin open source di infrastruktur Anda: tanpa akun, tanpa kunci BiVelio, tanpa telemetri secara bawaan, dan tanpa bergantung pada server BiVelio. Measure adalah paket gratis Savings Cloud untuk tim kecil: butuh akun dan kunci, menerapkan tuas yang sama seperti Community (dengan satu pengecualian untuk pemangkasan hasil alat, lihat README), dan menambahkan dasbor dengan penghematan nyata Anda; dengan kunci itu, lapisan yang tiga hari tidak mendapat jawaban dari savings.bivelio.com menolak setiap panggilan sampai mendapat jawaban atau Anda menghapus kuncinya. Dengan versi paket yang lama ia hanya mengamati; halaman harga menyebutkan sejak versi mana ia berhemat."
         },
         {
           "q": "Apakah berguna untuk langganan seperti ChatGPT Plus?",
@@ -2298,7 +2298,7 @@
       "pro": {
         "name": "Pro",
         "amount": "<b>{monthly}</b> per kursi per bulan, atau <b>{yearly}</b> per kursi per tahun, dalam {currency}.",
-        "body": "Semua yang ada di Measure, untuk lebih banyak mesin dan permintaan: dasbor tim, pengukuran bersama, kursi, dan lisensi. Mesin dan tuasnya tetap gratis tanpa kunci. <b>Tanpa komisi</b> atas penghematan: Anda membayar kursi, baik Anda berhemat maupun tidak."
+        "body": "Semua yang ada di Measure, untuk lebih banyak mesin dan permintaan: dasbor tim, pengukuran bersama, kursi, dan lisensi. Mesin dan tuasnya tetap gratis tanpa kunci. Di gateway lokal, setiap tuas juga harus termasuk dalam lisensi organisasi Anda, diperiksa secara fail-closed: jika pemeriksaan itu tidak bisa dilakukan, permintaan diteruskan tanpa diubah. <b>Tanpa komisi</b> atas penghematan: Anda membayar kursi, baik Anda berhemat maupun tidak."
       },
       "team": {
         "name": "Team",
@@ -2374,7 +2374,7 @@
       "cloud": {
         "tag": "Opsional · dengan paket",
         "name": "Savings Cloud",
-        "body": "Dasbor, pengukuran bersama, organisasi, dan lisensi. Measure adalah paket gratisnya, untuk tim kecil; Pro dan Team dibayar dengan tarif tetap per kursi, tanpa komisi atas penghematan."
+        "body": "Dasbor, pengukuran bersama, organisasi, dan lisensi. Measure adalah paket gratisnya, untuk tim kecil; Pro dan Team dibayar dengan tarif tetap per kursi, tanpa komisi atas penghematan. Sebuah kunci, termasuk kunci Measure yang gratis, mengikat lapisan ke savings.bivelio.com: dengan licenseServerUrl diatur, seperti yang disiapkan dasbor, lapisan yang {horas} jam tidak mendapat jawaban menolak setiap panggilan (LicenseError) sampai mendapat jawaban atau Anda menghapus kuncinya. Community tidak memiliki ketergantungan itu."
       }
     },
     "cards": {

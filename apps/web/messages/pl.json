@@ -571,7 +571,7 @@
       "coveragePartial": "Pokrycie częściowe: podział obejmuje {attributed} z {total} żądań SHADOW ({coverage}); historia bez modelu jest pominięta.",
       "coverageUnavailable": "Pokrycie jest niedostępne, ponieważ nie odczytano dziennej sumy SHADOW.",
       "note": "Szacunek hipotetyczny: baza − koszt SHADOW. Nigdy mierzony, fakturowany ani dodawany do zatwierdzonych oszczędności.",
-      "action": "Sprawdź Konto, aby włączyć dostępne dźwignie, lub dokończ instalację SDK/gateway. Dźwignia i powierzchnia są niedostępne: obecny wire ich nie zachowuje; wymagają zmiany server-first.",
+      "action": "Aby naprawdę to zaoszczędzić, zaktualizuj te maszyny albo wyłącz tryb samej obserwacji: dźwignie nie wymagają żadnego planu. Ta tabela nie może powiedzieć, z której dźwigni ani z której powierzchni pochodzi każda liczba: rekordy użycia ich nie zawierają.",
       "accountCta": "Sprawdź Konto",
       "installCta": "Dokończ instalację",
       "exportCsv": "Eksportuj CSV",
@@ -735,7 +735,7 @@
     "installLicensePanel": {
       "eyebrow": "Rozpocznij",
       "heading": "Trzy kroki. Twoje prompty nigdy nie dotykają naszych serwerów.",
-      "step1": "<b>1 · Twoje klucze (opcjonalne)</b> — SDK jest open core: bez klucza działa w trybie Community (wszystkie dźwignie w zestawie i za darmo, zero telemetrii). Domyślnie włączone: dokładna pamięć podręczna, deduplikacja, lokalne resolwery, rozmieszczenie pamięci podręcznej dostawcy i przycinanie zastąpionych wyników narzędzi; resztę włączasz samodzielnie. Ustawiony, ale nieprawidłowy klucz nadal działa w trybie fail-closed. Przekazywany jako <code>licenseKey</code>.",
+      "step1": "<b>1 · Twoje klucze (opcjonalne)</b> — SDK jest open core: bez klucza działa w trybie Community (wszystkie dźwignie w zestawie i za darmo, zero telemetrii). Domyślnie włączone: dokładna pamięć podręczna, deduplikacja, lokalne resolwery, rozmieszczenie pamięci podręcznej dostawcy, przycinanie zastąpionych wyników narzędzi i zwarta serializacja przekazywanych danych strukturalnych; resztę włączasz samodzielnie. Ustawiony, ale nieprawidłowy klucz nadal działa w trybie fail-closed. Przekazywany jako <code>licenseKey</code>.",
       "step2": "<b>2 · Utwórz i zweryfikuj klucz konta serwisowego</b> — poświadczenie maszynowe (<code>bvk_…</code>), które pełni dwie funkcje: raportuje użycie obejmujące wyłącznie liczby (Twoje stanowiska i oszczędności) oraz pozwala SDK i bramie <b>samodzielnie pobierać odnowioną licencję</b> w każdym okresie rozliczeniowym. Niezależny od klucza licencyjnego; przechowywany jest tylko jego hash. Utwórz go, a następnie kliknij <b>Przetestuj klucz</b>, aby potwierdzić, że działa.",
       "currentKey": "bieżący klucz konta serwisowego",
       "noneYet": "jeszcze brak — kliknij powyżej",
@@ -745,7 +745,7 @@
       "initNote": "Czyta Twój <code>package.json</code> (Next.js, Express, Vercel AI SDK, Mastra, LangChain.js, SDK Anthropic lub SDK OpenAI) i wypisuje to, czego potrzebuje Twój stos: linię instalacji dla Twojego menedżera pakietów, klucze, których jeszcze brakuje, dokładny kod dla Twojego adaptera i test, który nie zużywa tokenów — odpowiada na niego warstwa na Twojej maszynie, bez wywoływania modelu. Niczego nie zapisuje: <code>--write</code> tworzy tylko nowe pliki, po zapytaniu Cię o zgodę, i nigdy nie nadpisuje istniejącego.",
       "manualInstall": "<b>Wolisz podłączyć to ręcznie?</b> Zainstaluj pakiet — publicznie na npm, bez tokena, bez konfiguracji:",
       "manualWire": "…a potem podłącz swojego dostawcę i odczytaj SavingsReport:",
-      "gatewayNote": "<b>Agent programistyczny zamiast aplikacji?</b> Ten sam pakiet zawiera lokalną bramę pomiarową: <code>bvsala claude</code> uruchamia przez nią Claude Code, a ten panel pokazuje wydatek, token po tokenie. Uruchamia się bez żadnych kluczy (tryb Community); opcjonalny klucz serwisowy z kroku 2 dodaje ten panel i uprawnienia organizacji.",
+      "gatewayNote": "<b>Agent programistyczny zamiast aplikacji?</b> Ten sam pakiet zawiera lokalną bramę pomiarową: <code>bvsala claude</code> uruchamia przez nią Claude Code, a ten panel pokazuje wydatek, token po tokenie. Uruchamia się bez żadnych kluczy (tryb Community); opcjonalny klucz serwisowy z kroku 2 dodaje ten panel i uprawnienia organizacji. Z tym kluczem brama potrzebuje savings.bivelio.com do uruchomienia; gdy już działa, obsługuje żądania także bez niego.",
       "doctorComment": "inne agenty i SDK: dokładna konfiguracja dla każdego",
       "agentsNote": "Każdy wrapper przygotowuje swojego agenta tylko na tę sesję — nic w jego konfiguracji się nie zmienia — a przy wyjściu mówi, ile żądań zmierzył, których nie mógł zmierzyć i dlaczego. <code>bvsala copilot</code> potrzebuje Twojego własnego klucza Anthropic (BYOK): modele hostowane przez GitHub nigdy nie przechodzą przez bazowy URL, więc nie ma czego mierzyć. Dla Crush, Droid, Cline, Continue lub Copilot w VS Code, <code>bvsala doctor</code> wypisuje dokładną konfigurację. <b>Cursor (BYOK)</b>: działa przez nadpisanie bazowego URL OpenAI z Twoim własnym kluczem; jego własne modele nigdy nie docierają do bramki na Twoim komputerze. <b>Gemini CLI</b>: uruchom ją przez <code>bvsala gemini</code>.",
       "pythonNote": "<b>Python?</b> Klient <code>bvsala</code> dla Pythona kieruje oficjalne SDK OpenAI i Anthropic przez tę samą bramę (<code>bvsala gateway</code>) i zwraca Twojemu kodowi raport z każdego żądania — te same liczby, które otrzymuje ten panel. Wymaga Pythona 3.10 lub nowszego. Instaluje się go z PyPI poleceniem <code>pip install bivelio-savings-layer</code>; w kodzie: <code>import bvsala</code>.",
@@ -758,7 +758,7 @@
       "gatewayTitle": "Podłącz agenta (gateway)",
       "gatewayLede": "Uruchom swojego agenta kodującego przez lokalny gateway, bez zmian w jego kodzie.",
       "modeLocalTitle": "Tryb lokalny",
-      "modeLocalBody": "Otwarty silnik działa bez konta i bez kluczy: wszystkie dźwignie w zestawie i za darmo, zero telemetrii. Domyślnie włączone: dokładna pamięć podręczna, deduplikacja, lokalne resolwery, rozmieszczenie pamięci podręcznej dostawcy i przycinanie zastąpionych wyników narzędzi; resztę włączasz samodzielnie. Raport zostaje na Twojej maszynie.",
+      "modeLocalBody": "Otwarty silnik działa bez konta i bez kluczy: wszystkie dźwignie w zestawie i za darmo, zero telemetrii. Domyślnie włączone: dokładna pamięć podręczna, deduplikacja, lokalne resolwery, rozmieszczenie pamięci podręcznej dostawcy, przycinanie zastąpionych wyników narzędzi i zwarta serializacja przekazywanych danych strukturalnych; resztę włączasz samodzielnie. Raport zostaje na Twojej maszynie.",
       "modeCloudTitle": "Połączenie Cloud",
       "modeCloudBody": "Z licencją i kluczem usługowym ten panel otrzymuje liczniki i koszty — nigdy Twoje prompty — a Twoja organizacja współdzieli pomiar i miejsca.",
       "modeCloudLink": "Przejdź do danych dostępowych",
@@ -981,7 +981,7 @@
     "sombraElision": {
       "title": "Elizja w cieniu (hipotetyczna)",
       "detalle": "≈{usd} w {requests} symulowanych żądaniach",
-      "nota": "Ile elizja kontekstu zaoszczędziłaby na Twoim prawdziwym ruchu, obliczone przez bramę bez dotykania ani jednego bajta. Nigdy nie dodaje się do nagłówka i nigdy nie liczy się jako zaliczona oszczędność: dźwignia włączy się dopiero, gdy ta liczba to uzasadni.",
+      "nota": "Ile elizja kontekstu zaoszczędziłaby na Twoim prawdziwym ruchu, obliczone przez bramę bez dotykania ani jednego bajta. Nigdy nie dodaje się do nagłówka i nigdy nie liczy się jako zaliczona oszczędność: dźwignia pozostaje wyłączona, dopóki sam jej nie włączysz odpowiednią zmienną.",
       "notaNegativa": "Na Twoim ruchu elizja kosztowałaby pieniądze: przepisywanie bloków unieważnia cache prefiksu dostawcy. Ten tor istnieje właśnie po to, by to zobaczyć, zanim cokolwiek się włączy — dlatego pozostaje wyłączona."
     },
     "elisionProveedor": {
@@ -1039,7 +1039,7 @@
       "colComision": "Prowizja",
       "estimadoExcluido": "Szacowane oszczędności wyłączone z bazy (kontekst, nigdy do rozliczenia): {usd}.",
       "sombraElision": "Tor cienia: elizja zaoszczędziłaby {usd} w {requests} symulowanych żądaniach. Hipotetyczne — nigdy nie wchodzi do bazy.",
-      "sombraElisionNegativa": "Tor cienia: elizja kosztowałaby {usd} więcej w {requests} symulowanych żądaniach. Dlatego jest wyłączona: włącza się tylko to, co naprawdę oszczędza.",
+      "sombraElisionNegativa": "Tor cienia: elizja kosztowałaby {usd} więcej w {requests} symulowanych żądaniach. Pozostaje wyłączona, dopóki jej nie włączysz; przy tym ruchu zostaw ją wyłączoną.",
       "elisionProveedor": "Tor czyszczenia przez dostawcę: {requests} żądań, w których nasze ustawienia sprawiły, że dostawca wyczyścił kontekst. Licznik, nie oszczędność — nigdy nie wchodzi do bazy.",
       "referencia": "Zmierzone przez odniesienie: {usd} w {requests, plural, one {# powtórzonym zapytaniu obsłużonym} few {# powtórzonych zapytaniach obsłużonych} many {# powtórzonych zapytaniach obsłużonych} other {# powtórzonego zapytania obsłużonego}} bez wywoływania Twojego dostawcy. Każde jest wyceniane licznikiem, który dostawca zwrócił dla identycznego, już wykonanego zapytania — znajdziesz go w raporcie tamtego zapytania i w zużyciu u dostawcy z tego dnia — po stawce za wejście z pamięci podręcznej, najniższej, jaką dostawca pobiera za powtórzenie promptu; wyjście liczy się tylko przy deterministycznym próbkowaniu i gdy wykonane zapytanie nie zawierało ukrytego rozumowania (dostawca zgłosił zero tokenów rozumowania lub, jeśli ich nie wyszczególnia, jego odpowiedź nie zawierała bloku rozumowania). Wliczone do bazy.",
       "referenciaExcluida": "Zmierzone przez odniesienie: {usd} w {requests, plural, one {# powtórzonym zapytaniu} few {# powtórzonych zapytaniach} many {# powtórzonych zapytaniach} other {# powtórzonego zapytania}}. Pokazane jako kontekst — na razie pozostaje poza bazą.",
@@ -1274,7 +1274,7 @@
         },
         {
           "title": "Open core: oszczędza bez kluczy",
-          "body": "Wszystkie dźwignie są w zestawie i za darmo, bez klucza. Domyślnie włączone: dokładna pamięć podręczna, deduplikacja równoczesnych żądań, lokalne resolwery, rozmieszczenie pamięci podręcznej promptu, przycinanie zastąpionych wyników narzędzi i zwarta serializacja przekazywanych danych strukturalnych. Resztę włączasz jedną linijką każdą. Dwie maszyny mogą za darmo dzielić pamięć podręczną dzięki magazynowi, który sam prowadzisz (na przykład Redis). Zerowa telemetria, a ustawiony, ale nieprawidłowy klucz nadal działa fail-closed. Chmura jest opcjonalna: panel zespołu, wspólne pomiary, stanowiska i licencje za stałą opłatą za stanowisko — bez prowizji od Twoich oszczędności."
+          "body": "Wszystkie dźwignie są w zestawie i za darmo, bez klucza. Domyślnie włączone: dokładna pamięć podręczna, deduplikacja równoczesnych żądań, lokalne resolwery, rozmieszczenie pamięci podręcznej promptu, przycinanie zastąpionych wyników narzędzi i zwarta serializacja przekazywanych danych strukturalnych. Resztę włączasz jedną linijką każdą. Dwie maszyny mogą za darmo dzielić pamięć podręczną dzięki magazynowi, który sam prowadzisz (na przykład Redis). Zerowa telemetria, a ustawiony, ale nieprawidłowy klucz nadal działa fail-closed. Chmura jest opcjonalna: panel zespołu, wspólne pomiary, stanowiska i licencje — za darmo w Measure, a w Pro i Team za stałą opłatą, niezależnie od tego, czy oszczędzasz, bez prowizji od Twoich oszczędności."
         }
       ],
       "nota": "Animacje ilustrują pomysł. Prawdziwe liczby — zmierzone u prawdziwych dostawców — są tuż poniżej."
@@ -1646,7 +1646,7 @@
         },
         {
           "q": "Czym różnią się Measure i Community?",
-          "a": "Community to silnik open source w Twojej infrastrukturze: bez konta, bez klucza BiVelio i domyślnie bez telemetrii. Measure to darmowy plan Savings Cloud dla małych zespołów: wymaga konta, stosuje te same dźwignie co Community (z jednym wyjątkiem dotyczącym przycinania wyników narzędzi, opisanym w README) i dodaje panel z Twoimi rzeczywistymi oszczędnościami. Ze starszymi wersjami pakietu tylko obserwuje; od której wersji oszczędza, podaje strona cennika."
+          "a": "Community to silnik open source w Twojej infrastrukturze: bez konta, bez klucza BiVelio, domyślnie bez telemetrii i bez zależności od serwerów BiVelio. Measure to darmowy plan Savings Cloud dla małych zespołów: wymaga konta i klucza, stosuje te same dźwignie co Community (z jednym wyjątkiem dotyczącym przycinania wyników narzędzi, opisanym w README) i dodaje panel z Twoimi rzeczywistymi oszczędnościami; z tym kluczem warstwa, która przez trzy dni nie dostaje odpowiedzi od savings.bivelio.com, odrzuca każde wywołanie, dopóki jej nie dostanie albo nie usuniesz klucza. Ze starszymi wersjami pakietu tylko obserwuje; od której wersji oszczędza, podaje strona cennika."
         },
         {
           "q": "Czy to działa z subskrypcją taką jak ChatGPT Plus?",
@@ -2298,7 +2298,7 @@
       "pro": {
         "name": "Pro",
         "amount": "<b>{monthly}</b> za stanowisko miesięcznie lub <b>{yearly}</b> za stanowisko rocznie, w {currency}.",
-        "body": "Wszystko z Measure, dla większej liczby maszyn i żądań: panel zespołu, wspólne pomiary, stanowiska i licencje. Silnik i jego dźwignie pozostają darmowe bez klucza. <b>Bez prowizji</b> od oszczędności: płacisz za stanowiska niezależnie od tego, czy oszczędzasz."
+        "body": "Wszystko z Measure, dla większej liczby maszyn i żądań: panel zespołu, wspólne pomiary, stanowiska i licencje. Silnik i jego dźwignie pozostają darmowe bez klucza. W lokalnej bramie każda dźwignia musi też być objęta licencją Twojej organizacji, sprawdzaną w trybie fail-closed: jeśli tego sprawdzenia nie da się wykonać, żądania przechodzą bez zmian. <b>Bez prowizji</b> od oszczędności: płacisz za stanowiska niezależnie od tego, czy oszczędzasz."
       },
       "team": {
         "name": "Team",
@@ -2374,7 +2374,7 @@
       "cloud": {
         "tag": "Opcjonalnie · z planami",
         "name": "Savings Cloud",
-        "body": "Panel, wspólne pomiary, organizacja i licencje. Measure to darmowy plan dla małych zespołów; Pro i Team są płatne stałą opłatą za stanowisko, bez prowizji od oszczędności."
+        "body": "Panel, wspólne pomiary, organizacja i licencje. Measure to darmowy plan dla małych zespołów; Pro i Team są płatne stałą opłatą za stanowisko, bez prowizji od oszczędności. Klucz, także darmowy klucz Measure, wiąże warstwę z savings.bivelio.com: przy ustawionym licenseServerUrl, tak jak konfiguruje go panel, warstwa, która przez {horas} godziny nie dostaje odpowiedzi, odrzuca każde wywołanie (LicenseError), dopóki jej nie dostanie albo nie usuniesz klucza. Community nie ma tej zależności."
       }
     },
     "cards": {

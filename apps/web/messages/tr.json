@@ -571,7 +571,7 @@
       "coveragePartial": "Kısmi kapsam: döküm {total} SHADOW isteğinin {attributed} kadarını içeriyor ({coverage}); modelsiz geçmiş hariçtir.",
       "coverageUnavailable": "Günlük SHADOW toplamı okunamadığı için kapsam kullanılamıyor.",
       "note": "Varsayımsal tahmin: temel − SHADOW maliyeti. Asla ölçülmez, faturalanmaz veya onaylı tasarrufa eklenmez.",
-      "action": "Tasarruf kaldıraçlarını etkinleştirmek için Hesabı inceleyin veya SDK/gateway kurulumunu tamamlayın. Kaldıraç ve yüzey kullanılamıyor: mevcut wire bunları saklamıyor; server-first değişikliği gerekiyor.",
+      "action": "Bunu gerçekten tasarruf etmek için bu makineleri güncelleyin veya salt-gözlem modunu kapatın: kollar hiçbir plan gerektirmez. Bu tablo her rakamın hangi koldan veya yüzeyden geldiğini söyleyemez: kullanım kayıtları bunları taşımaz.",
       "accountCta": "Hesabı incele",
       "installCta": "Kurulumu tamamla",
       "exportCsv": "CSV dışa aktar",
@@ -735,7 +735,7 @@
     "installLicensePanel": {
       "eyebrow": "Başlayın",
       "heading": "Üç adım. Prompt'larınız sunucularımıza asla dokunmaz.",
-      "step1": "<b>1 · Anahtarlarınız (isteğe bağlı)</b> — SDK açık çekirdeklidir: anahtar olmadan Community modunda çalışır (tüm kaldıraçlar dahil ve ücretsiz, sıfır telemetri). Varsayılan olarak açık olanlar: tam eşleşme önbelleği, tekilleştirme, yerel çözümleyiciler, sağlayıcı önbelleğinin yerleşimi ve yerini yenisi almış araç sonuçlarının kırpılması; gerisini siz açarsınız. Ayarlı ama geçersiz bir anahtar yine fail-closed kalır. <code>licenseKey</code> olarak geçirilir.",
+      "step1": "<b>1 · Anahtarlarınız (isteğe bağlı)</b> — SDK açık çekirdeklidir: anahtar olmadan Community modunda çalışır (tüm kaldıraçlar dahil ve ücretsiz, sıfır telemetri). Varsayılan olarak açık olanlar: tam eşleşme önbelleği, tekilleştirme, yerel çözümleyiciler, sağlayıcı önbelleğinin yerleşimi, yerini yenisi almış araç sonuçlarının kırpılması ve ilettiğiniz yapılandırılmış verilerin kompakt serileştirilmesi; gerisini siz açarsınız. Ayarlı ama geçersiz bir anahtar yine fail-closed kalır. <code>licenseKey</code> olarak geçirilir.",
       "step2": "<b>2 · Bir servis hesabı anahtarı oluşturun ve doğrulayın</b> — iki iş yapan bir makine kimlik bilgisi (<code>bvk_…</code>): yalnızca sayımlara dayalı kullanımı (koltuklarınız ve tasarrufunuz) raporlar ve SDK'nın ve ağ geçidinin her faturalandırma döneminde <b>yenilenen lisansınızı kendi başlarına almalarını</b> sağlar. Lisans anahtarından ayrıdır; yalnızca hash'i saklanır. Bir tane oluşturun, ardından canlı olduğunu doğrulamak için <b>Anahtarımı test et</b>'e basın.",
       "currentKey": "mevcut servis hesabı anahtarı",
       "noneYet": "henüz yok — yukarıya tıklayın",
@@ -745,7 +745,7 @@
       "initNote": "<code>package.json</code> dosyanızı okur (Next.js, Express, Vercel AI SDK, Mastra, LangChain.js, Anthropic SDK'sı veya OpenAI SDK'sı) ve yığınınızın ihtiyacı olanı yazdırır: paket yöneticiniz için kurulum satırı, hâlâ eksik olan anahtarlar, adaptörünüz için tam kod ve token harcamayan bir kontrol — bu kontrolü modeli çağırmadan, kendi makinenizde katman yanıtlar. Hiçbir şey yazmaz: <code>--write</code> yalnızca yeni dosyalar oluşturur, bunu da size sorduktan sonra yapar ve var olan bir dosyanın üzerine asla yazmaz.",
       "manualInstall": "<b>Elle bağlamayı mı tercih edersiniz?</b> Paketi kurun — npm'de herkese açık, token yok, yapılandırma yok:",
       "manualWire": "…ardından sağlayıcınızı bağlayın ve SavingsReport'u okuyun:",
-      "gatewayNote": "<b>Uygulama yerine kod ajanı mı?</b> Aynı paket yerel bir ölçüm ağ geçidi getirir: <code>bvsala claude</code> Claude Code'u onun üzerinden başlatır ve bu panel harcamayı token token gösterir. Hiçbir anahtar olmadan başlar (Community modu); 2. adımdaki isteğe bağlı servis anahtarı bu paneli ve kuruluş yetkilerini ekler.",
+      "gatewayNote": "<b>Uygulama yerine kod ajanı mı?</b> Aynı paket yerel bir ölçüm ağ geçidi getirir: <code>bvsala claude</code> Claude Code'u onun üzerinden başlatır ve bu panel harcamayı token token gösterir. Hiçbir anahtar olmadan başlar (Community modu); 2. adımdaki isteğe bağlı servis anahtarı bu paneli ve kuruluş yetkilerini ekler. Bu anahtarla ağ geçidinin başlamak için savings.bivelio.com'a ihtiyacı vardır; çalışmaya başladıktan sonra onsuz da hizmet vermeye devam eder.",
       "doctorComment": "diğer ajanlar ve SDK'lar: her biri için tam yapılandırma",
       "agentsNote": "Her sarmalayıcı, aracısını yalnızca o oturum için hazırlar — yapılandırmasında hiçbir şey değişmez — ve çıkışta kaç isteği ölçtüğünü, hangilerini ölçemediğini ve nedenini söyler. <code>bvsala copilot</code> kendi Anthropic anahtarınızı gerektirir (BYOK): GitHub'da barındırılan modeller asla bir taban URL'den geçmez, bu yüzden ölçülecek bir şey yoktur. VS Code'daki Crush, Droid, Cline, Continue veya Copilot için <code>bvsala doctor</code> tam yapılandırmayı yazdırır. <b>Cursor (BYOK)</b>: kendi anahtarınızla OpenAI taban URL geçersiz kılması üzerinden çalışır; kendi modelleri makinenizdeki bir ağ geçidine asla ulaşmaz. <b>Gemini CLI</b>: <code>bvsala gemini</code> ile başlatın.",
       "pythonNote": "<b>Python mı?</b> Python için <code>bvsala</code> istemcisi, resmi OpenAI ve Anthropic SDK'larını bu aynı ağ geçidinden geçirir (<code>bvsala gateway</code>) ve her isteğin raporunu kodunuza geri verir — bu panelin aldığı rakamların aynısı. Python 3.10 veya üstü gerekir. PyPI'dan <code>pip install bivelio-savings-layer</code> ile kurulur; kodunuzda <code>import bvsala</code>.",
@@ -758,7 +758,7 @@
       "gatewayTitle": "Bir ajanı bağla (gateway)",
       "gatewayLede": "Kodlama ajanınızı, koduna dokunmadan yerel gateway üzerinden başlatın.",
       "modeLocalTitle": "Yerel mod",
-      "modeLocalBody": "Açık motor hesap ve anahtar olmadan çalışır: tüm kaldıraçlar dahil ve ücretsiz, sıfır telemetri. Varsayılan olarak açık olanlar: tam eşleşme önbelleği, tekilleştirme, yerel çözümleyiciler, sağlayıcı önbelleğinin yerleşimi ve yerini yenisi almış araç sonuçlarının kırpılması; gerisini siz açarsınız. Rapor makinenizde kalır.",
+      "modeLocalBody": "Açık motor hesap ve anahtar olmadan çalışır: tüm kaldıraçlar dahil ve ücretsiz, sıfır telemetri. Varsayılan olarak açık olanlar: tam eşleşme önbelleği, tekilleştirme, yerel çözümleyiciler, sağlayıcı önbelleğinin yerleşimi, yerini yenisi almış araç sonuçlarının kırpılması ve ilettiğiniz yapılandırılmış verilerin kompakt serileştirilmesi; gerisini siz açarsınız. Rapor makinenizde kalır.",
       "modeCloudTitle": "Cloud bağlantısı",
       "modeCloudBody": "Lisans ve servis anahtarıyla bu panel sayımları ve maliyetleri alır — prompt'larınızı asla — ve kuruluşunuz ölçümü ve koltukları paylaşır.",
       "modeCloudLink": "Kimlik bilgilerine git",
@@ -981,7 +981,7 @@
     "sombraElision": {
       "title": "Gölge eksiltme (varsayımsal)",
       "detalle": "{requests} simüle edilmiş istekte ≈{usd}",
-      "nota": "Bağlam eksiltmenin gerçek trafiğinizde ne kadar tasarruf sağlayacağı, ağ geçidi tarafından tek bir bayta dokunulmadan hesaplanır. Asla başlığa eklenmez ve asla kredilendirilen tasarruf sayılmaz: kol ancak bu rakam bunu haklı çıkardığında açılır.",
+      "nota": "Bağlam eksiltmenin gerçek trafiğinizde ne kadar tasarruf sağlayacağı, ağ geçidi tarafından tek bir bayta dokunulmadan hesaplanır. Asla başlığa eklenmez ve asla kredilendirilen tasarruf sayılmaz: kol, siz kendi değişkeniyle açmadıkça kapalı kalır.",
       "notaNegativa": "Trafiğinizde eksiltme paraya mal olurdu: blokları yeniden yazmak sağlayıcının önek önbelleğini geçersiz kılar. Bu şerit tam da bunu bir şey açılmadan önce görmek için var — bu yüzden kapalı kalıyor."
     },
     "elisionProveedor": {
@@ -1039,7 +1039,7 @@
       "colComision": "Komisyon",
       "estimadoExcluido": "Tabandan hariç tutulan tahmini tasarruf (bağlam, asla faturalanmaz): {usd}.",
       "sombraElision": "Gölge şerit: eksiltme {requests} simüle edilmiş istekte {usd} tasarruf sağlardı. Varsayımsal — asla tabana girmez.",
-      "sombraElisionNegativa": "Gölge şerit: eksiltme {requests} simüle edilmiş istekte {usd} fazladan maliyete yol açardı. Bu yüzden kapalı: yalnızca gerçekten tasarruf ettiren açılır.",
+      "sombraElisionNegativa": "Gölge şerit: eksiltme {requests} simüle edilmiş istekte {usd} fazladan maliyete yol açardı. Siz açmadıkça kapalı kalır; bu trafikte kapalı bırakın.",
       "elisionProveedor": "Sağlayıcı temizlemesi hattı: ayarlarımızın sağlayıcıya bağlam temizlettiği {requests} istek. Bir sayım, tasarruf değil — tabana asla girmez.",
       "referencia": "Referansla ölçülen: sağlayıcınız çağrılmadan sunulan {requests, number} tekrarlanan istekte {usd}. Her biri, sağlayıcınızın daha önce çalışmış özdeş istek için döndürdüğü sayaçla fiyatlandırılır — o isteğin raporunda ve sağlayıcınızın o güne ait kullanımında yer alır — önbelleğe alınmış girdi fiyatından, yani sağlayıcınızın bir istemi tekrarlamak için aldığı en düşük fiyattan; çıktı yalnızca örnekleme deterministik olduğunda ve çalışmış istek gizli akıl yürütme içermediğinde sayılır (sağlayıcınız sıfır akıl yürütme tokeni bildirdi ya da bunları ayrıca göstermiyorsa yanıtında akıl yürütme bloğu yoktu). Tabana dâhildir.",
       "referenciaExcluida": "Referansla ölçülen: {requests, number} tekrarlanan istekte {usd}. Bağlam olarak gösterilir — şimdilik tabanın dışında tutulur.",
@@ -1274,7 +1274,7 @@
         },
         {
           "title": "Açık çekirdek: anahtarsız tasarruf",
-          "body": "Tüm kollar dahil ve ücretsizdir, anahtarsız. Varsayılan olarak açık: birebir önbellek, eşzamanlı isteklerin tekilleştirilmesi, yerel çözücüler, prompt önbelleğinin yerleşimi, yerini yenisine bırakmış araç sonuçlarının kırpılması ve ilettiğiniz yapılandırılmış verilerin kompakt serileştirilmesi. Gerisini her biri için tek satırla açarsınız. İki makine, sizin işlettiğiniz bir depoyla (örneğin Redis) önbelleği ücretsiz paylaşabilir. Sıfır telemetri ve ayarlanmış ama geçersiz bir anahtar yine de fail-closed kalır. Bulut isteğe bağlıdır: ekip paneli, ortak ölçüm, koltuklar ve lisanslar koltuk başına sabit ücretle — tasarrufunuz üzerinden komisyonsuz."
+          "body": "Tüm kollar dahil ve ücretsizdir, anahtarsız. Varsayılan olarak açık: birebir önbellek, eşzamanlı isteklerin tekilleştirilmesi, yerel çözücüler, prompt önbelleğinin yerleşimi, yerini yenisine bırakmış araç sonuçlarının kırpılması ve ilettiğiniz yapılandırılmış verilerin kompakt serileştirilmesi. Gerisini her biri için tek satırla açarsınız. İki makine, sizin işlettiğiniz bir depoyla (örneğin Redis) önbelleği ücretsiz paylaşabilir. Sıfır telemetri ve ayarlanmış ama geçersiz bir anahtar yine de fail-closed kalır. Bulut isteğe bağlıdır: ekip paneli, ortak ölçüm, koltuklar ve lisanslar — Measure ile ücretsiz, Pro ve Team ile tasarruf etseniz de etmeseniz de sabit ücretle, tasarrufunuz üzerinden komisyonsuz."
         }
       ],
       "nota": "Animasyonlar fikri anlatır. Gerçek rakamlar — gerçek sağlayıcılara karşı ölçülmüş — hemen aşağıda."
@@ -1646,7 +1646,7 @@
         },
         {
           "q": "Measure ile Community arasındaki fark nedir?",
-          "a": "Community, altyapınızdaki açık kaynak motordur: hesap yok, BiVelio anahtarı yok ve varsayılan olarak telemetri yok. Measure, küçük ekipler için ücretsiz Savings Cloud planıdır: hesap gerektirir, Community ile aynı kolları uygular (tek istisna araç sonuçlarının kırpılmasında, bkz. README) ve gerçek tasarrufunuzu gösteren paneli ekler. Paketin eski sürümleriyle yalnızca gözlemler; hangi sürümden itibaren tasarruf ettiği fiyatlandırma sayfasında yazar."
+          "a": "Community, altyapınızdaki açık kaynak motordur: hesap yok, BiVelio anahtarı yok, varsayılan olarak telemetri yok ve BiVelio sunucularına bağımlılık yok. Measure, küçük ekipler için ücretsiz Savings Cloud planıdır: hesap ve anahtar gerektirir, Community ile aynı kolları uygular (tek istisna araç sonuçlarının kırpılmasında, bkz. README) ve gerçek tasarrufunuzu gösteren paneli ekler; bu anahtarla, savings.bivelio.com'dan üç gün yanıt alamayan bir katman, yanıt alana ya da anahtarı kaldırana kadar her çağrıyı reddeder. Paketin eski sürümleriyle yalnızca gözlemler; hangi sürümden itibaren tasarruf ettiği fiyatlandırma sayfasında yazar."
         },
         {
           "q": "ChatGPT Plus gibi bir abonelikte işe yarar mı?",
@@ -2298,7 +2298,7 @@
       "pro": {
         "name": "Pro",
         "amount": "Koltuk başına aylık <b>{monthly}</b> veya koltuk başına yıllık <b>{yearly}</b>, {currency} cinsinden.",
-        "body": "Measure'daki her şey, daha fazla makine ve istek için: ekip paneli, ortak ölçüm, koltuklar ve lisanslar. Motor ve kolları anahtarsız ücretsiz kalır. Tasarruf üzerinden <b>komisyon yok</b>: tasarruf etseniz de etmeseniz de koltukları ödersiniz."
+        "body": "Measure'daki her şey, daha fazla makine ve istek için: ekip paneli, ortak ölçüm, koltuklar ve lisanslar. Motor ve kolları anahtarsız ücretsiz kalır. Tasarruf üzerinden Yerel gateway'de her kolun ayrıca organizasyonunuzun lisansında yer alması gerekir ve bu fail-closed olarak denetlenir: denetim yapılamazsa istekler dokunulmadan iletilir. <b>komisyon yok</b>: tasarruf etseniz de etmeseniz de koltukları ödersiniz."
       },
       "team": {
         "name": "Team",
@@ -2374,7 +2374,7 @@
       "cloud": {
         "tag": "İsteğe bağlı · planlı",
         "name": "Savings Cloud",
-        "body": "Panel, ortak ölçüm, organizasyon ve lisanslar. Measure, küçük ekipler için ücretsiz planıdır; Pro ve Team, tasarruf üzerinden komisyon olmadan koltuk başına sabit bir ücretle ödenir."
+        "body": "Panel, ortak ölçüm, organizasyon ve lisanslar. Measure, küçük ekipler için ücretsiz planıdır; Pro ve Team, tasarruf üzerinden komisyon olmadan koltuk başına sabit bir ücretle ödenir. Bir anahtar, ücretsiz Measure anahtarı da dahil, katmanı savings.bivelio.com'a bağlar: panelin kurduğu gibi licenseServerUrl ayarlıyken, {horas} saat yanıt alamayan bir katman, yanıt alana ya da anahtarı kaldırana kadar her çağrıyı reddeder (LicenseError). Community'de bu bağımlılık yoktur."
       }
     },
     "cards": {
