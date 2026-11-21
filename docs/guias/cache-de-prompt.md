@@ -7,16 +7,7 @@ continue its quickstart: `provider`, `layer` and `createSavingsLayer` come from 
 
 By default the layer writes the provider's prompt cache at two fixed places: the end
 of the system header and the end of the history before your last user message, and
-stops marking a prefix whose measured hit rate does not pay the write premium. It
-also watches, without marking anything, whether each system header (tools plus
-system prompt) is sent again before its cache entry expires (5 minutes, or 1 hour
-for a one-hour write). When at least 90 % of the recent headers for a model and tool
-set expired without coming back (a timestamp, request ID or per-request UUID in the
-system prompt), it stops marking headers it has not seen before; a header that is
-sent again is marked as usual, and as soon as headers start coming back it marks new
-ones again. A session ID or today's date repeats on the next turn, so it never
-triggers this. Until the first headers have had time to expire, it marks exactly as
-1.2.3 did. On
+stops marking a prefix whose measured hit rate does not pay the write premium. On
 Anthropic, where a write costs 1.25x, the history and a tool catalogue sent without a
 system header are marked only when the request itself shows they will be sent again:
 a tool-loop step after your last user message, or a conversation already past its
@@ -65,9 +56,7 @@ const placedLayer = createSavingsLayer({
 ## Cache-aware prompt management: mutable tokens out of the cacheable prefix (opt-in)
 
 A timestamp, UUID or epoch in your `system` prompt poisons the provider's prefix
-cache: every request misses, so there is no cache discount (and the layer, once it
-has seen those headers expire without coming back, stops marking new ones so you do
-not keep paying the write premium). With
+cache: every request misses and pays a full-price cache write. With
 `savings: { cachePrefix: true }`, the layer moves the mutable lines to the end of
 the header and marks only the stable part with `cache_control` — the provider's
 cache can hit where a mutable token used to force a miss plus a paid write on every

@@ -187,7 +187,9 @@ describe("la verja mira si la cabecera vuelve antes de caducar", () => {
     return d.marcar;
   }
 
-  it("una cabecera nueva en cada petición: marca como la 1.2.3 hasta que las primeras caducan sin volver, y luego deja de marcar", () => {
+  // it.skip: regla apagada hasta la 1.2.5 (`VERJA_DE_CABECERAS_ACTIVA = false` en
+  // src/economics/prefix-cache-gate.ts). Fija la regla encendida; vuelve con ella.
+  it.skip("una cabecera nueva en cada petición: marca como la 1.2.3 hasta que las primeras caducan sin volver, y luego deja de marcar", () => {
     const { verja, pasar } = conReloj();
     const marcas: boolean[] = [];
     for (let i = 0; i < 600; i++) {
@@ -297,7 +299,9 @@ describe("la verja mira si la cabecera vuelve antes de caducar", () => {
     expect(verja.estadoDeCabeceras(CLASE)).toMatchObject({ seRepiten: 1 });
   });
 
-  it("en modo volátil una cabecera ya vista se marca como en la 1.2.3, y lee", () => {
+  // it.skip: regla apagada hasta la 1.2.5 (`VERJA_DE_CABECERAS_ACTIVA = false` en
+  // src/economics/prefix-cache-gate.ts). Fija la regla encendida; vuelve con ella.
+  it.skip("en modo volátil una cabecera ya vista se marca como en la 1.2.3, y lee", () => {
     const { verja, pasar } = conReloj();
     for (let i = 0; i < 200; i++) {
       peticion(verja, `hora-${i}`);
@@ -314,6 +318,22 @@ describe("la verja mira si la cabecera vuelve antes de caducar", () => {
       expect(peticion(verja, "estable", "estable", P)).toBe(true);
     }
     expect(verja.estado("estable")!.tokensLeidos).toBe(20 * P);
+  });
+
+  it("1.2.4, regla apagada: en una clase volátil una cabecera nunca vista se marca como en la 1.2.3 (se sigue observando)", () => {
+    const { verja, pasar } = conReloj();
+    const marcas: boolean[] = [];
+    for (let i = 0; i < 600; i++) {
+      marcas.push(peticion(verja, `hora-${i}`));
+      pasar(2000);
+    }
+    // La verja sigue viendo que la clase es volátil…
+    expect(verja.estadoDeCabeceras(CLASE)!.volatil).toBe(true);
+    // …pero decide como la 1.2.3: todas marcadas, también una nueva después.
+    expect(marcas.every(Boolean)).toBe(true);
+    expect(peticion(verja, "estable")).toBe(true);
+    const v = verja.observarCabecera({ clase: CLASE, huella: "otra-nueva" });
+    expect(verja.decidir("otra-nueva", ENTRADA, v).razon).not.toMatch(/not seen before/);
   });
 
   it("sale del modo volátil en cuanto vuelven a llegar cabeceras que se repiten", () => {

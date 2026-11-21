@@ -103,7 +103,7 @@ import {
   seleccionarCompactables,
   type ToolOutputCompactionSettings,
 } from "../compression/cola.js";
-import { seleccionarSupersesion, aplicarElision, MUNON_ELISION } from "./elision.js";
+import { seleccionarSupersesion, aplicarElision, eleccionDesde, MUNON_ELISION } from "./elision.js";
 import { politicaDeCompresion, tramoDeCache } from "../economics/politica-compresion.js";
 import { TraceCollector } from "../telemetry/traces.js";
 import type { CachedAnswer } from "../cache/exact.js";
@@ -1196,12 +1196,9 @@ export class SavingsPipeline {
         for (const f of mutable) {
           this.avisar(
             `cache-audit:${f.patron}`,
-            `[bvsala] your system prompt carries a value that often changes on every request (${f.patron}). ` +
-              "If it changes on every request, that prompt can never be read back from the provider prompt " +
-              "cache. The layer watches whether each system prompt is sent again before its cache entry " +
-              "expires; once most are not, it stops marking new ones, so you pay the normal input price and " +
-              "get no cache discount. To get the discount, put the value on a line of its own and set " +
-              "savings.cachePrefix: true, or move it to the end of your prompt. (reported once per process)",
+            `[bvsala] your system prompt carries per-request content (${f.patron}); the provider prompt ` +
+              "cache can never hit on it, so cache reads you expect are billing as full writes. Move the " +
+              "per-request value to the query tail. (reported once per process)",
           );
         }
       }
@@ -1831,13 +1828,34 @@ export class SavingsPipeline {
    *    10-25 % (gpt-5, gpt-4.1, serie o): cualquier cambio a mitad del historial
    *    vuelve a cobrar entero lo que va detrás.
    *
+   *  · (E2, verificación 2) Modelos SIN prima de escritura que cachean solos y
+   *    cobran la lectura al 25 % o menos según su tramo (Gemini, o el tramo que
+   *    declare el cliente en `compressionEconomics.cacheTier`).
+   *  · (E3, verificación 2) Con licencia y un proveedor que la capa no reconoce
+   *    (tramo desconocido: lectura a 1× y mínimo declarado): puede cachear solo
+   *    sin que lo sepamos, y la 1.2.3 de pago no recortaba. Sin clave sigue como
+   *    en la 1.2.3.
+   *
    * Medido (agente de 60 pasos, proveedor falso): con Pro en la 1.2.4, gpt-5
    * pasaba de 0 % a +12,2 % frente a no llevar capa, y "auto" en Anthropic de
-   * −84,4 % a −71,5 %.
+   * −84,4 % a −71,5 %; Gemini de 0 % a +11,9 % y DeepSeek de 0 % a +13,7 %.
    */
   private elisionRompeLaCacheDelProveedor(modelo: string): string | null {
     if (this.config.cacheBreakpoints === "auto" && tramoDeCache(modelo, this.config.compressionEconomics).cacheWriteMultiplier > 1) {
       return 'cacheBreakpoints "auto" places cache points inside the history: replacing an old tool result would re-bill everything after it';
+    }
+    const tramo = tramoDeCache(modelo, this.config.compressionEconomics);
+    if (tramo.cacheWriteMultiplier <= 1 && tramo.cacheReadMultiplier <= 0.25) {
+      return "this model caches the prompt automatically and bills cached input at 25% or less: replacing an old tool result would re-bill everything after it at the full price";
+    }
+    let plan: string | undefined;
+    try {
+      plan = this.config.licenseGate?.plan?.();
+    } catch {
+      plan = undefined;
+    }
+    if (plan != null && plan !== "community" && tramo.cacheReadMultiplier >= 1 && tramo.minimumCacheTokens != null) {
+      return "unrecognised provider, which may cache the prompt automatically: with a license, elision stays off as in 1.2.3";
     }
     const desnudo = modelo.toLowerCase().replace(/^.*\//, "");
     if (/^(gpt-5|gpt-4\.1|o[1-9](-|$))/.test(desnudo)) {
@@ -3301,7 +3319,24 @@ export class SavingsPipeline {
       policy.allowElision &&
       this.entitled("tool_result_elision")
     ) {
-      const eleccion = seleccionarSupersesion(messages);
+      let eleccion = seleccionarSupersesion(messages);
+      // E1 (verificación 2): con la colocación fija y prima de escritura
+      // (Anthropic), recortar un tool_result ANTERIOR al último turno del usuario
+      // cambia el historial que se marca, y `comprimioElPrefijo` deja la marca en
+      // el `system` el resto de la conversación: el historial no se vuelve a leer
+      // de la caché. Solo se recortan los posteriores (el bucle en curso).
+      if (
+        this.config.cacheBreakpoints !== "auto" &&
+        tramoDeCache(request.model, this.config.compressionEconomics).cacheWriteMultiplier > 1 &&
+        eleccion.indices.some((i) => i < finDelPrefijo)
+      ) {
+        const fuera = eleccionDesde(messages, eleccion, finDelPrefijo);
+        trace.record("elision", "partial", {
+          reason: "a superseded tool result before the last user turn is part of the history the prefix cache marks; it is kept",
+          keptInPrefix: eleccion.indices.length - fuera.indices.length,
+        });
+        eleccion = fuera;
+      }
       if (eleccion.indices.length > 0) {
         // Se cuenta con el MISMO ensamblador que el baseline (`tokensFor`), byte a
         // byte, igual que el drop del tool-selector (libro 2): medir el muñón de

@@ -263,7 +263,9 @@ describe("FALSOS NEGATIVOS de la 1.2.4: lo que cambia en cada petición deja de 
     ["un id de petición", 1000, (_t: number, i: number) => `Request id: ${ID_DE_PETICION(i)}`, 315, 0.135],
   ] as const;
 
-  it.each(CASOS)("%s: 600 peticiones", async (_n, paso, cabeza, marcadas, techo) => {
+  // it.skip: regla apagada hasta la 1.2.5 (`VERJA_DE_CABECERAS_ACTIVA = false` en
+  // src/economics/prefix-cache-gate.ts). Fija la regla encendida; vuelve con ella.
+  it.skip.each(CASOS)("%s: 600 peticiones", async (_n, paso, cabeza, marcadas, techo) => {
     const c = await sueltas(600, paso, cabeza);
     expect(c.llamadas).toBe(600);
     expect(c.leidos).toBe(0);
@@ -280,13 +282,17 @@ describe("FALSOS NEGATIVOS de la 1.2.4: lo que cambia en cada petición deja de 
     expect(sobrecoste).toBeLessThan(de123 * (marcadas / 600) + 0.001);
   });
 
-  it("también en streaming y con cacheBreakpoints: \"auto\"", async () => {
+  // it.skip: regla apagada hasta la 1.2.5 (`VERJA_DE_CABECERAS_ACTIVA = false` en
+  // src/economics/prefix-cache-gate.ts). Fija la regla encendida; vuelve con ella.
+  it.skip("también en streaming y con cacheBreakpoints: \"auto\"", async () => {
     const hora = (t: number): string => `Now: ${new Date(t).toISOString()}`;
     expect((await sueltas(600, 2000, hora, {}, "stream")).marcadas).toBe(165);
     expect((await sueltas(600, 2000, hora, { cacheBreakpoints: "auto" })).marcadas).toBe(165);
   });
 
-  it("un chat con la hora de cada turno en el system (10 chats × 60 turnos): de +24 % a cerca de 0", async () => {
+  // it.skip: regla apagada hasta la 1.2.5 (`VERJA_DE_CABECERAS_ACTIVA = false` en
+  // src/economics/prefix-cache-gate.ts). Fija la regla encendida; vuelve con ella.
+  it.skip("un chat con la hora de cada turno en el system (10 chats × 60 turnos): de +24 % a cerca de 0", async () => {
     const reloj = relojSimulado();
     const f = anthropicFalso(reloj.now);
     const layer = capa(f.fetchImpl, { silenceWarnings: true, now: reloj.now });
@@ -318,17 +324,18 @@ describe("FALSOS NEGATIVOS de la 1.2.4: lo que cambia en cada petición deja de 
     expect(f.cuenta.leidos).toBe(0);
   });
 
-  it("el aviso no promete lo que no sabe: dice que la capa deja de marcar los que no vuelven, y nombra savings.cachePrefix", async () => {
+  it("el aviso por consola es el de la 1.2.3: no promete que la capa deje de marcar (la regla está apagada en la 1.2.4)", async () => {
     const f = anthropicFalso();
     const layer = capa(f.fetchImpl);
     for (let i = 0; i < 3; i++) await layer.generate(peticion(CON_HORA(i), i));
     const delAudit = avisos.filter((a) => a.includes("prompt cache"));
     expect(delAudit).toHaveLength(1);
-    expect(delAudit[0]).toContain("iso-timestamp");
-    expect(delAudit[0]).toContain("If it changes on every request");
-    expect(delAudit[0]).toContain("stops marking new ones");
-    expect(delAudit[0]).toContain("savings.cachePrefix: true");
-    expect(delAudit[0]).not.toContain("billing as full writes");
+    expect(delAudit[0]).toBe(
+      "[bvsala] your system prompt carries per-request content (iso-timestamp); the provider prompt " +
+        "cache can never hit on it, so cache reads you expect are billing as full writes. Move the " +
+        "per-request value to the query tail. (reported once per process)",
+    );
+    expect(delAudit[0]).not.toContain("stops marking");
   });
 
   it("savings.cachePrefix: true lo arregla cuando la hora va en una línea propia: 60 marcadas, 59 lecturas", async () => {
@@ -340,7 +347,9 @@ describe("FALSOS NEGATIVOS de la 1.2.4: lo que cambia en cada petición deja de 
     expect(coste(f.cuenta) / sinCapa(f.cuenta)).toBeLessThan(0.3);
   });
 
-  it("LÍMITE CONOCIDO: con la hora en la misma línea que el resto, cachePrefix no tiene nada estable que separar; no hay descuento, pero la verja deja de pagar la prima", async () => {
+  // it.skip: regla apagada hasta la 1.2.5 (`VERJA_DE_CABECERAS_ACTIVA = false` en
+  // src/economics/prefix-cache-gate.ts). Fija la regla encendida; vuelve con ella.
+  it.skip("LÍMITE CONOCIDO: con la hora en la misma línea que el resto, cachePrefix no tiene nada estable que separar; no hay descuento, pero la verja deja de pagar la prima", async () => {
     // `cachePrefix` mueve LÍNEAS enteras. Un system de una sola línea con la
     // hora dentro es todo él «línea mutable»: no queda prefijo estable.
     const reloj = relojSimulado();
@@ -461,7 +470,9 @@ describe("lo que ya ahorraba no cambia", () => {
     expect(f.cuenta.leidos).toBe(19 * f.cuenta.escritos);
   });
 
-  it("un system estable no deja de marcarse porque otro, del mismo modelo, cambie en cada petición", async () => {
+  // it.skip: regla apagada hasta la 1.2.5 (`VERJA_DE_CABECERAS_ACTIVA = false` en
+  // src/economics/prefix-cache-gate.ts). Fija la regla encendida; vuelve con ella.
+  it.skip("un system estable no deja de marcarse porque otro, del mismo modelo, cambie en cada petición", async () => {
     const reloj = relojSimulado();
     const f = anthropicFalso(reloj.now);
     const layer = capa(f.fetchImpl, { silenceWarnings: true, now: reloj.now });
@@ -483,7 +494,9 @@ describe("lo que ya ahorraba no cambia", () => {
     expect(f.cuenta.leidos).toBeGreaterThan(299 * 3000);
   });
 
-  it("un system estable que llega cuando la clase ya es volátil pierde UNA escritura, la primera, y desde la segunda se marca y lee", async () => {
+  // it.skip: regla apagada hasta la 1.2.5 (`VERJA_DE_CABECERAS_ACTIVA = false` en
+  // src/economics/prefix-cache-gate.ts). Fija la regla encendida; vuelve con ella.
+  it.skip("un system estable que llega cuando la clase ya es volátil pierde UNA escritura, la primera, y desde la segunda se marca y lee", async () => {
     // Es la única diferencia con la 1.2.3 y solo existe en una clase donde al
     // menos el 90 % de las cabeceras recientes no volvieron antes de caducar:
     // ahí, marcar una cabecera nunca vista casi siempre era tirar la prima.
@@ -650,7 +663,9 @@ describe("muchos chats a la vez con un system común y su propio historial: la r
 });
 
 describe("y el caso de la hora sigue acotado aunque antes haya mucho tráfico estable", () => {
-  it("600 peticiones con la hora en el system tras 200 sesiones de system estable: la clase se vuelve volátil igual", async () => {
+  // it.skip: regla apagada hasta la 1.2.5 (`VERJA_DE_CABECERAS_ACTIVA = false` en
+  // src/economics/prefix-cache-gate.ts). Fija la regla encendida; vuelve con ella.
+  it.skip("600 peticiones con la hora en el system tras 200 sesiones de system estable: la clase se vuelve volátil igual", async () => {
     const reloj = relojSimulado();
     const f = anthropicFalso(reloj.now);
     const layer = capa(f.fetchImpl, { silenceWarnings: true, now: reloj.now });
@@ -680,7 +695,9 @@ describe("y el caso de la hora sigue acotado aunque antes haya mucho tráfico es
     expect(marcas.slice(200)).toEqual(Array(400).fill(false));
   });
 
-  it("sesiones cuyo system propio lleva además la hora de cada petición (600 sesiones × 2, 1 s): ninguna lectura posible y deja de marcarlas", async () => {
+  // it.skip: regla apagada hasta la 1.2.5 (`VERJA_DE_CABECERAS_ACTIVA = false` en
+  // src/economics/prefix-cache-gate.ts). Fija la regla encendida; vuelve con ella.
+  it.skip("sesiones cuyo system propio lleva además la hora de cada petición (600 sesiones × 2, 1 s): ninguna lectura posible y deja de marcarlas", async () => {
     const reloj = relojSimulado();
     const f = anthropicFalso(reloj.now);
     const layer = capa(f.fetchImpl, { silenceWarnings: true, now: reloj.now });
@@ -744,5 +761,165 @@ describe("chats que empiezan a la vez con un system corto y turnos largos: sigue
     expect(c.leidos).toBeGreaterThan(c.escritos);
     // Con el fallo, la entrada costaba lo mismo o más que sin capa.
     expect(coste(c)).toBeLessThan(0.7 * sinCapa(c));
+  });
+});
+
+/**
+ * LA 1.2.4 NO CUESTA MÁS QUE LA 1.2.3 (verificación 2).
+ *
+ * La regla «no marcar una cabecera nunca vista en una clase volátil» salía más
+ * cara que la 1.2.3 en tráfico normal: llamadas auxiliares diminutas con la hora
+ * junto a chats con su system propio, y ráfagas de sesiones tras un rato de
+ * preguntas sueltas (la clase se volvía volátil y el primer turno de cada sesión
+ * dejaba de escribirse, así que el segundo no tenía nada que leer). Además
+ * rompía `savings.cachePrefix` a los 5 minutos. En la 1.2.4 está apagada
+ * (`VERJA_DE_CABECERAS_ACTIVA = false`) y la verja decide como la 1.2.3.
+ *
+ * Las cifras de MAIN están medidas con este mismo fichero copiado a main
+ * (20a36791, la 1.2.3) y se quedan fijas: la release no puede costar más.
+ */
+const MAIN_NOCHE = { marcadas: 170, escritos: 222950, leidos: 318500, coste: 314368 };
+const MAIN_AUXILIARES = { marcadas: 920, escritos: 190260, leidos: 190260, coste: 347131 };
+const MAIN_CACHE_PREFIX = { marcadas: 600, escritos: 3174, leidos: 1901226, coste: 220846 };
+const MAIN_HORA_ISO = { marcadas: 600, escritos: 1908600, leidos: 0, coste: 2406651 };
+
+describe("1.2.4 con la regla de la clase volátil apagada: nada cuesta más que la 1.2.3", () => {
+  /** Planificador en tiempo simulado: cada evento a su instante (ms desde el inicio), en orden. */
+  async function planificar(reloj: { now: () => number; pasar: (ms: number) => void }, eventos: { t: number; f: () => Promise<unknown> }[]): Promise<void> {
+    const t0 = reloj.now();
+    const orden = eventos.map((e, n) => ({ ...e, n })).sort((a, b) => a.t - b.t || a.n - b.n);
+    for (const e of orden) {
+      if (t0 + e.t > reloj.now()) reloj.pasar(t0 + e.t - reloj.now());
+      await e.f();
+    }
+  }
+  const ISO = (ms: number): string => new Date(ms).toISOString().replace(/\.\d+Z$/, "Z");
+
+  it("noche de 20 sesiones sueltas + 50 chats × 3 leen desde la ronda 2", async () => {
+    // Noche: 20 sesiones de una sola pregunta, una por minuto, cada una con su
+    // system (nunca vuelven); 10 min de silencio; mañana: 50 sesiones nuevas de
+    // 3 preguntas, intercaladas a 1 s. Con la regla encendida la clase era
+    // volátil al llegar la mañana: la ronda 1 no se marcaba y la 2 escribía en
+    // vez de leer (medido con un proveedor falso: −35,8 % en la 1.2.3, −13,6 %).
+    const reloj = relojSimulado();
+    const f = anthropicFalso(reloj.now);
+    const layer = capa(f.fetchImpl, { silenceWarnings: true, now: reloj.now });
+    const sistema = (s: string): string => `Session ${UUID_V4(`sesion-${s}`)}.\n${ESTABLE}`;
+    for (let s = 0; s < 20; s++) {
+      await layer.generate(peticion(sistema(`noche-${s}`), s));
+      reloj.pasar(60_000);
+    }
+    reloj.pasar(10 * 60_000);
+    const leen: boolean[][] = [[], [], []];
+    for (let ronda = 0; ronda < 3; ronda++) {
+      for (let s = 0; s < 50; s++) {
+        const antes = f.cuenta.leidos;
+        await layer.generate({
+          model: MODELO,
+          messages: [
+            { role: "system", content: sistema(`manana-${s}`) },
+            { role: "user", content: `Question ${ronda + 1} of session ${s}: what happens with item ${ronda + 3}?` },
+          ],
+        } as SavingsRequest);
+        leen[ronda]!.push(f.cuenta.leidos > antes);
+        reloj.pasar(1000);
+      }
+    }
+    expect(f.cuenta.marcadas).toBe(170);
+    expect(leen[1]).toEqual(Array(50).fill(true));
+    expect(leen[2]).toEqual(Array(50).fill(true));
+    expect(Math.round(coste(f.cuenta))).toBeLessThanOrEqual(MAIN_NOCHE.coste);
+    expect(resumen(f.cuenta)).toEqual(MAIN_NOCHE);
+  });
+
+  it("llamadas auxiliares diminutas con la hora + chats de 2 turnos: no cuestan más que la 1.2.3", async () => {
+    // En el mismo modelo, una llamada auxiliar cada 1,5 s con la hora en un
+    // system por debajo del mínimo cacheable (no cuesta nada de caché) y un chat
+    // nuevo cada 20 s con el system propio de su cliente, 2 turnos a 40 s. Con la
+    // regla encendida las auxiliares maduraban «de un solo uso», la clase se
+    // volvía volátil y el primer turno de cada chat dejaba de escribirse:
+    // −9,8 % en la 1.2.3, +2,4 % (más caro que sin capa).
+    const reloj = relojSimulado();
+    const f = anthropicFalso(reloj.now);
+    const layer = capa(f.fetchImpl, { silenceWarnings: true, now: reloj.now });
+    const inicio = reloj.now();
+    const eventos: { t: number; f: () => Promise<unknown> }[] = [];
+    const MIN = 20 * 60_000;
+    for (let t = 0, i = 0; t < MIN; t += 1500, i++) {
+      eventos.push({
+        t,
+        f: () =>
+          layer.generate({
+            model: MODELO,
+            messages: [
+              { role: "system", content: `Now: ${ISO(inicio + t)}. Classify the user's message into one word.` },
+              { role: "user", content: `Classify message ${i}: where is my order ${i}?` },
+            ],
+          } as SavingsRequest),
+      });
+    }
+    const historiales = new Map<number, ChatMessage[]>();
+    const perfil = (c: number): string => `You are the personal assistant of customer ${UUID_V4(`cliente-${c}`)}.\n${REGLAS}`;
+    for (let t = 0, c = 0; t < MIN; t += 20_000, c++) {
+      for (let k = 0; k < 2; k++) {
+        const chat = c;
+        const turno = k;
+        eventos.push({
+          t: t + turno * 40_000 + 1,
+          f: async () => {
+            const h = historiales.get(chat) ?? [];
+            const q: ChatMessage = { role: "user", content: `Turn ${turno + 1} of chat ${chat}: ${"Pasted background. ".repeat(60)} what about order ${turno}?` };
+            const r = await layer.generate({ model: MODELO, messages: [{ role: "system", content: perfil(chat) }, ...h, q] } as SavingsRequest);
+            historiales.set(chat, [...h, q, { role: "assistant", content: r.text }]);
+          },
+        });
+      }
+    }
+    await planificar(reloj, eventos);
+    expect(f.cuenta.llamadas).toBe(800 + 120);
+    expect(coste(f.cuenta)).toBeLessThan(sinCapa(f.cuenta));
+    expect(Math.round(coste(f.cuenta))).toBeLessThanOrEqual(MAIN_AUXILIARES.coste);
+    expect(resumen(f.cuenta)).toEqual(MAIN_AUXILIARES);
+  });
+
+  it("savings.cachePrefix: true con la hora ISO en línea propia sigue dando el descuento con un reloj que avanza más de 5 minutos", async () => {
+    // 600 peticiones a 2 s (20 minutos). Con la regla encendida la cabecera
+    // entera (con la línea de la hora) estrenaba huella en cada petición, la
+    // clase se volvía volátil a los 5 minutos y la parte estable dejaba de
+    // marcarse: −75,3 % en la 1.2.3, −20,6 % (y −6,8 % en una hora).
+    const reloj = relojSimulado();
+    const f = anthropicFalso(reloj.now);
+    const layer = capa(f.fetchImpl, { silenceWarnings: true, now: reloj.now });
+    const leen: boolean[] = [];
+    for (let i = 0; i < 600; i++) {
+      const antes = f.cuenta.leidos;
+      await layer.generate(peticion(`${CABEZA}\nGenerated at ${new Date(reloj.now()).toISOString()}.\n${REGLAS}`, i, { cachePrefix: true }));
+      leen.push(f.cuenta.leidos > antes);
+      reloj.pasar(2000);
+    }
+    expect(f.cuenta.marcadas).toBe(600);
+    expect(leen.slice(1)).toEqual(Array(599).fill(true));
+    expect(coste(f.cuenta) / sinCapa(f.cuenta)).toBeLessThan(0.3);
+    expect(resumen(f.cuenta)).toEqual(MAIN_CACHE_PREFIX);
+  });
+
+  it("un system estable y otro con la hora, del mismo modelo: los dos se marcan como en la 1.2.3 y el estable lee", async () => {
+    const reloj = relojSimulado();
+    const f = anthropicFalso(reloj.now);
+    const layer = capa(f.fetchImpl, { silenceWarnings: true, now: reloj.now });
+    for (let i = 0; i < 300; i++) {
+      await layer.generate(peticion(ESTABLE, i));
+      reloj.pasar(1000);
+      await layer.generate(peticion(`${CABEZA}\nGenerated at ${new Date(reloj.now()).toISOString()}.\n${REGLAS}`, i));
+      reloj.pasar(1000);
+    }
+    expect(f.cuenta.marcas).toEqual(Array(600).fill(true));
+    expect(f.cuenta.leidos).toBeGreaterThan(299 * 3000);
+  });
+
+  it("la hora ISO con segundos, 2 s entre peticiones: se marca como la 1.2.3 (600 de 600; la mejora vuelve en la 1.2.5)", async () => {
+    const c = await sueltas(600, 2000, (t) => `Now: ${new Date(t).toISOString()}`);
+    expect(c.marcadas).toBe(600);
+    expect(resumen(c)).toEqual(MAIN_HORA_ISO);
   });
 });
