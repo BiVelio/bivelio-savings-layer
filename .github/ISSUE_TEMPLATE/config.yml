@@ -1,0 +1,11 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Questions and ideas — GitHub Discussions
+    url: https://github.com/BiVelio/bivelio-savings-layer/discussions
+    about: Ask anything about installing, measuring, the gateway or the paper. Open questions get the fastest answer there.
+  - name: Account, billing and onboarding — support@bivelio.com
+    url: mailto:support@bivelio.com
+    about: The same support address the website uses. Do not paste API keys, license keys or service keys.
+  - name: Report a security vulnerability
+    url: https://github.com/BiVelio/bivelio-savings-layer/blob/main/SECURITY.md
+    about: Please do not open a public issue. SECURITY.md says how to report it privately.

@@ -1,0 +1,77 @@
+name: Bug report
+description: Something in the SDK, the bvsala gateway or the Python client does not work as documented.
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to report this.
+
+        **Never paste API keys, license keys, service keys (`bvk_…`), prompts or customer data.** Security problems go through [SECURITY.md](https://github.com/BiVelio/bivelio-savings-layer/blob/main/SECURITY.md), not a public issue. Questions are best asked in [Discussions](https://github.com/BiVelio/bivelio-savings-layer/discussions).
+  - type: input
+    id: version
+    attributes:
+      label: Package version
+      description: "`npm ls @bivelio/savings-layer`, `bvsala --version` or `pip show bivelio-savings-layer`."
+      placeholder: "@bivelio/savings-layer 1.2.3"
+    validations:
+      required: true
+  - type: dropdown
+    id: where
+    attributes:
+      label: Where does it happen?
+      options:
+        - SDK in my TypeScript/JavaScript app
+        - Local gateway with a coding agent (bvsala claude, codex, gemini…)
+        - Local gateway with an OpenAI-compatible client
+        - Python client
+        - Website or dashboard
+        - Other
+    validations:
+      required: true
+  - type: input
+    id: runtime
+    attributes:
+      label: Node.js or Python version, and operating system
+      placeholder: "Node 22.12.0 (node -v) on macOS 15"
+    validations:
+      required: true
+  - type: input
+    id: provider
+    attributes:
+      label: Provider and model
+      placeholder: "anthropic/claude-haiku-4-5, openai/gpt-4o-mini, ollama…"
+    validations:
+      required: true
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: What you expected
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: How to reproduce it
+      description: The smallest code or the exact commands. Replace keys and prompt text with placeholders.
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Log lines or report fields
+      description: For example the gateway's `[gateway]` line, or `report.cost.basis` and `report.traces`. Remove keys and prompt text first.
+      render: shell
+  - type: checkboxes
+    id: clean
+    attributes:
+      label: Before you send it
+      options:
+        - label: This report contains no API keys, license keys, service keys, prompts or customer data.
+          required: true
