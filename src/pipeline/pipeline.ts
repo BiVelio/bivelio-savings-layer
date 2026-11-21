@@ -1817,49 +1817,38 @@ export class SavingsPipeline {
     };
   }
 
+  /** Una licencia viva de cualquier plan (Measure, Pro, Team, Enterprise); sin clave, el gate comunitario. */
+  private conLicencia(): boolean {
+    try {
+      const plan = this.config.licenseGate?.plan?.();
+      return plan != null && plan !== "community";
+    } catch {
+      return false;
+    }
+  }
+
   /**
-   * ¿Borrar un tool_result VIEJO rompería una caché de prefijo que el proveedor
-   * ya está leyendo? Entonces lo que se ahorra en el muñón se paga con creces
-   * re-leyendo a precio pleno todo lo que va detrás. Devuelve el motivo, o null.
+   * ¿Se aparta el recorte de resultados de herramientas sustituidos? Devuelve el
+   * motivo, o null.
    *
-   *  · `cacheBreakpoints: "auto"` en un modelo que cobra la escritura (Anthropic):
-   *    el colocador pone puntos dentro del historial.
-   *  · Modelos con caché automática de TODO el prompt que cobran la lectura al
-   *    10-25 % (gpt-5, gpt-4.1, serie o): cualquier cambio a mitad del historial
-   *    vuelve a cobrar entero lo que va detrás.
-   *
-   *  · (E2, verificación 2) Modelos SIN prima de escritura que cachean solos y
-   *    cobran la lectura al 25 % o menos según su tramo (Gemini, o el tramo que
-   *    declare el cliente en `compressionEconomics.cacheTier`).
-   *  · (E3, verificación 2) Con licencia y un proveedor que la capa no reconoce
-   *    (tramo desconocido: lectura a 1× y mínimo declarado): puede cachear solo
-   *    sin que lo sepamos, y la 1.2.3 de pago no recortaba. Sin clave sigue como
-   *    en la 1.2.3.
-   *
-   * Medido (agente de 60 pasos, proveedor falso): con Pro en la 1.2.4, gpt-5
-   * pasaba de 0 % a +12,2 % frente a no llevar capa, y "auto" en Anthropic de
-   * −84,4 % a −71,5 %; Gemini de 0 % a +11,9 % y DeepSeek de 0 % a +13,7 %.
+   *  · SIN CLAVE, nunca: recorta exactamente como en la 1.2.3. Cualquier guarda
+   *    nueva aquí hacía que alguna carga costara más que con la 1.2.3 (verificación
+   *    3: chats con herramientas y turnos a 6 min, −73,7 % → −53,5 %).
+   *  · CON CLAVE (la 1.2.3 de pago no recortaba): solo en Anthropic con la
+   *    colocación fija, donde la capa pone todos los puntos de caché, y E1 (abajo)
+   *    lo limita a los resultados posteriores al último turno del usuario, que esa
+   *    colocación no marca. No con `cacheBreakpoints: "auto"` (marca dentro del
+   *    historial), ni con `AnthropicProvider({ automaticCache: true })` (el
+   *    proveedor cachea el historial entero: −85,2 % → −69,0 % en un agente de 60
+   *    pasos), ni en proveedores que cachean solos (gpt-4o, gpt-5, Gemini,
+   *    DeepSeek...): un muñón a mitad del historial rompe esa caché.
    */
   private elisionRompeLaCacheDelProveedor(modelo: string): string | null {
-    if (this.config.cacheBreakpoints === "auto" && tramoDeCache(modelo, this.config.compressionEconomics).cacheWriteMultiplier > 1) {
-      return 'cacheBreakpoints "auto" places cache points inside the history: replacing an old tool result would re-bill everything after it';
-    }
+    if (!this.conLicencia()) return null;
     const tramo = tramoDeCache(modelo, this.config.compressionEconomics);
-    if (tramo.cacheWriteMultiplier <= 1 && tramo.cacheReadMultiplier <= 0.25) {
-      return "this model caches the prompt automatically and bills cached input at 25% or less: replacing an old tool result would re-bill everything after it at the full price";
-    }
-    let plan: string | undefined;
-    try {
-      plan = this.config.licenseGate?.plan?.();
-    } catch {
-      plan = undefined;
-    }
-    if (plan != null && plan !== "community" && tramo.cacheReadMultiplier >= 1 && tramo.minimumCacheTokens != null) {
-      return "unrecognised provider, which may cache the prompt automatically: with a license, elision stays off as in 1.2.3";
-    }
-    const desnudo = modelo.toLowerCase().replace(/^.*\//, "");
-    if (/^(gpt-5|gpt-4\.1|o[1-9](-|$))/.test(desnudo)) {
-      return "this model caches the whole prompt automatically and bills cached input at 10-25%: replacing an old tool result would re-bill everything after it at the full price";
+    const proveedor = this.config.provider as { cacheaElPromptEntero?: boolean } | undefined;
+    if (this.config.cacheBreakpoints === "auto" || !(tramo.cacheWriteMultiplier > 1) || proveedor?.cacheaElPromptEntero === true) {
+      return "with a key, trimming of superseded tool results only acts inside a tool loop on Anthropic with the default cache placement (no automaticCache); elsewhere it stays off, as in 1.2.3";
     }
     return null;
   }
@@ -3303,9 +3292,9 @@ export class SavingsPipeline {
     //     frescos, personalizado, estocástico o frescura de día);
     //   · `ELISION_EN_VIVO` (apagado, solo traza);
     //   · el opt-out explícito por petición: `savings: { elision: false }`;
-    //   · que recortar ROMPA una caché que el proveedor ya está leyendo
-    //     (`elisionRompeLaCacheDelProveedor`): entonces no se toca nada y la
-    //     traza dice por qué.
+    //   · con clave, que no sea el bucle de herramientas de Anthropic con la
+    //     colocación fija (`elisionRompeLaCacheDelProveedor`): entonces no se
+    //     toca nada y la traza dice por qué. Sin clave, como en la 1.2.3.
     const elisionRompeCache = this.elisionRompeLaCacheDelProveedor(request.model);
     if (
       toggles.elision !== false &&
@@ -3320,17 +3309,16 @@ export class SavingsPipeline {
       this.entitled("tool_result_elision")
     ) {
       let eleccion = seleccionarSupersesion(messages);
-      // E1 (verificación 2): con la colocación fija y prima de escritura
-      // (Anthropic), recortar un tool_result ANTERIOR al último turno del usuario
-      // cambia el historial que se marca, y `comprimioElPrefijo` deja la marca en
-      // el `system` el resto de la conversación: el historial no se vuelve a leer
-      // de la caché. Solo se recortan los posteriores (el bucle en curso).
-      if (
-        this.config.cacheBreakpoints !== "auto" &&
-        tramoDeCache(request.model, this.config.compressionEconomics).cacheWriteMultiplier > 1 &&
-        eleccion.indices.some((i) => i < finDelPrefijo)
-      ) {
-        const fuera = eleccionDesde(messages, eleccion, finDelPrefijo);
+      // E1, solo con clave (sin clave, como en la 1.2.3): recortar un tool_result
+      // ANTERIOR al último turno del usuario cambia el historial que la
+      // colocación fija marca, y `comprimioElPrefijo` deja la marca en el
+      // `system` el resto de la conversación: el historial no se vuelve a leer de
+      // la caché. Solo se recortan los posteriores (el bucle en curso). El último
+      // turno se busca en `messages`, no en `finDelPrefijo`, que con
+      // `cachePrefix` es 1.
+      const ultimoTurno = this.conLicencia() ? limiteDelPrefijoEstable(messages) : 0;
+      if (eleccion.indices.some((i) => i < ultimoTurno)) {
+        const fuera = eleccionDesde(messages, eleccion, ultimoTurno);
         trace.record("elision", "partial", {
           reason: "a superseded tool result before the last user turn is part of the history the prefix cache marks; it is kept",
           keptInPrefix: eleccion.indices.length - fuera.indices.length,
