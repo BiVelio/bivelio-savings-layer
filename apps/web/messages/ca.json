@@ -1349,14 +1349,14 @@
       "title": "Claude Code amb clau d'API? Mira la despesa real, token a token.",
       "body": "Una sola ordre posa un mesurador local davant del teu terminal, sense tocar el teu codi i sense clau: arrenques el teu agent amb bvsala. Afegeix una clau de servei només si vols veure la despesa al teu tauler de Savings Cloud. Els teus prompts no passen pels servidors de BiVelio: van al proveïdor que configuris, i al teu tauler només hi arriben recomptes i cost.",
       "note": "El gateway mesura, amb el comptador del teu proveïdor, cada petició de la qual aquest informa l'ús (en els models del nostre catàleg de preus) i, com l'SDK, arrenca sense cap clau (mode Community): una clau de servei opcional afegeix el tauler i els entitlements de l'org. En models d'Anthropic aplica a més una palanca per defecte, sense llicència ni compte: passa les escriptures de la memòria cau del TTL d'una hora al de cinc minuts només en els torns en què una part gran del prompt és nova —com el primer d'una sessió o una compactació— i deixa com estan els torns encadenats. Això canvia el preu, mai el contingut que llegeix el model. Només té alguna cosa a rebaixar quan el teu client paga per token i demana la memòria cau d'una hora: Claude Code amb clau d'API demana la de cinc minuts si no ho canvies, i aleshores el gateway només mesura. La resta de palanques van apagades fins que les encens. L'skill savings-mode està disponible per als teus topalls, amb l'efecte pendent de mesurar. El gateway funciona també amb Codex CLI, Goose, Qwen Code, opencode, Kilo, Aider i, amb la teva pròpia clau d'Anthropic, GitHub Copilot CLI; per a d'altres, com Cline o Continue, bvsala doctor imprimeix la configuració exacta. Cursor funciona amb el seu override de base URL i la teva pròpia clau, i la Gemini CLI s'envolta amb bvsala gemini.",
-      "pythonNote": "Python o qualsevol altre llenguatge? Apunta l'SDK oficial d'OpenAI o d'Anthropic al gateway i cada petició de la qual el proveïdor informi l'ús, d'un model amb preu de llista, queda registrada en aquest tauler a aquest preu; el log del gateway avisa quan una no es mesura. bvsala doctor imprimeix el base URL de cada SDK. En streaming amb OpenAI, demana l'ús a la petició (stream_options.include_usage).",
+      "pythonNote": "Python o qualsevol altre llenguatge? Apunta l'SDK oficial d'OpenAI o d'Anthropic al gateway i cada petició de la qual el proveïdor informi l'ús, d'un model amb preu de llista, es mesura a aquest preu a la teva màquina, i també al teu tauler de Savings Cloud si afegeixes una clau de servei; el log del gateway avisa quan una no es mesura. bvsala doctor imprimeix el base URL de cada SDK. En streaming amb OpenAI, demana l'ús a la petició (stream_options.include_usage).",
       "cta": "Mira com funciona →"
     },
     "integrate": {
       "eyebrow": "Cinc línies per començar",
       "title": "Executa'l a la teva pròpia app. Els teus prompts mai no toquen els nostres servidors.",
       "body": "Col·loca el SDK davant del teu proveïdor. Cada resposta porta un SavingsReport complet que pots representar en gràfics — les mateixes xifres que llegeix el tauler.",
-      "initNote": "<b>O deixa que una ordre ho adapti al teu stack.</b> <code>init</code> llegeix el teu <code>package.json</code> (Next.js, Express, el Vercel AI SDK, Mastra, LangChain.js, l'SDK d'Anthropic o el d'OpenAI) i imprimeix la línia d'instal·lació, el codi exacte per al teu adaptador i una comprovació que no gasta tokens: sense cap clau, la capa la respon a la teva màquina, sense cridar el model. No escriu res si no ho demanes."
+      "initNote": "<b>O deixa que una ordre ho adapti al teu stack.</b> <code>init</code> llegeix el teu <code>package.json</code> (Next.js, Express, el Vercel AI SDK, Mastra, LangChain.js, l'SDK d'Anthropic o el d'OpenAI) i imprimeix la línia d'instal·lació, el codi exacte per al teu adaptador i una comprovació que no gasta tokens: sense cap clau de BiVelio, la capa la respon a la teva màquina, sense cridar el model. No escriu res si no ho demanes."
     },
     "pricing": {
       "eyebrow": "Plans",
@@ -1485,7 +1485,7 @@
         },
         {
           "title": "El teu trànsit continua anant directe",
-          "body": "L'SDK embolcalla la crida dins del teu procés. Els teus prompts no passen per BiVelio: a nosaltres només ens arriben recomptes i cost.",
+          "body": "L'SDK embolcalla la crida dins del teu procés. Els teus prompts no passen per BiVelio: sense clau no ens arriba res; amb una clau del núvol, només recomptes i cost.",
           "mono": "app → provider api"
         },
         {
@@ -2165,7 +2165,7 @@
     "snip1": "el paquet",
     "snip2": "la llicència (del teu tauler)",
     "snip3": "embolcallar la crida — aquest és tot el canvi de codi",
-    "snipResult": "l'estalvi, mesurat",
+    "snipResult": "l'estalvi, amb la seva base: mesurat o estimat",
     "ctaVerify": "Veure l'estalvi mesurat",
     "ctaSignup": "Crear compte",
     "ctaInstall": "Anar a la guia d'instal·lació",

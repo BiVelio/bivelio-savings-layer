@@ -80,7 +80,7 @@ function lineasDelSnippet(th: (k: string) => string): { cls?: TokenCls; v: strin
       { v: " layer.generate({ model, messages });" },
     ],
     [],
-    [{ v: "console.log(report.cost.netSavingsRatio)  " }, { cls: "g", v: `// ← ${th("snipResult")}` }],
+    [{ v: "console.log(report.cost)  " }, { cls: "g", v: `// ← ${th("snipResult")}` }],
   ];
 }
 

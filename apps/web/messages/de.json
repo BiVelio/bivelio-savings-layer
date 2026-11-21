@@ -1349,14 +1349,14 @@
       "title": "Claude Code mit API-Schlüssel? Sieh die echten Ausgaben, Token für Token.",
       "body": "Ein einziger Befehl setzt einen lokalen Zähler vor dein Terminal, ohne deinen Code anzufassen und ohne Schlüssel: Du startest deinen Agenten über bvsala. Einen Service-Schlüssel fügst du nur hinzu, wenn du die Ausgaben in deinem Savings-Cloud-Dashboard sehen willst. Deine Prompts laufen nicht über die Server von BiVelio: Sie gehen an den Anbieter, den du konfigurierst, und in dein Dashboard gelangen nur Zählwerte und Kosten.",
       "note": "Das Gateway misst mit dem Zähler deines Anbieters jede Anfrage, für die dieser die Nutzung meldet (bei den Modellen in unserem Preiskatalog), und startet, wie das SDK, ganz ohne Schlüssel (Community-Modus): ein optionaler Service-Schlüssel ergänzt das Dashboard und die Org-Berechtigungen. Bei Anthropic-Modellen wendet es außerdem standardmäßig einen Hebel an, ohne Lizenz und ohne Konto: Es stellt Cache-Schreibvorgänge von der einstündigen auf die fünfminütige TTL um — nur bei Zügen, in denen ein großer Teil des Prompts neu ist, etwa beim ersten Zug einer Sitzung oder nach einer Kompaktierung — und lässt die verketteten Züge unverändert. Das ändert den Preis, nie den Inhalt, den das Modell liest. Etwas zu senken gibt es nur, wenn dein Client pro Token zahlt und den einstündigen Cache anfordert: Claude Code mit API-Schlüssel fordert den fünfminütigen an, solange du das nicht änderst, und dann misst das Gateway nur. Die übrigen Hebel bleiben aus, bis du sie einschaltest. Der Skill savings-mode steht für deine Limits bereit, seine Wirkung ist noch zu messen. Das Gateway funktioniert auch mit Codex CLI, Goose, Qwen Code, opencode, Kilo, Aider und, mit deinem eigenen Anthropic-Schlüssel, GitHub Copilot CLI; für andere wie Cline oder Continue gibt bvsala doctor die genaue Konfiguration aus. Cursor funktioniert über die OpenAI-Base-URL-Überschreibung mit deinem eigenen Schlüssel, und die Gemini CLI läuft über bvsala gemini.",
-      "pythonNote": "Python oder eine andere Sprache? Richte das offizielle SDK von OpenAI oder Anthropic auf das Gateway, und jede Anfrage, deren Verbrauch der Anbieter meldet, wird für ein Modell mit Listenpreis in diesem Panel zu diesem Preis erfasst; das Log des Gateways sagt, wenn eine nicht gemessen wird. bvsala doctor gibt die Base-URL für jedes SDK aus. Fordere beim Streaming mit OpenAI den Verbrauch in der Anfrage an (stream_options.include_usage).",
+      "pythonNote": "Python oder eine andere Sprache? Richte das offizielle SDK von OpenAI oder Anthropic auf das Gateway, und jede Anfrage, deren Verbrauch der Anbieter meldet, wird für ein Modell mit Listenpreis zu diesem Preis auf deinem Rechner gemessen, und auch in deinem Savings-Cloud-Dashboard, wenn du einen Service-Schlüssel hinzufügst; das Log des Gateways sagt, wenn eine nicht gemessen wird. bvsala doctor gibt die Base-URL für jedes SDK aus. Fordere beim Streaming mit OpenAI den Verbrauch in der Anfrage an (stream_options.include_usage).",
       "cta": "So funktioniert es →"
     },
     "integrate": {
       "eyebrow": "Fünf Zeilen zum Starten",
       "title": "Führe es in deiner eigenen App aus. Deine Prompts berühren niemals unsere Server.",
       "body": "Setze das SDK vor deinen Provider. Jede Antwort enthält einen vollständigen SavingsReport, den du visualisieren kannst — dieselben Zahlen, die das Dashboard liest.",
-      "initNote": "<b>Oder lass einen Befehl es an deinen Stack anpassen.</b> <code>init</code> liest deine <code>package.json</code> (Next.js, Express, das Vercel AI SDK, Mastra, LangChain.js, das Anthropic- oder das OpenAI-SDK) und druckt die Installationszeile, den exakten Code für deinen Adapter und einen Check ohne Tokenkosten: ganz ohne Schlüssel beantwortet die Schicht ihn auf deiner Maschine, ohne das Modell zu rufen. Sie schreibt nichts, wenn du es nicht verlangst."
+      "initNote": "<b>Oder lass einen Befehl es an deinen Stack anpassen.</b> <code>init</code> liest deine <code>package.json</code> (Next.js, Express, das Vercel AI SDK, Mastra, LangChain.js, das Anthropic- oder das OpenAI-SDK) und druckt die Installationszeile, den exakten Code für deinen Adapter und einen Check ohne Tokenkosten: ganz ohne BiVelio-Schlüssel beantwortet die Schicht ihn auf deiner Maschine, ohne das Modell zu rufen. Sie schreibt nichts, wenn du es nicht verlangst."
     },
     "pricing": {
       "eyebrow": "Pläne",
@@ -1485,7 +1485,7 @@
         },
         {
           "title": "Ihr Traffic bleibt direkt",
-          "body": "Das SDK umhüllt den Aufruf in Ihrem Prozess. Ihre Prompts gehen nie über BiVelio: bei uns kommen nur Zählungen und Kosten an.",
+          "body": "Das SDK umhüllt den Aufruf in Ihrem Prozess. Ihre Prompts gehen nie über BiVelio: ohne Schlüssel kommt bei uns nichts an; mit einem Cloud-Schlüssel nur Zählungen und Kosten.",
           "mono": "app → provider api"
         },
         {
@@ -2165,7 +2165,7 @@
     "snip1": "das Paket",
     "snip2": "die Lizenz (aus deinem Dashboard)",
     "snip3": "den Aufruf umhüllen — das ist die ganze Code-Änderung",
-    "snipResult": "die Ersparnis, gemessen",
+    "snipResult": "die Ersparnis, mit ihrer Basis: gemessen oder geschätzt",
     "ctaVerify": "Gemessene Ersparnis ansehen",
     "ctaSignup": "Konto erstellen",
     "ctaInstall": "Zur Installationsanleitung",

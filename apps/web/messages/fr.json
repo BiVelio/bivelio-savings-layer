@@ -1349,14 +1349,14 @@
       "title": "Claude Code avec une clé d'API ? Voyez la dépense réelle, token par token.",
       "body": "Une seule commande place un compteur local devant votre terminal, sans toucher à votre code et sans clé : vous lancez votre agent via bvsala. N'ajoutez une clé de service que si vous voulez voir la dépense dans votre tableau de bord Savings Cloud. Vos prompts ne passent pas par les serveurs de BiVelio : ils vont au fournisseur que vous configurez, et seuls les comptages et le coût arrivent dans votre tableau de bord.",
       "note": "La passerelle mesure, avec le compteur de votre fournisseur, chaque requête dont celui-ci déclare l'usage (pour les modèles de notre catalogue de prix) et, comme le SDK, démarre sans aucune clé (mode Community) : une clé de service facultative ajoute le tableau de bord et les droits de l'org. Sur les modèles Anthropic, elle applique aussi un levier par défaut, sans licence ni compte : elle fait passer les écritures de cache du TTL d'une heure à celui de cinq minutes, uniquement sur les tours où une grande partie du prompt est nouvelle — comme le premier tour d'une session ou une compaction — et laisse tels quels les tours enchaînés. Cela change le prix, jamais le contenu que lit le modèle. Elle n'a quelque chose à baisser que si votre client paie au token et demande le cache d'une heure : Claude Code avec une clé API demande celui de cinq minutes si vous ne le changez pas, et la passerelle se contente alors de mesurer. Les autres leviers restent éteints tant que vous ne les activez pas. Le skill savings-mode est disponible pour vos plafonds, son effet restant à mesurer. La passerelle fonctionne aussi avec Codex CLI, Goose, Qwen Code, opencode, Kilo, Aider et, avec votre propre clé Anthropic, GitHub Copilot CLI ; pour d'autres, comme Cline ou Continue, bvsala doctor imprime la configuration exacte. Cursor fonctionne via sa substitution d'URL de base OpenAI avec votre propre clé, et la Gemini CLI se lance avec bvsala gemini.",
-      "pythonNote": "Python ou un autre langage ? Pointez le SDK officiel d'OpenAI ou d'Anthropic vers la passerelle et chaque requête dont le fournisseur rapporte la consommation, pour un modèle qui a un prix catalogue, est enregistrée dans ce panneau à ce prix ; le journal de la passerelle signale quand une requête ne l'est pas. bvsala doctor affiche l'URL de base de chaque SDK. En streaming avec OpenAI, demandez la consommation dans la requête (stream_options.include_usage).",
+      "pythonNote": "Python ou un autre langage ? Pointez le SDK officiel d'OpenAI ou d'Anthropic vers la passerelle et chaque requête dont le fournisseur rapporte la consommation, pour un modèle qui a un prix catalogue, est mesurée à ce prix sur votre machine, et aussi dans votre tableau de bord Savings Cloud si vous ajoutez une clé de service ; le journal de la passerelle signale quand une requête ne l'est pas. bvsala doctor affiche l'URL de base de chaque SDK. En streaming avec OpenAI, demandez la consommation dans la requête (stream_options.include_usage).",
       "cta": "Voir comment ça marche →"
     },
     "integrate": {
       "eyebrow": "Cinq lignes pour commencer",
       "title": "Exécutez-le dans votre propre application. Vos prompts ne touchent jamais nos serveurs.",
       "body": "Placez le SDK devant votre fournisseur. Chaque réponse contient un SavingsReport complet que vous pouvez représenter graphiquement — les mêmes chiffres que lit le tableau de bord.",
-      "initNote": "<b>Ou laissez une commande l'adapter à votre stack.</b> <code>init</code> lit votre <code>package.json</code> (Next.js, Express, le Vercel AI SDK, Mastra, LangChain.js, le SDK Anthropic ou celui d'OpenAI) et imprime la ligne d'installation, le code exact pour votre adaptateur et une vérification sans dépenser de tokens : sans aucune clé, la couche y répond sur votre machine, sans appeler le modèle. Elle n'écrit rien sans votre accord."
+      "initNote": "<b>Ou laissez une commande l'adapter à votre stack.</b> <code>init</code> lit votre <code>package.json</code> (Next.js, Express, le Vercel AI SDK, Mastra, LangChain.js, le SDK Anthropic ou celui d'OpenAI) et imprime la ligne d'installation, le code exact pour votre adaptateur et une vérification sans dépenser de tokens : sans aucune clé BiVelio, la couche y répond sur votre machine, sans appeler le modèle. Elle n'écrit rien sans votre accord."
     },
     "pricing": {
       "eyebrow": "Plans",
@@ -1485,7 +1485,7 @@
         },
         {
           "title": "Votre trafic reste direct",
-          "body": "Le SDK encapsule l'appel dans votre processus. Vos prompts ne passent jamais par BiVelio : nous ne recevons que des comptages et des coûts.",
+          "body": "Le SDK encapsule l'appel dans votre processus. Vos prompts ne passent jamais par BiVelio : sans clé, rien ne nous parvient ; avec une clé cloud, seulement des comptages et des coûts.",
           "mono": "app → provider api"
         },
         {
@@ -2165,7 +2165,7 @@
     "snip1": "le paquet",
     "snip2": "la licence (depuis votre tableau de bord)",
     "snip3": "envelopper l'appel — c'est tout le changement de code",
-    "snipResult": "l'économie, mesurée",
+    "snipResult": "l'économie, avec sa base : mesurée ou estimée",
     "ctaVerify": "Voir les économies mesurées",
     "ctaSignup": "Créer un compte",
     "ctaInstall": "Voir le guide d'installation",

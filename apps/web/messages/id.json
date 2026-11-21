@@ -1349,14 +1349,14 @@
       "title": "Claude Code dengan kunci API? Lihat pengeluaran nyata, token demi token.",
       "body": "Satu perintah menempatkan pengukur lokal di depan terminal Anda, tanpa menyentuh kode Anda dan tanpa kunci: jalankan agen Anda melalui bvsala. Tambahkan kunci layanan hanya jika Anda ingin melihat pengeluaran di dasbor Savings Cloud Anda. Prompt Anda tidak melewati server BiVelio: prompt dikirim ke penyedia yang Anda konfigurasikan, dan yang sampai ke dasbor Anda hanya hitungan dan biaya.",
       "note": "Gateway mengukur, dengan penghitung penyedia Anda, setiap permintaan yang penggunaannya dilaporkan penyedia tersebut (untuk model dalam katalog harga kami) dan, seperti SDK, berjalan tanpa kunci apa pun (mode Community): kunci layanan opsional menambahkan dasbor dan hak organisasi. Pada model Anthropic, gateway juga menerapkan satu tuas secara default, tanpa lisensi atau akun: memindahkan penulisan cache dari TTL satu jam ke TTL lima menit hanya pada giliran ketika porsi besar dari prompt masih baru — seperti giliran pertama sebuah sesi atau setelah pemadatan — dan membiarkan giliran berantai apa adanya. Ini mengubah harga, bukan konten yang dibaca model. Gateway hanya punya sesuatu untuk diturunkan bila klien Anda membayar per token dan meminta cache satu jam: Claude Code dengan API key meminta cache lima menit kecuali Anda mengubahnya, dan saat itu gateway hanya mengukur. Tuas lainnya tetap mati sampai Anda mengaktifkannya. Skill savings-mode tersedia untuk batas kuota Anda, dengan efek yang masih harus diukur. Gateway juga bekerja dengan Codex CLI, Goose, Qwen Code, opencode, Kilo, Aider, serta GitHub Copilot CLI dengan kunci Anthropic Anda sendiri; untuk yang lain, seperti Cline atau Continue, bvsala doctor mencetak konfigurasi persisnya. Cursor bekerja lewat penggantian URL dasar OpenAI dengan kunci Anda sendiri, dan Gemini CLI dijalankan dengan bvsala gemini.",
-      "pythonNote": "Python atau bahasa lain? Arahkan SDK resmi OpenAI atau Anthropic ke gateway, dan setiap permintaan yang penggunaannya dilaporkan penyedia, untuk model yang memiliki harga daftar, tercatat di panel ini dengan harga tersebut; log gateway memberi tahu bila ada yang tidak diukur. bvsala doctor mencetak base URL untuk setiap SDK. Untuk streaming OpenAI, minta penggunaan di dalam permintaan (stream_options.include_usage).",
+      "pythonNote": "Python atau bahasa lain? Arahkan SDK resmi OpenAI atau Anthropic ke gateway, dan setiap permintaan yang penggunaannya dilaporkan penyedia, untuk model yang memiliki harga daftar, diukur dengan harga tersebut di mesin Anda, dan juga di dasbor Savings Cloud Anda jika Anda menambahkan kunci layanan; log gateway memberi tahu bila ada yang tidak diukur. bvsala doctor mencetak base URL untuk setiap SDK. Untuk streaming OpenAI, minta penggunaan di dalam permintaan (stream_options.include_usage).",
       "cta": "Lihat cara kerjanya →"
     },
     "integrate": {
       "eyebrow": "Lima baris untuk memulai",
       "title": "Jalankan di aplikasi Anda sendiri. Prompt Anda tidak pernah menyentuh server kami.",
       "body": "Tempatkan SDK di depan penyedia Anda. Setiap respons membawa SavingsReport lengkap yang bisa Anda grafikkan — angka yang sama yang dibaca dasbor.",
-      "initNote": "<b>Atau biarkan satu perintah menyesuaikannya dengan stack Anda.</b> <code>init</code> membaca <code>package.json</code> Anda (Next.js, Express, Vercel AI SDK, Mastra, LangChain.js, SDK Anthropic atau OpenAI) dan mencetak baris instalasi, kode persis untuk adaptor Anda, dan pemeriksaan yang tidak menghabiskan token: tanpa kunci apa pun, lapisan menjawabnya di mesin Anda, tanpa memanggil model. Ia tidak menulis apa pun kecuali Anda memintanya."
+      "initNote": "<b>Atau biarkan satu perintah menyesuaikannya dengan stack Anda.</b> <code>init</code> membaca <code>package.json</code> Anda (Next.js, Express, Vercel AI SDK, Mastra, LangChain.js, SDK Anthropic atau OpenAI) dan mencetak baris instalasi, kode persis untuk adaptor Anda, dan pemeriksaan yang tidak menghabiskan token: tanpa kunci BiVelio apa pun, lapisan menjawabnya di mesin Anda, tanpa memanggil model. Ia tidak menulis apa pun kecuali Anda memintanya."
     },
     "pricing": {
       "eyebrow": "Paket",
@@ -1485,7 +1485,7 @@
         },
         {
           "title": "Lalu lintas Anda tetap langsung",
-          "body": "SDK membungkus panggilan di dalam proses Anda. Prompt Anda tidak pernah lewat BiVelio: kami hanya menerima hitungan dan biaya.",
+          "body": "SDK membungkus panggilan di dalam proses Anda. Prompt Anda tidak pernah lewat BiVelio: tanpa kunci tidak ada yang sampai ke kami; dengan kunci cloud, hanya hitungan dan biaya.",
           "mono": "app → provider api"
         },
         {
@@ -2165,7 +2165,7 @@
     "snip1": "paketnya",
     "snip2": "lisensinya (dari dasbor kamu)",
     "snip3": "membungkus panggilan — ini seluruh perubahan kodenya",
-    "snipResult": "penghematan, terukur",
+    "snipResult": "penghematan, dengan dasarnya: terukur atau diperkirakan",
     "ctaVerify": "Lihat penghematan terukur",
     "ctaSignup": "Buat akun",
     "ctaInstall": "Ke panduan pemasangan",

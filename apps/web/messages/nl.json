@@ -1349,14 +1349,14 @@
       "title": "Claude Code met een API-sleutel? Zie de echte uitgaven, token voor token.",
       "body": "Eén commando zet een lokale meter vóór je terminal, zonder je code aan te raken en zonder sleutel: je start je agent via bvsala. Voeg alleen een service-sleutel toe als je de uitgaven in je Savings Cloud-dashboard wilt zien. Je prompts gaan niet via de servers van BiVelio: ze gaan naar de provider die je instelt, en alleen aantallen en kosten bereiken je dashboard.",
       "note": "De gateway meet met de teller van je aanbieder elk verzoek waarvan die het gebruik meldt (voor de modellen in onze prijscatalogus) en draait, net als de SDK, start hij zonder sleutels (Community-modus): een optionele service-sleutel voegt het dashboard en de org-rechten toe. Op Anthropic-modellen past hij standaard ook één hefboom toe, zonder licentie of account: hij zet cache-schrijfacties om van de TTL van een uur naar die van vijf minuten, alleen in beurten waarin een groot deel van de prompt nieuw is — zoals de eerste beurt van een sessie of een compactie — en laat de aaneengeschakelde beurten zoals ze zijn. Dat verandert de prijs, nooit de inhoud die het model leest. Hij heeft alleen iets te verlagen als je client per token betaalt en om de cache van een uur vraagt: Claude Code met een API-sleutel vraagt om die van vijf minuten zolang je dat niet verandert, en dan meet de gateway alleen. De overige hefbomen blijven uit tot je ze inschakelt. De skill savings-mode is beschikbaar voor je limieten, met een effect dat nog gemeten moet worden. De gateway werkt ook met Codex CLI, Goose, Qwen Code, opencode, Kilo, Aider en, met je eigen Anthropic-sleutel, GitHub Copilot CLI; voor andere, zoals Cline of Continue, drukt bvsala doctor de exacte configuratie af. Cursor werkt via de OpenAI-base-URL-override met je eigen sleutel, en de Gemini CLI start met bvsala gemini.",
-      "pythonNote": "Python of een andere taal? Richt de officiële SDK van OpenAI of Anthropic op de gateway en elk verzoek waarvan de aanbieder het gebruik rapporteert, wordt voor een model met een lijstprijs in dit paneel tegen die prijs vastgelegd; het log van de gateway meldt het wanneer een verzoek niet wordt gemeten. bvsala doctor toont de base-URL voor elke SDK. Vraag bij streaming met OpenAI het gebruik op in het verzoek (stream_options.include_usage).",
+      "pythonNote": "Python of een andere taal? Richt de officiële SDK van OpenAI of Anthropic op de gateway en elk verzoek waarvan de aanbieder het gebruik rapporteert, wordt voor een model met een lijstprijs tegen die prijs op je machine gemeten, en ook in je Savings Cloud-dashboard als je een service-sleutel toevoegt; het log van de gateway meldt het wanneer een verzoek niet wordt gemeten. bvsala doctor toont de base-URL voor elke SDK. Vraag bij streaming met OpenAI het gebruik op in het verzoek (stream_options.include_usage).",
       "cta": "Zo werkt het →"
     },
     "integrate": {
       "eyebrow": "Vijf regels om te beginnen",
       "title": "Draai het in je eigen app. Je prompts raken nooit onze servers.",
       "body": "Plaats de SDK vóór je provider. Elke respons bevat een volledig SavingsReport dat je kunt uitzetten in grafieken — dezelfde cijfers die het dashboard leest.",
-      "initNote": "<b>Of laat één commando het aan je stack aanpassen.</b> <code>init</code> leest je <code>package.json</code> (Next.js, Express, het Vercel AI SDK, Mastra, LangChain.js, de Anthropic- of de OpenAI-SDK) en print de installatieregel, de exacte code voor je adapter en een check die geen tokens kost: zonder enige sleutel beantwoordt de laag hem op je machine, zonder het model te roepen. Ze schrijft niets tenzij je het vraagt."
+      "initNote": "<b>Of laat één commando het aan je stack aanpassen.</b> <code>init</code> leest je <code>package.json</code> (Next.js, Express, het Vercel AI SDK, Mastra, LangChain.js, de Anthropic- of de OpenAI-SDK) en print de installatieregel, de exacte code voor je adapter en een check die geen tokens kost: zonder BiVelio-sleutel beantwoordt de laag hem op je machine, zonder het model te roepen. Ze schrijft niets tenzij je het vraagt."
     },
     "pricing": {
       "eyebrow": "Abonnementen",
@@ -1485,7 +1485,7 @@
         },
         {
           "title": "Je verkeer blijft rechtstreeks gaan",
-          "body": "De SDK omhult de aanroep binnen je proces. Je prompts gaan nooit via BiVelio: bij ons komen alleen tellingen en kosten aan.",
+          "body": "De SDK omhult de aanroep binnen je proces. Je prompts gaan nooit via BiVelio: zonder sleutel komt er niets bij ons aan; met een cloud-sleutel alleen tellingen en kosten.",
           "mono": "app → provider api"
         },
         {
@@ -2165,7 +2165,7 @@
     "snip1": "het pakket",
     "snip2": "de licentie (uit je dashboard)",
     "snip3": "de aanroep omhullen — dit is de hele codewijziging",
-    "snipResult": "de besparing, gemeten",
+    "snipResult": "de besparing, met haar basis: gemeten of geschat",
     "ctaVerify": "Bekijk de gemeten besparing",
     "ctaSignup": "Account aanmaken",
     "ctaInstall": "Naar de installatiegids",

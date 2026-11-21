@@ -1349,14 +1349,14 @@
       "title": "Dùng Claude Code với khóa API? Xem chi tiêu thật, từng token một.",
       "body": "Một lệnh duy nhất đặt một bộ đo cục bộ trước terminal của bạn, không cần sửa mã và không cần khóa: bạn khởi chạy agent qua bvsala. Chỉ thêm khóa dịch vụ nếu bạn muốn xem chi tiêu trong bảng điều khiển Savings Cloud của mình. Prompt của bạn không đi qua máy chủ của BiVelio: chúng được gửi tới nhà cung cấp mà bạn cấu hình, và bảng điều khiển của bạn chỉ nhận số đếm và chi phí.",
       "note": "Gateway đo, bằng chính bộ đếm của nhà cung cấp, mọi yêu cầu mà nhà cung cấp của bạn có báo cáo mức sử dụng (với các mô hình trong danh mục giá của chúng tôi) và, giống như SDK, khởi động mà không cần khóa nào (chế độ Community): khóa dịch vụ tùy chọn thêm bảng điều khiển và quyền của tổ chức. Trên các mô hình Anthropic, nó còn áp dụng mặc định một đòn bẩy, không cần giấy phép hay tài khoản: chuyển các lần ghi bộ nhớ đệm từ TTL một giờ sang TTL năm phút, chỉ ở những lượt mà một phần lớn prompt là mới — như lượt đầu tiên của một phiên hoặc sau khi nén ngữ cảnh — và giữ nguyên các lượt nối tiếp. Điều này thay đổi giá, không bao giờ thay đổi nội dung mà mô hình đọc. Nó chỉ có thứ để giảm khi client của bạn trả theo token và yêu cầu bộ nhớ đệm một giờ: Claude Code dùng API key sẽ yêu cầu bộ nhớ đệm năm phút nếu bạn không thay đổi, và khi đó gateway chỉ đo. Các đòn bẩy khác vẫn tắt cho đến khi bạn bật chúng. Skill savings-mode đã sẵn sàng cho các giới hạn của bạn, hiệu quả còn chờ đo. Gateway cũng hoạt động với Codex CLI, Goose, Qwen Code, opencode, Kilo, Aider và, với khóa Anthropic của riêng bạn, GitHub Copilot CLI; với các công cụ khác như Cline hoặc Continue, bvsala doctor in ra cấu hình chính xác. Cursor hoạt động thông qua tùy chọn ghi đè URL gốc OpenAI với khóa của riêng bạn, còn Gemini CLI được bọc bằng bvsala gemini.",
-      "pythonNote": "Python hay bất kỳ ngôn ngữ nào khác? Trỏ SDK chính thức của OpenAI hoặc Anthropic tới gateway và mọi yêu cầu mà nhà cung cấp báo cáo mức sử dụng, với mô hình có giá niêm yết, đều được ghi vào bảng điều khiển này theo giá đó; log của gateway sẽ báo khi có yêu cầu không được đo. bvsala doctor in ra base URL cho từng SDK. Với streaming của OpenAI, hãy yêu cầu mức sử dụng ngay trong yêu cầu (stream_options.include_usage).",
+      "pythonNote": "Python hay bất kỳ ngôn ngữ nào khác? Trỏ SDK chính thức của OpenAI hoặc Anthropic tới gateway và mọi yêu cầu mà nhà cung cấp báo cáo mức sử dụng, với mô hình có giá niêm yết, đều được đo theo giá đó ngay trên máy bạn, và cả trong bảng điều khiển Savings Cloud của bạn nếu bạn thêm khóa dịch vụ; log của gateway sẽ báo khi có yêu cầu không được đo. bvsala doctor in ra base URL cho từng SDK. Với streaming của OpenAI, hãy yêu cầu mức sử dụng ngay trong yêu cầu (stream_options.include_usage).",
       "cta": "Xem cách hoạt động →"
     },
     "integrate": {
       "eyebrow": "Năm dòng để bắt đầu",
       "title": "Chạy nó trong ứng dụng của riêng bạn. Prompt của bạn không bao giờ chạm tới máy chủ của chúng tôi.",
       "body": "Đặt SDK trước nhà cung cấp của bạn. Mỗi phản hồi đều mang theo một SavingsReport đầy đủ mà bạn có thể vẽ biểu đồ — cùng những con số mà bảng điều khiển đọc.",
-      "initNote": "<b>Hoặc để một lệnh điều chỉnh cho stack của bạn.</b> <code>init</code> đọc <code>package.json</code> của bạn (Next.js, Express, Vercel AI SDK, Mastra, LangChain.js, SDK Anthropic hoặc OpenAI) và in ra dòng cài đặt, mã chính xác cho adapter của bạn và một kiểm tra không tốn token: không cần khóa nào, tầng trả lời ngay trên máy bạn, không gọi mô hình. Nó không ghi gì trừ khi bạn yêu cầu."
+      "initNote": "<b>Hoặc để một lệnh điều chỉnh cho stack của bạn.</b> <code>init</code> đọc <code>package.json</code> của bạn (Next.js, Express, Vercel AI SDK, Mastra, LangChain.js, SDK Anthropic hoặc OpenAI) và in ra dòng cài đặt, mã chính xác cho adapter của bạn và một kiểm tra không tốn token: không cần khóa BiVelio nào, tầng trả lời ngay trên máy bạn, không gọi mô hình. Nó không ghi gì trừ khi bạn yêu cầu."
     },
     "pricing": {
       "eyebrow": "Các gói",
@@ -1485,7 +1485,7 @@
         },
         {
           "title": "Lưu lượng của bạn vẫn đi thẳng",
-          "body": "SDK bọc lời gọi ngay trong tiến trình của bạn. Prompt của bạn không đi qua BiVelio: chúng tôi chỉ nhận số đếm và chi phí.",
+          "body": "SDK bọc lời gọi ngay trong tiến trình của bạn. Prompt của bạn không đi qua BiVelio: không có khóa thì không có gì đến chúng tôi; với khóa cloud, chỉ số đếm và chi phí.",
           "mono": "app → provider api"
         },
         {
@@ -2165,7 +2165,7 @@
     "snip1": "gói",
     "snip2": "giấy phép (từ bảng điều khiển của bạn)",
     "snip3": "bọc lệnh gọi — đây là toàn bộ thay đổi mã",
-    "snipResult": "khoản tiết kiệm, đã đo",
+    "snipResult": "khoản tiết kiệm, kèm cơ sở: đã đo hoặc ước tính",
     "ctaVerify": "Xem mức tiết kiệm đã đo",
     "ctaSignup": "Tạo tài khoản",
     "ctaInstall": "Đến hướng dẫn cài đặt",

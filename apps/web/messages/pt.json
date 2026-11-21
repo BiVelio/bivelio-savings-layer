@@ -1349,14 +1349,14 @@
       "title": "Claude Code com chave de API? Vê o gasto real, token a token.",
       "body": "Um único comando põe um medidor local à frente do teu terminal, sem tocar no teu código e sem chave: arrancas o teu agente através do bvsala. Adiciona uma chave de serviço só se quiseres ver o gasto no teu painel do Savings Cloud. Os teus prompts não passam pelos servidores da BiVelio: vão para o fornecedor que configurares, e ao teu painel só chegam contagens e custo.",
       "note": "O gateway mede, com o contador do teu fornecedor, cada pedido cujo uso este reporta (nos modelos do nosso catálogo de preços) e, tal como o SDK, arranca sem nenhuma chave (modo Community): uma chave de serviço opcional acrescenta o painel e os direitos da org. Em modelos da Anthropic aplica também uma alavanca por defeito, sem licença nem conta: passa as escritas da cache do TTL de uma hora para o de cinco minutos só nos turnos em que uma boa parte do prompt é nova — como o primeiro turno de uma sessão ou uma compactação — e deixa como estão os turnos encadeados. Isso muda o preço, nunca o conteúdo que o modelo lê. Só tem algo a baixar quando o teu cliente paga por token e pede a cache de uma hora: o Claude Code com chave de API pede a de cinco minutos se não o mudares, e então o gateway apenas mede. As restantes alavancas ficam desligadas até as ativares. O skill savings-mode está disponível para os teus limites, com o efeito ainda por medir. O gateway funciona também com Codex CLI, Goose, Qwen Code, opencode, Kilo, Aider e, com a tua própria chave da Anthropic, GitHub Copilot CLI; para outros, como Cline ou Continue, o bvsala doctor imprime a configuração exata. O Cursor funciona através da substituição do URL base OpenAI com a tua própria chave, e a Gemini CLI arranca com bvsala gemini.",
-      "pythonNote": "Python ou qualquer outra linguagem? Aponta o SDK oficial da OpenAI ou da Anthropic para o gateway e cada pedido cujo uso o fornecedor reporte, de um modelo com preço de tabela, fica registado neste painel a esse preço; o log do gateway avisa quando um não é medido. O bvsala doctor imprime o base URL de cada SDK. Em streaming com a OpenAI, pede o uso no pedido (stream_options.include_usage).",
+      "pythonNote": "Python ou qualquer outra linguagem? Aponta o SDK oficial da OpenAI ou da Anthropic para o gateway e cada pedido cujo uso o fornecedor reporte, de um modelo com preço de tabela, é medido a esse preço na tua máquina, e também no teu painel do Savings Cloud se adicionares uma chave de serviço; o log do gateway avisa quando um não é medido. O bvsala doctor imprime o base URL de cada SDK. Em streaming com a OpenAI, pede o uso no pedido (stream_options.include_usage).",
       "cta": "Vê como funciona →"
     },
     "integrate": {
       "eyebrow": "Cinco linhas para começar",
       "title": "Executa-o na tua própria app. Os teus prompts nunca tocam nos nossos servidores.",
       "body": "Coloca o SDK à frente do teu fornecedor. Cada resposta traz um SavingsReport completo que podes representar em gráfico — os mesmos números que o painel lê.",
-      "initNote": "<b>Ou deixa que um comando o adapte ao teu stack.</b> O <code>init</code> lê o teu <code>package.json</code> (Next.js, Express, o Vercel AI SDK, Mastra, LangChain.js, o SDK da Anthropic ou o da OpenAI) e imprime a linha de instalação, o código exato para o teu adaptador e uma verificação que não gasta tokens: sem chave nenhuma, a camada responde na tua máquina, sem chamar o modelo. Não escreve nada sem pedires."
+      "initNote": "<b>Ou deixa que um comando o adapte ao teu stack.</b> O <code>init</code> lê o teu <code>package.json</code> (Next.js, Express, o Vercel AI SDK, Mastra, LangChain.js, o SDK da Anthropic ou o da OpenAI) e imprime a linha de instalação, o código exato para o teu adaptador e uma verificação que não gasta tokens: sem nenhuma chave da BiVelio, a camada responde na tua máquina, sem chamar o modelo. Não escreve nada sem pedires."
     },
     "pricing": {
       "eyebrow": "Planos",
@@ -1485,7 +1485,7 @@
         },
         {
           "title": "O teu tráfego continua direto",
-          "body": "O SDK envolve a chamada dentro do teu processo. Os teus prompts não passam pela BiVelio: a nós só chegam contagens e custo.",
+          "body": "O SDK envolve a chamada dentro do teu processo. Os teus prompts não passam pela BiVelio: sem chave não nos chega nada; com uma chave da nuvem, só contagens e custo.",
           "mono": "app → provider api"
         },
         {
@@ -2165,7 +2165,7 @@
     "snip1": "o pacote",
     "snip2": "a licença (do seu painel)",
     "snip3": "envolver a chamada — essa é toda a mudança de código",
-    "snipResult": "a economia, medida",
+    "snipResult": "a economia, com a sua base: medida ou estimada",
     "ctaVerify": "Ver a poupança medida",
     "ctaSignup": "Criar conta",
     "ctaInstall": "Ir para o guia de instalação",
