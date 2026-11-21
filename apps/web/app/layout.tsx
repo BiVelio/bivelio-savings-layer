@@ -8,9 +8,9 @@ import type { ReactNode } from "react";
 // no layout, so nothing outside [locale] needs an <html> shell.
 export const metadata: Metadata = {
   metadataBase: new URL("https://savings.bivelio.com"),
-  title: "BiVelio — Savings Layer",
+  title: "BiVelio Savings Layer",
   description:
-    "BV-SALA — BiVelio's provider-neutral LLM cost optimizer. Verify the savings on your own data, then sign in with your BiVelio account.",
+    "BiVelio Savings Layer — a provider-neutral LLM cost optimizer. Verify the savings on your own data, then sign in with your BiVelio account.",
   // NO hay `robots: noindex` global. Lo hubo, y silenciaba el sitio entero: la
   // landing de los 12 idiomas servía `noindex, nofollow`, que no es "no me
   // encuentran" sino "prohíbo indexarme y seguir mis enlaces". El bloqueo se

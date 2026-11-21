@@ -83,7 +83,7 @@
       "step": "Schritt {n} von {total}",
       "steps": {
         "welcome": {
-          "title": "Willkommen bei BiVelio Savings",
+          "title": "Willkommen bei BiVelio Savings Layer",
           "body": "Dieses Dashboard zeigt, was du für LLMs ausgibst und was die Schicht einspart – gemessen an deinem eigenen Traffic. Was nicht gemessen ist, wird in Worten gesagt, nie als Null gezeigt."
         },
         "nav": {
@@ -156,6 +156,7 @@
     "workEmail": "Geschäftliche E-Mail",
     "password": "Passwort",
     "createAccountCta": "Konto erstellen →",
+    "signupLegal": "Mit dem Erstellen des Kontos akzeptierst du die <terms>Bedingungen von Savings Cloud</terms> und die <privacy>Datenschutzerklärung</privacy>.",
     "signInCta": "Anmelden →",
     "loadingEllipsis": "…",
     "notWired": "Die Anmeldung ist noch nicht eingerichtet — setze NEXT_PUBLIC_SUPABASE_ANON_KEY im Deployment.",
@@ -163,7 +164,7 @@
     "existingAccountLoginLink": "Für diese E-Mail gibt es bereits ein Konto. Wir haben dir einen Link zum direkten Anmelden geschickt: prüfe deinen Posteingang (und den Spam) und melde dich ohne Passwort an.",
     "signupSsoNote": "Nutzt du bereits BiVelio Shield, Privacy oder die BiVelio-App? Dasselbe Konto funktioniert auch hier: melde dich an, statt ein neues zu erstellen.",
     "successTitle": "Konto bestätigt",
-    "successBody": "Deine E-Mail ist bestätigt und dein Savings-Konto ist bereit. Willkommen — der Meter wartet.",
+    "successBody": "Deine E-Mail ist bestätigt und dein Savings-Cloud-Konto ist bereit. Willkommen — der Meter wartet.",
     "successCta": "Zum Dashboard",
     "somethingWrong": "Etwas ist schiefgelaufen.",
     "forgotPassword": "Passwort vergessen?",
@@ -193,7 +194,9 @@
       "network": "Keine Verbindung. Prüf dein Netzwerk und versuch es noch mal.",
       "missingFields": "Gib deine E-Mail und dein Passwort ein."
     },
-    "signupMedir": "Oder starte gratis mit Measure: der kostenlose Cloud-Plan, ohne Karte, Schattenmodus, bis zu {seats} Sitze und {requests} Anfragen pro Tag. Er braucht @bivelio/savings-layer {version} oder neuer.",
+    "signupMedir": "Oder starte gratis mit Measure: der kostenlose Cloud-Plan, ohne Karte, Schattenmodus, bis zu {seats} Sitze und {requests} Anfragen pro Tag. Er funktioniert mit der neuesten Version von @bivelio/savings-layer.",
+    "signupPlanPro": "Du hast {plan} gewählt — {price} pro Seat und Monat. Erstelle dein Konto, bestätige deine E-Mail, und du bezahlst im Dashboard über Stripe.",
+    "signupPlanTeam": "Du hast {plan} gewählt — {price} pro Monat, {seats} Seats inklusive. Erstelle dein Konto, bestätige deine E-Mail, und du bezahlst im Dashboard über Stripe.",
     "openSourceQuestion": "Du willst nur die Open-Source-Engine?",
     "openSourceLink": "Installiere sie ohne Konto",
     "showPassword": "Passwort anzeigen",
@@ -317,7 +320,7 @@
       "tecnicaSub": "Synthetische Testreihe: Sie zeigt, wie jeder Hebel funktioniert. Sie verspricht keine Zahl.",
       "diagramRequest": "Deine Anfrage",
       "diagramA": "Arm A: unverändert gesendet, ohne die Schicht",
-      "diagramB": "Arm B: dieselbe Anfrage, über Savings",
+      "diagramB": "Arm B: dieselbe Anfrage, über Savings Layer",
       "diagramMeter": "Der Verbrauchszähler deines Anbieters misst beide"
     },
     "verify": {
@@ -419,7 +422,7 @@
         "armA": "Nicht optimierte Kopie",
         "armAHint": "Basis: was dein Anbieter ohne die Schicht berechnet",
         "armAValue": "Basis",
-        "armB": "Mit Savings",
+        "armB": "Mit Savings Layer",
         "armBHint": "Dieselbe Anfrage, von der Schicht bedient",
         "armBValue": "{change} Kosten · Punktschätzung",
         "factSample": "Stichprobe",
@@ -444,7 +447,7 @@
       "metaTitle": "Installieren · BiVelio Savings Layer",
       "eyebrow": "Integrieren",
       "title": "SDK installieren und einbinden",
-      "intro": "Setze BV-SALA vor deinen Provider. Deine Prompts laufen nicht über die Server von BiVelio; sie gehen an den Provider, den du konfigurierst.",
+      "intro": "Setze Savings Layer vor deinen Provider. Deine Prompts laufen nicht über die Server von BiVelio; sie gehen an den Provider, den du konfigurierst.",
       "irACuenta": "Noch kein Plan, oder möchten Sie die Sitze ändern? Das geht unter Konto →",
       "trackerTitle": "Deine Einrichtung",
       "trackerNote": "Diese Meilensteine misst das Produkt: Ein Klick öffnet die Anleitung, markiert aber nichts als erledigt. Sie gehören zur Cloud-Verbindung; die offene Engine läuft auch ohne sie.",
@@ -614,7 +617,7 @@
       "advanced": "Erweiterte Einstellungen",
       "projFriendly": "Deine Rechnung würde von {baseline} auf {opt} sinken — {pct}% weniger.",
       "onlyChatTitle": "Nutzt du nur ChatGPT oder Claude?",
-      "onlyChatBody": "ChatGPT ist wirklich geschlossen: feste Gebühr, keine Token-Rechnung und kein Limit zum Kürzen. Aber wenn du Claude nutzt, helfen wir dir schon beim Sparen: der savings-mode-Skill (kostenlos, auf der Startseite) dehnt deine Abo-Limits. Und wenn du eine App mit API-Key baust, misst und senkt BV-SALA dort echte Ausgaben.",
+      "onlyChatBody": "ChatGPT ist wirklich geschlossen: feste Gebühr, keine Token-Rechnung und kein Limit zum Kürzen. Aber wenn du Claude nutzt, soll der savings-mode-Skill (kostenlos, auf der Startseite) deine Abo-Limits dehnen; seine Wirkung ist noch nicht gemessen. Und wenn du eine App mit API-Key baust, misst und senkt BV-SALA dort echte Ausgaben.",
       "onlyChatCta": "Baust du eine App? Zur Installation",
       "notInvoice": "Schätzung, keine Rechnung",
       "notInvoiceBody": "Sie ergibt sich aus den Annahmen links, nicht aus deinem Traffic. Was du wirklich sparst, wird in deiner Übersicht gemessen.",
@@ -632,7 +635,7 @@
       "errPaymentPending": "Deine Zahlung wird noch bestätigt. Sobald das erledigt ist, erscheint dein Lizenzschlüssel hier — du musst nicht noch einmal bezahlen.",
       "keyLabel": "dein Lizenzschlüssel{suffix} — wird einmal angezeigt, kopiere ihn jetzt",
       "validUntil": " · gültig bis {date}",
-      "pasteHint": "Füge ihn in <code></code> ein, um das SDK freizuschalten. Er läuft am Ende des Abrechnungszeitraums ab: Füge unten einen Service-Account-Schlüssel hinzu, dann erneuert ihn das SDK von selbst.",
+      "pasteHint": "Füge ihn in <code></code> ein, um das SDK mit deinem Cloud-Plan zu verbinden. Er läuft am Ende des Abrechnungszeitraums ab: Füge unten einen Service-Account-Schlüssel hinzu, dann erneuert ihn das SDK von selbst.",
       "issuing": "Wird ausgestellt…",
       "getKey": "Hol dir deinen Lizenzschlüssel →",
       "priceNote": "{monthly} pro Seat und Monat oder {yearly} pro Seat und Jahr. Noch kein Abonnement für dieses Konto? Starte eines unter Konto."
@@ -674,15 +677,15 @@
       "colRequests": "Anfragen",
       "colTokens": "Tokens",
       "colCost": "Kosten",
-      "hint": "Sitzungen und Subagenten deiner Coding-Terminals (opake Ids — nie eine Person). Erfordert das Gateway ab 0.4.7."
+      "hint": "Sitzungen und Subagenten deiner Coding-Terminals (opake Ids — nie eine Person)."
     },
     "gatewayVersion": {
-      "title": "Einige Maschinen haben in den letzten 7 Tagen keine gemessene Ersparnis erzeugt",
+      "title": "Einige Maschinen haben in den letzten 7 Tagen Ausgaben, aber keine Ersparnis gemessen",
       "summary": "{n} von {total} Gateway-Maschinen (oder ohne Angabe), die in den letzten 7 Tagen aktiv waren, haben keine gemessene Ersparnis erzeugt.",
       "outdated": "{n, plural, one {# Maschine läuft} other {# Maschinen laufen}} mit einem Gateway älter als {minima}, der ersten Version mit dem Tarifhebel: aktualisiere es.",
       "undeclared": "{n, plural, one {# Maschine meldet} other {# Maschinen melden}} keine Version (Gateway älter als der Versionskanal). Ist sie älter als {minima}, hat sie keinen Tarifhebel.",
-      "noLever": "{n, plural, one {# Maschine ist aktuell} other {# Maschinen sind aktuell}}, aber der Hebel hat dort nicht gegriffen. Bleibt es nach dem Update so, schreib an support@bivelio.com.",
-      "action": "Aktualisiere @bivelio/savings-layer auf dieser Maschine und starte das Terminal neu; die Maschinentabelle unten zeigt, was jede meldet."
+      "noLever": "{n, plural, one {# Maschine ist aktuell und hat keine Ersparnis gemessen} other {# Maschinen sind aktuell und haben keine Ersparnis gemessen}}. Das ist zu erwarten, wenn der Client den fünfminütigen Cache anfordert (Standard bei Claude Code mit API-Schlüssel), wenn die Maschine nur misst oder bei einem Claude- oder ChatGPT-Abo.",
+      "action": "Ist eine Maschine veraltet, aktualisiere dort @bivelio/savings-layer und starte das Terminal neu; die Maschinentabelle unten zeigt, was jede meldet."
     },
     "gatewayBruto": {
       "title": "Einige Maschinen melden ihre Ersparnis noch brutto",
@@ -695,7 +698,7 @@
       "action": "Aktualisiere das SDK auf dieser Maschine auf {minima} oder neuer und starte den Prozess neu:"
     },
     "migrar05": {
-      "note": "Die neueste Version ist 0.5 und enthält inkompatible Änderungen.",
+      "note": "Du aktualisierst von einer Version vor 0.5? Version 0.5 enthält inkompatible Änderungen.",
       "link": "Lies vor dem Update den Migrationsleitfaden →"
     },
     "maquinas": {
@@ -744,8 +747,8 @@
       "gatewayNote": "<b>Coding-Agent statt App?</b> Dasselbe Paket bringt ein lokales Mess-Gateway mit: <code>bvsala claude</code> startet Claude Code darüber und dieses Panel zeigt die Ausgaben, Token für Token. Es startet ganz ohne Schlüssel (Community-Modus); der optionale Service-Schlüssel aus Schritt 2 ergänzt dieses Dashboard und die Org-Berechtigungen.",
       "doctorComment": "weitere Agents und SDKs: die genaue Konfiguration für jeden",
       "agentsNote": "Jeder Wrapper richtet seinen Agenten nur für diese Sitzung ein — nichts an seiner Konfiguration ändert sich — und sagt dir beim Beenden, wie viele Anfragen er gemessen hat, welche er nicht messen konnte und warum. <code>bvsala copilot</code> braucht deinen eigenen Anthropic-Schlüssel (BYOK): GitHub-gehostete Modelle laufen nie über eine Basis-URL, also gibt es nichts zu messen. Für Crush, Droid, Cline, Continue oder Copilot in VS Code gibt <code>bvsala doctor</code> die genaue Konfiguration aus. <b>Cursor (BYOK)</b>: funktioniert über die OpenAI-Basis-URL-Überschreibung mit deinem eigenen Schlüssel; seine eigenen Modelle erreichen nie ein Gateway auf deinem Rechner. <b>Gemini CLI</b>: starte sie mit <code>bvsala gemini</code>.",
-      "pythonNote": "<b>Python?</b> Der Python-Client <code>bvsala</code> leitet die offiziellen SDKs von OpenAI und Anthropic über dasselbe Gateway (<code>bvsala gateway</code>) und gibt deinem Code den Bericht jeder Anfrage zurück — dieselben Zahlen, die dieses Panel erhält. Er braucht ein Gateway ab Version 0.4.26 und Python ab 3.10. Installiert wird er von PyPI mit <code>pip install bivelio-savings-layer</code>; im Code dann <code>import bvsala</code>.",
-      "finalNote": "Das war's. Ein gesetzter, aber ungültiger Schlüssel → <code>generate()</code> verweigert. Wenn dein Plan gekündigt wird, stoppt das SDK innerhalb von ~15 Min über <code>licenseServerUrl</code> — ohne Neustart, und es legt niemals deine Produktion lahm, falls wir nicht erreichbar sind.",
+      "pythonNote": "<b>Python?</b> Der Python-Client <code>bvsala</code> leitet die offiziellen SDKs von OpenAI und Anthropic über dasselbe Gateway (<code>bvsala gateway</code>) und gibt deinem Code den Bericht jeder Anfrage zurück — dieselben Zahlen, die dieses Panel erhält. Er braucht Python ab 3.10. Installiert wird er von PyPI mit <code>pip install bivelio-savings-layer</code>; im Code dann <code>import bvsala</code>.",
+      "finalNote": "Das war's. Ein gesetzter, aber ungültiger Schlüssel → <code>generate()</code> verweigert. Wenn dein Plan gekündigt wird, stoppt das SDK innerhalb von ~15 Min über <code>licenseServerUrl</code> — ohne Neustart, und es legt niemals deine Produktion lahm, falls wir nicht erreichbar sind. Entferne die Schlüssel, und die Schicht läuft wieder im Community-Modus.",
       "terminal": "Terminal",
       "sdkEyebrow": "Anwendung",
       "sdkTitle": "Eine Anwendung integrieren (SDK)",
@@ -900,7 +903,7 @@
       "graceTitle": "Lizenz abgelaufen — läuft noch",
       "graceBody": "Deine Lizenz ist am {date} abgelaufen und läuft noch {days, plural, one {# Tag} other {# Tage}} weiter. Verlängere sie, um eine Unterbrechung zu vermeiden.",
       "expiredTitle": "Lizenz abgelaufen",
-      "expiredBody": "Deine Lizenz ist am {date} abgelaufen. BV-SALA ist fail-closed, das SDK hat sich beendet.",
+      "expiredBody": "Deine Lizenz ist am {date} abgelaufen. Eine mit diesem Lizenzschlüssel gestartete Schicht lehnt jetzt Anfragen ab. Verlängere sie oder entferne die BiVelio-Schlüssel, um im Community-Modus weiterzulaufen (kostenlos, ohne Dashboard).",
       "revokedTitle": "Lizenz widerrufen",
       "revokedBody": "Diese Lizenz wurde widerrufen. Schreib an support@bivelio.com, wenn das ein Fehler ist."
     },
@@ -1236,8 +1239,8 @@
       "sub": "Betreibe die Open-Source-Engine in deiner eigenen Infrastruktur. Verbinde Savings Cloud, um Messung und Verwaltung für dein Team zu bündeln – zu festen Gebühren.",
       "ctaStart": "Mit Measure starten",
       "ctaBench": "Reproduzierbare Ergebnisse ansehen",
-      "panelAlt": "Das Savings-Dashboard mit den Daten des öffentlichen Benchmarks: die gemessene Einsparung und ihre Aufteilung nach Modell.",
-      "panelCaption": "Dashboard mit den Daten des öffentlichen Benchmarks",
+      "panelAlt": "Das Savings-Cloud-Dashboard mit den Daten des öffentlichen Benchmarks: die gemessene Einsparung und ihre Aufteilung nach Modell.",
+      "panelCaption": "Demo-Dashboard mit dem {bateria}-Lauf des öffentlichen Benchmarks: Die {titular} beziehen sich auf alle vier Modelle zusammen. Der Beleg zeigt nur {modelo}.",
       "medidoEnVivo": "Live gemessen mit dem Zähler jedes Anbieters",
       "note": "In Minuten installiert. Deine Nachrichten laufen nie über unsere Server.",
       "proofTitle": "Gegen echten Provider gemessen",
@@ -1256,11 +1259,11 @@
       "pasos": [
         {
           "title": "KI wird pro Wort abgerechnet",
-          "body": "Jede Anfrage an eine KI wird nach dem Text bezahlt, der hinein- und hinausgeht. Savings stellt sich mitten auf diesen Weg: Eine Anfrage, die es schon gesehen und geprüft hat, wird beantwortet, ohne den Anbieter erneut aufzurufen – und was du nicht bezahlen musstest, fällt in dein Glas."
+          "body": "Jede Anfrage an eine KI wird nach dem Text bezahlt, der hinein- und hinausgeht. Savings Layer stellt sich mitten auf diesen Weg: Eine Anfrage, die es schon gesehen und geprüft hat, wird beantwortet, ohne den Anbieter erneut aufzurufen – und was du nicht bezahlen musstest, fällt in dein Glas."
         },
         {
           "title": "Du zahlst nicht zweimal für dasselbe",
-          "body": "Die KI liest bei jedem Zug alles neu, was Sie ihr schon geschickt hatten — und der Anbieter berechnet es erneut. Savings bereitet jede Anfrage so vor, dass der Anbieter seinen reduzierten Preis auf die Wiederholungen anwendet. Der Rabatt kommt vom Anbieter; unser Teil ist, ihn richtig anzufordern."
+          "body": "Die KI liest bei jedem Zug alles neu, was Sie ihr schon geschickt hatten — und der Anbieter berechnet es erneut. Savings Layer bereitet jede Anfrage so vor, dass der Anbieter seinen reduzierten Preis auf die Wiederholungen anwendet. Der Rabatt kommt vom Anbieter; unser Teil ist, ihn richtig anzufordern."
         },
         {
           "title": "Ein Beleg, den du prüfen kannst",
@@ -1276,8 +1279,8 @@
     "step2": {
       "eyebrow": "Keine Versprechen: Messungen",
       "title": "Woher wissen wir, dass es spart? Wir messen es — und wir veröffentlichen jeden einzelnen Versuch.",
-      "body": "Jedes SDK-Szenario läuft zweimal gegen den echten Anbieter: unverändert und mit Savings davor. Beide Arme werden anhand der vom Anbieter gemeldeten Nutzung zu versionierten Listenpreisen bewertet, nicht mit einer Rechnung abgestimmt. Das kam heraus, samt Fehlermarge:",
-      "videoCaption": "Der Test ist ein faires Experiment: dieselbe Aufgabe zweimal — ohne Savings und mit Savings — und derselbe Zähler des Anbieters zählt beide.",
+      "body": "Jedes SDK-Szenario läuft zweimal gegen den echten Anbieter: unverändert und mit Savings Layer davor. Beide Arme werden anhand der vom Anbieter gemeldeten Nutzung zu versionierten Listenpreisen bewertet, nicht mit einer Rechnung abgestimmt. Das kam heraus, samt Fehlermarge:",
+      "videoCaption": "Der Test ist ein faires Experiment: dieselbe Aufgabe zweimal — ohne Savings Layer und mit Savings Layer — und derselbe Zähler des Anbieters zählt beide.",
       "plainTitle": "Übersetzung, ohne Fachjargon",
       "plain": "Bei einem Strom, in dem sich {rep} der Anfragen exakt wiederholen, sank die Rechnung um {punto} — zwischen {bajo} und {alto} mit 95 % Konfidenz. Was du sparst, hängt davon ab, wie oft sich dein Traffic wiederholt.",
       "plainNote": "Ein Prozentsatz bedeutet nichts ohne sein Intervall, sein Modell und seinen Traffic: Wir veröffentlichen alle drei.",
@@ -1313,8 +1316,8 @@
     ],
     "skill": {
       "eyebrow": "savings-mode · kostenloser Skill",
-      "title": "Der Skill, der deine Abo-Limits dehnt",
-      "body": "Keine Rechnung heißt nicht kein Schmerz: das Fünf-Stunden-Fenster und das Wochenlimit. savings-mode ist ein Skill aus reinen Anweisungen — kein Proxy, dein Traffic bleibt unberührt — der die zwei Massen kürzt, die wirklich Limit verbrennen: Modellausgabe und Tool-Ergebnisse. Er ist kostenlos; wofür man Savings bezahlt, ist zu wissen, wie viel er dir spart.",
+      "title": "Ein Skill, der deine Abo-Limits dehnen soll — Wirkung noch nicht gemessen",
+      "body": "Keine Rechnung heißt nicht kein Schmerz: das Fünf-Stunden-Fenster und das Wochenlimit. savings-mode ist ein Skill aus reinen Anweisungen — kein Proxy, dein Traffic bleibt unberührt — der auf die zwei Massen zielt, die wirklich Limit verbrennen: Modellausgabe und Tool-Ergebnisse. Er ist kostenlos.",
       "mLectura": "Cache-Lesevorgänge",
       "mLecturaDesc": "Der gesamte Kontext wird in jedem Zug neu gelesen — deshalb zählt, ihn schlank zu halten.",
       "mEscritura": "Cache-Schreiben (eine Stunde)",
@@ -1341,7 +1344,7 @@
     "gateway": {
       "eyebrow": "Gateway · Coding-Terminals",
       "title": "Claude Code mit API-Schlüssel? Sieh die echten Ausgaben, Token für Token.",
-      "body": "Ein einziger Befehl setzt einen lokalen Zähler vor dein Terminal, ohne deinen Code anzufassen: Du exportierst deinen Service-Schlüssel und startest deinen Agenten über bvsala. Deine Prompts laufen nicht über die Server von BiVelio: Sie gehen an den Anbieter, den du konfigurierst, und in dein Dashboard gelangen nur Zählwerte und Kosten.",
+      "body": "Ein einziger Befehl setzt einen lokalen Zähler vor dein Terminal, ohne deinen Code anzufassen und ohne Schlüssel: Du startest deinen Agenten über bvsala. Einen Service-Schlüssel fügst du nur hinzu, wenn du die Ausgaben in deinem Savings-Cloud-Dashboard sehen willst. Deine Prompts laufen nicht über die Server von BiVelio: Sie gehen an den Anbieter, den du konfigurierst, und in dein Dashboard gelangen nur Zählwerte und Kosten.",
       "note": "Das Gateway misst mit dem Zähler deines Anbieters jede Anfrage, für die dieser die Nutzung meldet (bei den Modellen in unserem Preiskatalog), und startet, wie das SDK, ganz ohne Schlüssel (Community-Modus): ein optionaler Service-Schlüssel ergänzt das Dashboard und die Org-Berechtigungen. Bei Anthropic-Modellen wendet es außerdem standardmäßig einen Hebel an, ohne Lizenz und ohne Konto: Es stellt Cache-Schreibvorgänge von der einstündigen auf die fünfminütige TTL um — nur bei Zügen, in denen ein großer Teil des Prompts neu ist, etwa beim ersten Zug einer Sitzung oder nach einer Kompaktierung — und lässt die verketteten Züge unverändert. Das ändert den Preis, nie den Inhalt, den das Modell liest. Etwas zu senken gibt es nur, wenn dein Client pro Token zahlt und den einstündigen Cache anfordert: Claude Code mit API-Schlüssel fordert den fünfminütigen an, solange du das nicht änderst, und dann misst das Gateway nur. Die übrigen Hebel bleiben aus, bis du sie einschaltest. Der Skill savings-mode steht für deine Limits bereit, seine Wirkung ist noch zu messen. Das Gateway funktioniert auch mit Codex CLI, Goose, Qwen Code, opencode, Kilo, Aider und, mit deinem eigenen Anthropic-Schlüssel, GitHub Copilot CLI; für andere wie Cline oder Continue gibt bvsala doctor die genaue Konfiguration aus. Cursor funktioniert über die OpenAI-Base-URL-Überschreibung mit deinem eigenen Schlüssel, und die Gemini CLI läuft über bvsala gemini.",
       "pythonNote": "Python oder eine andere Sprache? Richte das offizielle SDK von OpenAI oder Anthropic auf das Gateway, und jede Anfrage, deren Verbrauch der Anbieter meldet, wird für ein Modell mit Listenpreis in diesem Panel zu diesem Preis erfasst; das Log des Gateways sagt, wenn eine nicht gemessen wird. bvsala doctor gibt die Base-URL für jedes SDK aus. Fordere beim Streaming mit OpenAI den Verbrauch in der Anfrage an (stream_options.include_usage).",
       "cta": "So funktioniert es →"
@@ -1416,16 +1419,16 @@
     },
     "footer": {
       "ctaTitle": "Messen Sie es an Ihrem eigenen Traffic",
-      "ctaSub": "Einmal installiert, liefert jeder Aufruf seinen SavingsReport, mit Gemessenem und Geschätztem getrennt. Open Core braucht keinen Schlüssel: Die Hebel laufen lokal mit null Telemetrie. Die optionale Cloud startet gratis mit Measure und wird pro Sitz abgerechnet, ohne Provision auf deine Ersparnis (@bivelio/savings-layer {version} oder neuer).",
+      "ctaSub": "Einmal installiert, liefert jeder Aufruf seinen SavingsReport, mit Gemessenem und Geschätztem getrennt. Open Core braucht keinen Schlüssel: Die Hebel laufen lokal mit null Telemetrie. Die optionale Cloud startet gratis mit Measure und wird pro Sitz abgerechnet, ohne Provision auf deine Ersparnis.",
       "ctaStart": "Loslegen",
-      "tagline": "Das Betriebssystem für Ihr Unternehmen. Das ist <b>BV‑SALA</b>, BiVelios anbieterneutraler LLM-Kostenoptimierer — jede gemessene Zahl ist gegen den Zähler des Anbieters gemessen; Schätzungen und Simulationen werden getrennt gezeigt, als solche benannt, und nie berechnet.",
+      "tagline": "<b>BiVelio Savings Layer</b> ist ein anbieterneutraler LLM-Kostenoptimierer — jede gemessene Zahl ist gegen den Zähler des Anbieters gemessen; Schätzungen und Simulationen werden getrennt gezeigt, als solche benannt, und nie berechnet.",
       "badge": "BV‑SALA · Savings Layer",
       "colSavings": "Savings Layer",
       "colBivelio": "BiVelio",
       "colLegal": "Rechtliches",
       "measured": "Gemessene Ergebnisse",
       "benchmarks": "Offener Benchmark",
-      "migrate": "Auf 0.5 migrieren",
+      "migrate": "Migrationsleitfaden",
       "pricing": "Preise",
       "home": "Startseite",
       "docs": "Dokumentation",
@@ -1453,7 +1456,7 @@
     },
     "cta15": {
       "titulo": "15-Minuten-Gespräch anfragen",
-      "sub": "Wir sagen dir, was du mit deinem Traffic sparen würdest — ohne etwas zu installieren.",
+      "sub": "Wir zeigen dir, wie du deine Ersparnis mit deinem eigenen Traffic misst — kostenlos.",
       "placeholder": "du@firma.com",
       "boton": "15-Minuten-Gespräch anfragen",
       "enviando": "Wird gesendet…",
@@ -1566,7 +1569,7 @@
     },
     "ways": {
       "eyebrow": "Offene Engine, Cloud optional",
-      "title": "Zwei Wege, Savings zu nutzen.",
+      "title": "Zwei Wege, Savings Layer zu nutzen.",
       "sub": "Die Engine ist dieselbe. Es ändert sich, wo du sie verwaltest und was deine Infrastruktur verlässt.",
       "q": {
         "runs": "Wo es läuft",
@@ -1594,7 +1597,7 @@
         "tag": "Optional · kostenlos starten",
         "lede": "Das Dashboard, das Messung und Verwaltung für dein Team bündelt.",
         "runs": "Die Engine bleibt in deiner Infrastruktur. Cloud ergänzt das Dashboard.",
-        "account": "Ein Savings-Konto und ein Service-Schlüssel.",
+        "account": "Ein Savings-Cloud-Konto und ein Service-Schlüssel.",
         "telemetry": "Zählwerte und Kosten, je nach Tarif. Deine Prompts laufen nicht über die Server von BiVelio.",
         "manage": "Team-Dashboard, Organisation und Lizenzen.",
         "plans": "Tarife ansehen",
@@ -1636,7 +1639,7 @@
         },
         {
           "q": "Was ist ein Seat?",
-          "a": "Eine Maschine oder eine Dienstidentität, die Savings ausführt. Keine Person: Die Mitglieder deines Teams werden getrennt im Dashboard verwaltet. CI-Runner und kurzlebige Runner zählen nicht als Seats."
+          "a": "Eine Maschine oder eine Dienstidentität, die Savings Layer ausführt. Keine Person: Die Mitglieder deines Teams werden getrennt im Dashboard verwaltet. CI-Runner und kurzlebige Runner zählen nicht als Seats."
         },
         {
           "q": "Worin unterscheiden sich Measure und Community?",
@@ -1644,7 +1647,7 @@
         },
         {
           "q": "Hilft es bei einem Abo wie ChatGPT Plus?",
-          "a": "Nicht als Ersparnis auf einer Rechnung. Savings optimiert und misst Aufrufe einer API, die nach Verbrauch bezahlt wird; ein Pauschal-Abo ist keine optimierbare API-Rechnung. Über das Gateway wird dieser Traffic gemessen, aber es wird ihm keine Ersparnis gutgeschrieben. Für die Limits eines Abos gibt es den Skill savings-mode, eine ergänzende Ressource, deren Wirkung noch nicht gemessen ist."
+          "a": "Nicht als Ersparnis auf einer Rechnung. Savings Layer optimiert und misst Aufrufe einer API, die nach Verbrauch bezahlt wird; ein Pauschal-Abo ist keine optimierbare API-Rechnung. Über das Gateway wird dieser Traffic gemessen, aber es wird ihm keine Ersparnis gutgeschrieben. Für die Limits eines Abos gibt es den Skill savings-mode, eine ergänzende Ressource, deren Wirkung noch nicht gemessen ist."
         },
         {
           "q": "Muss ich den Anbieter wechseln?",
@@ -1752,7 +1755,7 @@
     "labelFor": "Für",
     "panelTitle": "Ein Team, <em>ein Dashboard</em>.",
     "panelBody": "Wenn Sie annehmen, erhalten Sie mit Ihrem eigenen Konto Zugang zum Dashboard der Organisation. Die Seats des Abos zählen Maschinen oder Dienstidentitäten, keine Personen.",
-    "arteAlt": "Illustration: eine Organisation und ihr Savings-Dashboard, bereits verbunden, und ein dritter Kreis, der in den freien Platz rückt."
+    "arteAlt": "Illustration: eine Organisation und ihr Savings-Cloud-Dashboard, bereits verbunden, und ein dritter Kreis, der in den freien Platz rückt."
   },
   "benchmarksPage": {
     "metaTitle": "Öffentlicher A/B-Benchmark: Messen Sie uns | BiVelio Savings Layer",
@@ -1761,7 +1764,7 @@
     "title": "Unser A/B-Benchmark, offen einsehbar.",
     "titleAccent": "Messen Sie uns.",
     "titleMark": "Messen Sie uns",
-    "lede": "Wir veröffentlichen jeden Lauf: vier Testreihen mit öffentlichen Datensätzen, {modelos} Modelle, und beide Arme gemessen mit dem eigenen Nutzungszähler des Anbieters. Jede Zahl trägt ihr n, ihr Intervall und ihr Datum. Was nicht einspart, steht auch hier.",
+    "lede": "Wir veröffentlichen die unten aufgeführten Läufe: vier Testreihen mit öffentlichen Datensätzen, {modelos} Modelle, und beide Arme gemessen mit dem eigenen Nutzungszähler des Anbieters. Jede Zahl trägt ihr n, ihr Intervall und ihr Datum. Was nicht einspart, steht auch hier.",
     "stats": {
       "batteries": "Testreihen",
       "models": "getestete Modelle",
@@ -1782,7 +1785,7 @@
     },
     "weekly": {
       "title": "Wöchentlicher Live-Benchmark",
-      "intro": "Jede Woche, und immer wenn wir ihn von Hand starten, schickt ein Lauf alle Batterien durch alle Modelle: Arm A geht direkt zum Anbieter, Arm B durch die Schicht, gebaut aus dem Quellcode von main zu diesem Zeitpunkt. Das ist keine veröffentlichte Version, sondern das, was gleich veröffentlicht wird. Der Lauf schlägt fehl, wenn irgendeine Regel verletzt wird, und eine Zelle, die nicht gemessen werden konnte, sagt, warum.",
+      "intro": "Ein Lauf schickt alle Batterien durch alle Modelle: Arm A geht direkt zum Anbieter, Arm B durch die Schicht, gebaut aus dem Quellcode von main zu diesem Zeitpunkt. Das ist keine veröffentlichte Version, sondern das, was gleich veröffentlicht wird. Der Lauf schlägt fehl, wenn irgendeine Regel verletzt wird, und eine Zelle, die nicht gemessen werden konnte, sagt, warum.",
       "meta": "Lauf vom {fecha} · Quellcode von main bei Commit {commit} (Paketversion {version}) · ausgegeben {gasto} von einem Limit von {tope} · {medidas} von {celdas} Zellen gemessen.",
       "verdictOk": "Ergebnis: keine Regressionen.",
       "verdictFailed": "Ergebnis: der Lauf ist fehlgeschlagen (verletzte Regeln: {n}).",
@@ -2109,16 +2112,16 @@
   },
   "howItWorks": {
     "metaTitle": "Wo wird die Ersparnis installiert? · BiVelio Savings Layer",
-    "metaDescription": "Savings läuft in deiner Infrastruktur, als SDK oder lokales Gateway. Open-Source-Engine, optionale Savings Cloud: was es spart, wo nicht, wie wir messen.",
+    "metaDescription": "BiVelio Savings Layer läuft in deiner Infrastruktur, als SDK oder lokales Gateway. Open-Source-Engine, optionale Savings Cloud: was es spart, wo nicht, wie wir messen.",
     "eyebrow": "Die Schicht, erklärt · ohne Jargon",
     "title": "Wo wird",
     "titleAccent": "die Ersparnis installiert?",
     "titleMark": "installiert",
-    "lede": "BV‑SALA ist keine App, keine Erweiterung und keine ChatGPT-Einstellung. Es ist ein Stück Code, das ein Entwickler in seine eigene Anwendung einbaut — genau dort, wo diese Anwendung die API des Anbieters aufruft. Sparen kann es nur, wo eine Token-Rechnung existiert — und messen nur, wo es jede Anfrage vorbeiziehen sieht.",
+    "lede": "BiVelio Savings Layer ist keine App, keine Erweiterung und keine ChatGPT-Einstellung. Es ist ein Stück Code, das ein Entwickler in seine eigene Anwendung einbaut — genau dort, wo diese Anwendung die API des Anbieters aufruft. Sparen kann es nur, wo eine Token-Rechnung existiert — und messen nur, wo es jede Anfrage vorbeiziehen sieht.",
     "s1Title": "Die Schicht lebt in deinem Code",
-    "s1Sub": "Derselbe Aufruf, mit und ohne Schicht. Der Traffic geht immer direkt von deiner Anwendung zum Anbieter — BV‑SALA ist kein Zwischenserver und sieht deine Daten nie von außen.",
-    "flowWithout": "Ohne BV‑SALA",
-    "flowWith": "Mit BV‑SALA",
+    "s1Sub": "Derselbe Aufruf, mit und ohne Schicht. Der Traffic geht immer direkt von deiner Anwendung zum Anbieter — Savings Layer ist kein Zwischenserver und sieht deine Daten nie von außen.",
+    "flowWithout": "Ohne Savings Layer",
+    "flowWith": "Mit Savings Layer",
     "nodeApp": "Deine Anwendung",
     "nodeAppSubBefore": "jede Anfrage geht komplett raus",
     "nodeAppSubAfter": "gleicher Geschäftscode",
@@ -2130,16 +2133,16 @@
     "billReport": "+ SavingsReport",
     "s1Note": "Dieses grüne Kästchen ist ein npm-Paket im Code der Anwendung. Deshalb lautet die Schlüsselfrage nie „Was installiere ich?“, sondern <b>„Wer hat den Code geschrieben, der die API aufruft?“</b> — diese Person kann es installieren. Die Ausnahmen sind ein Coding-Terminal wie Claude Code und eine App in beliebiger Sprache, die das offizielle SDK von OpenAI oder Anthropic nutzt und dessen Base-URL festlegen lässt: dort setzt sich das Gateway von bvsala davor, ohne eine Zeile Code anzufassen. Dieser Traffic wird für Modelle mit Listenpreis gemessen; die Einsparhebel des npm-Pakets laufen dort nicht, und die des Gateways selbst gelten nur für Anthropic-Traffic, kostenlos und ohne Schlüssel.",
     "s2Title": "Dein Fall, in 10 Sekunden",
-    "s2Sub": "Vier Arten, KI zu nutzen — und was BV‑SALA in jeder davon tun kann.",
+    "s2Sub": "Vier Arten, KI zu nutzen — und was Savings Layer in jeder davon tun kann.",
     "caseChatSub": "App oder Web, gratis oder bezahlt",
-    "caseChatBody": "Du zahlst eine feste Gebühr (oder nichts): Es gibt keine Token-Rechnung zu senken, und es ist ein geschlossenes Produkt, in das niemand Software zwischen App und Modelle schieben kann. Die Ersparnis von BV‑SALA greift hier nicht — und kein Produkt kann sie dort ehrlich versprechen.",
+    "caseChatBody": "Du zahlst eine feste Gebühr (oder nichts): Es gibt keine Token-Rechnung zu senken, und es ist ein geschlossenes Produkt, in das niemand Software zwischen App und Modelle schieben kann. Die Ersparnis von Savings Layer greift hier nicht — und kein Produkt kann sie dort ehrlich versprechen.",
     "caseClaudeSub": "claude.ai, gratis oder bezahlt",
     "caseClaudeBody": "Festes Abo: keine Token-Rechnung zu messen — aber Limits (das Fünf-Stunden-Fenster und das Wochenlimit). Genau dafür gibt es den savings-mode-Skill: kostenlos, in einer Minute auf claude.ai hochgeladen, gegen die zwei Massen, die Limit verbrennen. Seine Wirkung wird veröffentlicht, sobald sie gemessen ist — nie vorher.",
     "caseCodeSub": "Terminal, mit API-Schlüssel",
     "caseCodeBody": "Im Abo ist die Gebühr fest — aber limitiert: derselbe Skill installiert sich mit einem Befehl und dehnt dasselbe Wochenlimit. Mit API-Key gibt es eine echte Token-Rechnung — und der Meter läuft schon: Ganz ohne BiVelio-Schlüssel startet „bvsala claude“ Claude Code durch das lokale Gateway, ohne eine Zeile Code anzufassen. Das Gateway misst auf deinem Rechner, was hindurchgeht, mit der Nutzung, die dein Anbieter meldet, und sagt dir beim Beenden, wie viele Anfragen es gemessen hat, welche nicht und warum. Bei Anthropic-Modellen stellt es außerdem Cache-Schreibvorgänge von der einstündigen auf die fünfminütige TTL um, nur bei Zügen, in denen ein großer Teil des Prompts neu ist (der erste Zug einer Sitzung, eine Kompaktierung): eine Ersparnis, berechnet auf der Token-Zählung deines eigenen Anbieters, nie auf einer Schätzung. Dafür muss Claude Code den einstündigen Cache anfordern, und mit API-Key tut es das nicht, solange du es nicht einstellst: Standardmäßig misst das Gateway nur. Mit einem Schlüssel für Savings Cloud siehst du deine Ausgaben zusätzlich im Dashboard, Token für Token.",
     "caseAppName": "Deine Anwendung",
     "caseAppSub": "dein Code + dein API-Schlüssel",
-    "caseAppBody": "Der Fall, für den BV‑SALA existiert. Deine App ruft die API mit deinem Schlüssel, der Anbieter berechnet jeden Token, und die Schicht installiert sich in zwei Schritten: Paket und Aufruf umhüllen. Ab der ersten Anfrage liefert sie einen <b>SavingsReport</b> mit der Ersparnis, getrennt in gemessen und geschätzt.",
+    "caseAppBody": "Der Fall, für den Savings Layer existiert. Deine App ruft die API mit deinem Schlüssel, der Anbieter berechnet jeden Token, und die Schicht installiert sich in zwei Schritten: Paket und Aufruf umhüllen. Ab der ersten Anfrage liefert sie einen <b>SavingsReport</b> mit der Ersparnis, getrennt in gemessen und geschätzt.",
     "verdictNothing": "Nichts zu installieren",
     "verdictSkill": "Skill verfügbar",
     "verdictMeasures": "Misst schon",
@@ -2173,7 +2176,7 @@
       "eyebrow": "Architektur",
       "title": "Von deinem Code",
       "accent": "zu deinem Anbieter",
-      "lede": "Savings läuft in deiner Infrastruktur: als SDK im Prozess deiner Anwendung oder als lokales Gateway davor. Der Inhalt jeder Anfrage geht an den Anbieter, den du konfigurierst; er läuft nicht über die Server von BiVelio.",
+      "lede": "Savings Layer läuft in deiner Infrastruktur: als SDK im Prozess deiner Anwendung oder als lokales Gateway davor. Der Inhalt jeder Anfrage geht an den Anbieter, den du konfigurierst; er läuft nicht über die Server von BiVelio.",
       "app": "Deine Anwendung",
       "appSub": "dein Code und dein API-Schlüssel",
       "agent": "Dein Coding-Agent",
@@ -2223,9 +2226,9 @@
     },
     "pieces": {
       "eyebrow": "Übersicht",
-      "title": "Die Bausteine von Savings",
+      "title": "Die Bausteine von Savings Layer",
       "lede": "Eine Übersicht der Bausteine, nicht fünf Stufen, die jede Anfrage durchläuft. Wähle einen aus, um zu sehen, was er tut, wo er läuft und ob er ein Konto braucht.",
-      "tablist": "Bausteine von Savings",
+      "tablist": "Bausteine von Savings Layer",
       "what": "Was er tut",
       "where": "Wo er läuft",
       "account": "Konto",
@@ -2280,7 +2283,7 @@
     "title": "Open-Source-Engine.",
     "titleAccent": "Cloud-Kontrolle für dein Team.",
     "titleMark": "Team",
-    "governs": "Diese Seite beschreibt, wie der Dienst heute funktioniert; maßgeblich sind die <license>LICENSE</license> und die <terms>BiVelio-Bedingungen</terms>.",
+    "governs": "Diese Seite beschreibt, wie der Dienst heute funktioniert; maßgeblich sind die <license>Bedingungen von Savings Cloud (LICENSE-CLOUD.md)</license> und die <terms>BiVelio-Bedingungen</terms>.",
     "lede": "Die Engine ist Open Source: kein Schlüssel nötig. Diese Seite bepreist Savings Cloud, die optionale Cloud — Measure gratis, dann Pro pro Sitz oder ein Team-Plan, ohne Provision auf deine Ersparnis. Jede Zahl hier kommt aus demselben Code, der dich abrechnet, und ändert sich, wenn sich der Preis ändert.",
     "plans": {
       "title": "Pläne",
@@ -2404,7 +2407,7 @@
         "unit": "Kostenloser Cloud-Tarif im Schattenmodus.",
         "summary": "Messen, ohne etwas zu ändern: Deine Anfragen erreichen deinen Anbieter genau so, wie du sie baust, und das Dashboard zeigt, was gespart worden wäre.",
         "cta": "Mit Measure starten",
-        "version": "Erfordert @bivelio/savings-layer {version} oder neuer."
+        "version": "Funktioniert mit der neuesten Version von @bivelio/savings-layer."
       },
       "pro": {
         "summary": "Alle Optimierungen, der Beleg pro Anfrage und das Dashboard. Feste Gebühr, fällig, ob du sparst oder nicht.",
@@ -2434,7 +2437,7 @@
     "metaDescription": "Die genaue Liste dessen, was das SDK und das lokale Gateway an BiVelio senden, was sie nie senden und wie lange BiVelio es aufbewahrt.",
     "eyebrow": "Datenschutz",
     "title": "Was deine Infrastruktur verlässt",
-    "governs": "Diese Seite beschreibt, wie der Dienst heute funktioniert; maßgeblich sind die <license>LICENSE</license> und die <terms>BiVelio-Bedingungen</terms>.",
+    "governs": "Diese Seite beschreibt, wie der Dienst heute funktioniert; maßgeblich sind die <license>Bedingungen von Savings Cloud (LICENSE-CLOUD.md)</license> und die <terms>BiVelio-Bedingungen</terms>.",
     "lede": "Was die Software (das SDK und das lokale Gateway) an BiVelio sendet, was sie nie sendet und wie lange BiVelio es aufbewahrt.",
     "never": {
       "title": "Was nie an BiVelio gesendet wird",
@@ -2444,7 +2447,7 @@
     },
     "usage": {
       "title": "Nutzungsdatensätze",
-      "when": "Das SDK sendet Nutzungsdatensätze nur, wenn du einen Lizenzserver oder eine Metering-URL konfigurierst; das lokale Gateway immer. Jeder Stapel trägt deinen BiVelio-Dienstkontoschlüssel, der deine Organisation identifiziert, sowie Oberfläche und Version der Software im Header <b>{header}</b>.",
+      "when": "Das SDK sendet Nutzungsdatensätze nur, wenn du einen Lizenzserver oder eine Metering-URL konfigurierst; das lokale Gateway nur, wenn du einen Dienstkontoschlüssel konfigurierst. Ohne BiVelio-Schlüssel sendet keines von beiden etwas an BiVelio. Jeder Stapel trägt deinen BiVelio-Dienstkontoschlüssel, der deine Organisation identifiziert, sowie Oberfläche und Version der Software im Header <b>{header}</b>.",
       "limit": "Jeder Datensatz ist auf die folgenden Felder beschränkt. <b>Die Erfassung von BiVelio weist jeden Datensatz zurück, der ein Feld enthält, das nicht auf dieser Liste steht.</b>",
       "groups": {
         "ids": {

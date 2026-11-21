@@ -44,7 +44,7 @@ function Node({ title, mint }: { title: string; mint?: boolean }) {
         background: mint ? MINT_SOFT : "#FFFFFF",
         border: `2px solid ${mint ? MINT : LINE}`,
         borderRadius: 14,
-        padding: "18px 28px",
+        padding: "14px 22px",
         fontSize: 26,
         fontWeight: 700,
         color: mint ? MINT : INK,
@@ -73,8 +73,9 @@ export default async function Image({ params }: { params: Promise<{ locale: stri
           display: "flex",
           flexDirection: "column",
           justifyContent: "space-between",
+          gap: 16,
           background: "#FDFDFD",
-          padding: "64px 80px",
+          padding: "48px 80px 44px",
           borderTop: `10px solid ${MINT}`,
           fontFamily: "sans-serif",
         }}
@@ -102,32 +103,36 @@ export default async function Image({ params }: { params: Promise<{ locale: stri
           </div>
         </div>
 
-        <div style={{ display: "flex", flexDirection: "column", gap: 34 }}>
-          <div style={{ display: "flex", fontSize: 66, fontWeight: 700, letterSpacing: -2.2, lineHeight: 1.08, color: INK, maxWidth: 1020 }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
+          <div style={{ display: "flex", fontSize: 54, fontWeight: 700, letterSpacing: -1.8, lineHeight: 1.08, color: INK, maxWidth: 1040 }}>
             {`${t("title")} ${t("titleAccent")}`}
           </div>
+          {/* EL DIAGRAMA ARRIBA Y LA FACTURA DEBAJO, en dos líneas. Antes iban
+              en una sola fila: la factura no cabía a la derecha de las tres
+              cajas y se cortaba («$100 → It depen…»); en alemán, además, se
+              montaba sobre «Anbieter-API». Así cabe el idioma más largo. */}
           <div
             style={{
               display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
+              flexDirection: "column",
+              gap: 16,
               background: PANEL,
               border: `2px solid ${LINE}`,
               borderRadius: 18,
-              padding: "26px 34px",
+              padding: "20px 28px",
             }}
           >
-            <div style={{ display: "flex", alignItems: "center", gap: 18 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
               <Node title={t("nodeApp")} />
               <Arrow />
               <Node title="BV-SALA" mint />
               <Arrow />
               <Node title={t("nodeApi")} />
             </div>
-            <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end" }}>
+            <div style={{ display: "flex", flexDirection: "column", gap: 4, borderTop: `2px solid ${LINE}`, paddingTop: 12 }}>
               <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
                 <div style={{ display: "flex", fontSize: 30, color: INK_SOFT }}>${FACTURA_EJEMPLO}</div>
-                <div style={{ display: "flex", fontSize: 34, fontWeight: 700, color: MINT }}>→ {t("billWith")}</div>
+                <div style={{ display: "flex", fontSize: 32, fontWeight: 700, color: MINT }}>→ {t("billWith")}</div>
               </div>
               <div style={{ display: "flex", fontSize: 17, color: INK_SOFT, letterSpacing: 1.5, textTransform: "uppercase" }}>
                 {t("billDepends")}

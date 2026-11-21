@@ -1,4 +1,4 @@
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { dirname, join, normalize } from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, it, expect } from "vitest";
@@ -199,10 +199,10 @@ describe("el README cuenta los arreglos de la 1.2.3", () => {
   it("dice que la rebaja de TTL no toca la suscripción (Claude Max/Pro), en el README y en la guía de terminales", () => {
     expect(plano).toContain("the TTL lever leaves Claude Max/Pro traffic untouched");
     const terminales = leer("docs/terminales/README.md").replace(/\s+/g, " ");
-    expect(terminales).toContain("la rebaja de TTL no lo toca");
+    expect(terminales).toContain("the TTL lever does not touch it");
     // Sin clave, el gateway mide en local: línea de log, resumen y rutas locales.
-    expect(terminales).not.toContain("el metering se queda en las rutas locales");
-    expect(terminales).toContain("una línea de log por petición, el resumen al salir y las rutas locales");
+    expect(terminales).not.toMatch(/el metering se queda en las rutas locales|metering stays (on|in) the local routes/);
+    expect(terminales).toContain("one log line per request, the summary on exit and the local `/_bvsala` routes");
   });
 });
 
@@ -240,5 +240,186 @@ describe("la entrada 1.2.3 del CHANGELOG dice lo que hace el catálogo", () => {
     expect(precioDeLista(conVariante), conVariante).toBeUndefined();
     expect(precioDeLista(pariente), pariente).toBeUndefined();
     expect(precioDeLista(modelo), modelo).toBeDefined();
+  });
+});
+
+/**
+ * AUDITORÍA DE MEDIOS PÚBLICOS (m04, m07, m20): lo que el README y las guías
+ * dicen tiene que ser lo que el paper y la web sostienen.
+ */
+describe("el README dice lo que el paper y la web sostienen", () => {
+  const plano = readme.replace(/\s+/g, " ");
+
+  it("m07 · el titular es «recomputed from the public artifacts» y el −82,76 % va como A/B exploratorio, no como titular", () => {
+    expect(plano).not.toMatch(/independently re-checked/i);
+    expect(readme).toContain("### Measured, not promised — recomputed from the public artifacts");
+    expect(plano).toContain("**Exploratory live A/B (20 requests per arm)**");
+    expect(plano).not.toMatch(/\*\*82[.,]76/);
+    expect(plano).not.toMatch(/no quality loss/i);
+    const python = leer("packages/python/README.md").replace(/\s+/g, " ");
+    expect(python).toContain("exploratory live A/B (20 requests per arm)");
+    expect(python).not.toMatch(/> Live A\/B/);
+  });
+
+  it("m20 · el banco publicado se enlaza en /en/benchmarks con sus informes JSON, no en /how-it-works con un CSV", () => {
+    expect(plano).not.toMatch(/raw CSV/i);
+    expect(plano.match(/raw JSON reports/g)).toHaveLength(2);
+    expect(plano.match(/\(https:\/\/savings\.bivelio\.com\/en\/benchmarks\)/g)).toHaveLength(2);
+  });
+
+  it("m20 · la guía de persistencia avisa de que @bivelio/persistence-postgres aún no está en npm", () => {
+    expect(leer("docs/guias/persistencia.md").replace(/\s+/g, " ")).toContain("**Not on npm yet** (release candidate)");
+  });
+
+  it("m04 · «Licensing & privacy» dice qué es Apache-2.0 y qué se publica solo por transparencia", () => {
+    const legal = seccionLegal().replace(/\s+/g, " ");
+    expect(legal).toContain("**What the Apache-2.0 license covers.**");
+    expect(legal).toContain("the Python client (`packages/python`) are Apache-2.0");
+    expect(legal).toContain("for transparency only");
+  });
+});
+
+/**
+ * LAS GUÍAS DE TERMINALES VIAJAN EN EL TARBALL Y SE ENLAZAN DESDE UN README EN
+ * INGLÉS (auditoría de medios, m30). Estaban en español —título incluido— salvo
+ * una sección; quien llegaba desde npm o GitHub leía media guía. Ahora van en
+ * inglés enteras, con las líneas de log que el gateway imprime de verdad.
+ */
+describe("docs/terminales va en inglés, como el README que lo enlaza", () => {
+  const guias = readdirSync(join(RAIZ, "docs", "terminales")).filter((f) => f.endsWith(".md"));
+
+  it("están todas las guías (si cambia la carpeta, este bloque no protege nada)", () => {
+    expect(guias.length).toBeGreaterThanOrEqual(18);
+    expect(guias).toContain("README.md");
+    expect(guias).toContain("claude-code.md");
+  });
+
+  for (const f of guias) {
+    it(`⛔ ${f}: ni tildes ni comillas angulares ni las palabras de la versión española`, () => {
+      const t = leer(`docs/terminales/${f}`);
+      expect(t).not.toMatch(/[áéíóúñÁÉÍÓÚÑ¿¡«»]/);
+      expect(t).not.toMatch(/\b(Qué necesitas|Envoltorio|La trampa|Comprobar|ventana \d|través del gateway|Fuente:)\b/);
+    });
+  }
+
+  it("⛔ no dice que el repositorio no es público: lo es", () => {
+    for (const f of guias) {
+      expect(leer(`docs/terminales/${f}`), f).not.toMatch(/not\s+public|no\s+es\s+p[uú]blico/i);
+    }
+  });
+
+  it("las líneas de arranque y de log citadas son las que imprime el gateway hoy", () => {
+    const guia = leer("docs/terminales/README.md");
+    const bin = leer("gateway/bin.ts");
+    const servidor = leer("gateway/servidor.ts");
+    // El ejemplo llevaba «v0.6.x» y «metering: OFF», una línea que ya no existe.
+    expect(guia).not.toMatch(/v0\.\d+\.x listening/);
+    expect(guia).not.toContain("metering: OFF");
+    expect(guia).toContain("metering: LOCAL ONLY (community mode, no BiVelio service key)");
+    expect(bin).toContain("metering: LOCAL ONLY (community mode, no BiVelio service key)");
+    expect(guia).not.toMatch(/Desde la próxima versión|From the next version/i);
+    // La guía de Codex copiaba dos líneas de log en español que el gateway escribe en inglés.
+    const codex = leer("docs/terminales/codex.md");
+    for (const linea of [
+      "426 (WebSocket not supported; the client falls back to HTTP)",
+      "client closed after the final usage; metered anyway",
+    ]) {
+      expect(codex, linea).toContain(linea);
+      expect(servidor, linea).toContain(linea);
+    }
+  });
+
+  it("el enlace interno a la sección de Copilot en VS Code apunta a un título que existe", () => {
+    expect(leer("docs/terminales/README.md")).toContain("copilot.md#copilot-in-vs-code-byok-custom-endpoint");
+    expect(leer("docs/terminales/copilot.md")).toContain('## Copilot in VS Code (BYOK, "Custom Endpoint")');
+  });
+});
+
+/**
+ * DOS DETALLES DEL README QUE NO CUADRABAN CON EL PAQUETE (auditoría de medios).
+ *
+ * m27 · la insignia y los requisitos decían «Node ≥ 20» y `engines` exige
+ * 20.19; el banco publicado se enlazaba a /how-it-works y vive en /benchmarks.
+ * m29 · varias frases hablaban de lo que «llega a tu factura» y de «la base de
+ * la comisión», cuando Pro y Team no llevan comisión (la comisión solo se
+ * nombra donde se explica el plan antiguo, cerrado).
+ */
+describe("el README dice la versión de Node del paquete y no habla de comisión donde no la hay", () => {
+  it("⛔ «Node ≥ 20.19» en la insignia y en los requisitos, como `engines`", () => {
+    const pkg = JSON.parse(leer("package.json")) as { engines: { node: string } };
+    const minimo = /^>=(\d+\.\d+)\.0$/.exec(pkg.engines.node)?.[1];
+    expect(minimo).toBeDefined();
+    expect(readme).toContain(`badge/node-%E2%89%A5${minimo}-`);
+    expect(readme).toContain(`alt="Node ≥ ${minimo}"`);
+    expect(readme).toContain(`- **Node ≥ ${minimo}.**`);
+    expect(readme).not.toMatch(/Node ≥ 20[^.\d]/);
+  });
+
+  it("el banco publicado se enlaza a /benchmarks", () => {
+    const plano = readme.replace(/\s+/g, " ");
+    expect(plano).not.toMatch(/benchmark, (?:trial by trial|run by run)[^.]*how-it-works/);
+    expect(plano.match(/benchmark, run by run[^.]*?savings\.bivelio\.com\/en\/benchmarks/g)?.length).toBe(2);
+  });
+
+  it("⛔ ni «reach your invoice» ni «the commission base» ni «never carries commission»", () => {
+    const plano = readme.replace(/\s+/g, " ");
+    expect(plano).not.toMatch(/reach(es)? your invoice/);
+    expect(plano).not.toMatch(/commission base/);
+    expect(plano).not.toMatch(/never carries commission/);
+    expect(plano).not.toMatch(/estimated savings are never billed/);
+    expect(plano).toContain("Only `measured` and `reference` figures are credited as savings in your report and dashboard");
+    // Lo que sí queda: Pro y Team sin comisión, y el plan antiguo explicado como cerrado.
+    expect(plano).toMatch(/No commission on your savings/);
+    expect(plano).toMatch(/Legacy plans, closed to new customers/);
+  });
+
+  it("⛔ las guías enlazadas no nombran una comisión fuera del plan antiguo", () => {
+    // herramientas.md conserva una mención en el apartado de la compactación,
+    // cuyo texto está en revisión aparte; el resto no la nombra.
+    for (const f of ["cache-de-prompt.md", "palancas-de-precio.md", "medir.md"]) {
+      expect(leer(`docs/guias/${f}`), f).not.toMatch(/commission/i);
+    }
+    expect(leer("docs/terminales/README.md")).not.toMatch(/commission/i);
+  });
+});
+
+/**
+ * m27 · EL CHANGELOG Y LA FICHA DE PYPI (auditoría de medios).
+ *
+ * Las entradas 1.2.1 y 1.2.2 del CHANGELOG estaban en español entre entradas en
+ * inglés. En PyPI el paquete se declaraba «Beta» yendo por la 1.x, y el arranque
+ * del gateway empezaba con `export BIVELIO_SERVICE_KEY=…` como si la clave
+ * hiciera falta, unas líneas después de decir que no.
+ */
+describe("el CHANGELOG va en inglés y la ficha de PyPI no pide una clave ni se dice Beta", () => {
+  it("⛔ ninguna entrada del CHANGELOG lleva título ni cuerpo en español", () => {
+    const changelog = leer("CHANGELOG.md");
+    expect(changelog).toContain("## 1.2.2 — the three READMEs tell the same story");
+    expect(changelog).toContain("## 1.2.1 — README revised for the community, paper v2.3-r1 linked");
+    // Solo las dos entradas que estaban en español: una entrada futura puede citar un nombre con tilde.
+    const desde = changelog.indexOf("## 1.2.2 — ");
+    const hasta = changelog.indexOf("\n## ", changelog.indexOf("## 1.2.1 — ") + 1);
+    expect(desde).toBeGreaterThanOrEqual(0);
+    const dos = changelog.slice(desde, hasta < 0 ? undefined : hasta);
+    expect(dos).not.toMatch(/[áéíóúñÁÉÍÓÚÑ¿¡«»]/);
+    expect(dos).not.toMatch(/\b(Sin cambios de código|misma superficie|los tres READMEs|el README del)\b/);
+    // Las cifras son las mismas, con el punto decimal del resto del fichero.
+    expect(changelog).toContain("(0→95 % −82.76 %; 31.50 %/75.08 %)");
+  });
+
+  it("⛔ el paquete de Python no se declara Beta en una versión 1.x o posterior", () => {
+    const pyproject = leer("packages/python/pyproject.toml");
+    const estado = /"Development Status :: (\d) - ([^"]+)"/.exec(pyproject);
+    expect(estado).not.toBeNull();
+    const mayor = Number(/^version = "(\d+)\./m.exec(pyproject)?.[1] ?? /__version__ = "(\d+)\./.exec(leer("packages/python/src/bvsala/__init__.py"))?.[1]);
+    expect(Number.isInteger(mayor)).toBe(true);
+    if (mayor >= 1) expect(estado![0]).toBe('"Development Status :: 5 - Production/Stable"');
+  });
+
+  it("⛔ el README de PyPI no pone la clave de servicio como paso obligatorio para arrancar", () => {
+    const py = leer("packages/python/README.md");
+    expect(py).not.toMatch(/^export BIVELIO_SERVICE_KEY=/m);
+    expect(py).toContain("# export BIVELIO_SERVICE_KEY=…   # optional: adds the cloud dashboard");
+    expect(py).toMatch(/No keys required/);
   });
 });

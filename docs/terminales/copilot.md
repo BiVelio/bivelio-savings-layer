@@ -1,114 +1,118 @@
-# GitHub Copilot (CLI y VS Code) a través del gateway — solo con tu propia clave
+# GitHub Copilot (CLI and VS Code) through the gateway — only with your own key
 
-**Fuente:** `docs/investigacion/2026-09-27/agentes-de-codigo.md`: la doc oficial
-de GitHub «Using your own LLM models in GitHub Copilot CLI» (fuente en
-`github/docs`, consultada el 2026-09-27) y la de VS Code «AI language models in
-VS Code» (fechada el 16-09-2026).
+**Source:** `docs/investigacion/2026-09-27/agentes-de-codigo.md`: GitHub's
+official docs "Using your own LLM models in GitHub Copilot CLI" (source in
+`github/docs`, consulted on 2026-09-27) and VS Code's "AI language models in
+VS Code" (dated 2026-09-16).
 
-**Lo primero:** Copilot solo pasa por un base URL cuando usas **tu propia clave
-de proveedor (BYOK)**. Los modelos alojados por GitHub van a GitHub y no se
-pueden medir aquí; su gasto lo enseña `/usage` (créditos de IA de GitHub y
-tokens por modelo). Con BYOK, la CLI funciona **sin cuenta de GitHub** [V].
+**First of all:** Copilot only goes through a base URL when you use **your own
+provider key (BYOK)**. The models GitHub hosts go to GitHub and cannot be
+metered here; `/usage` shows their spend (GitHub AI credits and tokens per
+model). With BYOK, the CLI works **without a GitHub account** [V].
 
 ## Copilot CLI
 
-### Qué necesitas
+### What you need
 
-- `copilot` en el PATH (en Windows, el instalador nativo: el shim `.cmd` de npm no
-  se puede lanzar con argumentos de forma segura y `bvsala` se niega con una guía).
-- BYOK configurado y funcionando **directo** [V]:
+- `copilot` on the PATH (on Windows, the native installer: npm's `.cmd` shim
+  cannot be launched safely with arguments and `bvsala` refuses with a guide).
+- BYOK configured and working **directly** [V]:
 
   ```bash
   export COPILOT_PROVIDER_TYPE=anthropic
   export COPILOT_PROVIDER_BASE_URL=https://api.anthropic.com
-  export COPILOT_PROVIDER_API_KEY=…          # tu clave de Anthropic
-  export COPILOT_MODEL=<modelo de Claude>
+  export COPILOT_PROVIDER_API_KEY=…          # your Anthropic key
+  export COPILOT_MODEL=<Claude model>
   ```
 
-  (Con OpenAI, el tipo por defecto, el base URL es `https://api.openai.com/v1`: ver «El tipo `openai`» abajo.)
-- `bvsala` instalado. Open core: sin claves arranca en modo Community; `BIVELIO_SERVICE_KEY` (opcional) añade el panel y los entitlements (ver [README](README.md)).
+  (With OpenAI, the default type, the base URL is `https://api.openai.com/v1`: see "The `openai` type" below.)
+- `bvsala` installed. Open core: with no keys it starts in Community mode; `BIVELIO_SERVICE_KEY` (optional) adds the dashboard and the entitlements (see [README](README.md)).
 
-### Envoltorio: `bvsala copilot [args…]`
+### Wrapper: `bvsala copilot [args…]`
 
 ```bash
 bvsala copilot
 ```
 
-Con `COPILOT_PROVIDER_TYPE=anthropic`, arranca el gateway contra
-`api.anthropic.com` y lanza `copilot` con `COPILOT_PROVIDER_BASE_URL` apuntando
-al gateway, **con la misma ruta que ya tenías**. Tu modelo y tu clave no se
-tocan. Al salir imprime cuántas peticiones midió y cuáles reenvió sin medir, y
-por qué.
+With `COPILOT_PROVIDER_TYPE=anthropic`, it starts the gateway against
+`api.anthropic.com` and launches `copilot` with `COPILOT_PROVIDER_BASE_URL`
+pointing at the gateway, **with the same path you already had**. Your model and
+your key are not touched. On exit it prints how many requests it metered and
+which ones it forwarded without metering, and why.
 
-Se niega, antes de arrancar nada y con el motivo, cuando:
+It refuses, before starting anything and with the reason, when:
 
-- no hay `COPILOT_PROVIDER_BASE_URL` (estás en los modelos de GitHub: nada que medir);
-- el tipo es `openai` (el de por defecto): todavía no, ver abajo;
-- el tipo es `azure` u otro, o el base URL no es `https://api.anthropic.com`: el
-  gateway solo tarifa la API del propio proveedor a su precio de lista, y Azure,
-  un modelo local o un revendedor facturan distinto (o nada).
+- there is no `COPILOT_PROVIDER_BASE_URL` (you are on GitHub's models: nothing to meter);
+- the type is `openai` (the default one): not yet, see below;
+- the type is `azure` or another one, or the base URL is not
+  `https://api.anthropic.com`: the gateway only prices the provider's own API at
+  its list price, and Azure, a local model or a reseller bill differently (or
+  nothing).
 
-### Manual (tipo `anthropic`)
+### Manual (`anthropic` type)
 
 ```bash
 bvsala gateway                                                   # Anthropic, 8402
-COPILOT_PROVIDER_BASE_URL=http://127.0.0.1:8402 copilot          # SIN /v1
+COPILOT_PROVIDER_BASE_URL=http://127.0.0.1:8402 copilot          # NO /v1
 ```
 
-Cada `POST /v1/messages` se mide con su contador (Messages siempre lo trae).
+Every `POST /v1/messages` is metered with its counter (Messages always carries
+it).
 
-### El tipo `openai`: sin envoltorio hasta validarlo en mano
+### The `openai` type: no wrapper until it is validated by hand
 
-La doc oficial lo describe como «any other OpenAI Chat Completions API‑compatible
-endpoint» [V], pero el changelog de la CLI dice que desde la 1.0.64 también
-habla la **Responses API por WebSocket** con BYOK («Add websocket responses
-support for BYOK OpenAI-compatible providers») [V]. El gateway responde **426**
-a todo intento de WebSocket (así cae Codex a HTTP), y **no sabemos** si la CLI
-de Copilot hace lo mismo: la CLI no es de código abierto. Un envoltorio que
-puede romper la sesión no se publica sin probarlo. A mano, y mirando el log:
+The official docs describe it as "any other OpenAI Chat Completions
+API‑compatible endpoint" [V], but the CLI's changelog says that since 1.0.64 it
+also speaks the **Responses API over WebSocket** with BYOK ("Add websocket
+responses support for BYOK OpenAI-compatible providers") [V]. The gateway
+answers **426** to every WebSocket attempt (that is how Codex falls back to
+HTTP), and **we do not know** whether the Copilot CLI does the same: the CLI is
+not open source. A wrapper that can break the session is not published without
+testing it. By hand, and watching the log:
 
 ```bash
 bvsala gateway --upstream openai --port 8403
-COPILOT_PROVIDER_BASE_URL=http://127.0.0.1:8403/v1 copilot       # CON /v1
+COPILOT_PROVIDER_BASE_URL=http://127.0.0.1:8403/v1 copilot       # WITH /v1
 ```
 
-- `… → 426 (WebSocket not supported …)` seguido de líneas `POST /v1/responses`
-  o `POST /v1/chat/completions` con `$` → la CLI cayó a HTTP y se mide.
-- Solo el 426 y la sesión falla → no funciona detrás del gateway; vuelve a la
-  URL directa.
-- `not metered: the request did not ask for usage` → relanza el gateway con
+- `… → 426 (WebSocket not supported …)` followed by `POST /v1/responses` or
+  `POST /v1/chat/completions` lines with a `$` → the CLI fell back to HTTP and it
+  is metered.
+- Only the 426 and the session fails → it does not work behind the gateway; go
+  back to the direct URL.
+- `not metered: the request did not ask for usage` → restart the gateway with
   `BVSALA_GATEWAY_USAGE_INJECT=1`.
 
-### Lo que no pasa por aquí
+### What does not go through here
 
-Lo que va a GitHub con BYOK igualmente (`/delegate`, búsqueda de código,
-telemetría sin `COPILOT_OFFLINE=true`) no es inferencia de tu proveedor [V].
+What goes to GitHub even with BYOK (`/delegate`, code search, telemetry without
+`COPILOT_OFFLINE=true`) is not inference from your provider [V].
 
-## Copilot en VS Code (BYOK, «Custom Endpoint»)
+## Copilot in VS Code (BYOK, "Custom Endpoint")
 
-No se detecta ni se envuelve (es una extensión): la receta la imprime `bvsala doctor`.
+It is neither detected nor wrapped (it is an extension): `bvsala doctor` prints
+the recipe.
 
 1. **Manage Language Models** → **Add Models** → **Custom Endpoint**.
-2. Tipo de API: **Messages** (Anthropic). VS Code abre `chatLanguageModels.json`.
-3. En el modelo, la **ruta completa** en `url`:
+2. API type: **Messages** (Anthropic). VS Code opens `chatLanguageModels.json`.
+3. In the model, the **full path** in `url`:
 
    ```json
    "url": "http://127.0.0.1:8402/v1/messages"
    ```
 
-   VS Code usa tal cual una URL que ya lleva `/messages`, `/chat/completions` o
-   `/responses`; si no, añade la ruta y, si falta, `/v1` [V]. Con la ruta
-   completa no hay nada que adivinar.
-4. `bvsala gateway` corriendo aparte.
+   VS Code uses as is a URL that already carries `/messages`,
+   `/chat/completions` or `/responses`; otherwise it appends the path and, if it
+   is missing, `/v1` [V]. With the full path there is nothing to guess.
+4. `bvsala gateway` running separately.
 
-El BYOK de VS Code cubre el chat y las tareas auxiliares (títulos, mensajes de
-commit) [V]; las sugerencias en línea y los embeddings siguen en GitHub y no se
-miden aquí. Las tareas auxiliares usan `chat.utilityModel` y
-`chat.utilitySmallModel`, no el modelo del chat: si quieres medirlas, apúntalas
-también a un modelo del Custom Endpoint.
+VS Code's BYOK covers chat and the utility tasks (titles, commit messages) [V];
+inline suggestions and embeddings stay on GitHub and are not metered here. The
+utility tasks use `chat.utilityModel` and `chat.utilitySmallModel`, not the chat
+model: if you want to meter them, point them at a Custom Endpoint model too.
 
-## Nota BYOK
+## BYOK note
 
-Tu clave, tu factura: es exactamente el caso que el gateway mide. Nunca enrutes
-por aquí el OAuth de una suscripción Claude Pro/Max: Anthropic lo prohíbe en
-harnesses de terceros.
+Your key, your invoice: this is exactly the case the gateway meters. Never route
+the OAuth of a Claude Pro/Max subscription through here: Anthropic forbids it in
+third-party harnesses.

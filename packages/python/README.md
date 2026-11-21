@@ -5,7 +5,7 @@
 </p>
 
 > **BV-SALA cuts your LLM bill — and proves it on your provider's own meter.**
-> Live A/B: 0 % → 95 % hit-rate, −82.76 % per request · recomputed pooled reductions 31.50 % / 75.08 % with bootstrap intervals · paper v2.3-r1, DOI [10.5281/zenodo.24278852](https://doi.org/10.5281/zenodo.24278852).
+> Recomputed pooled reductions 31.50 % / 75.08 % with bootstrap intervals · exploratory live A/B (20 requests per arm): 0 % → 95 % hit-rate, −82.76 % per request · paper v2.3-r1, DOI [10.5281/zenodo.24278852](https://doi.org/10.5281/zenodo.24278852).
 
 **This package is the Python client of BV-SALA.** The full product — the TypeScript SDK, the local gateway, every saving lever and the measured evidence — lives in the GitHub repository at
 **[github.com/BiVelio/bivelio-savings-layer](https://github.com/BiVelio/bivelio-savings-layer)**; its README is the canonical documentation (install, levers, paper, benchmarks, pricing). The same README is what npm shows for
@@ -61,7 +61,7 @@ pip install ./packages/python
 One gateway per provider:
 
 ```bash
-export BIVELIO_SERVICE_KEY=…
+# export BIVELIO_SERVICE_KEY=…   # optional: adds the cloud dashboard
 npx -p @bivelio/savings-layer bvsala gateway                                 # Anthropic, on 8402
 npx -p @bivelio/savings-layer bvsala gateway --upstream openai --port 8403   # OpenAI, on 8403
 python -m bvsala --url http://127.0.0.1:8403 status                          # version, upstream, license

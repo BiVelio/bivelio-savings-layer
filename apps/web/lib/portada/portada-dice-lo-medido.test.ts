@@ -379,7 +379,7 @@ describe("Gemini: compatible ≠ medido; lo medido, con su informe", () => {
   const celdas = (modelo: string): J[] => (inf.resultados as J[]).filter((c) => c.modelo === modelo);
   const medida = (c: J) => c.estado === "medida" && c.medicion?.estado === "medido";
 
-  it("el informe es una tirada EN VIVO del banco semanal, de ese día, y la más reciente publicada", () => {
+  it("el informe es una tirada EN VIVO del banco semanal, de ese día, y la más reciente publicada que midió a Gemini", () => {
     expect(inf.modo).toBe("vivo");
     expect(String(inf.inicio).slice(0, 10)).toBe(G.fecha);
     const dir = join(RAIZ_REPO, "docs", "benchmarks");
@@ -389,6 +389,10 @@ describe("Gemini: compatible ≠ medido; lo medido, con su informe", () => {
       .map((f) => JSON.parse(readFileSync(f, "utf8")) as J)
       // Un banco parcial (le faltan celdas de su plan) no es «la tirada semanal».
       .filter((j) => j.modo === "vivo" && j.resultados.length >= j.plan.length)
+      // Una tirada más reciente que NO pudo medir a G.medido (la de la 1.2.3,
+      // 2026-11-20: crédito de prepago de Gemini agotado) no cambia lo que se
+      // midió de Gemini. Una que SÍ lo mida obliga a poner aquí su informe.
+      .filter((j) => (j.resultados as J[]).some((c) => c.modelo === G.medido.modelo && medida(c)))
       .map((j) => String(j.inicio));
     expect(inicios.every((x) => x <= inf.inicio)).toBe(true);
   });
@@ -503,25 +507,35 @@ describe("Gemini: compatible ≠ medido; lo medido, con su informe", () => {
   });
 });
 
-describe("Medir: sus límites y su versión mínima, donde se ofrece", () => {
+describe("Medir: sus límites donde se ofrece, y su versión mínima en sus condiciones", () => {
   it("las constantes públicas son las de la ingesta y las del protocolo", () => {
     expect(LIMITES_MEDIR.asientos).toBe(MEASURE_LIMITS.seats);
     expect(LIMITES_MEDIR.peticionesDiarias).toBe(MEASURE_LIMITS.dailyRequests);
     expect(VERSION_MINIMA_MEDIR).toBe("0.4.33");
   });
 
-  const CLAVES = ["landing.pricing.plans.medir.body", "pricingPage.plans.medir.body", "auth.signupMedir"];
+  // La versión mínima (VERSION_MINIMA_MEDIR) es una CONDICIÓN de Measure y se
+  // queda en sus condiciones (/pricing#medir). Donde Measure se ofrece —la
+  // tarjeta, el alta y la banda final— se dice «la última versión del paquete»,
+  // que no caduca con cada release (m27, 2026-11-21).
+  const CON_VERSION = ["landing.pricing.plans.medir.body", "pricingPage.plans.medir.body"];
+  const SIN_VERSION = ["auth.signupMedir", "pricingPage.cards.medir.version", "landing.footer.ctaSub"];
   for (const loc of LOCALES) {
-    it(`${loc}: la tarjeta de la portada, /pricing y /signup llevan asientos, peticiones al día y versión mínima`, () => {
+    it(`${loc}: /pricing y /signup llevan asientos y peticiones al día; la versión mínima solo en las condiciones`, () => {
       const d = cargar(loc);
-      for (const k of CLAVES) {
+      for (const k of [...CON_VERSION, "auth.signupMedir"]) {
         const v = d[k];
         expect(v, `${loc} ${k}`).toBeTruthy();
-        for (const p of ["{seats}", "{requests}", "{version}", "@bivelio/savings-layer"]) expect(v, `${loc} ${k}`).toContain(p);
+        for (const p of ["{seats}", "{requests}", "@bivelio/savings-layer"]) expect(v, `${loc} ${k}`).toContain(p);
         // Los números llegan por parámetro, nunca escritos a mano.
         expect(v, `${loc} ${k}`).not.toMatch(/[0-9]/);
       }
-      expect(d["landing.footer.ctaSub"], loc).toContain("{version}");
+      for (const k of CON_VERSION) expect(d[k], `${loc} ${k}`).toContain("{version}");
+      for (const k of SIN_VERSION) {
+        expect(d[k], `${loc} ${k}`).toBeTruthy();
+        expect(d[k], `${loc} ${k}`).not.toContain("{version}");
+        expect(d[k], `${loc} ${k}`).not.toMatch(/[0-9]/);
+      }
     });
   }
 
@@ -530,9 +544,9 @@ describe("Medir: sus límites y su versión mínima, donde se ofrece", () => {
       const src = codigo(rel);
       expect(src, rel).toContain("LIMITES_MEDIR.asientos");
       expect(src, rel).toContain("LIMITES_MEDIR.peticionesDiarias");
-      expect(src, rel).toContain("VERSION_MINIMA_MEDIR");
     }
-    expect(codigo("app/components/Footer.tsx")).toContain('t("footer.ctaSub", { version: VERSION_MINIMA_MEDIR })');
+    expect(codigo("app/[locale]/pricing/page.tsx")).toContain("version: VERSION_MINIMA_MEDIR");
+    expect(codigo("app/components/Footer.tsx")).toContain('t("footer.ctaSub")');
   });
 });
 
@@ -546,10 +560,10 @@ describe("los textos nuevos se formatean en los 12 idiomas (ICU sin errores)", (
     "landing.ledgersHead.providerNote": { fecha: "2026-09-28" },
     "landing.hero.compatibleNota": { gemini: "0.4.33", flash: "Gemini 3.8 Flash", pro: "Gemini 3.1 Pro", fecha: "1 October 2026", fechaPro: "1–2 October 2026" },
     "landing.pricing.plans.medir.body": { seats: 5, requests: "20.000", version: "0.4.33" },
-    "landing.footer.ctaSub": { version: "0.4.33" },
+    "landing.footer.ctaSub": {},
     "howItWorks.billWith": {},
     "howItWorks.billDepends": {},
-    "auth.signupMedir": { seats: 5, requests: "20.000", version: "0.4.33" },
+    "auth.signupMedir": { seats: 5, requests: "20.000" },
   };
   for (const loc of LOCALES) {
     it(`${loc}`, () => {
@@ -788,9 +802,18 @@ describe("el héroe: las cifras van en la captura del banco público, y el texto
     });
   }
 
-  it("en/es: el pie dice de dónde salen los datos del panel", () => {
-    expect(cargar("es")["landing.hero.panelCaption"]).toBe("Panel con los datos del banco público");
-    expect(cargar("en")["landing.hero.panelCaption"]).toBe("Dashboard with the public bench's data");
+  it("el pie dice de dónde salen los datos del panel y por qué su titular no es la cifra del recibo (auditoría m10)", () => {
+    expect(cargar("es")["landing.hero.panelCaption"]).toBe(
+      "Panel de demostración con la tirada {bateria} del banco público: el {titular} es el de los cuatro modelos juntos. El recibo es solo {modelo}.",
+    );
+    expect(cargar("en")["landing.hero.panelCaption"]).toBe(
+      "Demo dashboard with the public bench's {bateria} run: {titular} is for the four models together. The receipt is {modelo} alone.",
+    );
+    // Los doce, con sus tres marcadores (las cifras llegan por parámetro).
+    for (const loc of LOCALES) {
+      const v = cargar(loc)["landing.hero.panelCaption"]!;
+      for (const m of ["{bateria}", "{titular}", "{modelo}"]) expect(v, `${loc} ${m}`).toContain(m);
+    }
     expect(cargar("es")["landing.hero.medidoEnVivo"]).toBe("Medido en vivo con el contador de cada proveedor");
   });
 
@@ -798,15 +821,23 @@ describe("el héroe: las cifras van en la captura del banco público, y el texto
     const src = codigo("app/[locale]/page.tsx");
     expect(src).toContain('import panelDelBanco from "@/assets/portada/panel-del-banco.png";');
     expect(src).toContain('import panelDelBancoMovil from "@/assets/portada/panel-del-banco-movil.png";');
-    // Las dos tomas, con next/image (getImageProps) y prioridad.
+    expect(src).toContain('import panelDelBancoEn from "@/assets/portada/panel-del-banco-en.png";');
+    expect(src).toContain('import panelDelBancoMovilEn from "@/assets/portada/panel-del-banco-movil-en.png";');
+    // Las dos tomas, con next/image (getImageProps) y prioridad: en español
+    // para es y ca, en inglés para el resto (idiomaDeLaCaptura).
+    expect(src).toMatch(/const capturaEnEspanol = idiomaDeLaCaptura\(locale\) === "es";/);
     expect(src).toMatch(/const comunes = \{ alt: "", quality: 80, priority: true \} as const;/);
-    expect(src).toMatch(/getImageProps\(\{\s*\.\.\.comunes,\s*src: panelDelBanco,/);
-    expect(src).toMatch(/getImageProps\(\{\s*\.\.\.comunes,\s*src: panelDelBancoMovil,/);
+    expect(src).toMatch(/getImageProps\(\{\s*\.\.\.comunes,\s*src: capturaEnEspanol \? panelDelBanco : panelDelBancoEn,/);
+    expect(src).toMatch(/getImageProps\(\{\s*\.\.\.comunes,\s*src: capturaEnEspanol \? panelDelBancoMovil : panelDelBancoMovilEn,/);
     const ini = src.indexOf('className="hero hero-panel"');
     const heroe = src.slice(ini, src.indexOf("</section>", ini));
     expect(heroe).toMatch(/<source\s+media="\(max-width: 640px\)"\s+srcSet=\{panelMovil\.srcSet\}/);
     expect(heroe).toContain('<img {...panelEscritorio} alt={t("hero.panelAlt")} />');
-    expect(heroe).toMatch(/<figcaption>\s*<Link href="\/benchmarks">\{t\("hero\.panelCaption"\)\}<\/Link>\s*<\/figcaption>/);
+    expect(heroe).toMatch(
+      /<figcaption>\s*<Link href="\/benchmarks">\s*\{t\("hero\.panelCaption", \{ bateria: V\.bateria, titular: pct1\.format\(titularDelPanel\(\)\), modelo: V\.openai\.modelo\.split\("\/"\)\.pop\(\) \?\? "" \}\)\}\s*<\/Link>\s*<\/figcaption>/,
+    );
+    // El modelo del pie es el del recibo de al lado (V.openai).
+    expect(heroe).toContain('{ etiqueta: t("receipt.model"), valor: V.openai.modelo.split("/").pop(), mono: true }');
     expect(heroe).toContain('{t("hero.medidoEnVivo")}');
     // Ni una cifra escrita en el JSX del héroe (fuera de atributos y del SVG del candado).
     const texto = heroe.replace(/<svg[\s\S]*?<\/svg>/g, "").replace(/\{[^{}]*\}/g, "").replace(/"[^"]*"/g, "");

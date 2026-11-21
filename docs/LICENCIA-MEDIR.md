@@ -1,7 +1,7 @@
 # La licencia «Medir» (plan `measure`)
 
 > Decisión del dueño (2026-09-29), sobre la recomendación de
-> [COMPETENCIA-2026-09-26.md](./COMPETENCIA-2026-09-26.md) §8 n.º 2 y 5:
+> el informe de competencia del 26-09-2026 (documento interno, fuera del repositorio público) §8 n.º 2 y 5:
 > licencia **gratuita, permanente y sin tarjeta**. Revierte **en parte** #314.
 >
 > Decisiones del dueño sobre #417 (2026-09-29): **límites aceptados** (5

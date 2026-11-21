@@ -19,7 +19,7 @@ license-files = ["LICENSE"]
 authors = [{ name = "BiVelio Inc.", email = "support@bivelio.com" }]
 keywords = ["llm", "cost-optimization", "llm-costs", "token-accounting", "openai", "anthropic"]
 classifiers = [
-  "Development Status :: 4 - Beta",
+  "Development Status :: 5 - Production/Stable",
   "Intended Audience :: Developers",
   "Operating System :: OS Independent",
   "Programming Language :: Python :: 3",

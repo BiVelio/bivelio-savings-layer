@@ -43,7 +43,7 @@ own counters: if they do not confirm the cache reads the layer predicted, that
 traffic goes back to the default placement. The write premium it causes, one-hour
 writes at 2x included, is charged to `cost.actual`; the cache discount it earns is
 counted in ledger 4 like any provider cache read, never credited as the layer's
-saving and never part of any commission.
+saving and never part of any charge.
 
 ```ts
 const placedLayer = createSavingsLayer({
@@ -63,13 +63,13 @@ cache can hit where a mutable token used to force a miss plus a paid write on ev
 call.
 
 - **The saving is the provider's**, read from its own cache counters (`nativeSavings`),
-  never credited as the layer's saving and never part of any commission.
+  never credited as the layer's saving and never part of any charge.
 - **It abstains instead of breaking structure.** A mutable line inside a JSON/XML
   block or a code fence is never moved — that would corrupt the payload — and the
   request travels untouched. The `cache-prefix` trace reports what moved and why it
   abstained; it records counts and patterns, never your prompt text.
-- **Measured live** (v2.3-r1 evidence): 0 % → 95 % hit-rate, −82.76 % per request
-  (claude-haiku-4-5, provider's counters;
+- **Measured live, exploratory** (v2.3-r1 evidence, 20 requests per arm): 0 % → 95 %
+  hit-rate, −82.76 % per request (claude-haiku-4-5, provider's counters;
   [`benchmarks/evidencia/cache-prefix-vivo-2026-11-15.json`](../../benchmarks/evidencia/cache-prefix-vivo-2026-11-15.json)).
 
 ```ts

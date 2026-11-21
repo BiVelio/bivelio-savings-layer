@@ -655,7 +655,7 @@ export const BLOQUES: Bloque[] = [
   },
   {
     "tipo": "p",
-    "texto": "The companion review package contains an offline recomputation script, selected public fixtures, hashes and targeted counterexamples. It supports recalculation of the claims explicitly identified as recomputed. New API experiments require credentials and execution costs and were not run for this revision. The draft needs author review and the identified quality-evidence work before submission."
+    "texto": "The repository contains the offline recomputation code. Applied to the trials stored in the two historical GSM8K artifacts, `resumir()` in `benchmarks/publicados/gsm8k/medir.ts`, which calls that estimator, reproduces the published pooled points and interval endpoints exactly. New API experiments require credentials and execution costs and were not run for this revision."
   },
   {
     "tipo": "h2",
@@ -830,7 +830,7 @@ export const BLOQUES: Bloque[] = [
   },
   {
     "tipo": "p",
-    "texto": "All observed and resampled primary denominators in these artifacts are positive. A general implementation must report undefined ratios instead of silently replacing them by zero. The companion script checks input hashes and reproduces the published pooled points and endpoints. It is a computational audit of stored observations, not a new sample of model behavior."
+    "texto": "All observed and resampled primary denominators in these artifacts are positive. A general implementation must report undefined ratios instead of silently replacing them by zero. Applied to the stored trials, `resumir()` in `benchmarks/publicados/gsm8k/medir.ts` reproduces the published pooled points and endpoints. This is a computational audit of stored observations, not a new sample of model behavior."
   },
   {
     "tipo": "h2",

@@ -1,250 +1,251 @@
-# Guías por terminal — medir el gasto de IA con el gateway local
+# Per-terminal guides — measuring AI spend with the local gateway
 
-**Fecha:** 2026-08-30 · **Fuente de verdad:** `docs/PASARELA-S3-TERMINALES.md`
-§3 (formas de URL y mecanismos de enrutado verificados contra el código de cada
-terminal). Cada afirmación va marcada **[V]** (verificada en fuente) o **[I]**
-(inferida). Si una guía contradice a ese documento, manda el documento.
+**Date:** 2026-08-30 · **Source of truth:** `docs/PASARELA-S3-TERMINALES.md`
+§3 (URL shapes and routing mechanisms verified against each terminal's code).
+Every claim is marked **[V]** (verified in the source) or **[I]** (inferred). If
+a guide contradicts that document, the document wins.
 
-## Qué es esto
+## What this is
 
-`bvsala gateway` es un proxy local medidor: escucha en `127.0.0.1`, reenvía
-cada petición al proveedor (`https://api.anthropic.com` por defecto) —**byte a
-byte**, salvo las palancas que se explican abajo (la de tarifa va armada por
-defecto)— y, una vez servida la respuesta, lee el `usage` del
-stream y lo convierte en coste. Ni tus prompts, ni las respuestas, ni la clave de
-tu proveedor salen de tu máquina hacia BiVelio: solo viaja el uso de cada
-petición —cuentas de tokens, coste, el id del modelo, un id de petición y los ids
-opacos de asiento y de sesión—, y la lista exacta de campos está en la
-LICENSE-CLOUD.md §5. **Open core**: arranca sin ninguna clave, en modo Community —todas
-las palancas locales armadas, cero telemetría, y la medición se queda en esta
-máquina: una línea de log por petición, el resumen al salir y las rutas locales
-`/_bvsala`—. `BIVELIO_SERVICE_KEY` (opcional) añade el panel, los
-entitlements de la org y la recogida de licencia; una licencia PRESENTE pero
-caducada o revocada solo corta las peticiones NUEVAS con un HTTP 402 hasta
-renovarla, jamás una en curso. La medición es best-effort: con la ingesta caída,
-reenvía y avisa.
+`bvsala gateway` is a local metering proxy: it listens on `127.0.0.1`, forwards
+every request to the provider (`https://api.anthropic.com` by default) —**byte
+for byte**, except for the levers explained below (the rate lever is armed by
+default)— and, once the response has been served, reads the `usage` from the
+stream and turns it into cost. Neither your prompts, nor the responses, nor your
+provider key are sent from your machine to BiVelio: only the usage of each
+request travels —token counts, cost, the model id, a request id and the opaque
+seat and session ids—, and the exact list of fields is in LICENSE-CLOUD.md §5.
+**Open core**: it starts with no key at all, in Community mode —every local
+lever armed, zero telemetry, and the measurement stays on this machine: one log
+line per request, the summary on exit and the local `/_bvsala` routes—.
+`BIVELIO_SERVICE_KEY` (optional) adds the dashboard, the org's entitlements and
+license collection; a license that is PRESENT but expired or revoked only
+refuses NEW requests with an HTTP 402 until it is renewed, never one in flight.
+Metering is best-effort: with ingestion down, it forwards and warns.
 
-Mide cada petición con contador de proveedor. La **palanca por defecto**:
-rebaja el TTL de escritura de caché mientras la sesión sigue caliente — cambia la
-tarifa, nunca el contenido que lee el modelo. Solo tiene algo que rebajar cuando
-el cliente paga por token y pide la caché de una hora: Claude Code con API key
-pide la de cinco minutos salvo que pongas `promptCacheTtl` a `1h`, y entonces el
-gateway solo mide. Las demás (modelo hermano, esfuerzo
-por turno) van apagadas hasta que las enciendes. Y mide **todo el tráfico de inferencia**
-que el terminal enruta por el base URL — no «todo el tráfico»: cada guía dice
-lo que su terminal manda por fuera.
+It measures every request with the provider's own counter. The **default
+lever**: it lowers the cache-write TTL while the session stays warm — it changes
+the rate, never the content the model reads. It only has something to lower when
+the client pays per token and asks for the one-hour cache: Claude Code on an API
+key asks for the five-minute one unless you set `promptCacheTtl` to `1h`, so out
+of the box the gateway only measures. The others (sibling model, per-turn
+effort) stay off until you turn them on. And it measures **all the inference
+traffic** the terminal routes through the base URL — not "all the traffic": each
+guide says what its terminal sends around it.
 
-En suscripción (login de claude.ai en Claude Code, cuenta ChatGPT en Codex) no
-hay factura por tokens: ese tráfico se mide a precio de lista equivalente,
-nunca se le acredita ahorro ni comisión, y la rebaja de TTL no lo toca (Claude
-Max/Pro: no hay prima de escritura que ahorrar).
+On a subscription (claude.ai login in Claude Code, ChatGPT account in Codex)
+there is no per-token invoice: that traffic is metered at list-price equivalent,
+it is never credited any saving and nothing is charged on it, and the TTL lever
+does not touch it (Claude Max/Pro: there is no write premium to save).
 
-## Índice
+## Index
 
-| Guía | Base URL exacto | `/v1` | Enrutado [V] | Envoltorio | Estado |
+| Guide | Exact base URL | `/v1` | Routing [V] | Wrapper | Status |
 |---|---|---|---|---|---|
-| [Claude Code](claude-code.md) | `http://127.0.0.1:8402` | **sin** | env `ANTHROPIC_BASE_URL` | `bvsala claude` ✅ | [V] en producción |
-| [Codex CLI](codex.md) | `http://127.0.0.1:8402/v1` (API key) · `…/backend-api/codex` (ChatGPT) | **con** | `codex -c openai_base_url=…` | `bvsala codex` ✅ | [V] validado en mano el 30-08 (426 → fallback HTTP, stream íntegro) |
-| [Goose](goose.md) | `http://127.0.0.1:8402` | **sin** | env `ANTHROPIC_HOST` | `bvsala goose` ✅ | [V] |
-| [Qwen Code](qwen-code.md) | `http://127.0.0.1:8402` | **sin** | env `ANTHROPIC_BASE_URL` + `~/.qwen/settings.json` | `bvsala qwen` ✅ | [V] |
-| [opencode](opencode.md) | `http://127.0.0.1:8402/v1` | **con** | env `OPENCODE_CONFIG_CONTENT` o `~/.config/opencode/opencode.json` | `bvsala opencode` ✅ (sin escribir en disco) | [V] en código (v1.18.32) |
-| [Kilo Code](kilo.md) (CLI y extensiones) | `http://127.0.0.1:8402/v1` | **con** | env `KILO_CONFIG_CONTENT` o `~/.config/kilo/kilo.json` | `bvsala kilo` ✅ (CLI) | [V] en código (v7.8.1, fork de opencode) |
-| [Copilot CLI](copilot.md) (solo BYOK) | anthropic: `http://127.0.0.1:8402` · openai: `…/v1` | anthropic **sin**, openai **con** | env `COPILOT_PROVIDER_BASE_URL` | `bvsala copilot` ✅ (tipo anthropic) | [V] en la doc oficial; sin validar en mano. Tipo openai: a mano, sin validar (WebSocket → 426) |
-| [Copilot en VS Code](copilot.md#copilot-en-vs-code-byok-custom-endpoint) (solo BYOK) | `http://127.0.0.1:8402/v1/messages` (ruta completa) | ruta completa | UI → Custom Endpoint (`chatLanguageModels.json`) | — | [V] en la doc oficial; sin validar en mano |
-| [Aider](aider.md) | Anthropic: `http://127.0.0.1:8402` · OpenAI: `…/v1` | Anthropic **sin**, OpenAI **con** | env `ANTHROPIC_API_BASE` / `OPENAI_API_BASE` (litellm) | `bvsala aider` ✅ | [V] en código (litellm 1.82.3); OpenAI en stream solo con `BVSALA_GATEWAY_USAGE_INJECT=1` |
-| [Continue](continue.md) (CLI `cn` y extensiones) | `http://127.0.0.1:8402/v1` | **con** | `~/.continue/config.yaml` (`apiBase`) | — (config de usuario) | [V] en código |
-| [Crush](crush.md) | `http://127.0.0.1:8402/v1` | **con**, sin barra final | `~/.config/crush/crushrc` | — (config de usuario) | [V] |
-| [Droid](droid.md) | `http://127.0.0.1:8402` | sin **[I]** | `~/.factory/settings.json` | — (config de usuario) | validar en mano |
-| [Cline](cline.md) | `http://127.0.0.1:8402/v1` | **con** | UI | — | [V] |
-| [Gemini CLI](gemini.md) | `http://127.0.0.1:8402` | n/a (protocolo Gemini) | env `GOOGLE_GEMINI_BASE_URL` | `bvsala gemini` ✅ | [V] en test (upstream falso): `:generateContent` y `:streamGenerateContent` |
-| [Cursor](cursor.md) (BYOK) | `http://127.0.0.1:8402/v1` | **con** | UI → Settings → Models → OpenAI API Base URL | — (config de la UI) | [I]: solo el tráfico con TU clave pasa por el gateway |
-| [Claude Code con DeepSeek](deepseek.md) | `http://127.0.0.1:8402` | **sin** | env `ANTHROPIC_BASE_URL` | `bvsala gateway --upstream deepseek` | [V] en test: `/v1/messages` → `/anthropic` |
-| [Ollama / vLLM / LM Studio](ollama.md) (locales) | `http://127.0.0.1:8402/v1` | **con** | `base_url` del SDK | `bvsala gateway --upstream ollama|vllm|lmstudio` | [V] en test; sin precio de lista → reenviado, no metido en dólares |
-| [Python y cualquier SDK](../../README.md#python-and-any-other-language-the-local-gateway) (OpenAI · Anthropic) | OpenAI: `http://127.0.0.1:8403/v1` · Anthropic: `http://127.0.0.1:8402` | OpenAI **con**, Anthropic **sin** | `base_url` del SDK | `bvsala gateway --upstream openai` | [V] en test (upstream falso) |
+| [Claude Code](claude-code.md) | `http://127.0.0.1:8402` | **without** | env `ANTHROPIC_BASE_URL` | `bvsala claude` ✅ | [V] in production |
+| [Codex CLI](codex.md) | `http://127.0.0.1:8402/v1` (API key) · `…/backend-api/codex` (ChatGPT) | **with** | `codex -c openai_base_url=…` | `bvsala codex` ✅ | [V] validated by hand on 30 Aug (426 → HTTP fallback, stream intact) |
+| [Goose](goose.md) | `http://127.0.0.1:8402` | **without** | env `ANTHROPIC_HOST` | `bvsala goose` ✅ | [V] |
+| [Qwen Code](qwen-code.md) | `http://127.0.0.1:8402` | **without** | env `ANTHROPIC_BASE_URL` + `~/.qwen/settings.json` | `bvsala qwen` ✅ | [V] |
+| [opencode](opencode.md) | `http://127.0.0.1:8402/v1` | **with** | env `OPENCODE_CONFIG_CONTENT` or `~/.config/opencode/opencode.json` | `bvsala opencode` ✅ (nothing written to disk) | [V] in code (v1.18.32) |
+| [Kilo Code](kilo.md) (CLI and extensions) | `http://127.0.0.1:8402/v1` | **with** | env `KILO_CONFIG_CONTENT` or `~/.config/kilo/kilo.json` | `bvsala kilo` ✅ (CLI) | [V] in code (v7.8.1, a fork of opencode) |
+| [Copilot CLI](copilot.md) (BYOK only) | anthropic: `http://127.0.0.1:8402` · openai: `…/v1` | anthropic **without**, openai **with** | env `COPILOT_PROVIDER_BASE_URL` | `bvsala copilot` ✅ (anthropic type) | [V] in the official docs; not validated by hand. openai type: by hand, not validated (WebSocket → 426) |
+| [Copilot in VS Code](copilot.md#copilot-in-vs-code-byok-custom-endpoint) (BYOK only) | `http://127.0.0.1:8402/v1/messages` (full path) | full path | UI → Custom Endpoint (`chatLanguageModels.json`) | — | [V] in the official docs; not validated by hand |
+| [Aider](aider.md) | Anthropic: `http://127.0.0.1:8402` · OpenAI: `…/v1` | Anthropic **without**, OpenAI **with** | env `ANTHROPIC_API_BASE` / `OPENAI_API_BASE` (litellm) | `bvsala aider` ✅ | [V] in code (litellm 1.82.3); OpenAI streams only with `BVSALA_GATEWAY_USAGE_INJECT=1` |
+| [Continue](continue.md) (`cn` CLI and extensions) | `http://127.0.0.1:8402/v1` | **with** | `~/.continue/config.yaml` (`apiBase`) | — (user config) | [V] in code |
+| [Crush](crush.md) | `http://127.0.0.1:8402/v1` | **with**, no trailing slash | `~/.config/crush/crushrc` | — (user config) | [V] |
+| [Droid](droid.md) | `http://127.0.0.1:8402` | without **[I]** | `~/.factory/settings.json` | — (user config) | validate by hand |
+| [Cline](cline.md) | `http://127.0.0.1:8402/v1` | **with** | UI | — | [V] |
+| [Gemini CLI](gemini.md) | `http://127.0.0.1:8402` | n/a (Gemini protocol) | env `GOOGLE_GEMINI_BASE_URL` | `bvsala gemini` ✅ | [V] in a test (fake upstream): `:generateContent` and `:streamGenerateContent` |
+| [Cursor](cursor.md) (BYOK) | `http://127.0.0.1:8402/v1` | **with** | UI → Settings → Models → OpenAI API Base URL | — (UI config) | [I]: only the traffic sent with YOUR key goes through the gateway |
+| [Claude Code with DeepSeek](deepseek.md) | `http://127.0.0.1:8402` | **without** | env `ANTHROPIC_BASE_URL` | `bvsala gateway --upstream deepseek` | [V] in a test: `/v1/messages` → `/anthropic` |
+| [Ollama / vLLM / LM Studio](ollama.md) (local) | `http://127.0.0.1:8402/v1` | **with** | the SDK's `base_url` | `bvsala gateway --upstream ollama|vllm|lmstudio` | [V] in a test; no list price → forwarded, not metered in dollars |
+| [Python and any SDK](../../README.md#python-and-any-other-language-the-local-gateway) (OpenAI · Anthropic) | OpenAI: `http://127.0.0.1:8403/v1` · Anthropic: `http://127.0.0.1:8402` | OpenAI **with**, Anthropic **without** | the SDK's `base_url` | `bvsala gateway --upstream openai` | [V] in a test (fake upstream) |
 
-Reglas de la columna «Base URL»: **nunca barra final**, **nunca redirecciones**
-(un 3xx en el base URL es fallo por diseño del cliente, y el gateway lo reenvía
-en vez de seguirlo). Y nunca copies el URL de un terminal a otro: cada SDK añade
-su propio tramo de ruta y el error es silencioso (§ «Comprobar que mide»).
+Rules for the "Base URL" column: **never a trailing slash**, **never
+redirects** (a 3xx on the base URL is a failure by the client's design, and the
+gateway forwards it instead of following it). And never copy the URL from one
+terminal to another: each SDK appends its own path segment and the error is
+silent (§ "Checking that it meters").
 
 Claude Code, Codex, Goose, Qwen Code, opencode, Kilo, Copilot CLI (BYOK), Aider
-y Gemini CLI tienen **envoltorio propio** (`bvsala
-claude|codex|goose|qwen|opencode|kilo|copilot|aider|gemini`): arrancan un gateway en
-puerto efímero, lanzan el terminal apuntándole y lo apagan al salir. Cero
-configuración persistente: opencode y Kilo reciben la suya por variable
-(`OPENCODE_CONFIG_CONTENT`, `KILO_CONFIG_CONTENT`), fusionada con la tuya. La
-receta manual de cada guía hace exactamente lo mismo. Para el resto,
-`bvsala doctor` imprime el bloque exacto de cada terminal instalado.
+and Gemini CLI have their **own wrapper** (`bvsala
+claude|codex|goose|qwen|opencode|kilo|copilot|aider|gemini`): it starts a gateway
+on an ephemeral port, launches the terminal pointed at it and shuts it down on
+exit. Zero persistent configuration: opencode and Kilo get theirs through a
+variable (`OPENCODE_CONFIG_CONTENT`, `KILO_CONFIG_CONTENT`), merged with yours.
+The manual recipe in each guide does exactly the same. For the rest,
+`bvsala doctor` prints the exact block for each installed terminal.
 
-**Al salir, cada envoltorio dice lo que midió.** Dentro de un envoltorio el log
-por petición va callado para no pisar el TUI, así que al terminar imprime por
-stderr una línea como esta:
+**On exit, every wrapper says what it metered.** Inside a wrapper the
+per-request log stays silent so that it does not write over the TUI, so when it
+finishes it prints a line like this one to stderr:
 
 ```
 [bvsala copilot] metering in this run: 41 request(s) metered with the provider's usage · 3 forwarded but NOT metered (nothing is estimated in their place): 3 × the request did not ask for usage (stream_options.include_usage). What each reason means and what to do: docs/terminales/README.md.
 ```
 
-Los motivos son los de la tabla `· not metered: …` de abajo. Si ninguna petición
-pasó por el gateway, lo dice también: el terminal no estaba apuntado. `bvsala
-gateway` imprime la misma línea al pararlo con Ctrl-C. Es local, como el aviso de
-tráfico degradado: no viaja a BiVelio.
+The reasons are the ones in the `· not metered: …` table below. If no request
+went through the gateway, it says that too: the terminal was not pointed at it.
+`bvsala gateway` prints the same line when you stop it with Ctrl-C. It is local,
+like the degraded-traffic warning: it is not sent to BiVelio.
 
-## Lo común a todas las guías
+## Common to every guide
 
-### 1 · Instalar y arrancar el gateway
+### 1 · Install and start the gateway
 
 ```bash
-npm i -g @bivelio/savings-layer      # trae el binario `bvsala`
-bvsala gateway                        # escucha en http://127.0.0.1:8402 — sin claves: modo Community
-bvsala gateway --port 8500            # otro puerto si el 8402 está ocupado
-bvsala gateway --upstream deepseek    # Claude Code con DeepSeek; qwen|glm|moonshot|minimax|gemini|ollama|vllm|lmstudio también
-export BIVELIO_SERVICE_KEY=bvk_…      # OPCIONAL: panel + entitlements de org (sin ella: modo Community)
+npm i -g @bivelio/savings-layer      # brings the `bvsala` binary
+bvsala gateway                        # listens on http://127.0.0.1:8402 — no keys: Community mode
+bvsala gateway --port 8500            # another port if 8402 is taken
+bvsala gateway --upstream deepseek    # Claude Code with DeepSeek; qwen|glm|moonshot|minimax|gemini|ollama|vllm|lmstudio too
+export BIVELIO_SERVICE_KEY=bvk_…      # OPTIONAL: dashboard + org entitlements (without it: Community mode)
 ```
 
-Al arrancar imprime, entre otras, estas líneas:
+On startup it prints, among others, these lines:
 
 ```
-[bvsala gateway] v0.6.x listening on http://127.0.0.1:8402 → https://api.anthropic.com
+[bvsala gateway] v1.2.x listening on http://127.0.0.1:8402 → https://api.anthropic.com
 [bvsala gateway] COMMUNITY MODE (open core): every local saving lever on, zero telemetry - no BiVelio keys set
-[bvsala gateway] metering: OFF (community mode - no BiVelio service key; local reports stay available with x-bvsala-report)
+[bvsala gateway] metering: LOCAL ONLY (community mode, no BiVelio service key): every request is measured on this machine with the provider's usage and nothing is sent to BiVelio · per-request reports with x-bvsala-report
 ```
 
-Con `BIVELIO_SERVICE_KEY` la licencia se recoge sola (línea `license: PRO, active
-until …`) y el metering queda ON. Si algo no arranca (sale con código 1), el
-mensaje dice exactamente qué falta:
+With `BIVELIO_SERVICE_KEY` the license is collected automatically (a `license:
+PRO, active until …` line) and the last line reads `metering: ON`. If something
+does not start (it exits with code 1), the message says exactly what is missing:
 
-| Mensaje | Qué pasa | Arreglo |
+| Message | What is happening | Fix |
 |---|---|---|
-| `BIVELIO_SERVICE_KEY is not recognised` | clave borrada, rotada o copiada a medias | crea otra |
-| `your organization has no active BiVelio license` | no hay suscripción | suscríbete en Cuenta y relanza |
-| `your BiVelio license expired on …` | licencia caducada y sin gracia | renueva en Cuenta |
-| `could not collect your license from savings.bivelio.com` | sin acceso a savings.bivelio.com | revisa la conexión; como respaldo, `BIVELIO_LICENSE_KEY` (se verifica sin red y se sustituye a mano cada período) |
-| un HTTP 402 en el terminal a mitad de sesión | la licencia caducó o se revocó con la sesión abierta | renueva; las peticiones que ya estaban en curso no se cortaron |
+| `BIVELIO_SERVICE_KEY is not recognised` | the key was deleted, rotated or only half copied | create another one |
+| `your organization has no active BiVelio license` | there is no subscription | subscribe in Account and start again |
+| `your BiVelio license expired on …` | the license expired and its grace period is over | renew in Account |
+| `could not collect your license from savings.bivelio.com` | savings.bivelio.com cannot be reached | check the connection; as a fallback, `BIVELIO_LICENSE_KEY` (verified offline and replaced by hand every period) |
+| an HTTP 402 in the terminal in the middle of a session | the license expired or was revoked with the session open | renew; the requests already in flight were not cut |
 
-Si lanzas `bvsala gateway` como servicio (launchd/systemd), un fallo de licencia
-queda en el log del servicio con código 1 y el terminal solo verá «connection
-refused»: mira ese log.
+If you run `bvsala gateway` as a service (launchd/systemd), a license failure
+ends up in the service log with exit code 1 and the terminal only sees
+"connection refused": look at that log.
 
-Un gateway habla con **un** upstream (`BVSALA_GATEWAY_UPSTREAM`, por defecto
-`https://api.anthropic.com`). Los terminales del dialecto Anthropic comparten
-instancia; Codex necesita la suya contra OpenAI — `bvsala codex` la arranca
-sola con el upstream correcto según tu modo de auth (ver su guía). Desde la
-próxima versión, `bvsala gateway --upstream openai|anthropic|<origen>` lo elige
-sin variable de entorno (el flag manda sobre `BVSALA_GATEWAY_UPSTREAM`). Para un
-SDK de OpenAI (Python, Node…) arranca uno con `--upstream openai` en otro puerto;
-en streaming, la petición tiene que llevar `stream_options.include_usage` o el
-gateway la reenvía sin medirla y lo dice en el log.
+A gateway talks to **one** upstream (`BVSALA_GATEWAY_UPSTREAM`, by default
+`https://api.anthropic.com`). The terminals of the Anthropic dialect share an
+instance; Codex needs its own against OpenAI — `bvsala codex` starts it by
+itself with the right upstream for your auth mode (see its guide). With
+`bvsala gateway --upstream openai|anthropic|<origin>` you choose it without an
+environment variable (the flag wins over `BVSALA_GATEWAY_UPSTREAM`). For an
+OpenAI SDK (Python, Node…) start one with `--upstream openai` on another port;
+when streaming, the request has to carry `stream_options.include_usage` or the
+gateway forwards it without metering it and says so in the log.
 
-### 2 · Comprobar que mide: el log del gateway
+### 2 · Checking that it meters: the gateway log
 
-Por cada llamada de inferencia servida y medida, el gateway escribe una línea
-con el coste:
+For every inference call served and metered, the gateway writes a line with the
+cost:
 
 ```
-[gateway] POST /v1/messages  · <modelo> · $0.001234 (in 120, cache↑0 cache↓46792, out 8)
+[gateway] POST /v1/messages  · <model> · $0.001234 (in 120, cache↑0 cache↓46792, out 8)
 ```
 
-Si ves esa línea con `$`, el terminal está enrutado y medido. Lo que significan
-las otras líneas:
+If you see that line with a `$`, the terminal is routed and metered. What the
+other lines mean:
 
-| Línea en el log | Qué pasa | Arreglo |
+| Line in the log | What is happening | Fix |
 |---|---|---|
-| `[gateway] POST /v1/v1/messages → 404` | el base URL lleva `/v1` **de más** para ese terminal | quita el `/v1` |
-| `[gateway] POST /messages → 404` | al base URL le **falta** `/v1` (el SDK solo añade `/messages`) | añade el `/v1` |
-| `[gateway] POST /v1/messages → 402 (license expired)` | la licencia caducó, se revocó o la org está bloqueada: las peticiones NUEVAS se rechazan (las que estaban en curso terminaron) | renueva en Cuenta; el terminal enseña el motivo |
-| nada de nada | el terminal no está apuntando al gateway (config no leída, env pisado por config, otro puerto) | revisa la trampa de su guía |
+| `[gateway] POST /v1/v1/messages → 404` | the base URL has one `/v1` **too many** for that terminal | remove the `/v1` |
+| `[gateway] POST /messages → 404` | the base URL is **missing** `/v1` (the SDK only appends `/messages`) | add the `/v1` |
+| `[gateway] POST /v1/messages → 402 (license expired)` | the license expired, was revoked or the org is blocked: NEW requests are refused (the ones in flight finished) | renew in Account; the terminal shows the reason |
+| nothing at all | the terminal is not pointed at the gateway (config not read, env overridden by config, another port) | check the pitfall in its guide |
 
-Cada petición que el gateway reenvía **sin medir** deja su propia línea con
-`· not metered: <motivo>`, y en su lugar no se estima nada. Los motivos, tal y
-como salen hoy:
+Every request the gateway forwards **without metering** leaves its own line with
+`· not metered: <reason>`, and nothing is estimated in its place. The reasons,
+exactly as they are printed today:
 
-| `· not metered: …` | Qué pasa | Arreglo |
+| `· not metered: …` | What is happening | Fix |
 |---|---|---|
-| `the provider cut the answer before its final usage` | el proveedor cortó la respuesta a medias: no llegó el contador final. El gateway rompe la conexión con el cliente (no la cierra como si hubiera terminado bien), así que el terminal ve el corte y puede reintentar | nada; el reintento del terminal se mide aparte |
-| `model "…" has no list price in the catalog` | modelo fuera del catálogo de precios, a propósito: un precio presente y equivocado es peor que ninguno (la consola lo avisa una vez por modelo) | nada; se reenvía sin medir |
-| `could not read the model from the request body (content-encoding: …)` | el cuerpo no se pudo leer: JSON ilegible o una compresión que este Node no abre (zstd, el de Codex, necesita Node ≥ 22.15) | actualiza Node |
-| `the request did not ask for usage (stream_options.include_usage)` | Chat Completions en stream sin `include_usage`: el proveedor no manda contador | añade `stream_options={"include_usage": True}` a la llamada, o arranca con `BVSALA_GATEWAY_USAGE_INJECT=1` |
-| `…; usage injection skips compressed request bodies` | la inyección está puesta, pero solo añade la opción a cuerpos sin comprimir | pídelo en la llamada |
-| `…, and the upstream rejects that option` | el upstream rechazó `stream_options` y la inyección quedó apagada para el resto del proceso | en stream no hay arreglo desde el gateway; con `stream: false` sí se mide |
-| `the stream ended without the provider's final usage event` | el stream se cortó antes de completarse (`message_delta` y `message_stop` en Anthropic, `response.completed`/`incomplete`/`failed`, el chunk de uso o `[DONE]`): sin contador y cierre terminal no hay medida | nada |
-| `the response ended as response.failed without usage` | la Responses API cerró con `response.failed` sin `usage`. Si lo trae, sí se mide | nada |
-| `the response ended as response.incomplete without usage` | la Responses API cerró con `response.incomplete` sin `usage`. Si lo trae, sí se mide: un `response.incomplete` por `max_output_tokens` o por el filtro de contenido lo factura el proveedor | nada |
-| `the response carried no usage` | respuesta JSON (`stream: false`) sin `usage` | nada |
-| `the response was too large to read its usage` | respuesta JSON de más de 5 MB: el gateway no la guarda entera para leerla | nada |
-| `the response is neither JSON nor an event stream (content-type: …)` | el upstream contestó con otro tipo de contenido en una ruta que sí sabe medir | revisa el upstream |
-| `no usage dialect for this route` | ruta sin contador que el gateway sepa leer (embeddings, imágenes, audio…): solo mide `/v1/messages`, `…/chat/completions`, `…/responses` y el protocolo Gemini (`:generateContent` / `:streamGenerateContent`) | nada |
+| `the provider cut the answer before its final usage` | the provider cut the answer halfway: the final counter never arrived. The gateway breaks the connection with the client (it does not close it as if it had ended well), so the terminal sees the cut and can retry | nothing; the terminal's retry is metered separately |
+| `model "…" has no list price in the catalog` | a model outside the price catalog, on purpose: a price that is present and wrong is worse than none (the console warns once per model) | nothing; it is forwarded without metering |
+| `could not read the model from the request body (content-encoding: …)` | the body could not be read: unreadable JSON or a compression this Node cannot open (zstd, the one Codex uses, needs Node ≥ 22.15) | upgrade Node |
+| `the request did not ask for usage (stream_options.include_usage)` | streamed Chat Completions without `include_usage`: the provider sends no counter | add `stream_options={"include_usage": True}` to the call, or start with `BVSALA_GATEWAY_USAGE_INJECT=1` |
+| `…; usage injection skips compressed request bodies` | injection is on, but it only adds the option to uncompressed bodies | ask for it in the call |
+| `…, and the upstream rejects that option` | the upstream rejected `stream_options` and injection was switched off for the rest of the process | when streaming there is no fix from the gateway; with `stream: false` it is metered |
+| `the stream ended without the provider's final usage event` | the stream was cut before it completed (`message_delta` and `message_stop` in Anthropic, `response.completed`/`incomplete`/`failed`, the usage chunk or `[DONE]`): without a counter and a terminal close there is no measurement | nothing |
+| `the response ended as response.failed without usage` | the Responses API closed with `response.failed` and no `usage`. If it carries one, it is metered | nothing |
+| `the response ended as response.incomplete without usage` | the Responses API closed with `response.incomplete` and no `usage`. If it carries one, it is metered: the provider bills a `response.incomplete` caused by `max_output_tokens` or by the content filter | nothing |
+| `the response carried no usage` | a JSON response (`stream: false`) without `usage` | nothing |
+| `the response was too large to read its usage` | a JSON response larger than 5 MB: the gateway does not keep it whole to read it | nothing |
+| `the response is neither JSON nor an event stream (content-type: …)` | the upstream answered with another content type on a route the gateway does know how to meter | check the upstream |
+| `no usage dialect for this route` | a route without a counter the gateway knows how to read (embeddings, images, audio…): it only meters `/v1/messages`, `…/chat/completions`, `…/responses` and the Gemini protocol (`:generateContent` / `:streamGenerateContent`) | nothing |
 
-Con `BVSALA_GATEWAY_COALESCE=1` (apagada por defecto), una petición idéntica de
-inferencia de lectura (`messages`, `chat/completions`, `responses` o `embeddings`)
-a otra que sigue en vuelo no viaja: recibe la réplica. Batches, administración y
-rutas desconocidas siempre se ejecutan por separado. La línea lleva
-`· COALESCED (call avoided)`. Detrás va `· by reference: floor $… (cache read
-price, …)` cuando se valora con el contador de la petición que sí viajó —a
-precio de lectura de caché, sin primas y con la salida solo si el cuerpo trae
-`temperature: 0` y el modelo no razona (la misma guarda de modelo que el SDK)—,
-o `· estimated, not by reference: <motivo>` cuando no. Esa línea es la
-valoración local: el panel todavía recibe estas peticiones como `estimated`, y
-no entran en la base de la comisión, porque el gateway aún no lee los tokens de
-razonamiento que declara el proveedor y la regla `reference-v2` los exige.
+With `BVSALA_GATEWAY_COALESCE=1` (off by default), a read-inference request
+(`messages`, `chat/completions`, `responses` or `embeddings`) identical to
+another one still in flight does not travel: it receives the replica. Batches,
+administration and unknown routes always run separately. The line carries
+`· COALESCED (call avoided)`. It is followed by `· by reference: floor $… (cache
+read price, …)` when it is valued with the counter of the request that did
+travel —at the cache-read price, without premiums and with the output only if
+the body carries `temperature: 0` and the model does not reason (the same model
+guard as the SDK)—, or by `· estimated, not by reference: <reason>` when it is
+not. That line is the local valuation: the dashboard still receives these
+requests as `estimated`, and they do not enter the measured base, because the
+gateway does not yet read the reasoning tokens the provider declares and the
+`reference-v2` rule requires them.
 
-| `· estimated, not by reference: …` | Por qué no |
+| `· estimated, not by reference: …` | Why not |
 |---|---|
-| `no-primary-record` | la petición que viajó no dejó su contador final (ni evento final del stream ni `usage` en el JSON) |
-| `subscription` | tráfico de suscripción (Claude o ChatGPT): no hay factura por token |
-| `unofficial-upstream` | el gateway no habla con el origen oficial de un proveedor (un mock, un proxy, Azure, un revendedor — Ollama/vLLM/LM Studio y OpenRouter incluidos): el precio de lista no está en ninguna factura |
-| `layer-changed-request` | una palanca cambió lo que viajó (modelo, cuerpo, cabeceras; también la rebaja de TTL de la caché): ya no es la petición del cliente byte a byte |
-| `primary-failed` | la petición que viajó cerró con `response.failed` |
-| `client-disconnected` | el cliente de esta petición se fue antes de recibir la réplica entera |
-| `service-tier` | el `service_tier` pedido o el servido no tiene precio por token publicado (`scale`, uno nuevo) |
-| `no-cached-price` | el modelo no tiene precio de lectura de caché en su propia fila del catálogo |
-| `no-credit` | el contador no deja nada que acreditar |
+| `no-primary-record` | the request that travelled left no final counter (neither a final stream event nor `usage` in the JSON) |
+| `subscription` | subscription traffic (Claude or ChatGPT): there is no per-token invoice |
+| `unofficial-upstream` | the gateway is not talking to a provider's official origin (a mock, a proxy, Azure, a reseller — Ollama/vLLM/LM Studio and OpenRouter included): the list price is on nobody's invoice |
+| `layer-changed-request` | a lever changed what travelled (model, body, headers; the cache TTL reduction too): it is no longer the client's request byte for byte |
+| `primary-failed` | the request that travelled closed with `response.failed` |
+| `client-disconnected` | this request's client left before receiving the whole replica |
+| `service-tier` | the `service_tier` asked for or served has no published per-token price (`scale`, a new one) |
+| `no-cached-price` | the model has no cache-read price in its own catalog row |
+| `no-credit` | the counter leaves nothing to credit |
 
-Claude Code manda además un `HEAD /api/hello` antes de la primera llamada: es
-la sonda de vida, no una inferencia.
+Claude Code also sends a `HEAD /api/hello` before the first call: it is the
+liveness probe, not an inference.
 
-`bvsala doctor [--port N]`: sondea el PATH y la existencia de las configs de
-usuario (nunca lee su contenido) e imprime el bloque exacto por terminal con el
-puerto indicado. Solo imprime: no escribe ninguna configuración.
+`bvsala doctor [--port N]`: it probes the PATH and the existence of the user
+configs (it never reads their contents) and prints the exact block per terminal
+with the given port. It only prints: it writes no configuration.
 
 ### 3 · Windows
 
-`npm i -g @bivelio/savings-layer` y `bvsala claude` son idénticos en los tres
-sistemas. Lo que cambia es cómo se fija la clave en la sesión — el `export` de
-estas guías es POSIX; en PowerShell:
+`npm i -g @bivelio/savings-layer` and `bvsala claude` are identical on the three
+systems. What changes is how the key is set in the session — the `export` in
+these guides is POSIX; in PowerShell:
 
 ```powershell
-$env:BIVELIO_SERVICE_KEY = "bvk_…"  # OPCIONAL: panel + entitlements de org (sin ella: modo Community)
+$env:BIVELIO_SERVICE_KEY = "bvk_…"  # OPTIONAL: dashboard + org entitlements (without it: Community mode)
 bvsala claude
 ```
 
-(En `cmd`: `set BIVELIO_SERVICE_KEY=bvk_…`.) El prefijo `VAR=valor comando` de
-las recetas manuales también es POSIX: en Windows, fija la variable primero y
-lanza después.
+(In `cmd`: `set BIVELIO_SERVICE_KEY=bvk_…`.) The `VAR=value command` prefix of
+the manual recipes is POSIX too: on Windows, set the variable first and launch
+afterwards.
 
-Y una condición dura: el terminal debe estar instalado con su **instalador
-nativo** (un `claude.exe` / `codex.exe` en el PATH — Claude Code, Codex, Goose
-y Qwen Code lo tienen [V]). El shim `.cmd` que deja `npm i -g <terminal>` no
-puede lanzarse de forma segura con argumentos (CVE-2024-27980) y `bvsala` se
-niega con una guía en vez de fallar con un ENOENT mudo. opencode, Kilo y Copilot
-CLI también se instalan por npm: en Windows, usa su binario nativo (releases de
-GitHub, winget o scoop) **[I: no validado en Windows]**. Aider se instala con pip,
-que deja un `aider.exe`.
+And one hard condition: the terminal must be installed with its **native
+installer** (a `claude.exe` / `codex.exe` on the PATH — Claude Code, Codex, Goose
+and Qwen Code have one [V]). The `.cmd` shim that `npm i -g <terminal>` leaves
+cannot be launched safely with arguments (CVE-2024-27980) and `bvsala` refuses
+with a guide instead of failing with a mute ENOENT. opencode, Kilo and Copilot
+CLI are also installed through npm: on Windows, use their native binary (GitHub
+releases, winget or scoop) **[I: not validated on Windows]**. Aider is installed
+with pip, which leaves an `aider.exe`.
 
-### 4 · Regla BYOK, sin excepción
+### 4 · The BYOK rule, without exception
 
-Todas las recetas del anillo 2 (Goose, Qwen Code, opencode, Kilo, Copilot, Aider,
-Crush, Droid, Cline, Continue) son **API key exclusivamente**. Anthropic prohíbe usar el OAuth de Claude
-Pro/Max en harnesses de terceros (opencode lo documenta; Crush retiró su OAuth en
-ene-2026). El gateway reenviaría un Bearer de suscripción sin inmutarse — y eso
-no se promociona ni se documenta como receta.
+Every ring-2 recipe (Goose, Qwen Code, opencode, Kilo, Copilot, Aider, Crush,
+Droid, Cline, Continue) is **API key only**. Anthropic forbids using the Claude
+Pro/Max OAuth in third-party harnesses (opencode documents it; Crush removed its
+OAuth in January 2026). The gateway would forward a subscription Bearer without
+blinking — and that is neither promoted nor documented as a recipe.
 
-### 5 · Wording honesto
+### 5 · Honest wording
 
-«Anthropic doesn't endorse, maintain, or audit third-party gateway products»
-[V]. El modo BV-SALA es **configuración soportada del binario sin modificar**:
-di eso, nunca «aprobado por Anthropic». El contrato del gateway es una lista
-abierta de cabeceras y campos que crece con cada release del terminal; el
-passthrough byte a byte es lo que lo mantiene vivo sin tocar nada.
+"Anthropic doesn't endorse, maintain, or audit third-party gateway products"
+[V]. BV-SALA mode is a **supported configuration of the unmodified binary**:
+say that, never "approved by Anthropic". The gateway contract is an open list of
+headers and fields that grows with every release of the terminal; the
+byte-for-byte passthrough is what keeps it alive without touching anything.
 
 ## What the gateway guarantees: it forwards what your client sends
 
@@ -252,8 +253,8 @@ A proxy in front of your provider can raise your bill without breaking anything
 you can see: a lost cache marker, a dropped beta header, a block it does not
 recognise. This gateway is built not to do that, and a test suite checks it
 against a fake upstream on 127.0.0.1: `test/gateway-no-empeora.test.ts`, which
-runs in our CI on every pull request and every push to `main`. The source
-repository is not public, so this section lists exactly what the suite checks.
+runs in our CI on every pull request and every push to `main`. The suite is in
+the public repository, and this section lists exactly what it checks.
 
 **With no lever armed, your provider receives what your client sent, byte for
 byte:**

@@ -1,32 +1,33 @@
-# Crush a través del gateway
+# Crush through the gateway
 
-**Fuente:** `docs/PASARELA-S3-TERMINALES.md` §3 [V]. Crush (Charm) configura
-proveedores por **`~/.config/crush/crushrc`** (un script Bash); `crush.json`
-está **deprecado** (verificado 2026-08-30). Su SDK Go resuelve rutas de forma
-relativa, y eso dicta la forma del URL: **con `/v1`, sin barra final**.
+**Source:** `docs/PASARELA-S3-TERMINALES.md` §3 [V]. Crush (Charm) configures
+providers through **`~/.config/crush/crushrc`** (a Bash script); `crush.json` is
+**deprecated** (verified 2026-08-30). Its Go SDK resolves paths relatively, and
+that dictates the shape of the URL: **with `/v1`, no trailing slash**.
 
-## Qué necesitas
+## What you need
 
-- `crush` instalado.
-- `ANTHROPIC_API_KEY` exportada (Crush retiró su OAuth de Claude en ene-2026:
-  solo API key).
-- `bvsala` instalado. Open core: sin claves el gateway arranca en modo Community (todo el ahorro local, cero telemetría); `BIVELIO_SERVICE_KEY` añade el panel y los entitlements de la org (ver [README](README.md)).
+- `crush` installed.
+- `ANTHROPIC_API_KEY` exported (Crush removed its Claude OAuth in January 2026:
+  API key only).
+- `bvsala` installed. Open core: with no keys the gateway starts in Community mode (all the local saving, zero telemetry); `BIVELIO_SERVICE_KEY` adds the dashboard and the org's entitlements (see [README](README.md)).
 
-## Config de usuario: `~/.config/crush/crushrc`
+## User config: `~/.config/crush/crushrc`
 
-Añade esta línea:
+Add this line:
 
 ```bash
 provider add bvsala --type anthropic --base-url http://127.0.0.1:8402/v1 --api-key "$ANTHROPIC_API_KEY"
 ```
 
-Y elige el proveedor `bvsala` en Crush. `crush.json` no: deprecado.
+And choose the `bvsala` provider in Crush. Not `crush.json`: deprecated.
 
-No hay envoltorio `bvsala crush`: el enrutado es config de usuario. El
-`bvsala doctor --write crush` previsto en S3 hará un append comentado de esa
-línea en tu `crushrc` (con copia `.bak`).
+There is no `bvsala crush` wrapper: the routing is user config. The `bvsala
+doctor --write crush` planned in S3 will append that line, commented, to your
+`crushrc` (with a `.bak` copy); it does not exist yet, and today `bvsala doctor`
+only prints the line.
 
-## Arrancar y comprobar
+## Starting and checking
 
 ```bash
 bvsala gateway        # http://127.0.0.1:8402
@@ -34,19 +35,19 @@ crush
 ```
 
 ```
-[gateway] POST /v1/messages  · <modelo> · $0.001234 (in 120, cache↑0 cache↓0, out 8)
+[gateway] POST /v1/messages  · <model> · $0.001234 (in 120, cache↑0 cache↓0, out 8)
 ```
 
-## La trampa típica
+## The typical pitfall
 
-- **Barra final.** `--base-url http://127.0.0.1:8402/v1/` → el SDK Go resuelve
-  relativo y pide `/v1/v1/messages` → `[gateway] POST /v1/v1/messages → 404` [V].
-  Sin barra.
-- **Sin `/v1`** → `[gateway] POST /messages → 404`.
-- **`crush.json`** → deprecado; si tienes uno viejo con otro proveedor, puede
-  seguir mandando. Usa `crushrc`.
+- **Trailing slash.** `--base-url http://127.0.0.1:8402/v1/` → the Go SDK
+  resolves relatively and asks for `/v1/v1/messages` →
+  `[gateway] POST /v1/v1/messages → 404` [V]. No slash.
+- **No `/v1`** → `[gateway] POST /messages → 404`.
+- **`crush.json`** → deprecated; if you have an old one with another provider,
+  it may still win. Use `crushrc`.
 
-## Nota BYOK
+## BYOK note
 
-**API key exclusivamente.** Crush ya retiró su OAuth de Claude; el gateway
-reenviaría cualquier credencial sin inmutarse, pero la receta es esta.
+**API key only.** Crush already removed its Claude OAuth; the gateway would
+forward any credential without blinking, but this is the recipe.

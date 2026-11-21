@@ -29,7 +29,7 @@ What it does not cover:
 
 1. **Recompute the published figures.** No key, no cost. Run `reproduce.mjs` (section 8) against the published artefact and its trials CSV. It re-runs the same seeded bootstrap on every paired trial and compares the result with what we publish.
 2. **Measure the published npm package on your own traffic.** Turn on the SDK's `verification` option (`sampleRate`, optionally `onCheck`). For the sampled share of eligible requests, after the answer is returned, the layer sends the same request once more to your provider exactly as it would go without the layer, and reports both sides from your provider's usage counters. The pairs appear on the dashboard's «Your own bench» page, which exports them as CSV. They are informational: they never enter measured savings, your statement or any commission.
-3. **Rerun BiVelio's bench** at the commit sealed in the artefact (`commit`, `sdk.version`). The bench's source is not public; to request access, write to the support address in the package README.
+3. **Rerun BiVelio's bench** at the commit sealed in the artefact (`commit`, `sdk.version`). The bench's source is in the public repository (`benchmarks/`); rerun it at that commit.
 
 ## 3. What to install
 

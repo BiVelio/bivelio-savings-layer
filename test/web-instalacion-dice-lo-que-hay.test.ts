@@ -86,7 +86,10 @@ describe("panel de instalación: lo que dicen los textos, en los 12 idiomas", ()
     expect(readmePython).not.toMatch(/Until the first release on PyPI/);
   });
 
-  it("el mínimo de gateway que cita la nota de Python es el que exige el cliente", () => {
+  it("el mínimo de gateway lo exige el cliente y lo dice su README; la nota del panel no lo repite", () => {
+    // El panel ya no cita «0.4.26 o posterior» (m27, 2026-11-21): quien instala
+    // hoy recibe la última versión, y un número viejo hacía parecer viejo el
+    // producto. El mínimo sigue donde se aplica: en el cliente.
     expect(gatewayPython).toContain("0.4.26 or later");
   });
 
@@ -117,10 +120,11 @@ describe("panel de instalación: lo que dicen los textos, en los 12 idiomas", ()
         }
       });
 
-      it("pythonNote: el comando exacto del README, el import y la versión mínima", () => {
+      it("pythonNote: el comando exacto del README, el import y Python 3.10, sin versiones viejas del gateway", () => {
         expect(p.pythonNote).toContain("<code>pip install bivelio-savings-layer</code>");
         expect(p.pythonNote).toContain("<code>import bvsala</code>");
-        expect(p.pythonNote).toContain("0.4.26");
+        expect(p.pythonNote).toContain("3.10");
+        expect(p.pythonNote).not.toMatch(/0\.4\.\d+/);
         expect(p.pythonNote).toContain("PyPI");
         // Ni la instalación desde un repositorio privado ni un nombre que no es el publicado.
         expect(p.pythonNote).not.toMatch(/packages\/python|pip install bvsala/);

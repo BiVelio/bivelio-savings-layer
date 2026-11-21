@@ -197,30 +197,30 @@
   closing note no longer says that the layer refuses to run without a license: it
   refuses only a key that is set but invalid.
 
-## 1.2.2 — los tres READMEs cuentan la misma historia
+## 1.2.2 — the three READMEs tell the same story
 
 ### Changed
 
-- **PyPI**: el README del cliente Python abre con la marca, la evidencia medida
-  (0→95 % −82,76 %; 31,50 %/75,08 %) y el DOI de Zenodo, y apunta al README
-  canónico del repositorio (el que muestra npm).
-- **npm**: el README del tarball incorpora el arreglo del desplegable de precios
-  (el modelo vigente sin comisión primero; la comisión marcada como legado).
+- **PyPI**: the Python client's README opens with the brand, the measured evidence
+  (0→95 % −82.76 %; 31.50 %/75.08 %) and the Zenodo DOI, and points to the
+  repository's canonical README (the one npm shows).
+- **npm**: the tarball's README includes the fix to the pricing dropdown (the
+  current model with no commission first; the commission marked as legacy).
 
-Sin cambios de código: misma superficie que 1.2.1.
+No code changes: same surface as 1.2.1.
 
-## 1.2.1 — README revisado para la comunidad, paper v2.3-r1 enlazado
+## 1.2.1 — README revised for the community, paper v2.3-r1 linked
 
 ### Changed
 
-- **README**: primera lectura de ~135 líneas (héroe, evidencia medida, pitch,
-  instalación en 60 s, paper, tabla Community/Cloud) y el manual completo plegado
-  en `<details>`; enlace del paper a la **v2.3-r1** (revisada externamente) y
-  documentación de los levers 1.2.0 (`cachePrefix` y `crossProviderShadow`).
-- `.zenodo.json` con los metadatos del depósito (listo para la integración
-  GitHub→Zenodo).
+- **README**: a first read of ~135 lines (hero, measured evidence, pitch, install in
+  60 s, paper, Community/Cloud table) and the full manual folded in `<details>`; the
+  paper link points to **v2.3-r1** (externally reviewed), and the 1.2.0 levers
+  (`cachePrefix` and `crossProviderShadow`) are documented.
+- `.zenodo.json` with the deposit's metadata (ready for the GitHub→Zenodo
+  integration).
 
-Sin cambios de código: misma superficie que 1.2.0.
+No code changes: same surface as 1.2.0.
 
 ## 1.2.0 — cache-aware prompt management, cross-provider shadow, live evidence
 

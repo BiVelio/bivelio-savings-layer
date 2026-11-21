@@ -1,74 +1,77 @@
-# Aider a través del gateway
+# Aider through the gateway
 
-**Fuente:** `docs/investigacion/2026-09-27/agentes-de-codigo.md`: código de
-`Aider-AI/aider` (rama `main` a 2026-05-22; la última release publicada es la
-v0.86, de agosto de 2025) y de `BerriAI/litellm` 1.82.3, la versión que fija
-`main` de aider. Aider llama a los modelos a través de litellm, así que las
-variables que mandan son las de litellm [V].
+**Source:** `docs/investigacion/2026-09-27/agentes-de-codigo.md`: code of
+`Aider-AI/aider` (branch `main` at 2026-05-22; the latest published release is
+v0.86, from August 2025) and of `BerriAI/litellm` 1.82.3, the version aider's
+`main` pins. Aider calls the models through litellm, so the variables that count
+are litellm's [V].
 
-## Qué necesitas
+## What you need
 
-- `aider` en el PATH y tu **API key** (`ANTHROPIC_API_KEY` o `OPENAI_API_KEY`).
-- `bvsala` instalado. Open core: sin claves arranca en modo Community; `BIVELIO_SERVICE_KEY` (opcional) añade el panel y los entitlements (ver [README](README.md)).
+- `aider` on the PATH and your **API key** (`ANTHROPIC_API_KEY` or `OPENAI_API_KEY`).
+- `bvsala` installed. Open core: with no keys it starts in Community mode; `BIVELIO_SERVICE_KEY` (optional) adds the dashboard and the entitlements (see [README](README.md)).
 
-## Envoltorio: `bvsala aider [args…]`
+## Wrapper: `bvsala aider [args…]`
 
 ```bash
-bvsala aider                                            # modelos de Anthropic
-BVSALA_GATEWAY_UPSTREAM=openai bvsala aider --model gpt-…   # modelos de OpenAI
+bvsala aider                                            # Anthropic models
+BVSALA_GATEWAY_UPSTREAM=openai bvsala aider --model gpt-…   # OpenAI models
 ```
 
-Un gateway habla con un solo proveedor, así que el envoltorio enruta uno:
+A gateway talks to a single provider, so the wrapper routes one:
 
-- **Anthropic (por defecto).** Con `ANTHROPIC_API_KEY` presente, aider elige
-  Sonnet por defecto [V]. El envoltorio exporta `ANTHROPIC_API_BASE`, que litellm
-  lee **antes** que `ANTHROPIC_BASE_URL`, y litellm añade `/v1/messages` si la
-  URL no termina así: **sin `/v1`** [V].
-- **OpenAI**, con `BVSALA_GATEWAY_UPSTREAM=openai`: exporta `OPENAI_BASE_URL` y
-  `OPENAI_API_BASE` (litellm las lee en ese orden), **con `/v1`** [V].
+- **Anthropic (the default).** With `ANTHROPIC_API_KEY` present, aider picks
+  Sonnet by default [V]. The wrapper exports `ANTHROPIC_API_BASE`, which litellm
+  reads **before** `ANTHROPIC_BASE_URL`, and litellm appends `/v1/messages` if
+  the URL does not end that way: **no `/v1`** [V].
+- **OpenAI**, with `BVSALA_GATEWAY_UPSTREAM=openai`: it exports
+  `OPENAI_BASE_URL` and `OPENAI_API_BASE` (litellm reads them in that order),
+  **with `/v1`** [V].
 
-Lo que no es del proveedor enrutado va directo y no se mide (por ejemplo, un
-modelo débil de otro proveedor). Al salir, el envoltorio imprime cuántas
-peticiones midió y cuáles reenvió sin medir, y por qué.
+Whatever does not belong to the routed provider goes direct and is not metered
+(a weak model from another provider, for example). On exit, the wrapper prints
+how many requests it metered and which ones it forwarded without metering, and
+why.
 
-### La trampa de OpenAI: el usage en stream
+### The OpenAI pitfall: usage in streams
 
-litellm solo añade `stream_options: {"include_usage": true}` cuando habla con
-`api.openai.com` **directamente** (`get_stream_options`: sin `api_base`, o con
-host `api.openai.com`) [V]. Detrás del gateway el host es `127.0.0.1`, así que
-los streams de OpenAI **no piden su contador** y se reenvían sin medir. Dos
-salidas:
+litellm only adds `stream_options: {"include_usage": true}` when it talks to
+`api.openai.com` **directly** (`get_stream_options`: no `api_base`, or host
+`api.openai.com`) [V]. Behind the gateway the host is `127.0.0.1`, so OpenAI
+streams **do not ask for their counter** and are forwarded without metering. Two
+ways out:
 
 ```bash
 BVSALA_GATEWAY_UPSTREAM=openai BVSALA_GATEWAY_USAGE_INJECT=1 bvsala aider --model gpt-…
 BVSALA_GATEWAY_UPSTREAM=openai bvsala aider --model gpt-… --no-stream
 ```
 
-La primera añade la opción en el gateway (el último chunk llega con `choices`
-vacío, lo mismo que aider recibe cuando habla con OpenAI directo); la segunda
-pide respuestas enteras, que traen el `usage` en el JSON. Anthropic no tiene
-esta trampa: su stream siempre trae el contador.
+The first one adds the option in the gateway (the last chunk arrives with an
+empty `choices`, the same thing aider receives when it talks to OpenAI
+directly); the second asks for whole responses, which carry the `usage` in the
+JSON. Anthropic does not have this pitfall: its stream always carries the
+counter.
 
 ## Manual
 
 ```bash
 bvsala gateway                                           # 8402, Anthropic
-ANTHROPIC_API_BASE=http://127.0.0.1:8402 aider           # SIN /v1
+ANTHROPIC_API_BASE=http://127.0.0.1:8402 aider           # NO /v1
 
 bvsala gateway --upstream openai --port 8403
-OPENAI_API_BASE=http://127.0.0.1:8403/v1 aider --model gpt-…   # CON /v1
+OPENAI_API_BASE=http://127.0.0.1:8403/v1 aider --model gpt-…   # WITH /v1
 ```
 
-## La trampa típica
+## The typical pitfall
 
-- `--openai-api-base` en la línea de comandos o `openai-api-base:` en
-  `.aider.conf.yml` pisan la variable (aider la reescribe al arrancar) [V].
-- Un `api_base` en `extra_params` de `.aider.model.settings.yml` manda sobre
-  todo: esa petición no pasa por el gateway.
+- `--openai-api-base` on the command line or `openai-api-base:` in
+  `.aider.conf.yml` override the variable (aider rewrites it on startup) [V].
+- An `api_base` in `extra_params` of `.aider.model.settings.yml` wins over
+  everything: that request does not go through the gateway.
 
-## Qué ya mide aider
+## What aider already measures
 
-Aider enseña tokens y coste por mensaje, con los precios de litellm; cuando la
-respuesta no trae `usage`, cuenta los tokens con su tokenizador local, que es
-una estimación [V]. El gateway añade el contador del proveedor en cada
-petición, el aviso de lo que no pudo medir y el panel del equipo.
+Aider shows tokens and cost per message, with litellm's prices; when the
+response carries no `usage`, it counts the tokens with its local tokenizer,
+which is an estimate [V]. The gateway adds the provider's counter on every
+request, the notice of what it could not meter and the team dashboard.

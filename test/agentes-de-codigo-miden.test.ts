@@ -124,16 +124,37 @@ describe("A2-9 · lo que viaja DENTRO del paquete npm dice lo mismo que el READM
   // mientras el README ya decía que por defecto el gateway mide.
   it("la guía de Claude Code no dice que con clave de API «las palancas ahorran dinero» sin más", () => {
     const guia = plano(leer("docs/terminales/claude-code.md"));
-    expect(guia).not.toMatch(/las palancas ahorran dinero/);
-    expect(guia).toMatch(/Por defecto el gateway ahí \*\*mide\*\*/);
-    expect(guia).toMatch(/solo ahorra si Claude Code pide la caché de una hora/);
-    expect(guia).toContain("con API key pide la de cinco minutos salvo que pongas `promptCacheTtl` a `1h`");
+    // Las guías viajan en inglés desde la auditoría de medios (m30): las mismas
+    // tres afirmaciones, en el idioma en que se publican.
+    expect(guia).not.toMatch(/las palancas ahorran dinero|the levers save money/i);
+    expect(guia).toMatch(/By default the gateway \*\*measures\*\* there/);
+    expect(guia).toMatch(/only saves if Claude Code asks for the one-hour cache/);
+    expect(guia).toContain("on an API key it asks for the five-minute one unless you set `promptCacheTtl` to `1h`");
+    // m30 · el párrafo del log ya no dice que Claude Code «escribe caché a 1 h»
+    // sin más, que contradecía lo de arriba: el `(1h …)` solo sale si se pide.
+    expect(guia).not.toMatch(/Claude Code escribe caché a 1 h|Claude Code writes (the )?cache at (1 h|one hour)/i);
+    expect(guia).toContain("On an API key with the default configuration Claude Code asks for the five-minute cache");
+  });
+
+  it("la guía de Claude Code no se contradice con su log: el «(1h …)» es parte de cache↑, y con API key pide 5 min", () => {
+    // Arriba decía que con API key Claude Code pide la caché de 5 min y abajo que
+    // «Claude Code escribe caché a 1 h», con un ejemplo imposible: cache↑0 (1h 49268).
+    // En gateway/servidor.ts el paréntesis es la parte de 1 h DENTRO del total escrito.
+    const crudo = leer("docs/terminales/claude-code.md");
+    const guia = plano(crudo);
+    expect(guia).not.toMatch(/Claude Code escribe caché a 1 h/);
+    const ejemplos = [...crudo.matchAll(/cache↑(\d+)(?: \(1h (\d+)\))?/g)];
+    expect(ejemplos.length).toBeGreaterThan(0);
+    for (const [texto, total, unaHora] of ejemplos) {
+      if (unaHora !== undefined) expect(Number(unaHora), texto).toBeLessThanOrEqual(Number(total));
+    }
+    expect(leer("gateway/servidor.ts")).toContain("cache↑${medido.tokens.cacheEscrita}`");
   });
 
   it("la guía general de terminales pone la condición junto a «la palanca por defecto»", () => {
     const guia = plano(leer("docs/terminales/README.md"));
-    expect(guia).toMatch(/palanca por defecto[^]*?Solo tiene algo que rebajar cuando el cliente paga por token y pide la caché de una hora/);
-    expect(guia).toContain("Claude Code con API key pide la de cinco minutos salvo que pongas `promptCacheTtl` a `1h`, y entonces el gateway solo mide");
+    expect(guia).toMatch(/default lever[^]*?It only has something to lower when the client pays per token and asks for the one-hour cache/);
+    expect(guia).toContain("Claude Code on an API key asks for the five-minute one unless you set `promptCacheTtl` to `1h`, so out of the box the gateway only measures");
   });
 
   it("el --help de bvsala pone la condición en cache_ttl_tuning", () => {

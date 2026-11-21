@@ -55,8 +55,9 @@ interface Terminal {
   /** Falso en los que no se pueden detectar (Cline, el BYOK de VS Code, los SDK). */
   detectable: boolean;
   /**
-   * La línea de comprobación contra el log, si no es la de /v1/messages; `null`
-   * en los que el gateway no puede medir (no hay línea que buscar).
+   * La línea de comprobación contra el log, si no es la de /v1/messages: cada
+   * terminal lleva la ruta de SU dialecto. `null` solo donde no hay petición de
+   * inferencia que buscar en el log (el servidor MCP de Claude Desktop).
    */
   comprobar?: string | null;
   /** El estado de los no detectables, si no es el de una extensión de editor. */
@@ -167,6 +168,9 @@ const TERMINALES: readonly Terminal[] = [
       "replies are metered only with BVSALA_GATEWAY_USAGE_INJECT=1 or aider --no-stream. An --openai-api-base flag or",
       "openai-api-base in .aider.conf.yml overrides the variable.",
     ],
+    comprobar:
+      "check: the gateway log must show `[gateway] POST /v1/messages …` (Anthropic models) or `POST /v1/chat/completions …` " +
+      "(OpenAI models); if you see `/v1/v1/messages`, there is one /v1 too many; if you see a bare `POST /messages`, one is missing.",
   },
   {
     id: "goose",
@@ -267,7 +271,9 @@ const TERMINALES: readonly Terminal[] = [
     binario: "gemini",
     configs: [join(".gemini", "settings.json")],
     detectable: true,
-    comprobar: null,
+    // El protocolo de Gemini no pasa por /v1/messages: su línea es la de :generateContent.
+    comprobar:
+      "check: the gateway log must show `[gateway] POST /v1beta/models/<model>:streamGenerateContent …` (or `:generateContent`) with a cost.",
     receta: ({ base, puerto }) => [
       `one command: bvsala gemini   (wraps the CLI: GOOGLE_GEMINI_BASE_URL=${base} and the gateway's own --upstream gemini)`,
       `manual: start \`bvsala gateway --upstream gemini --port ${puerto}\`, then run the Gemini CLI with GOOGLE_GEMINI_BASE_URL=${base}`,
@@ -281,7 +287,9 @@ const TERMINALES: readonly Terminal[] = [
     binario: "cursor",
     configs: [".cursor"],
     detectable: true,
-    comprobar: null,
+    comprobar:
+      "check: the gateway log must show `[gateway] POST /v1/chat/completions …`; nothing in the log means Cursor served " +
+      "the request with one of its own models, which never reach a local gateway.",
     receta: ({ baseV1, puerto }) => [
       "mechanism: Cursor → Settings → Models → OpenAI API Base URL override (BYOK: your own API key for OpenAI-compatible models).",
       `start: bvsala gateway --upstream openai --port ${puerto}   (deepseek, qwen, glm, moonshot and ollama work the same)`,
@@ -296,7 +304,9 @@ const TERMINALES: readonly Terminal[] = [
     configs: [],
     detectable: false,
     estadoSinDeteccion: "no detection: it is a Claude Code configuration, not a new binary",
-    comprobar: "check: the gateway log must show [gateway] POST /v1/messages → … with the model id in the line.",
+    comprobar:
+      "check: the gateway log must show `[gateway] POST /v1/messages …` with the DeepSeek model id in the line; " +
+      "if you see `/v1/v1/messages`, there is one /v1 too many.",
     receta: ({ base, puerto }) => [
       `start: bvsala gateway --upstream deepseek --port ${puerto}   (the gateway rewrites /v1/messages to DeepSeek's /anthropic endpoint)`,
       `env:   ANTHROPIC_BASE_URL=${base}   ANTHROPIC_AUTH_TOKEN=<your DeepSeek API key>   ANTHROPIC_MODEL=deepseek-flash`,
@@ -326,6 +336,11 @@ const TERMINALES: readonly Terminal[] = [
     configs: [],
     detectable: false,
     estadoSinDeteccion: "no detection: any OpenAI SDK, pointed at your local server through the gateway",
+    // SDK de OpenAI contra un modelo sin precio de lista: la línea que sale es
+    // la de Chat Completions, y lleva el motivo por el que no se mide.
+    comprobar:
+      'check: the gateway log must show `[gateway] POST /v1/chat/completions … · not metered: model "…" has no list price in the catalog`; ' +
+      "if you see `/v1/v1/chat/completions`, there is one /v1 too many.",
     receta: ({ baseV1, puerto }) => [
       `start: bvsala gateway --upstream ollama --port ${puerto}   (vllm → localhost:8000, lmstudio → localhost:1234)`,
       `python: client = OpenAI(base_url="${baseV1}", api_key="ollama")   (WITH /v1)`,
@@ -335,9 +350,12 @@ const TERMINALES: readonly Terminal[] = [
   },
   {
     id: "claude-desktop",
-    nombre: "Claude Desktop (MCP: estado y coste de la sesión)",
+    nombre: "Claude Desktop (MCP: session status and cost)",
     configs: [],
     detectable: false,
+    // Solo MCP: Claude Desktop no manda inferencia por el gateway, así que no
+    // hay línea `POST …` que buscar en el log.
+    comprobar: null,
     estadoSinDeteccion: "no detection: the recipe is a JSON block for claude_desktop_config.json",
     receta: ({ base }) => [
       "mechanism: Claude Desktop → Settings → Developer → Edit Config (claude_desktop_config.json), add this mcpServers entry:",

@@ -65,9 +65,9 @@ describe("el README que viaja a npm dice lo mismo que el código", () => {
 
   it("⛔ ni el README ni las guías de terminales dicen que el gateway «no optimiza»: la palanca de tarifa va por defecto con PRO", () => {
     expect(readme).not.toMatch(/does not optimi[sz]e/i);
-    expect(terminales).not.toMatch(/no optimiza todav/i);
+    expect(terminales).not.toMatch(/no optimiza todav|does not optimi[sz]e/i);
     expect(readme).toMatch(/cache-write TTL/);
-    expect(terminales).toMatch(/TTL de escritura de caché/);
+    expect(terminales).toMatch(/cache-write TTL/);
   });
 
   it("⛔ el README no lleva cifras de ahorro sin sello", () => {

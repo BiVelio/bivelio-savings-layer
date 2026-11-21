@@ -83,7 +83,7 @@
       "step": "Langkah {n} dari {total}",
       "steps": {
         "welcome": {
-          "title": "Selamat datang di BiVelio Savings",
+          "title": "Selamat datang di BiVelio Savings Layer",
           "body": "Dasbor ini menampilkan pengeluaran LLM Anda dan penghematan dari layer, diukur dengan trafik Anda sendiri. Yang belum diukur dinyatakan dengan kata-kata, tidak pernah ditampilkan sebagai nol."
         },
         "nav": {
@@ -156,6 +156,7 @@
     "workEmail": "Email kerja",
     "password": "Kata sandi",
     "createAccountCta": "Buat akun →",
+    "signupLegal": "Dengan membuat akun, kamu menyetujui <terms>ketentuan Savings Cloud</terms> dan <privacy>kebijakan privasi</privacy>.",
     "signInCta": "Masuk →",
     "loadingEllipsis": "…",
     "notWired": "Fitur masuk belum tersambung — atur NEXT_PUBLIC_SUPABASE_ANON_KEY di deployment.",
@@ -163,7 +164,7 @@
     "existingAccountLoginLink": "Email ini sudah punya akun. Kami telah mengirimkan tautan untuk masuk langsung: periksa kotak masuk (dan spam) lalu masuk tanpa kata sandi.",
     "signupSsoNote": "Sudah memakai BiVelio Shield, Privacy, atau aplikasi BiVelio? Akun yang sama berlaku di sini: masuk saja, tidak perlu membuat yang baru.",
     "successTitle": "Akun terverifikasi",
-    "successBody": "Email Anda terkonfirmasi dan akun Savings Anda siap. Selamat datang — meterannya menunggu.",
+    "successBody": "Email Anda terkonfirmasi dan akun Savings Cloud Anda siap. Selamat datang — meterannya menunggu.",
     "successCta": "Buka dasbor",
     "somethingWrong": "Terjadi kesalahan.",
     "forgotPassword": "Lupa kata sandi?",
@@ -193,7 +194,9 @@
       "network": "Tidak ada koneksi. Periksa jaringan Anda dan coba lagi.",
       "missingFields": "Masukkan email dan kata sandi Anda."
     },
-    "signupMedir": "Atau mulai gratis dengan Measure: paket cloud gratis, tanpa kartu, mode bayangan, hingga {seats} kursi dan {requests} permintaan per hari. Butuh @bivelio/savings-layer {version} atau lebih baru.",
+    "signupMedir": "Atau mulai gratis dengan Measure: paket cloud gratis, tanpa kartu, mode bayangan, hingga {seats} kursi dan {requests} permintaan per hari. Berfungsi dengan versi terbaru @bivelio/savings-layer.",
+    "signupPlanPro": "Anda memilih {plan} — {price} per kursi per bulan. Buat akun Anda, konfirmasikan email Anda, lalu bayar di dasbor melalui Stripe.",
+    "signupPlanTeam": "Anda memilih {plan} — {price} per bulan, termasuk {seats} kursi. Buat akun Anda, konfirmasikan email Anda, lalu bayar di dasbor melalui Stripe.",
     "openSourceQuestion": "Hanya ingin mesin open source?",
     "openSourceLink": "Pasang tanpa akun",
     "showPassword": "Tampilkan kata sandi",
@@ -317,7 +320,7 @@
       "tecnicaSub": "Rangkaian uji sintetis: menunjukkan cara kerja tiap tuas. Tidak menjanjikan angka apa pun.",
       "diagramRequest": "Permintaan Anda",
       "diagramA": "Lengan A: dikirim apa adanya, tanpa lapisan",
-      "diagramB": "Lengan B: permintaan yang sama, melalui Savings",
+      "diagramB": "Lengan B: permintaan yang sama, melalui Savings Layer",
       "diagramMeter": "Meteran pemakaian penyedia Anda mengukur keduanya"
     },
     "verify": {
@@ -419,7 +422,7 @@
         "armA": "Salinan tanpa optimasi",
         "armAHint": "Acuan: tagihan penyedia Anda tanpa layer",
         "armAValue": "Dasar",
-        "armB": "Dengan Savings",
+        "armB": "Dengan Savings Layer",
         "armBHint": "Permintaan yang sama, dilayani oleh layer",
         "armBValue": "{change} biaya · estimasi titik",
         "factSample": "Sampel",
@@ -444,7 +447,7 @@
       "metaTitle": "Pasang · BiVelio Savings Layer",
       "eyebrow": "Integrasikan",
       "title": "Pasang & sambungkan SDK",
-      "intro": "Tempatkan BV-SALA di depan penyedia Anda. Prompt Anda tidak melewati server BiVelio; prompt dikirim ke penyedia yang Anda konfigurasikan.",
+      "intro": "Tempatkan Savings Layer di depan penyedia Anda. Prompt Anda tidak melewati server BiVelio; prompt dikirim ke penyedia yang Anda konfigurasikan.",
       "irACuenta": "Belum punya paket, atau ingin mengubah jumlah kursi? Lakukan di Akun →",
       "trackerTitle": "Persiapan Anda",
       "trackerNote": "Tonggak ini diukur oleh produk: memilih salah satunya membuka petunjuknya, bukan menandainya selesai. Tonggak ini milik koneksi Cloud; mesin terbuka tetap berjalan tanpanya.",
@@ -614,7 +617,7 @@
       "advanced": "Pengaturan lanjutan",
       "projFriendly": "Tagihan kamu akan turun dari {baseline} menjadi {opt} — {pct}% lebih rendah.",
       "onlyChatTitle": "Hanya pakai ChatGPT atau Claude?",
-      "onlyChatBody": "ChatGPT memang tertutup: biaya tetap, tanpa tagihan atau batas token untuk dipangkas. Tapi jika Anda memakai Claude, kami sudah membantu Anda berhemat: skill savings-mode (gratis, di beranda) merenggangkan batas langganan Anda. Dan jika Anda membangun aplikasi dengan API key, di situlah BV-SALA mengukur dan memangkas pengeluaran sungguhan.",
+      "onlyChatBody": "ChatGPT memang tertutup: biaya tetap, tanpa tagihan atau batas token untuk dipangkas. Tapi jika Anda memakai Claude, skill savings-mode (gratis, di beranda) dirancang untuk merenggangkan batas langganan Anda; efeknya belum diukur. Dan jika Anda membangun aplikasi dengan API key, di situlah BV-SALA mengukur dan memangkas pengeluaran sungguhan.",
       "onlyChatCta": "Sedang membangun aplikasi? Buka Instal",
       "notInvoice": "Estimasi, bukan tagihan",
       "notInvoiceBody": "Angka ini berasal dari asumsi di sebelah kiri, bukan dari trafik Anda. Penghematan Anda yang sebenarnya diukur di Ikhtisar.",
@@ -632,7 +635,7 @@
       "errPaymentPending": "Pembayaran Anda masih diproses. Kunci lisensi Anda muncul di sini begitu pembayaran selesai; Anda tidak perlu membayar lagi.",
       "keyLabel": "kunci lisensi Anda{suffix} — ditampilkan sekali, salin sekarang",
       "validUntil": " · berlaku hingga {date}",
-      "pasteHint": "Tempel ke <code></code> untuk membuka SDK. Kunci ini kedaluwarsa pada akhir periode penagihan: tambahkan kunci akun layanan di bawah dan SDK memperbaruinya sendiri.",
+      "pasteHint": "Tempel ke <code></code> untuk menghubungkan SDK ke paket Cloud Anda. Kunci ini kedaluwarsa pada akhir periode penagihan: tambahkan kunci akun layanan di bawah dan SDK memperbaruinya sendiri.",
       "issuing": "Menerbitkan…",
       "getKey": "Dapatkan kunci lisensi Anda →",
       "priceNote": "{monthly} per kursi per bulan atau {yearly} per kursi per tahun. Belum ada langganan di akun ini? Mulai dari halaman Akun."
@@ -674,15 +677,15 @@
       "colRequests": "Permintaan",
       "colTokens": "Token",
       "colCost": "Biaya",
-      "hint": "Sesi dan subagen dari terminal pemrogramanmu (id buram — tidak pernah seseorang). Memerlukan gateway mulai 0.4.7."
+      "hint": "Sesi dan subagen dari terminal pemrogramanmu (id buram — tidak pernah seseorang)."
     },
     "gatewayVersion": {
-      "title": "Beberapa mesin tidak menghasilkan penghematan terukur dalam 7 hari terakhir",
+      "title": "Beberapa mesin mengukur pengeluaran tetapi tidak ada penghematan dalam 7 hari terakhir",
       "summary": "{n} dari {total} mesin gateway (atau tidak dideklarasikan) yang aktif dalam 7 hari terakhir tidak menghasilkan penghematan terukur.",
       "outdated": "{n, plural, other {# mesin menjalankan}} gateway yang lebih lama dari {minima}, versi pertama dengan tuas tarif: perbarui.",
       "undeclared": "{n, plural, other {# mesin tidak mendeklarasikan}} versi (gateway lebih lama dari kanal versi). Jika lebih lama dari {minima}, mesin itu tidak punya tuas tarif.",
-      "noLever": "{n, plural, other {# mesin sudah mutakhir}}, tetapi tuasnya tidak bekerja di sana. Jika tetap sama setelah memperbarui, tulis ke support@bivelio.com.",
-      "action": "Perbarui @bivelio/savings-layer di mesin itu dan mulai ulang terminal; tabel mesin di bawah menunjukkan apa yang dideklarasikan masing-masing."
+      "noLever": "{n, plural, other {# mesin sudah mutakhir dan tidak mengukur penghematan}}. Itu wajar jika klien meminta cache lima menit (bawaan Claude Code dengan API key), jika mesin hanya mengukur, atau dengan langganan Claude atau ChatGPT.",
+      "action": "Jika sebuah mesin belum mutakhir, perbarui @bivelio/savings-layer di mesin itu dan mulai ulang terminal; tabel mesin di bawah menunjukkan apa yang dideklarasikan masing-masing."
     },
     "gatewayBruto": {
       "title": "Penghematan beberapa mesin masih dilaporkan secara bruto",
@@ -695,7 +698,7 @@
       "action": "Perbarui SDK ke {minima} atau lebih baru di mesin itu dan mulai ulang prosesnya:"
     },
     "migrar05": {
-      "note": "Versi terbaru adalah 0.5, yang membawa perubahan yang tidak kompatibel.",
+      "note": "Memperbarui dari versi sebelum 0.5? Versi 0.5 membawa perubahan yang tidak kompatibel.",
       "link": "Baca panduan migrasi sebelum memperbarui →"
     },
     "maquinas": {
@@ -744,8 +747,8 @@
       "gatewayNote": "<b>Agen pemrograman alih-alih aplikasi?</b> Paket yang sama membawa gateway pengukur lokal: <code>bvsala claude</code> menjalankan Claude Code melaluinya dan panel ini menampilkan pengeluaran, token demi token. Ia berjalan tanpa kunci apa pun (mode Community); kunci layanan opsional dari langkah 2 menambahkan dasbor ini dan hak organisasi.",
       "doctorComment": "agen dan SDK lain: konfigurasi persis untuk masing-masing",
       "agentsNote": "Setiap pembungkus menyiapkan agennya hanya untuk sesi itu — tidak ada yang berubah dalam konfigurasinya — dan saat keluar memberi tahu berapa permintaan yang diukurnya, mana yang tidak bisa diukur, dan mengapa. <code>bvsala copilot</code> memerlukan kunci Anthropic Anda sendiri (BYOK): model yang dihosting GitHub tidak pernah lewat URL dasar, jadi tidak ada yang perlu diukur. Untuk Crush, Droid, Cline, Continue, atau Copilot di VS Code, <code>bvsala doctor</code> mencetak konfigurasi persisnya. <b>Cursor (BYOK)</b>: bekerja lewat penggantian URL dasar OpenAI dengan kunci Anda sendiri; modelnya sendiri tidak pernah mencapai gateway di mesin Anda. <b>Gemini CLI</b>: jalankan dengan <code>bvsala gemini</code>.",
-      "pythonNote": "<b>Python?</b> Klien <code>bvsala</code> untuk Python mengarahkan SDK resmi OpenAI dan Anthropic melalui gateway yang sama ini (<code>bvsala gateway</code>) dan mengembalikan laporan setiap permintaan ke kode Anda — angka yang sama dengan yang diterima panel ini. Klien ini memerlukan gateway 0.4.26 atau lebih baru dan Python 3.10 atau lebih baru. Pasang dari PyPI dengan <code>pip install bivelio-savings-layer</code>; di kode Anda, <code>import bvsala</code>.",
-      "finalNote": "Selesai. Kunci yang diatur tetapi tidak valid → <code>generate()</code> menolak. Jika paket Anda dibatalkan, SDK berhenti dalam ~15 mnt melalui <code>licenseServerUrl</code> — tanpa restart, dan tidak pernah melumpuhkan produksi Anda jika kami tidak dapat dihubungi.",
+      "pythonNote": "<b>Python?</b> Klien <code>bvsala</code> untuk Python mengarahkan SDK resmi OpenAI dan Anthropic melalui gateway yang sama ini (<code>bvsala gateway</code>) dan mengembalikan laporan setiap permintaan ke kode Anda — angka yang sama dengan yang diterima panel ini. Klien ini memerlukan Python 3.10 atau lebih baru. Pasang dari PyPI dengan <code>pip install bivelio-savings-layer</code>; di kode Anda, <code>import bvsala</code>.",
+      "finalNote": "Selesai. Kunci yang diatur tetapi tidak valid → <code>generate()</code> menolak. Jika paket Anda dibatalkan, SDK berhenti dalam ~15 mnt melalui <code>licenseServerUrl</code> — tanpa restart, dan tidak pernah melumpuhkan produksi Anda jika kami tidak dapat dihubungi. Hapus kuncinya dan lapisan kembali berjalan dalam mode Community.",
       "terminal": "Terminal",
       "sdkEyebrow": "Aplikasi",
       "sdkTitle": "Integrasikan aplikasi (SDK)",
@@ -900,7 +903,7 @@
       "graceTitle": "Lisensi kedaluwarsa — masih berjalan",
       "graceBody": "Lisensi Anda kedaluwarsa pada {date} dan masih berjalan {days, plural, other {# hari lagi}}. Perpanjang agar tidak terputus.",
       "expiredTitle": "Lisensi kedaluwarsa",
-      "expiredBody": "Lisensi Anda kedaluwarsa pada {date}. BV-SALA bersifat fail-closed, jadi SDK telah berhenti.",
+      "expiredBody": "Lisensi Anda kedaluwarsa pada {date}. Lapisan yang dijalankan dengan kunci lisensi itu kini menolak permintaan. Perpanjang lisensinya, atau hapus kunci BiVelio agar tetap berjalan dalam mode Community (gratis, tanpa dasbor).",
       "revokedTitle": "Lisensi dicabut",
       "revokedBody": "Lisensi ini telah dicabut. Hubungi support@bivelio.com jika menurut Anda ini keliru."
     },
@@ -1236,8 +1239,8 @@
       "sub": "Jalankan mesin open source di infrastruktur Anda sendiri. Hubungkan Savings Cloud untuk memusatkan pengukuran dan pengelolaan tim Anda, dengan paket bertarif tetap.",
       "ctaStart": "Mulai dengan Measure",
       "ctaBench": "Lihat hasil yang dapat direproduksi",
-      "panelAlt": "Dasbor Savings dengan data bangku uji publik: penghematan yang diukur dan pembagiannya per model.",
-      "panelCaption": "Dasbor dengan data bangku uji publik",
+      "panelAlt": "Dasbor Savings Cloud dengan data bangku uji publik: penghematan yang diukur dan pembagiannya per model.",
+      "panelCaption": "Dasbor demo dengan putaran {bateria} bangku uji publik: {titular} adalah gabungan keempat model. Struknya hanya untuk {modelo}.",
       "medidoEnVivo": "Diukur langsung dengan penghitung milik setiap penyedia",
       "note": "Terpasang dalam hitungan menit. Pesan Anda tidak pernah melewati server kami.",
       "proofTitle": "Diukur terhadap penyedia nyata",
@@ -1256,11 +1259,11 @@
       "pasos": [
         {
           "title": "AI menagih per kata",
-          "body": "Setiap permintaan ke AI dibayar berdasarkan teks yang masuk dan keluar. Savings berdiri di tengah jalur itu: permintaan yang sudah pernah dilihat dan diverifikasi dijawab tanpa memanggil penyedia lagi, dan yang tak perlu Anda bayar jatuh ke toples Anda."
+          "body": "Setiap permintaan ke AI dibayar berdasarkan teks yang masuk dan keluar. Savings Layer berdiri di tengah jalur itu: permintaan yang sudah pernah dilihat dan diverifikasi dijawab tanpa memanggil penyedia lagi, dan yang tak perlu Anda bayar jatuh ke toples Anda."
         },
         {
           "title": "Anda tidak membayar dua kali untuk hal yang sama",
-          "body": "AI membaca ulang setiap giliran semua yang sudah Anda kirim — dan penyedia menagihnya lagi. Savings menyiapkan setiap permintaan agar penyedia menerapkan harga diskonnya pada pengulangan. Diskonnya milik penyedia; bagian kami adalah memintanya dengan benar."
+          "body": "AI membaca ulang setiap giliran semua yang sudah Anda kirim — dan penyedia menagihnya lagi. Savings Layer menyiapkan setiap permintaan agar penyedia menerapkan harga diskonnya pada pengulangan. Diskonnya milik penyedia; bagian kami adalah memintanya dengan benar."
         },
         {
           "title": "Struk yang bisa Anda periksa",
@@ -1276,8 +1279,8 @@
     "step2": {
       "eyebrow": "Tanpa janji: pengukuran",
       "title": "Dari mana kami tahu ini menghemat? Kami mengukurnya — dan kami menerbitkan setiap percobaan, satu per satu.",
-      "body": "Setiap skenario SDK dijalankan dua kali terhadap penyedia sungguhan: apa adanya, dan dengan Savings di depan. Kedua lengan dinilai dari penggunaan yang dilaporkan penyedia pada harga daftar berversi, tanpa rekonsiliasi dengan faktur. Inilah hasilnya, lengkap dengan margin galat:",
-      "videoCaption": "Pengujian ini eksperimen yang adil: tugas yang sama dua kali — tanpa Savings dan dengan Savings — dengan meteran penyedia yang sama menghitung keduanya.",
+      "body": "Setiap skenario SDK dijalankan dua kali terhadap penyedia sungguhan: apa adanya, dan dengan Savings Layer di depan. Kedua lengan dinilai dari penggunaan yang dilaporkan penyedia pada harga daftar berversi, tanpa rekonsiliasi dengan faktur. Inilah hasilnya, lengkap dengan margin galat:",
+      "videoCaption": "Pengujian ini eksperimen yang adil: tugas yang sama dua kali — tanpa Savings Layer dan dengan Savings Layer — dengan meteran penyedia yang sama menghitung keduanya.",
       "plainTitle": "Terjemahan, tanpa jargon",
       "plain": "Pada aliran di mana {rep} permintaan berulang persis, tagihan turun {punto} — antara {bajo} dan {alto} dengan keyakinan 95%. Berapa yang Anda hemat bergantung pada seberapa sering lalu lintas Anda berulang.",
       "plainNote": "Persentase tidak berarti apa-apa tanpa intervalnya, modelnya, dan lalu lintasnya: kami menerbitkan ketiganya.",
@@ -1313,8 +1316,8 @@
     ],
     "skill": {
       "eyebrow": "savings-mode · skill gratis",
-      "title": "Skill yang merenggangkan batas langgananmu",
-      "body": "Tanpa tagihan bukan berarti tanpa sakit: jendela lima jam dan batas mingguan. savings-mode adalah skill berisi instruksi murni — tanpa proxy, lalu lintasmu tak tersentuh — yang memangkas dua massa yang benar-benar membakar batas: keluaran model dan hasil alat. Gratis; yang dibayar ke Savings adalah mengetahui berapa banyak ia menghematmu.",
+      "title": "Skill yang dirancang untuk merenggangkan batas langgananmu — efeknya belum diukur",
+      "body": "Tanpa tagihan bukan berarti tanpa sakit: jendela lima jam dan batas mingguan. savings-mode adalah skill berisi instruksi murni — tanpa proxy, lalu lintasmu tak tersentuh — yang menyasar dua massa yang benar-benar membakar batas: keluaran model dan hasil alat. Gratis.",
       "mLectura": "pembacaan cache",
       "mLecturaDesc": "Seluruh konteks dibaca ulang setiap giliran — karena itu menjaganya ramping penting.",
       "mEscritura": "penulisan cache (satu jam)",
@@ -1341,7 +1344,7 @@
     "gateway": {
       "eyebrow": "Gateway · terminal pemrograman",
       "title": "Claude Code dengan kunci API? Lihat pengeluaran nyata, token demi token.",
-      "body": "Satu perintah menempatkan pengukur lokal di depan terminal Anda, tanpa menyentuh kode Anda: ekspor kunci layanan Anda dan jalankan agen Anda melalui bvsala. Prompt Anda tidak melewati server BiVelio: prompt dikirim ke penyedia yang Anda konfigurasikan, dan yang sampai ke dasbor Anda hanya hitungan dan biaya.",
+      "body": "Satu perintah menempatkan pengukur lokal di depan terminal Anda, tanpa menyentuh kode Anda dan tanpa kunci: jalankan agen Anda melalui bvsala. Tambahkan kunci layanan hanya jika Anda ingin melihat pengeluaran di dasbor Savings Cloud Anda. Prompt Anda tidak melewati server BiVelio: prompt dikirim ke penyedia yang Anda konfigurasikan, dan yang sampai ke dasbor Anda hanya hitungan dan biaya.",
       "note": "Gateway mengukur, dengan penghitung penyedia Anda, setiap permintaan yang penggunaannya dilaporkan penyedia tersebut (untuk model dalam katalog harga kami) dan, seperti SDK, berjalan tanpa kunci apa pun (mode Community): kunci layanan opsional menambahkan dasbor dan hak organisasi. Pada model Anthropic, gateway juga menerapkan satu tuas secara default, tanpa lisensi atau akun: memindahkan penulisan cache dari TTL satu jam ke TTL lima menit hanya pada giliran ketika porsi besar dari prompt masih baru — seperti giliran pertama sebuah sesi atau setelah pemadatan — dan membiarkan giliran berantai apa adanya. Ini mengubah harga, bukan konten yang dibaca model. Gateway hanya punya sesuatu untuk diturunkan bila klien Anda membayar per token dan meminta cache satu jam: Claude Code dengan API key meminta cache lima menit kecuali Anda mengubahnya, dan saat itu gateway hanya mengukur. Tuas lainnya tetap mati sampai Anda mengaktifkannya. Skill savings-mode tersedia untuk batas kuota Anda, dengan efek yang masih harus diukur. Gateway juga bekerja dengan Codex CLI, Goose, Qwen Code, opencode, Kilo, Aider, serta GitHub Copilot CLI dengan kunci Anthropic Anda sendiri; untuk yang lain, seperti Cline atau Continue, bvsala doctor mencetak konfigurasi persisnya. Cursor bekerja lewat penggantian URL dasar OpenAI dengan kunci Anda sendiri, dan Gemini CLI dijalankan dengan bvsala gemini.",
       "pythonNote": "Python atau bahasa lain? Arahkan SDK resmi OpenAI atau Anthropic ke gateway, dan setiap permintaan yang penggunaannya dilaporkan penyedia, untuk model yang memiliki harga daftar, tercatat di panel ini dengan harga tersebut; log gateway memberi tahu bila ada yang tidak diukur. bvsala doctor mencetak base URL untuk setiap SDK. Untuk streaming OpenAI, minta penggunaan di dalam permintaan (stream_options.include_usage).",
       "cta": "Lihat cara kerjanya →"
@@ -1416,16 +1419,16 @@
     },
     "footer": {
       "ctaTitle": "Ukur dengan trafik Anda sendiri",
-      "ctaSub": "Setelah terpasang, setiap panggilan mengembalikan SavingsReport-nya, terukur dan terestimasi terpisah. Open core tidak butuh kunci: tuasnya berjalan lokal dengan nol telemetri. Cloud opsional mulai gratis dengan Measure dan ditagih per kursi, tanpa komisi atas penghematan Anda (@bivelio/savings-layer {version} atau lebih baru).",
+      "ctaSub": "Setelah terpasang, setiap panggilan mengembalikan SavingsReport-nya, terukur dan terestimasi terpisah. Open core tidak butuh kunci: tuasnya berjalan lokal dengan nol telemetri. Cloud opsional mulai gratis dengan Measure dan ditagih per kursi, tanpa komisi atas penghematan Anda.",
       "ctaStart": "Mulai",
-      "tagline": "Sistem operasi untuk bisnis Anda. Inilah <b>BV‑SALA</b>, pengoptimal biaya LLM BiVelio yang netral terhadap penyedia — setiap angka terukur diukur terhadap penghitung penyedia; estimasi dan simulasi ditampilkan terpisah, disebut apa adanya, dan tidak pernah ditagih.",
+      "tagline": "<b>BiVelio Savings Layer</b> adalah pengoptimal biaya LLM yang netral terhadap penyedia — setiap angka terukur diukur terhadap penghitung penyedia; estimasi dan simulasi ditampilkan terpisah, disebut apa adanya, dan tidak pernah ditagih.",
       "badge": "BV‑SALA · Savings Layer",
       "colSavings": "Savings Layer",
       "colBivelio": "BiVelio",
       "colLegal": "Hukum",
       "measured": "Hasil terukur",
       "benchmarks": "Benchmark publik",
-      "migrate": "Migrasi ke 0.5",
+      "migrate": "Panduan migrasi",
       "pricing": "Harga",
       "home": "Beranda",
       "docs": "Dokumentasi",
@@ -1453,7 +1456,7 @@
     },
     "cta15": {
       "titulo": "Minta panggilan 15 menit",
-      "sub": "Kami beri tahu berapa yang bisa kamu hemat dengan trafikmu, tanpa memasang apa pun.",
+      "sub": "Kami tunjukkan cara mengukurnya dengan trafikmu sendiri, gratis.",
       "placeholder": "kamu@perusahaan.com",
       "boton": "Minta panggilan 15 menit",
       "enviando": "Mengirim…",
@@ -1566,7 +1569,7 @@
     },
     "ways": {
       "eyebrow": "Mesin terbuka, Cloud opsional",
-      "title": "Dua cara memakai Savings.",
+      "title": "Dua cara memakai Savings Layer.",
       "sub": "Mesinnya sama. Yang berubah adalah tempat Anda mengelolanya dan apa yang keluar dari infrastruktur Anda.",
       "q": {
         "runs": "Tempat berjalan",
@@ -1594,7 +1597,7 @@
         "tag": "Opsional · mulai gratis",
         "lede": "Dasbor untuk memusatkan pengukuran dan pengelolaan tim Anda.",
         "runs": "Mesin tetap di infrastruktur Anda. Cloud menambahkan dasbor.",
-        "account": "Akun Savings dan kunci layanan.",
+        "account": "Akun Savings Cloud dan kunci layanan.",
         "telemetry": "Hitungan dan biaya, sesuai paket Anda. Prompt Anda tidak melewati server BiVelio.",
         "manage": "Dasbor tim, organisasi, dan lisensi.",
         "plans": "Lihat paket",
@@ -1636,7 +1639,7 @@
         },
         {
           "q": "Apa itu kursi?",
-          "a": "Satu mesin atau satu identitas layanan yang menjalankan Savings. Bukan orang: anggota tim Anda dikelola terpisah, di dasbor. Runner CI dan runner sementara tidak dihitung sebagai kursi."
+          "a": "Satu mesin atau satu identitas layanan yang menjalankan Savings Layer. Bukan orang: anggota tim Anda dikelola terpisah, di dasbor. Runner CI dan runner sementara tidak dihitung sebagai kursi."
         },
         {
           "q": "Apa bedanya Measure dan Community?",
@@ -1644,7 +1647,7 @@
         },
         {
           "q": "Apakah berguna untuk langganan seperti ChatGPT Plus?",
-          "a": "Tidak sebagai penghematan pada tagihan. Savings mengoptimalkan dan mengukur panggilan ke API yang dibayar per pemakaian; langganan bertarif tetap bukan tagihan API yang bisa dioptimalkan. Melalui gateway, trafik itu diukur, tetapi tidak ada penghematan yang dikreditkan. Untuk batas langganan tersedia skill savings-mode, sumber daya pelengkap yang efeknya belum diukur."
+          "a": "Tidak sebagai penghematan pada tagihan. Savings Layer mengoptimalkan dan mengukur panggilan ke API yang dibayar per pemakaian; langganan bertarif tetap bukan tagihan API yang bisa dioptimalkan. Melalui gateway, trafik itu diukur, tetapi tidak ada penghematan yang dikreditkan. Untuk batas langganan tersedia skill savings-mode, sumber daya pelengkap yang efeknya belum diukur."
         },
         {
           "q": "Apakah saya harus ganti penyedia?",
@@ -1752,7 +1755,7 @@
     "labelFor": "Untuk",
     "panelTitle": "Satu tim, <em>satu dasbor</em>.",
     "panelBody": "Dengan menerima, Anda masuk ke dasbor organisasi dengan akun Anda sendiri. Kursi langganan menghitung mesin atau identitas layanan, bukan orang.",
-    "arteAlt": "Ilustrasi: sebuah organisasi dan dasbor Savings-nya yang sudah terhubung, serta lingkaran ketiga yang masuk ke slot kosong."
+    "arteAlt": "Ilustrasi: sebuah organisasi dan dasbor Savings Cloud-nya yang sudah terhubung, serta lingkaran ketiga yang masuk ke slot kosong."
   },
   "benchmarksPage": {
     "metaTitle": "Uji A/B publik: ukur kami | BiVelio Savings Layer",
@@ -1761,7 +1764,7 @@
     "title": "Uji A/B kami, secara terbuka.",
     "titleAccent": "Ukur kami.",
     "titleMark": "Ukur kami",
-    "lede": "Kami menerbitkan setiap jalannya uji: empat baterai pada dataset publik, {modelos} model, dan kedua lengan diukur dengan penghitung penggunaan milik penyedia sendiri. Setiap angka membawa n, interval, dan tanggalnya. Apa yang tidak menghemat juga ada di sini.",
+    "lede": "Kami menerbitkan jalannya uji yang tercantum di bawah: empat baterai pada dataset publik, {modelos} model, dan kedua lengan diukur dengan penghitung penggunaan milik penyedia sendiri. Setiap angka membawa n, interval, dan tanggalnya. Apa yang tidak menghemat juga ada di sini.",
     "stats": {
       "batteries": "baterai",
       "models": "model diuji",
@@ -1782,7 +1785,7 @@
     },
     "weekly": {
       "title": "Bench mingguan langsung",
-      "intro": "Setiap minggu, dan setiap kali kami menjalankannya secara manual, satu putaran membawa semua baterai ke semua model: lengan A langsung ke penyedia, lengan B melalui lapisan yang dibangun dari kode sumber main saat itu. Ini bukan versi yang sudah dirilis: ini yang akan segera dirilis. Putaran gagal jika ada aturan yang dilanggar, dan sel yang tidak bisa diukur menyebutkan alasannya.",
+      "intro": "Satu putaran membawa semua baterai ke semua model: lengan A langsung ke penyedia, lengan B melalui lapisan yang dibangun dari kode sumber main saat itu. Ini bukan versi yang sudah dirilis: ini yang akan segera dirilis. Putaran gagal jika ada aturan yang dilanggar, dan sel yang tidak bisa diukur menyebutkan alasannya.",
       "meta": "Putaran {fecha} · kode sumber main di commit {commit} (versi paket {version}) · biaya {gasto} dari batas {tope} · {medidas} dari {celdas} sel terukur.",
       "verdictOk": "Putusan: tanpa regresi.",
       "verdictFailed": "Putusan: putaran gagal (aturan yang dilanggar: {n}).",
@@ -2109,16 +2112,16 @@
   },
   "howItWorks": {
     "metaTitle": "Di mana penghematan dipasang? · BiVelio Savings Layer",
-    "metaDescription": "Savings berjalan di infrastruktur Anda sebagai SDK atau gateway lokal. Mesin open source, Savings Cloud opsional: penghematan, batasan, cara mengukurnya.",
+    "metaDescription": "BiVelio Savings Layer berjalan di infrastruktur Anda sebagai SDK atau gateway lokal. Mesin open source, Savings Cloud opsional: penghematan, batasan, cara mengukurnya.",
     "eyebrow": "Lapisannya, dijelaskan · tanpa jargon",
     "title": "Di mana",
     "titleAccent": "penghematan dipasang?",
     "titleMark": "dipasang",
-    "lede": "BV‑SALA bukan aplikasi, bukan ekstensi, bukan pula pengaturan ChatGPT. Ia adalah sepotong kode yang ditempatkan developer di dalam aplikasinya sendiri, tepat di tempat aplikasi itu memanggil API penyedia Anda. Ia hanya bisa menghemat di tempat ada tagihan per token — dan hanya bisa mengukurnya di tempat ia melihat setiap permintaan lewat.",
+    "lede": "BiVelio Savings Layer bukan aplikasi, bukan ekstensi, bukan pula pengaturan ChatGPT. Ia adalah sepotong kode yang ditempatkan developer di dalam aplikasinya sendiri, tepat di tempat aplikasi itu memanggil API penyedia Anda. Ia hanya bisa menghemat di tempat ada tagihan per token — dan hanya bisa mengukurnya di tempat ia melihat setiap permintaan lewat.",
     "s1Title": "Lapisan ini hidup di dalam kode kamu",
-    "s1Sub": "Panggilan yang sama, dengan dan tanpa lapisan. Lalu lintas selalu berjalan langsung dari aplikasi kamu ke penyedia — BV‑SALA bukan server perantara dan tidak pernah melihat datamu dari luar.",
-    "flowWithout": "Tanpa BV‑SALA",
-    "flowWith": "Dengan BV‑SALA",
+    "s1Sub": "Panggilan yang sama, dengan dan tanpa lapisan. Lalu lintas selalu berjalan langsung dari aplikasi kamu ke penyedia — Savings Layer bukan server perantara dan tidak pernah melihat datamu dari luar.",
+    "flowWithout": "Tanpa Savings Layer",
+    "flowWith": "Dengan Savings Layer",
     "nodeApp": "Aplikasi kamu",
     "nodeAppSubBefore": "setiap permintaan keluar utuh",
     "nodeAppSubAfter": "kode bisnis yang sama",
@@ -2130,16 +2133,16 @@
     "billReport": "+ SavingsReport",
     "s1Note": "Kotak hijau itu adalah paket npm di dalam kode aplikasi. Karena itu pertanyaan kuncinya tidak pernah «apa yang saya pasang?» melainkan <b>«siapa yang menulis kode yang memanggil API?»</b> — orang itulah yang bisa memasangnya. Pengecualiannya adalah terminal pemrograman seperti Claude Code dan aplikasi dalam bahasa apa pun yang memakai SDK resmi OpenAI atau Anthropic dan memungkinkan Anda mengatur base URL-nya: di sana gateway bvsala berdiri di depan tanpa menyentuh satu baris kode pun. Lalu lintas itu diukur untuk model yang memiliki harga daftar; tuas penghematan paket npm tidak berjalan di sana, dan tuas milik gateway sendiri hanya berlaku untuk lalu lintas Anthropic, gratis dan tanpa kunci.",
     "s2Title": "Kasus kamu, dalam 10 detik",
-    "s2Sub": "Empat cara memakai AI, dan apa yang bisa dilakukan BV‑SALA di masing-masing.",
+    "s2Sub": "Empat cara memakai AI, dan apa yang bisa dilakukan Savings Layer di masing-masing.",
     "caseChatSub": "aplikasi atau web, gratis atau berbayar",
-    "caseChatBody": "Kamu membayar tarif tetap (atau tidak sama sekali): tidak ada tagihan per token yang bisa dikurangi, dan ini produk tertutup — tidak ada yang bisa menaruh perangkat lunak di antara aplikasi dan modelnya. Penghematan BV‑SALA memang tidak berlaku di sini — dan tidak ada produk yang bisa menjanjikannya di sana dengan jujur.",
+    "caseChatBody": "Kamu membayar tarif tetap (atau tidak sama sekali): tidak ada tagihan per token yang bisa dikurangi, dan ini produk tertutup — tidak ada yang bisa menaruh perangkat lunak di antara aplikasi dan modelnya. Penghematan Savings Layer memang tidak berlaku di sini — dan tidak ada produk yang bisa menjanjikannya di sana dengan jujur.",
     "caseClaudeSub": "claude.ai, gratis atau berbayar",
     "caseClaudeBody": "Langganan tetap: tidak ada tagihan token untuk diukur — tapi ada batas (jendela lima jam dan mingguan). Untuk itulah skill savings-mode: gratis, diunggah ke claude.ai dalam semenit, menyerang dua massa yang membakar batas. Efeknya akan dipublikasikan setelah diukur — tidak pernah sebelumnya.",
     "caseCodeSub": "terminal, dengan kunci API",
     "caseCodeBody": "Dengan langganan, biayanya tetap — tapi berbatas: skill yang sama terpasang dengan satu perintah dan merenggangkan batas mingguan yang sama. Dengan API key ada tagihan token sungguhan — dan meterannya sudah berjalan: tanpa kunci BiVelio apa pun, “bvsala claude” meluncurkan Claude Code lewat gateway lokal, tanpa menyentuh satu baris kode. Gateway mengukur di mesin Anda apa yang melewatinya, dengan penggunaan yang dilaporkan penyedia Anda, dan saat keluar memberi tahu berapa permintaan yang berhasil diukur, mana yang tidak, dan alasannya. Pada model Anthropic, gateway juga memindahkan penulisan cache dari TTL satu jam ke TTL lima menit hanya pada giliran ketika porsi besar dari prompt masih baru (giliran pertama sebuah sesi, pemadatan): penghematan yang dihitung dari hitungan token penyedia Anda sendiri, tidak pernah dari estimasi. Untuk itu Claude Code harus meminta cache satu jam, dan dengan API key ia tidak melakukannya kecuali Anda mengaturnya: secara default gateway hanya mengukur. Dengan kunci Savings Cloud, Anda juga melihat pengeluaran Anda di dasbor, token demi token.",
     "caseAppName": "Aplikasi kamu",
     "caseAppSub": "kode kamu + kunci API kamu",
-    "caseAppBody": "Kasus yang menjadi alasan BV‑SALA ada. Aplikasi Anda memanggil API dengan kunci Anda, penyedia menagih setiap token, dan lapisan terpasang dalam dua langkah: paket dan membungkus panggilan. Sejak permintaan pertama ia mengembalikan <b>SavingsReport</b> dengan penghematan, terpisah antara terukur dan terestimasi.",
+    "caseAppBody": "Kasus yang menjadi alasan Savings Layer ada. Aplikasi Anda memanggil API dengan kunci Anda, penyedia menagih setiap token, dan lapisan terpasang dalam dua langkah: paket dan membungkus panggilan. Sejak permintaan pertama ia mengembalikan <b>SavingsReport</b> dengan penghematan, terpisah antara terukur dan terestimasi.",
     "verdictNothing": "Tidak ada yang dipasang",
     "verdictSkill": "Skill tersedia",
     "verdictMeasures": "Sudah mengukur",
@@ -2173,7 +2176,7 @@
       "eyebrow": "Arsitektur",
       "title": "Dari kode Anda",
       "accent": "ke penyedia Anda",
-      "lede": "Savings berjalan di dalam infrastruktur Anda: sebagai SDK di dalam proses aplikasi Anda atau sebagai gateway lokal di depannya. Isi setiap permintaan dikirim ke penyedia yang Anda konfigurasikan; tidak melewati server BiVelio.",
+      "lede": "Savings Layer berjalan di dalam infrastruktur Anda: sebagai SDK di dalam proses aplikasi Anda atau sebagai gateway lokal di depannya. Isi setiap permintaan dikirim ke penyedia yang Anda konfigurasikan; tidak melewati server BiVelio.",
       "app": "Aplikasi Anda",
       "appSub": "kode dan kunci API Anda",
       "agent": "Agen koding Anda",
@@ -2223,9 +2226,9 @@
     },
     "pieces": {
       "eyebrow": "Peta",
-      "title": "Bagian-bagian Savings",
+      "title": "Bagian-bagian Savings Layer",
       "lede": "Sebuah peta bagian, bukan lima tahap yang dilalui setiap permintaan. Pilih satu untuk melihat apa fungsinya, di mana ia berjalan, dan apakah perlu akun.",
-      "tablist": "Bagian-bagian Savings",
+      "tablist": "Bagian-bagian Savings Layer",
       "what": "Fungsinya",
       "where": "Tempat berjalan",
       "account": "Akun",
@@ -2280,7 +2283,7 @@
     "title": "Mesin open source.",
     "titleAccent": "Kendali cloud untuk tim Anda.",
     "titleMark": "tim Anda",
-    "governs": "Halaman ini menjelaskan cara layanan bekerja saat ini; yang mengikat adalah <license>LICENSE</license> dan <terms>Ketentuan BiVelio</terms>.",
+    "governs": "Halaman ini menjelaskan cara layanan bekerja saat ini; yang mengikat adalah <license>ketentuan Savings Cloud (LICENSE-CLOUD.md)</license> dan <terms>Ketentuan BiVelio</terms>.",
     "lede": "Mesinnya open source: tanpa kunci. Halaman ini memberi harga pada Savings Cloud, cloud opsional — Measure gratis, lalu Pro per kursi atau paket Team, tanpa komisi atas penghematan Anda. Setiap angka di halaman ini dibaca dari kode yang sama yang menagih Anda, jadi ia berubah saat harga berubah.",
     "plans": {
       "title": "Paket",
@@ -2404,7 +2407,7 @@
         "unit": "Paket cloud gratis, dalam mode bayangan.",
         "summary": "Ukur tanpa mengubah apa pun: permintaan Anda sampai ke penyedia persis seperti yang Anda susun, dan dasbor menunjukkan berapa yang seharusnya dihemat.",
         "cta": "Mulai dengan Measure",
-        "version": "Memerlukan @bivelio/savings-layer {version} atau yang lebih baru."
+        "version": "Berfungsi dengan versi terbaru @bivelio/savings-layer."
       },
       "pro": {
         "summary": "Semua optimasi, struk per permintaan, dan dasbor. Tarif tetap: dibayar baik ada penghematan maupun tidak.",
@@ -2434,7 +2437,7 @@
     "metaDescription": "Daftar persis apa yang dikirim SDK dan gateway lokal ke BiVelio, apa yang tidak pernah dikirim, dan berapa lama BiVelio menyimpannya.",
     "eyebrow": "Privasi",
     "title": "Apa yang keluar dari infrastrukturmu",
-    "governs": "Halaman ini menjelaskan cara layanan bekerja saat ini; yang mengikat adalah <license>LICENSE</license> dan <terms>Ketentuan BiVelio</terms>.",
+    "governs": "Halaman ini menjelaskan cara layanan bekerja saat ini; yang mengikat adalah <license>ketentuan Savings Cloud (LICENSE-CLOUD.md)</license> dan <terms>Ketentuan BiVelio</terms>.",
     "lede": "Apa yang dikirim Perangkat Lunak (SDK dan gateway lokal) ke BiVelio, apa yang tidak pernah dikirimnya, dan berapa lama BiVelio menyimpannya.",
     "never": {
       "title": "Yang tidak pernah dikirim ke BiVelio",
@@ -2444,7 +2447,7 @@
     },
     "usage": {
       "title": "Catatan penggunaan",
-      "when": "SDK mengirim catatan penggunaan hanya jika kamu mengonfigurasi server lisensi atau URL pengukuran; gateway lokal selalu mengirimnya. Setiap batch membawa kunci akun layanan BiVelio-mu, yang mengidentifikasi organisasimu, serta permukaan dan versi Perangkat Lunak di header <b>{header}</b>.",
+      "when": "SDK mengirim catatan penggunaan hanya jika kamu mengonfigurasi server lisensi atau URL pengukuran; gateway lokal hanya jika kamu mengonfigurasi kunci akun layanan. Tanpa kunci BiVelio apa pun, keduanya tidak mengirim apa pun ke BiVelio. Setiap batch membawa kunci akun layanan BiVelio-mu, yang mengidentifikasi organisasimu, serta permukaan dan versi Perangkat Lunak di header <b>{header}</b>.",
       "limit": "Setiap catatan dibatasi pada kolom di bawah ini. <b>Penerimaan data BiVelio menolak setiap catatan yang membawa kolom yang tidak ada dalam daftar ini.</b>",
       "groups": {
         "ids": {
