@@ -105,7 +105,10 @@ describe("createLicenseGate", () => {
 });
 
 describe("la licencia Medir (plan measure)", () => {
-  it("no concede ningún feature aunque el token los lleve, y el gate expone el plan", () => {
+  // Hasta la 1.2.3 este test fijaba `isEntitled(...) === false`: Medir corría en
+  // sombra. Desde la 1.2.4 (decisión del dueño, 21-11-2026) Medir concede como
+  // la capa sin clave; la LISTA de features sigue vacía (no es un plan de pago).
+  it("la lista de features va vacía aunque el token los lleve, pero el gate concede como sin clave y expone el plan", () => {
     const token = signLicense(payload({ plan: "measure", features: ["semantic_cache"] }), privateKey);
     const client = new LicenseClient({ publicKey, nowSeconds: () => BASE });
     const r = client.load(token);
@@ -114,7 +117,8 @@ describe("la licencia Medir (plan measure)", () => {
     expect(r.entitlements.features).toEqual([]);
     const gate = createLicenseGate(client);
     expect(gate.isActive()).toBe(true);
-    expect(gate.isEntitled("semantic_cache")).toBe(false);
+    expect(gate.isEntitled("semantic_cache")).toBe(true);
+    expect(gate.isEntitled("context_elision")).toBe(true);
     expect(gate.plan()).toBe("measure");
   });
 
@@ -123,5 +127,7 @@ describe("la licencia Medir (plan measure)", () => {
     const client = new LicenseClient({ publicKey, nowSeconds: () => BASE });
     client.load(token);
     expect(createLicenseGate(client).plan()).toBeUndefined();
+    // Y caducada no concede nada: el fail-closed de una clave presente sigue en pie.
+    expect(createLicenseGate(client).isEntitled("semantic_cache")).toBe(false);
   });
 });

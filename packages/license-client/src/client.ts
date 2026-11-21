@@ -110,8 +110,10 @@ export class LicenseClient {
       orgId: p.org_id,
       plan: granted ? p.plan : "free",
       seats: granted ? p.seats : 0,
-      // Una licencia Medir no concede NINGÚN feature, lleve lo que lleve el
-      // token: su razón de ser es medir en sombra sin aplicar palancas.
+      // La LISTA de una licencia Medir va vacía, lleve lo que lleve el token: es
+      // el plan gratuito de la nube y no «tiene» features de pago. Lo que
+      // concede lo concede por el PLAN (ver `isEntitled`): desde la 1.2.4 las
+      // palancas actúan con Medir igual que sin clave.
       features: granted && !isMeasurePlan(p.plan) ? p.features : [],
       status,
       refreshAfter: Math.min(p.expires_at, now + 86400),
@@ -128,10 +130,15 @@ export class LicenseClient {
     return this.current?.status ?? "expired";
   }
 
-  /** Whether a feature is currently granted. */
+  /**
+   * Whether a feature is currently granted. A live Measure license grants like
+   * the open core with no key (every local lever): since 1.2.4 the free cloud
+   * plan must never give LESS than no key at all. Paid plans grant by `features`.
+   */
   isEntitled(feature: Feature): boolean {
     const e = this.entitlements();
-    return (e.status === "active" || e.status === "grace") && e.features.includes(feature);
+    if (e.status !== "active" && e.status !== "grace") return false;
+    return isMeasurePlan(e.plan) || e.features.includes(feature);
   }
 }
 
@@ -154,7 +161,7 @@ export function createLicenseGate(client: LicenseClient): {
     isActive: () => client.status() === "active" || client.status() === "grace",
     status: () => client.status(),
     entitlements: () => client.entitlements(),
-    // El SDK fuerza el modo sombra cuando el plan es «measure» (Medir).
+    // Informativo: desde la 1.2.4 el plan «measure» (Medir) ya no fuerza la sombra.
     plan: () => {
       const e = client.entitlements();
       return e.status === "active" || e.status === "grace" ? e.plan : undefined;

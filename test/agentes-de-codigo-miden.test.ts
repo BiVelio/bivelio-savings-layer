@@ -145,7 +145,9 @@ describe("A2-9 · lo que viaja DENTRO del paquete npm dice lo mismo que el READM
 describe("A2-9 · el código sigue haciendo lo que dicen los textos", () => {
   it("la rebaja solo reescribe marcas de una hora, y nunca el tráfico de suscripción", () => {
     expect(leer("gateway/tarifa.ts")).toContain('if (marca.ttl === "1h") {');
-    expect(leer("gateway/servidor.ts")).toMatch(/!suscripcion &&\s*canal!\.tiene\("cache_ttl_tuning"\)/);
+    // (1.2.4: `canal` ya no puede ser null —con una licencia Medir concede como el
+    // modo comunitario—, así que el `!` desapareció. La condición es la misma.)
+    expect(leer("gateway/servidor.ts")).toMatch(/!suscripcion &&\s*canal\.tiene\("cache_ttl_tuning"\)/);
   });
 
   it("el resto de palancas del gateway siguen apagadas por defecto (los diales, a mano)", () => {

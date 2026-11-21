@@ -108,9 +108,10 @@ export class LicensingService {
    * Mint and sign a license.
    *
    * A `measure` («Medir») license is NORMALIZED here, whatever the caller asked:
-   * no features (it grants no lever), seats clamped to {@link MEASURE_LIMITS.seats},
-   * and the long «permanent» term. The SDK already ignores features on a measure
-   * license, but the issuer must not be able to mint a contradictory token either.
+   * an empty feature list, seats clamped to {@link MEASURE_LIMITS.seats}, and the
+   * long «permanent» term. Since 1.2.4 the SDK grants a measure license the same
+   * levers as no key at all, by PLAN and not by this list (clients up to 1.2.3 run
+   * it in shadow mode); the issuer still must not mint a contradictory token.
    */
   issue(input: IssueInput): { token: string; payload: LicensePayload } {
     const now = this.nowSeconds();
@@ -148,7 +149,7 @@ export class LicensingService {
   }
 
   /**
-   * Mint a free «Medir» license for an org: shadow mode only, no card. Same as
+   * Mint a free «Medir» license for an org: the free cloud plan, no card. Same as
    * `issue({ plan: "measure" })`; exists so the no-card path cannot pass features.
    */
   issueMeasure(orgId: string): { token: string; payload: LicensePayload } {
