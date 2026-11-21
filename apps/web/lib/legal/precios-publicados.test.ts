@@ -162,9 +162,9 @@ describe("⛔ el asiento que publica /pricing es el que cuenta el SQL", () => {
 
 describe("⛔ las páginas no afirman qué dice la LICENSE que enlazan", () => {
   /**
-   * `LegalGoverns.LICENSE_URL` enlaza la LICENSE de la ÚLTIMA versión publicada
-   * en npm, y esa puede ser anterior a estas páginas: la web se despliega al
-   * fusionar en main y la LICENSE nueva llega con la release siguiente. El
+   * `LegalGoverns.LICENSE_CLOUD_URL` enlaza LICENSE-CLOUD.md en main de GitHub
+   * (antes `LICENSE_URL` enlazaba la LICENSE de la última versión de npm, que
+   * podía ser anterior a estas páginas). El
    * 2026-09-26 servía la de la 0.4.24, sin §6 de tarifas y sin remitir a
    * /pricing ni a /privacy, mientras las dos páginas decían «The LICENSE refers
    * to this page…». Regla: la única frase que nombra la LICENSE es `governs`
