@@ -227,8 +227,11 @@ describe("Pro y Team: se paga la nube, no las palancas (m02)", () => {
   it("en: ningún texto público dice «Every optimization»; Pro dice lo que se paga y que las palancas son gratis", () => {
     const en = cargar("en");
     expect(publicas(en).filter(([, v]) => /every (BV.SALA )?optimization/i.test(v)).map(([k]) => k)).toEqual([]);
+    // La tarjeta no promete «Everything in Measure»: con una licencia de pago el
+    // recorte del SDK y las palancas del gateway tienen sus reglas (están en las
+    // condiciones de Pro). Lo que se paga es la nube de Measure, a más escala.
     expect(en["pricingPage.cards.pro.summary"]).toBe(
-      "Everything in Measure, for more machines and requests: team dashboard, shared measurement, seats and licences. The engine and its levers stay free without a key. A flat fee, due whether or not you save.",
+      "Measure's cloud, for more machines and requests: team dashboard, shared measurement, seats and licences. The engine and its levers stay free without a key. A flat fee, due whether or not you save.",
     );
     expect(en["pricingPage.plans.pro.body"]).toContain("The engine and its levers stay free without a key.");
     expect(en["pricingPage.plans.pro.body"]).toContain("<b>No commission</b>");
@@ -238,6 +241,28 @@ describe("Pro y Team: se paga la nube, no las palancas (m02)", () => {
     const es = cargar("es");
     expect(publicas(es).filter(([, v]) => /todas las optimizaciones/i.test(v)).map(([k]) => k)).toEqual([]);
     expect(es["pricingPage.cards.pro.summary"]).toContain("El motor y sus palancas siguen gratis sin clave.");
+  });
+
+  it("ningún idioma abre la tarjeta de Pro con «todo lo de Measure»", () => {
+    const TODO: Record<Loc, RegExp> = {
+      ca: /^Tot el de Measure/,
+      de: /^Alles aus Measure/,
+      en: /^Everything in Measure/,
+      es: /^Todo lo de Measure/,
+      fr: /^Tout ce qu.offre Measure/,
+      id: /^Semua yang ada di Measure/,
+      it: /^Tutto ciò che offre Measure/,
+      nl: /^Alles van Measure/,
+      pl: /^Wszystko z Measure/,
+      pt: /^Tudo o que o Measure/,
+      tr: /^Measure'daki her şey/,
+      vi: /^Mọi thứ của Measure/,
+    };
+    for (const loc of LOCALES) {
+      const resumen = cargar(loc)["pricingPage.cards.pro.summary"];
+      expect(resumen, loc).not.toMatch(TODO[loc]);
+      expect(resumen, loc).toContain("Measure");
+    }
   });
 });
 
