@@ -1233,7 +1233,7 @@
       "ctaStart": "Começar com o Measure",
       "ctaBench": "Ver resultados reproduzíveis",
       "panelAlt": "O painel do Savings com os dados do banco público: a poupança medida e a sua repartição por modelo.",
-      "panelCaption": "Painel de demonstração com a rodada {bateria} do banco público: os {titular} são dos quatro modelos juntos, sem o contraste de preços de cache. O recibo é só do {modelo}.",
+      "panelCaption": "Painel de demonstração com a rodada {bateria} do banco público: os {titular} são dos quatro modelos juntos. O recibo é só do {modelo}.",
       "medidoEnVivo": "Medido ao vivo com o contador de cada fornecedor",
       "note": "Instala-se em minutos. As suas mensagens nunca passam pelos nossos servidores.",
       "proofTitle": "Medido contra fornecedor real",
@@ -1757,7 +1757,7 @@
     "title": "O nosso banco A/B, em aberto.",
     "titleAccent": "Meça-nos.",
     "titleMark": "Meça-nos",
-    "lede": "Publicamos cada execução: quatro baterias com conjuntos de dados públicos, {modelos} modelos, e os dois braços medidos com o contador de uso do próprio fornecedor. Cada valor traz o seu n, o seu intervalo e a sua data. O que não economiza também está aqui.",
+    "lede": "Publicamos as execuções listadas abaixo: quatro baterias com conjuntos de dados públicos, {modelos} modelos, e os dois braços medidos com o contador de uso do próprio fornecedor. Cada valor traz o seu n, o seu intervalo e a sua data. O que não economiza também está aqui.",
     "stats": {
       "batteries": "baterias",
       "models": "modelos testados",
@@ -1778,7 +1778,7 @@
     },
     "weekly": {
       "title": "Banco semanal ao vivo",
-      "intro": "Toda semana, e sempre que o disparamos à mão, uma rodada passa todas as baterias por todos os modelos: o braço A vai direto ao provedor e o B passa pela camada construída a partir do código-fonte do main nesse momento. Não é uma versão publicada: é o que está prestes a ser publicado. A rodada falha se qualquer regra for quebrada, e uma célula que não pôde ser medida diz por quê.",
+      "intro": "Uma rodada passa todas as baterias por todos os modelos: o braço A vai direto ao provedor e o B passa pela camada construída a partir do código-fonte do main nesse momento. Não é uma versão publicada: é o que está prestes a ser publicado. A rodada falha se qualquer regra for quebrada, e uma célula que não pôde ser medida diz por quê.",
       "meta": "Rodada de {fecha} · código-fonte do main no commit {commit} (versão do pacote {version}) · gasto de {gasto} num teto de {tope} · {medidas} de {celdas} células medidas.",
       "verdictOk": "Veredito: sem regressões.",
       "verdictFailed": "Veredito: a rodada falhou (regras quebradas: {n}).",

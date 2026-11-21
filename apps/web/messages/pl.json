@@ -1233,7 +1233,7 @@
       "ctaStart": "Zacznij od Measure",
       "ctaBench": "Zobacz powtarzalne wyniki",
       "panelAlt": "Panel Savings z danymi publicznego benchmarku: zmierzona oszczędność i jej podział według modelu.",
-      "panelCaption": "Panel demonstracyjny z przebiegiem {bateria} publicznego benchmarku: {titular} dotyczy czterech modeli razem, bez kontrastu cen pamięci podręcznej. Paragon dotyczy tylko {modelo}.",
+      "panelCaption": "Panel demonstracyjny z przebiegiem {bateria} publicznego benchmarku: {titular} dotyczy czterech modeli razem. Paragon dotyczy tylko {modelo}.",
       "medidoEnVivo": "Mierzone na żywo licznikiem każdego dostawcy",
       "note": "Instalacja w kilka minut. Twoje wiadomości nigdy nie przechodzą przez nasze serwery.",
       "proofTitle": "Zmierzone względem prawdziwego dostawcy",
@@ -1757,7 +1757,7 @@
     "title": "Nasz test A/B, w pełni jawny.",
     "titleAccent": "Zmierz nas.",
     "titleMark": "Zmierz nas",
-    "lede": "Publikujemy każdy przebieg: cztery baterie na publicznych zbiorach danych, {modelos} modeli, a oba ramiona mierzone własnym licznikiem zużycia dostawcy. Każda liczba niesie swoje n, swój przedział i swoją datę. To, co nie oszczędza, też jest tutaj.",
+    "lede": "Publikujemy przebiegi wymienione poniżej: cztery baterie na publicznych zbiorach danych, {modelos} modeli, a oba ramiona mierzone własnym licznikiem zużycia dostawcy. Każda liczba niesie swoje n, swój przedział i swoją datę. To, co nie oszczędza, też jest tutaj.",
     "stats": {
       "batteries": "baterie",
       "models": "przetestowane modele",
@@ -1778,7 +1778,7 @@
     },
     "weekly": {
       "title": "Cotygodniowy benchmark na żywo",
-      "intro": "Co tydzień, i za każdym razem, gdy uruchamiamy go ręcznie, jeden przebieg puszcza wszystkie baterie przez wszystkie modele: ramię A idzie prosto do dostawcy, ramię B przez warstwę zbudowaną z kodu źródłowego main w tym momencie. To nie jest opublikowana wersja: to jest to, co zaraz zostanie opublikowane. Przebieg kończy się błędem, jeśli złamana zostanie jakakolwiek reguła, a komórka, której nie dało się zmierzyć, mówi dlaczego.",
+      "intro": "Jeden przebieg puszcza wszystkie baterie przez wszystkie modele: ramię A idzie prosto do dostawcy, ramię B przez warstwę zbudowaną z kodu źródłowego main w tym momencie. To nie jest opublikowana wersja: to jest to, co zaraz zostanie opublikowane. Przebieg kończy się błędem, jeśli złamana zostanie jakakolwiek reguła, a komórka, której nie dało się zmierzyć, mówi dlaczego.",
       "meta": "Przebieg z {fecha} · kod źródłowy main w commicie {commit} (wersja pakietu {version}) · wydano {gasto} z limitu {tope} · zmierzone komórki: {medidas} z {celdas}.",
       "verdictOk": "Werdykt: bez regresji.",
       "verdictFailed": "Werdykt: przebieg nie przeszedł (złamane reguły: {n}).",

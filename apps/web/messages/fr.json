@@ -1233,7 +1233,7 @@
       "ctaStart": "Commencer avec Measure",
       "ctaBench": "Voir les résultats reproductibles",
       "panelAlt": "Le tableau de bord de Savings avec les données du banc public : l'économie mesurée et sa répartition par modèle.",
-      "panelCaption": "Tableau de bord de démonstration avec la passe {bateria} du banc public : {titular} pour les quatre modèles ensemble, sans le contraste de tarification du cache. Le reçu ne porte que sur {modelo}.",
+      "panelCaption": "Tableau de bord de démonstration avec la passe {bateria} du banc public : {titular} pour les quatre modèles ensemble. Le reçu ne porte que sur {modelo}.",
       "medidoEnVivo": "Mesuré en direct avec le compteur de chaque fournisseur",
       "note": "Installé en quelques minutes. Vos messages ne passent jamais par nos serveurs.",
       "proofTitle": "Mesuré contre un fournisseur réel",
@@ -1757,7 +1757,7 @@
     "title": "Notre banc A/B, en public.",
     "titleAccent": "Mesurez-nous.",
     "titleMark": "Mesurez-nous",
-    "lede": "Nous publions chaque exécution : quatre batteries sur des jeux de données publics, {modelos} modèles, et les deux bras mesurés avec le compteur d'usage du fournisseur lui-même. Chaque chiffre porte son n, son intervalle et sa date. Ce qui ne fait pas économiser est là aussi.",
+    "lede": "Nous publions les exécutions listées ci-dessous : quatre batteries sur des jeux de données publics, {modelos} modèles, et les deux bras mesurés avec le compteur d'usage du fournisseur lui-même. Chaque chiffre porte son n, son intervalle et sa date. Ce qui ne fait pas économiser est là aussi.",
     "stats": {
       "batteries": "batteries",
       "models": "modèles testés",
@@ -1778,7 +1778,7 @@
     },
     "weekly": {
       "title": "Banc hebdomadaire en direct",
-      "intro": "Chaque semaine, et chaque fois que nous le lançons à la main, une passe fait tourner toutes les batteries sur tous les modèles : le bras A va directement au fournisseur, le bras B passe par la couche construite à partir du code source de main à ce moment-là. Ce n'est pas une version publiée : c'est ce qui est sur le point de l'être. La passe échoue si une règle est enfreinte, et une cellule qui n'a pas pu être mesurée dit pourquoi.",
+      "intro": "Une passe fait tourner toutes les batteries sur tous les modèles : le bras A va directement au fournisseur, le bras B passe par la couche construite à partir du code source de main à ce moment-là. Ce n'est pas une version publiée : c'est ce qui est sur le point de l'être. La passe échoue si une règle est enfreinte, et une cellule qui n'a pas pu être mesurée dit pourquoi.",
       "meta": "Passe du {fecha} · code source de main au commit {commit} (version du paquet {version}) · dépense {gasto} sur un plafond de {tope} · {medidas} cellules mesurées sur {celdas}.",
       "verdictOk": "Verdict : aucune régression.",
       "verdictFailed": "Verdict : la passe a échoué (règles enfreintes : {n}).",

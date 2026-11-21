@@ -1233,7 +1233,7 @@
       "ctaStart": "Bắt đầu với Measure",
       "ctaBench": "Xem kết quả có thể tái lập",
       "panelAlt": "Bảng điều khiển Savings với dữ liệu của băng thử công khai: khoản tiết kiệm đo được và phân bổ theo mô hình.",
-      "panelCaption": "Bảng điều khiển demo với lượt {bateria} của băng thử công khai: {titular} là của cả bốn mô hình gộp lại, không tính phần đối chiếu giá bộ nhớ đệm. Biên lai chỉ là của {modelo}.",
+      "panelCaption": "Bảng điều khiển demo với lượt {bateria} của băng thử công khai: {titular} là của cả bốn mô hình gộp lại. Biên lai chỉ là của {modelo}.",
       "medidoEnVivo": "Đo trực tiếp bằng bộ đếm của từng nhà cung cấp",
       "note": "Cài đặt trong vài phút. Tin nhắn của bạn không bao giờ đi qua máy chủ của chúng tôi.",
       "proofTitle": "Đo với nhà cung cấp thật",
@@ -1757,7 +1757,7 @@
     "title": "Bài kiểm tra A/B của chúng tôi, công khai.",
     "titleAccent": "Hãy đo chúng tôi.",
     "titleMark": "Hãy đo chúng tôi",
-    "lede": "Chúng tôi công bố mọi lần chạy: bốn bộ kiểm tra trên các tập dữ liệu công khai, {modelos} mô hình, và cả hai nhánh đều được đo bằng bộ đếm sử dụng của chính nhà cung cấp. Mỗi con số đều mang theo n, khoảng tin cậy và ngày của nó. Những gì không tiết kiệm được cũng có ở đây.",
+    "lede": "Chúng tôi công bố các lần chạy được liệt kê bên dưới: bốn bộ kiểm tra trên các tập dữ liệu công khai, {modelos} mô hình, và cả hai nhánh đều được đo bằng bộ đếm sử dụng của chính nhà cung cấp. Mỗi con số đều mang theo n, khoảng tin cậy và ngày của nó. Những gì không tiết kiệm được cũng có ở đây.",
     "stats": {
       "batteries": "bộ kiểm tra",
       "models": "mô hình đã thử",
@@ -1778,7 +1778,7 @@
     },
     "weekly": {
       "title": "Bench trực tiếp hằng tuần",
-      "intro": "Mỗi tuần, và mỗi khi chúng tôi chạy thủ công, một lượt đưa tất cả các bộ kiểm thử qua tất cả các mô hình: nhánh A đi thẳng tới nhà cung cấp, nhánh B đi qua lớp được dựng từ mã nguồn của main tại thời điểm đó. Đây không phải là một phiên bản đã phát hành: đây là thứ sắp được phát hành. Lượt chạy thất bại nếu bất kỳ quy tắc nào bị vi phạm, và ô nào không đo được sẽ nêu lý do.",
+      "intro": "Một lượt đưa tất cả các bộ kiểm thử qua tất cả các mô hình: nhánh A đi thẳng tới nhà cung cấp, nhánh B đi qua lớp được dựng từ mã nguồn của main tại thời điểm đó. Đây không phải là một phiên bản đã phát hành: đây là thứ sắp được phát hành. Lượt chạy thất bại nếu bất kỳ quy tắc nào bị vi phạm, và ô nào không đo được sẽ nêu lý do.",
       "meta": "Lượt ngày {fecha} · mã nguồn main ở commit {commit} (phiên bản gói {version}) · đã chi {gasto} trên mức trần {tope} · đo được {medidas} trên {celdas} ô.",
       "verdictOk": "Kết luận: không có hồi quy.",
       "verdictFailed": "Kết luận: lượt chạy thất bại (số quy tắc bị vi phạm: {n}).",

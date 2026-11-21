@@ -1233,7 +1233,7 @@
       "ctaStart": "Start with Measure",
       "ctaBench": "See reproducible results",
       "panelAlt": "The Savings dashboard with the public bench's data: the measured saving and its split by model.",
-      "panelCaption": "Demo dashboard with the public bench's {bateria} run: {titular} is for the four models together, without the cache-pricing contrast. The receipt is {modelo} alone.",
+      "panelCaption": "Demo dashboard with the public bench's {bateria} run: {titular} is for the four models together. The receipt is {modelo} alone.",
       "medidoEnVivo": "Measured live with each provider's own counter",
       "note": "Installs in minutes. Your messages never pass through our servers.",
       "proofTitle": "Measured against a real provider",
@@ -1757,7 +1757,7 @@
     "title": "Our A/B bench, in the open.",
     "titleAccent": "Measure us.",
     "titleMark": "Measure us",
-    "lede": "We publish every run: four batteries on public datasets, {modelos} models, and both arms metered by the provider's own usage counter. Every figure carries its n, its interval and its date. What doesn't save is here too.",
+    "lede": "We publish the runs listed below: four batteries on public datasets, {modelos} models, and both arms metered by the provider's own usage counter. Every figure carries its n, its interval and its date. What doesn't save is here too.",
     "stats": {
       "batteries": "batteries",
       "models": "models tried",
@@ -1778,7 +1778,7 @@
     },
     "weekly": {
       "title": "Weekly live bench",
-      "intro": "Every week, and whenever we launch it by hand, one run takes every battery against every model: arm A straight to the provider, arm B through the layer built from the source of main at that moment. It is not a released version: it is what is about to be released. The run fails if any rule breaks, and a cell that could not be measured says why.",
+      "intro": "One run takes every battery against every model: arm A straight to the provider, arm B through the layer built from the source of main at that moment. It is not a released version: it is what is about to be released. The run fails if any rule breaks, and a cell that could not be measured says why.",
       "meta": "Run of {fecha} · source of main at commit {commit} (package version {version}) · spent {gasto} of a {tope} cap · {medidas} of {celdas} cells measured.",
       "verdictOk": "Verdict: no regressions.",
       "verdictFailed": "Verdict: the run failed (rules broken: {n}).",

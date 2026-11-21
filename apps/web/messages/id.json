@@ -1233,7 +1233,7 @@
       "ctaStart": "Mulai dengan Measure",
       "ctaBench": "Lihat hasil yang dapat direproduksi",
       "panelAlt": "Dasbor Savings dengan data bangku uji publik: penghematan yang diukur dan pembagiannya per model.",
-      "panelCaption": "Dasbor demo dengan putaran {bateria} bangku uji publik: {titular} adalah gabungan keempat model, tanpa kontras harga cache. Struknya hanya untuk {modelo}.",
+      "panelCaption": "Dasbor demo dengan putaran {bateria} bangku uji publik: {titular} adalah gabungan keempat model. Struknya hanya untuk {modelo}.",
       "medidoEnVivo": "Diukur langsung dengan penghitung milik setiap penyedia",
       "note": "Terpasang dalam hitungan menit. Pesan Anda tidak pernah melewati server kami.",
       "proofTitle": "Diukur terhadap penyedia nyata",
@@ -1757,7 +1757,7 @@
     "title": "Uji A/B kami, secara terbuka.",
     "titleAccent": "Ukur kami.",
     "titleMark": "Ukur kami",
-    "lede": "Kami menerbitkan setiap jalannya uji: empat baterai pada dataset publik, {modelos} model, dan kedua lengan diukur dengan penghitung penggunaan milik penyedia sendiri. Setiap angka membawa n, interval, dan tanggalnya. Apa yang tidak menghemat juga ada di sini.",
+    "lede": "Kami menerbitkan jalannya uji yang tercantum di bawah: empat baterai pada dataset publik, {modelos} model, dan kedua lengan diukur dengan penghitung penggunaan milik penyedia sendiri. Setiap angka membawa n, interval, dan tanggalnya. Apa yang tidak menghemat juga ada di sini.",
     "stats": {
       "batteries": "baterai",
       "models": "model diuji",
@@ -1778,7 +1778,7 @@
     },
     "weekly": {
       "title": "Bench mingguan langsung",
-      "intro": "Setiap minggu, dan setiap kali kami menjalankannya secara manual, satu putaran membawa semua baterai ke semua model: lengan A langsung ke penyedia, lengan B melalui lapisan yang dibangun dari kode sumber main saat itu. Ini bukan versi yang sudah dirilis: ini yang akan segera dirilis. Putaran gagal jika ada aturan yang dilanggar, dan sel yang tidak bisa diukur menyebutkan alasannya.",
+      "intro": "Satu putaran membawa semua baterai ke semua model: lengan A langsung ke penyedia, lengan B melalui lapisan yang dibangun dari kode sumber main saat itu. Ini bukan versi yang sudah dirilis: ini yang akan segera dirilis. Putaran gagal jika ada aturan yang dilanggar, dan sel yang tidak bisa diukur menyebutkan alasannya.",
       "meta": "Putaran {fecha} · kode sumber main di commit {commit} (versi paket {version}) · biaya {gasto} dari batas {tope} · {medidas} dari {celdas} sel terukur.",
       "verdictOk": "Putusan: tanpa regresi.",
       "verdictFailed": "Putusan: putaran gagal (aturan yang dilanggar: {n}).",

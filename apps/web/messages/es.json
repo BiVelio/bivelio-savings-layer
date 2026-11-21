@@ -1233,7 +1233,7 @@
       "ctaStart": "Empezar con Measure",
       "ctaBench": "Ver resultados reproducibles",
       "panelAlt": "El panel de Savings con los datos del banco público: el ahorro medido y su reparto por modelo.",
-      "panelCaption": "Panel de demostración con la tirada {bateria} del banco público: el {titular} es el de los cuatro modelos juntos, sin el contraste de precios de caché. El recibo es solo {modelo}.",
+      "panelCaption": "Panel de demostración con la tirada {bateria} del banco público: el {titular} es el de los cuatro modelos juntos. El recibo es solo {modelo}.",
       "medidoEnVivo": "Medido en vivo con el contador de cada proveedor",
       "note": "Se instala en minutos. Tus mensajes no pasan por nuestros servidores.",
       "proofTitle": "Medido contra proveedor real",
@@ -1757,7 +1757,7 @@
     "title": "Nuestro banco A/B, abierto.",
     "titleAccent": "Mídenos.",
     "titleMark": "Mídenos",
-    "lede": "Publicamos cada tirada: cuatro baterías con datasets públicos, {modelos} modelos, y los dos brazos medidos con el contador de uso del propio proveedor. Cada cifra lleva su n, su intervalo y su fecha. Lo que no ahorra también está aquí.",
+    "lede": "Publicamos las tiradas de abajo: cuatro baterías con datasets públicos, {modelos} modelos, y los dos brazos medidos con el contador de uso del propio proveedor. Cada cifra lleva su n, su intervalo y su fecha. Lo que no ahorra también está aquí.",
     "stats": {
       "batteries": "baterías",
       "models": "modelos probados",
@@ -1778,7 +1778,7 @@
     },
     "weekly": {
       "title": "Banco semanal en vivo",
-      "intro": "Cada semana, y cada vez que lo lanzamos a mano, una tirada pasa todas las baterías por todos los modelos: el brazo A va directo al proveedor y el B pasa por la capa construida desde el fuente de main en ese momento. No es una versión publicada: es lo que está a punto de publicarse. La tirada falla si se rompe cualquier regla, y una celda que no se pudo medir dice por qué.",
+      "intro": "Una tirada pasa todas las baterías por todos los modelos: el brazo A va directo al proveedor y el B pasa por la capa construida desde el fuente de main en ese momento. No es una versión publicada: es lo que está a punto de publicarse. La tirada falla si se rompe cualquier regla, y una celda que no se pudo medir dice por qué.",
       "meta": "Tirada del {fecha} · fuente de main en el commit {commit} (versión del paquete {version}) · gasto {gasto} de un tope de {tope} · {medidas} de {celdas} celdas medidas.",
       "verdictOk": "Veredicto: sin regresiones.",
       "verdictFailed": "Veredicto: la tirada falló (reglas rotas: {n}).",

@@ -1233,7 +1233,7 @@
       "ctaStart": "Starten met Measure",
       "ctaBench": "Reproduceerbare resultaten bekijken",
       "panelAlt": "Het Savings-dashboard met de gegevens van de publieke benchmark: de gemeten besparing en de verdeling per model.",
-      "panelCaption": "Demodashboard met de {bateria}-run van de publieke benchmark: {titular} geldt voor de vier modellen samen, zonder het cacheprijscontrast. De bon gaat alleen over {modelo}.",
+      "panelCaption": "Demodashboard met de {bateria}-run van de publieke benchmark: {titular} geldt voor de vier modellen samen. De bon gaat alleen over {modelo}.",
       "medidoEnVivo": "Live gemeten met de teller van elke provider",
       "note": "In minuten geïnstalleerd. Je berichten gaan nooit via onze servers.",
       "proofTitle": "Gemeten tegen een echte provider",
@@ -1757,7 +1757,7 @@
     "title": "Onze A/B-benchmark, in het open.",
     "titleAccent": "Meet ons.",
     "titleMark": "Meet ons",
-    "lede": "We publiceren elke run: vier batterijen op openbare datasets, {modelos} modellen, en beide armen gemeten met de eigen gebruiksteller van de provider. Elk cijfer draagt zijn n, zijn interval en zijn datum. Wat niet bespaart staat hier ook.",
+    "lede": "We publiceren de runs hieronder: vier batterijen op openbare datasets, {modelos} modellen, en beide armen gemeten met de eigen gebruiksteller van de provider. Elk cijfer draagt zijn n, zijn interval en zijn datum. Wat niet bespaart staat hier ook.",
     "stats": {
       "batteries": "batterijen",
       "models": "geteste modellen",
@@ -1778,7 +1778,7 @@
     },
     "weekly": {
       "title": "Wekelijkse live-bench",
-      "intro": "Elke week, en telkens als we hem met de hand starten, haalt één run alle batterijen door alle modellen: arm A gaat rechtstreeks naar de provider, arm B door de laag, gebouwd uit de broncode van main op dat moment. Het is geen gepubliceerde versie: het is wat op het punt staat gepubliceerd te worden. De run faalt als er een regel breekt, en een cel die niet gemeten kon worden zegt waarom.",
+      "intro": "Eén run haalt alle batterijen door alle modellen: arm A gaat rechtstreeks naar de provider, arm B door de laag, gebouwd uit de broncode van main op dat moment. Het is geen gepubliceerde versie: het is wat op het punt staat gepubliceerd te worden. De run faalt als er een regel breekt, en een cel die niet gemeten kon worden zegt waarom.",
       "meta": "Run van {fecha} · broncode van main op commit {commit} (pakketversie {version}) · {gasto} uitgegeven van een plafond van {tope} · {medidas} van {celdas} cellen gemeten.",
       "verdictOk": "Oordeel: geen regressies.",
       "verdictFailed": "Oordeel: de run is gefaald (gebroken regels: {n}).",
