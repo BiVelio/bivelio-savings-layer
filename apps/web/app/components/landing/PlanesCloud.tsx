@@ -17,8 +17,9 @@ import { PricingPlans, type PricingPlan } from "@/vendor/affectui/pricing-plans"
  * NI UNA CIFRA ESCRITA AQUÍ:
  *  · los importes llegan ya formateados de `terminosDeLosPlanes(locale, await
  *    tarifasDeLosPlanes())`, que es lo que lee el cobro;
- *  · los límites de Measure, de `LIMITES_MEDIR` / `VERSION_MINIMA_MEDIR` (los
- *    pasa la página);
+ *  · los límites de Measure, de `LIMITES_MEDIR` (los pasa la página); la
+ *    versión mínima del paquete queda en las condiciones de /pricing#medir, y
+ *    la tarjeta dice «la última versión», que no caduca;
  *  · el tope del pago en línea, de `MAX_ASIENTOS`.
  * El precio anual se enseña como lo que es —el cargo anual— con su periodo: la
  * fuente no publica un «equivalente mensual», así que no se divide nada.
@@ -40,7 +41,7 @@ export async function PlanesCloud({
 }: {
   planes: ReturnType<typeof terminosDeLosPlanes>;
   /** Límites de Measure, ya en el idioma de la página. */
-  medir: { seats: number; requests: string; version: string };
+  medir: { seats: number; requests: string };
   nombres: { medir: string; pro: string; team: string; enterprise: string };
   /** Los destinos de alta de Pro y Team (el contrato `signup?next=`), que fija la página. */
   destinos: { pro: Destino; team: Destino };
@@ -84,7 +85,7 @@ export async function PlanesCloud({
           {c("medir.cta")}
         </Link>
       ),
-      footer: condiciones("medir", <span className="plan-nota">{c("medir.version", { version: medir.version })}</span>),
+      footer: condiciones("medir", <span className="plan-nota">{c("medir.version")}</span>),
     },
     {
       id: "pro",

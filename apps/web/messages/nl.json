@@ -194,7 +194,7 @@
       "network": "Geen verbinding. Controleer je netwerk en probeer het opnieuw.",
       "missingFields": "Vul je e-mailadres en wachtwoord in."
     },
-    "signupMedir": "Of start gratis met Measure: het gratis cloud-plan, zonder kaart, schaduwmodus, tot {seats} seats en {requests} verzoeken per dag. Het vereist @bivelio/savings-layer {version} of nieuwer.",
+    "signupMedir": "Of start gratis met Measure: het gratis cloud-plan, zonder kaart, schaduwmodus, tot {seats} seats en {requests} verzoeken per dag. Het werkt met de nieuwste versie van @bivelio/savings-layer.",
     "openSourceQuestion": "Wil je alleen de open-source-engine?",
     "openSourceLink": "Installeer hem zonder account",
     "showPassword": "Wachtwoord tonen",
@@ -675,7 +675,7 @@
       "colRequests": "Verzoeken",
       "colTokens": "Tokens",
       "colCost": "Kosten",
-      "hint": "Sessies en subagenten van je codeterminals (opake ids — nooit een persoon). Vereist de gateway vanaf 0.4.7."
+      "hint": "Sessies en subagenten van je codeterminals (opake ids — nooit een persoon)."
     },
     "gatewayVersion": {
       "title": "Sommige machines hebben de laatste 7 dagen uitgaven gemeten, maar geen besparing",
@@ -745,7 +745,7 @@
       "gatewayNote": "<b>Codeeragent in plaats van een app?</b> Hetzelfde pakket bevat een lokale meet-gateway: <code>bvsala claude</code> start Claude Code erdoorheen en dit paneel toont de uitgaven, token voor token. Hij start zonder sleutels (Community-modus); de optionele service-sleutel uit stap 2 voegt dit dashboard en de org-rechten toe.",
       "doctorComment": "andere agents en SDK's: de exacte configuratie voor elk",
       "agentsNote": "Elke wrapper zet zijn agent alleen voor die sessie klaar — er verandert niets aan de configuratie — en vertelt je bij het afsluiten hoeveel verzoeken hij heeft gemeten, welke hij niet kon meten en waarom. <code>bvsala copilot</code> heeft je eigen Anthropic-sleutel nodig (BYOK): door GitHub gehoste modellen gaan nooit via een basis-URL, dus valt er niets te meten. Voor Crush, Droid, Cline, Continue of Copilot in VS Code drukt <code>bvsala doctor</code> de exacte configuratie af. <b>Cursor (BYOK)</b>: werkt via de OpenAI-basis-URL-override met je eigen sleutel; zijn eigen modellen bereiken nooit een gateway op je machine. <b>Gemini CLI</b>: start hem met <code>bvsala gemini</code>.",
-      "pythonNote": "<b>Python?</b> De Python-client <code>bvsala</code> leidt de officiële SDK's van OpenAI en Anthropic via deze zelfde gateway (<code>bvsala gateway</code>) en geeft je code het rapport van elk verzoek terug — dezelfde cijfers die dit paneel ontvangt. Hij heeft een gateway vanaf versie 0.4.26 nodig en Python 3.10 of nieuwer. Je installeert hem vanaf PyPI met <code>pip install bivelio-savings-layer</code>; in je code: <code>import bvsala</code>.",
+      "pythonNote": "<b>Python?</b> De Python-client <code>bvsala</code> leidt de officiële SDK's van OpenAI en Anthropic via deze zelfde gateway (<code>bvsala gateway</code>) en geeft je code het rapport van elk verzoek terug — dezelfde cijfers die dit paneel ontvangt. Hij heeft Python 3.10 of nieuwer nodig. Je installeert hem vanaf PyPI met <code>pip install bivelio-savings-layer</code>; in je code: <code>import bvsala</code>.",
       "finalNote": "Dat is alles. Een ingestelde maar ongeldige sleutel → <code>generate()</code> weigert. Als je abonnement wordt opgezegd, stopt de SDK binnen ~15 min via <code>licenseServerUrl</code> — geen herstart, en hij legt je productie nooit plat als wij onbereikbaar zijn. Verwijder de sleutels en de laag draait weer in Community-modus.",
       "terminal": "Terminal",
       "sdkEyebrow": "Applicatie",
@@ -1413,7 +1413,7 @@
     },
     "footer": {
       "ctaTitle": "Meet het op je eigen verkeer",
-      "ctaSub": "Eenmaal geïnstalleerd levert elke aanroep zijn SavingsReport, met gemeten en geschat gescheiden. Open core heeft geen sleutel nodig: de hendels draaien lokaal met nul telemetrie. De optionele cloud start gratis met Measure en wordt per seat gefactureerd, zonder commissie op je besparing (@bivelio/savings-layer {version} of nieuwer).",
+      "ctaSub": "Eenmaal geïnstalleerd levert elke aanroep zijn SavingsReport, met gemeten en geschat gescheiden. Open core heeft geen sleutel nodig: de hendels draaien lokaal met nul telemetrie. De optionele cloud start gratis met Measure en wordt per seat gefactureerd, zonder commissie op je besparing.",
       "ctaStart": "Aan de slag",
       "tagline": "Het besturingssysteem voor je bedrijf. Dit is <b>BV‑SALA</b>, BiVelio's aanbieder-neutrale LLM-kostenoptimalisator — elk gemeten cijfer is gemeten tegen de teller van de aanbieder; schattingen en simulaties worden apart getoond, als zodanig benoemd, en nooit gefactureerd.",
       "badge": "BV‑SALA · Savings Layer",
@@ -1422,7 +1422,7 @@
       "colLegal": "Juridisch",
       "measured": "Gemeten resultaten",
       "benchmarks": "Openbare benchmark",
-      "migrate": "Migreren naar 0.5",
+      "migrate": "Migratiegids",
       "pricing": "Prijzen",
       "home": "Home",
       "docs": "Documentatie",
@@ -2401,7 +2401,7 @@
         "unit": "Gratis cloudabonnement, in schaduwmodus.",
         "summary": "Meet zonder iets te veranderen: je verzoeken bereiken je provider precies zoals je ze opbouwt, en het dashboard laat zien wat er bespaard zou zijn.",
         "cta": "Starten met Measure",
-        "version": "Vereist @bivelio/savings-layer {version} of nieuwer."
+        "version": "Werkt met de nieuwste versie van @bivelio/savings-layer."
       },
       "pro": {
         "summary": "Alle optimalisaties, de bon per verzoek en het dashboard. Vast tarief, verschuldigd of je nu bespaart of niet.",

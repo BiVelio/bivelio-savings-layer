@@ -3,7 +3,6 @@ import { getLocale, getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 
 import { corporateUrl, LEGAL_DOCS } from "@/lib/corporate";
-import { VERSION_MINIMA_MEDIR } from "@/lib/license/medir-publico";
 
 import { NvidiaFooterCard } from "./NvidiaInception";
 import { elegirVariante } from "./franja-lanzamiento";
@@ -179,7 +178,7 @@ export default async function Footer({ sinGitHub = false }: { sinGitHub?: boolea
         <div className="ftr-cta-inner">
           <div>
             <p className="ftr-cta-title">{t("footer.ctaTitle")}</p>
-            <p className="ftr-cta-sub">{t("footer.ctaSub", { version: VERSION_MINIMA_MEDIR })}</p>
+            <p className="ftr-cta-sub">{t("footer.ctaSub")}</p>
           </div>
           <div className="ftr-cta-actions">
             <Link className="btn btn-primary" href="/signup">

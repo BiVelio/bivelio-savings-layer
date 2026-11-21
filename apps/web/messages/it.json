@@ -194,7 +194,7 @@
       "network": "Nessuna connessione. Controlla la rete e riprova.",
       "missingFields": "Inserisci email e password."
     },
-    "signupMedir": "Oppure parti gratis con Measure: il piano cloud gratuito, senza carta, modalità ombra, fino a {seats} postazioni e {requests} richieste al giorno. Serve @bivelio/savings-layer {version} o successivo.",
+    "signupMedir": "Oppure parti gratis con Measure: il piano cloud gratuito, senza carta, modalità ombra, fino a {seats} postazioni e {requests} richieste al giorno. Funziona con l'ultima versione di @bivelio/savings-layer.",
     "openSourceQuestion": "Vuoi solo il motore open source?",
     "openSourceLink": "Installalo senza account",
     "showPassword": "Mostra la password",
@@ -675,7 +675,7 @@
       "colRequests": "Richieste",
       "colTokens": "Token",
       "colCost": "Costo",
-      "hint": "Sessioni e subagenti dei tuoi terminali di codice (id opachi — mai una persona). Richiede il gateway dalla 0.4.7."
+      "hint": "Sessioni e subagenti dei tuoi terminali di codice (id opachi — mai una persona)."
     },
     "gatewayVersion": {
       "title": "Alcune macchine hanno misurato spesa ma nessun risparmio negli ultimi 7 giorni",
@@ -745,7 +745,7 @@
       "gatewayNote": "<b>Agente di codice invece di un'app?</b> Lo stesso pacchetto include un gateway di misura locale: <code>bvsala claude</code> avvia Claude Code attraverso di esso e questo pannello mostra la spesa, token per token. Si avvia senza alcuna chiave (modalità Community); la chiave di servizio facoltativa del passo 2 aggiunge questo pannello e i diritti dell'org.",
       "doctorComment": "altri agenti e SDK: la configurazione esatta di ciascuno",
       "agentsNote": "Ogni wrapper prepara il suo agente solo per quella sessione — non cambia nulla della sua configurazione — e all'uscita ti dice quante richieste ha misurato, quali non ha potuto misurare e perché. <code>bvsala copilot</code> richiede la tua chiave Anthropic (BYOK): i modelli ospitati da GitHub non passano mai da un URL di base, quindi non c'è nulla da misurare. Per Crush, Droid, Cline, Continue o Copilot in VS Code, <code>bvsala doctor</code> stampa la configurazione esatta. <b>Cursor (BYOK)</b>: funziona tramite l'override dell'URL base OpenAI con la tua chiave; i suoi modelli non raggiungono mai un gateway sulla tua macchina. <b>Gemini CLI</b>: avviala con <code>bvsala gemini</code>.",
-      "pythonNote": "<b>Python?</b> Il client <code>bvsala</code> per Python fa passare gli SDK ufficiali di OpenAI e di Anthropic da questo stesso gateway (<code>bvsala gateway</code>) e restituisce al tuo codice il report di ogni richiesta — le stesse cifre che riceve questo pannello. Richiede un gateway 0.4.26 o successivo e Python 3.10 o successivo. Si installa da PyPI con <code>pip install bivelio-savings-layer</code>; nel tuo codice, <code>import bvsala</code>.",
+      "pythonNote": "<b>Python?</b> Il client <code>bvsala</code> per Python fa passare gli SDK ufficiali di OpenAI e di Anthropic da questo stesso gateway (<code>bvsala gateway</code>) e restituisce al tuo codice il report di ogni richiesta — le stesse cifre che riceve questo pannello. Richiede Python 3.10 o successivo. Si installa da PyPI con <code>pip install bivelio-savings-layer</code>; nel tuo codice, <code>import bvsala</code>.",
       "finalNote": "Tutto qui. Una chiave impostata ma non valida → <code>generate()</code> si rifiuta. Se il tuo piano viene annullato, l'SDK si ferma entro ~15 min tramite <code>licenseServerUrl</code> — senza riavvii, e non blocca mai la tua produzione se non siamo raggiungibili. Rimuovi le chiavi e il layer torna a funzionare in modalità Community.",
       "terminal": "Terminale",
       "sdkEyebrow": "Applicazione",
@@ -1413,7 +1413,7 @@
     },
     "footer": {
       "ctaTitle": "Misuralo sul tuo traffico",
-      "ctaSub": "Una volta installato, ogni chiamata restituisce il suo SavingsReport, con misurato e stimato separati. L'open core non ha bisogno di chiavi: le leve girano in locale con zero telemetria. Il cloud opzionale parte gratis con Measure e si fattura per postazione, senza commissioni sul tuo risparmio (@bivelio/savings-layer {version} o successivo).",
+      "ctaSub": "Una volta installato, ogni chiamata restituisce il suo SavingsReport, con misurato e stimato separati. L'open core non ha bisogno di chiavi: le leve girano in locale con zero telemetria. Il cloud opzionale parte gratis con Measure e si fattura per postazione, senza commissioni sul tuo risparmio.",
       "ctaStart": "Inizia",
       "tagline": "Il sistema operativo per la tua azienda. Questo è <b>BV‑SALA</b>, l'ottimizzatore di costo LLM di BiVelio, neutrale rispetto al fornitore — ogni cifra misurata lo è contro il contatore del fornitore; le stime e le simulazioni si mostrano a parte, dichiarate come tali, e non si fatturano mai.",
       "badge": "BV‑SALA · Savings Layer",
@@ -1422,7 +1422,7 @@
       "colLegal": "Note legali",
       "measured": "Risultati misurati",
       "benchmarks": "Banco di prova pubblico",
-      "migrate": "Migrare alla 0.5",
+      "migrate": "Guida alla migrazione",
       "pricing": "Prezzi",
       "home": "Home",
       "docs": "Documentazione",
@@ -2401,7 +2401,7 @@
         "unit": "Piano cloud gratuito, in modalità ombra.",
         "summary": "Misura senza cambiare nulla: le tue richieste arrivano al provider così come le costruisci e la dashboard mostra quanto si sarebbe risparmiato.",
         "cta": "Inizia con Measure",
-        "version": "Richiede @bivelio/savings-layer {version} o successiva."
+        "version": "Funziona con l'ultima versione di @bivelio/savings-layer."
       },
       "pro": {
         "summary": "Tutte le ottimizzazioni, la ricevuta per richiesta e la dashboard. Canone fisso: si paga che ci sia risparmio o no.",

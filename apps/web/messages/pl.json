@@ -194,7 +194,7 @@
       "network": "Brak połączenia. Sprawdź sieć i spróbuj ponownie.",
       "missingFields": "Wpisz e-mail i hasło."
     },
-    "signupMedir": "Albo zacznij za darmo z Measure: darmowy plan chmurowy, bez karty, tryb cienia, do {seats} stanowisk i {requests} żądań dziennie. Wymaga @bivelio/savings-layer {version} lub nowszej.",
+    "signupMedir": "Albo zacznij za darmo z Measure: darmowy plan chmurowy, bez karty, tryb cienia, do {seats} stanowisk i {requests} żądań dziennie. Działa z najnowszą wersją @bivelio/savings-layer.",
     "openSourceQuestion": "Chcesz tylko silnik open source?",
     "openSourceLink": "Zainstaluj go bez konta",
     "showPassword": "Pokaż hasło",
@@ -675,7 +675,7 @@
       "colRequests": "Żądania",
       "colTokens": "Tokeny",
       "colCost": "Koszt",
-      "hint": "Sesje i subagenci Twoich terminali programistycznych (nieprzejrzyste id — nigdy osoba). Wymaga bramy od wersji 0.4.7."
+      "hint": "Sesje i subagenci Twoich terminali programistycznych (nieprzejrzyste id — nigdy osoba)."
     },
     "gatewayVersion": {
       "title": "Niektóre maszyny zmierzyły w ciągu ostatnich 7 dni wydatki, ale nie oszczędności",
@@ -745,7 +745,7 @@
       "gatewayNote": "<b>Agent programistyczny zamiast aplikacji?</b> Ten sam pakiet zawiera lokalną bramę pomiarową: <code>bvsala claude</code> uruchamia przez nią Claude Code, a ten panel pokazuje wydatek, token po tokenie. Uruchamia się bez żadnych kluczy (tryb Community); opcjonalny klucz serwisowy z kroku 2 dodaje ten panel i uprawnienia organizacji.",
       "doctorComment": "inne agenty i SDK: dokładna konfiguracja dla każdego",
       "agentsNote": "Każdy wrapper przygotowuje swojego agenta tylko na tę sesję — nic w jego konfiguracji się nie zmienia — a przy wyjściu mówi, ile żądań zmierzył, których nie mógł zmierzyć i dlaczego. <code>bvsala copilot</code> potrzebuje Twojego własnego klucza Anthropic (BYOK): modele hostowane przez GitHub nigdy nie przechodzą przez bazowy URL, więc nie ma czego mierzyć. Dla Crush, Droid, Cline, Continue lub Copilot w VS Code, <code>bvsala doctor</code> wypisuje dokładną konfigurację. <b>Cursor (BYOK)</b>: działa przez nadpisanie bazowego URL OpenAI z Twoim własnym kluczem; jego własne modele nigdy nie docierają do bramki na Twoim komputerze. <b>Gemini CLI</b>: uruchom ją przez <code>bvsala gemini</code>.",
-      "pythonNote": "<b>Python?</b> Klient <code>bvsala</code> dla Pythona kieruje oficjalne SDK OpenAI i Anthropic przez tę samą bramę (<code>bvsala gateway</code>) i zwraca Twojemu kodowi raport z każdego żądania — te same liczby, które otrzymuje ten panel. Wymaga bramy w wersji 0.4.26 lub nowszej oraz Pythona 3.10 lub nowszego. Instaluje się go z PyPI poleceniem <code>pip install bivelio-savings-layer</code>; w kodzie: <code>import bvsala</code>.",
+      "pythonNote": "<b>Python?</b> Klient <code>bvsala</code> dla Pythona kieruje oficjalne SDK OpenAI i Anthropic przez tę samą bramę (<code>bvsala gateway</code>) i zwraca Twojemu kodowi raport z każdego żądania — te same liczby, które otrzymuje ten panel. Wymaga Pythona 3.10 lub nowszego. Instaluje się go z PyPI poleceniem <code>pip install bivelio-savings-layer</code>; w kodzie: <code>import bvsala</code>.",
       "finalNote": "To wszystko. Ustawiony, ale nieprawidłowy klucz → <code>generate()</code> odmawia działania. Jeśli Twój plan zostanie anulowany, SDK zatrzymuje się w ciągu ~15 min poprzez <code>licenseServerUrl</code> — bez restartu i nigdy nie unieruchamia Twojej produkcji, jeśli jesteśmy nieosiągalni. Usuń klucze, a warstwa znów zadziała w trybie Community.",
       "terminal": "Terminal",
       "sdkEyebrow": "Aplikacja",
@@ -1413,7 +1413,7 @@
     },
     "footer": {
       "ctaTitle": "Zmierz to na własnym ruchu",
-      "ctaSub": "Po instalacji każde wywołanie zwraca swój SavingsReport, z rozdzielonym zmierzonym i oszacowanym. Open core nie potrzebuje kluczy: dźwignie działają lokalnie z zerową telemetrią. Opcjonalna chmura zaczyna się za darmo od Measure i jest rozliczana za stanowisko, bez prowizji od Twoich oszczędności (@bivelio/savings-layer {version} lub nowsza).",
+      "ctaSub": "Po instalacji każde wywołanie zwraca swój SavingsReport, z rozdzielonym zmierzonym i oszacowanym. Open core nie potrzebuje kluczy: dźwignie działają lokalnie z zerową telemetrią. Opcjonalna chmura zaczyna się za darmo od Measure i jest rozliczana za stanowisko, bez prowizji od Twoich oszczędności.",
       "ctaStart": "Zacznij",
       "tagline": "System operacyjny dla Twojej firmy. To <b>BV‑SALA</b>, neutralny wobec dostawcy optymalizator kosztów LLM od BiVelio — każda zmierzona liczba jest zmierzona względem licznika dostawcy; szacunki i symulacje pokazujemy osobno, nazwane wprost, i nigdy ich nie fakturujemy.",
       "badge": "BV‑SALA · Savings Layer",
@@ -1422,7 +1422,7 @@
       "colLegal": "Informacje prawne",
       "measured": "Zmierzone wyniki",
       "benchmarks": "Publiczny benchmark",
-      "migrate": "Migracja do 0.5",
+      "migrate": "Przewodnik migracji",
       "pricing": "Cennik",
       "home": "Strona główna",
       "docs": "Dokumentacja",
@@ -2401,7 +2401,7 @@
         "unit": "Darmowy plan w chmurze, w trybie cienia.",
         "summary": "Mierz, niczego nie zmieniając: Twoje żądania trafiają do dostawcy dokładnie tak, jak je budujesz, a panel pokazuje, ile dałoby się zaoszczędzić.",
         "cta": "Zacznij od Measure",
-        "version": "Wymaga @bivelio/savings-layer {version} lub nowszej wersji."
+        "version": "Działa z najnowszą wersją @bivelio/savings-layer."
       },
       "pro": {
         "summary": "Wszystkie optymalizacje, paragon dla każdego żądania i panel. Stała opłata, niezależnie od tego, czy oszczędzasz.",
