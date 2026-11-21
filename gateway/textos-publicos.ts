@@ -47,8 +47,18 @@ export const FRASE_PALANCAS_GATEWAY =
 /** Qué es lo de pago. Sin «shared caches»: BiVelio no aloja ninguna caché (m03). */
 export const LO_QUE_ANADE_LA_NUBE = "the team dashboard, shared measurement, seats and license management";
 
-/** La clave solo añade. Con la 1.2.4 la licencia gratuita Measure ya no apaga nada. */
+/**
+ * La clave solo añade, con una excepción en el SDK (decisión del dueño,
+ * 21-11-2026): con cualquier clave, el recorte de resultados de herramientas
+ * sustituidos solo actúa dentro del bucle de herramientas en Anthropic. README,
+ * PyPI e `init`.
+ */
 export const FRASE_LA_CLAVE_SOLO_ANADE =
+  "A BiVelio key only adds the cloud: the free Measure license and a paid one apply the same levers as no key, " +
+  "except trimming of superseded tool results, which with a key only acts inside a tool loop on Anthropic.";
+
+/** Lo mismo para el gateway (`--help`), que no tiene ese recorte: ahí la clave no apaga ninguna palanca. */
+export const FRASE_LA_CLAVE_SOLO_ANADE_GATEWAY =
   "A BiVelio key only adds the cloud and switches no lever off: the free Measure license applies the same levers " +
   "as no key.";
 

@@ -7,6 +7,7 @@ import {
   FRASE_DEPENDENCIA_GATEWAY,
   FRASE_DEPENDENCIA_SDK,
   FRASE_LA_CLAVE_SOLO_ANADE,
+  FRASE_LA_CLAVE_SOLO_ANADE_GATEWAY,
   FRASE_PALANCAS_GATEWAY,
   FRASE_PALANCAS_SDK,
   LINEA_MODO_COMUNITARIO,
@@ -117,7 +118,11 @@ describe("m01 · la clave solo añade la nube; Measure ya no apaga nada; la somb
     expect(readme).not.toMatch(/levers need a paid plan/);
     // Los dos párrafos de Measure son, palabra por palabra, los de la rama
     // fix/measure-ahorra-de-verdad (para que las dos ramas se fusionen sin conflicto).
-    expect(readme).toContain("the layer saves exactly as it does with no key, and your dashboard shows the real savings");
+    // 1.2.4: con la excepción del recorte (con clave, solo en el bucle de herramientas de Anthropic).
+    expect(readme).toContain(
+      "the layer applies the same levers as with no key, except that trimming of superseded tool results only acts " +
+        "inside a tool loop on Anthropic, and your dashboard shows the real savings",
+    );
     expect(readme).toContain("What a paid plan adds is the cloud beyond those limits (more seats, more volume, the team dashboard), not the saving.");
     expect(readme).toContain("a lower bound, shown apart from measured savings");
   });
@@ -308,7 +313,10 @@ describe.skipIf(process.platform === "win32")("`bvsala --help` (grupo 3), ejecut
 
   it("dice las dos frases comunes y nombra la variable de solo observar", () => {
     expect(ayuda).toContain(FRASE_PALANCAS_GATEWAY);
-    expect(ayuda).toContain(FRASE_LA_CLAVE_SOLO_ANADE);
+    // El gateway no tiene el recorte de resultados sustituidos: su ayuda dice la
+    // frase sin la excepción del SDK.
+    expect(ayuda).toContain(FRASE_LA_CLAVE_SOLO_ANADE_GATEWAY);
+    expect(ayuda).not.toContain(FRASE_LA_CLAVE_SOLO_ANADE);
     expect(ayuda).toContain(FRASE_DEPENDENCIA_GATEWAY);
     expect(ayuda).toContain(`To only observe, without changing any request, set ${VARIABLE_GATEWAY_SOLO_OBSERVAR}=1.`);
     expect(ayuda).toContain(`BIVELIO_SERVICE_KEY only adds the cloud: ${LO_QUE_ANADE_LA_NUBE}.`);
@@ -371,7 +379,9 @@ describe("verificación final 1.2.4 · la clave trae una dependencia, y se dice"
     // El ancla existe en SECURITY.md.
     expect(leer("SECURITY.md")).toMatch(/^## Availability: what happens if our servers do not respond$/m);
     // El resumen de arriba no promete «solo añade» sin el matiz.
-    expect(readme).toContain("A key only adds the cloud: it switches no lever off, though it does tie the layer to savings.bivelio.com");
+    expect(readme).toContain(
+      "A key only adds the cloud (with one exception for trimming of superseded tool results), and it ties the layer to savings.bivelio.com",
+    );
     expect(readme).not.toContain("Take it and nothing is switched off either");
   });
 

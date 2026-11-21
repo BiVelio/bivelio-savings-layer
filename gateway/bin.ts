@@ -32,7 +32,7 @@ import { resumenDeMedicion } from "./recuento.js";
 import { UMBRAL_REESCRITURA } from "./tarifa.js";
 import {
   FRASE_DEPENDENCIA_GATEWAY,
-  FRASE_LA_CLAVE_SOLO_ANADE,
+  FRASE_LA_CLAVE_SOLO_ANADE_GATEWAY,
   FRASE_PALANCAS_GATEWAY,
   LINEA_MODO_COMUNITARIO,
   LINEA_PALANCAS_SOLO_OBSERVAR,
@@ -104,7 +104,7 @@ const decision = decidirArranque(process.argv.slice(2));
 
 /** Las frases comunes de textos-publicos.ts, al ancho de la ayuda. */
 const PIE_DE_PALANCAS = enLineas(
-  `${FRASE_PALANCAS_GATEWAY} ${FRASE_LA_CLAVE_SOLO_ANADE} ${FRASE_DEPENDENCIA_GATEWAY} To only observe, without ` +
+  `${FRASE_PALANCAS_GATEWAY} ${FRASE_LA_CLAVE_SOLO_ANADE_GATEWAY} ${FRASE_DEPENDENCIA_GATEWAY} To only observe, without ` +
     `changing any request, set ${VARIABLE_GATEWAY_SOLO_OBSERVAR}=1.`,
   98,
 ).join("\n");
