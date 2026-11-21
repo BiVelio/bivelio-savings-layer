@@ -683,18 +683,19 @@ describe("la copia que viaja en npm (README y guías de terminales)", () => {
   });
 
   it("⛔ las guías de terminales dicen modo Community, y no prometen reenviar sin clave", () => {
-    expect(terminales).toMatch(/modo\s+Community/);
-    expect(terminales).not.toMatch(/Nunca\s+corta\s+el\s+tráfico:\s+sin\s+clave/);
-    expect(terminales).not.toMatch(/Sin ella: reenvía, NO mide/);
-    expect(terminales).toMatch(/TTL\s+de\s+escritura\s+de\s+caché/);
+    // Las guías van en inglés desde la auditoría de medios (m30).
+    expect(terminales).toMatch(/Community\s+mode/);
+    expect(terminales).not.toMatch(/Nunca\s+corta\s+el\s+tráfico:\s+sin\s+clave|never\s+cuts\s+traffic:\s+without\s+a\s+key/i);
+    expect(terminales).not.toMatch(/Sin ella: reenvía, NO mide|Without it: forwards, does NOT meter/i);
+    expect(terminales).toMatch(/cache-write\s+TTL/);
   });
 
   it("⛔ la guía de Codex ya no dice que la suscripción «no se monetiza», ni que haga falta una licencia por asiento", () => {
     const codex = leer("../docs/terminales/codex.md");
-    expect(codex).not.toMatch(/NO monetizado|no se monetiza\*\*/);
+    expect(codex).not.toMatch(/NO monetizado|no se monetiza\*\*|NOT monetized|not monetized\*\*/);
     // A2-23 · la comisión es un plan cerrado y el gateway no pide licencia: la
     // suscripción se mide a precio de lista equivalente y no se le acredita ahorro.
-    expect(codex).toMatch(/sin\s+ahorro\s+acreditado/);
-    expect(codex).not.toMatch(/licencia por asiento|el caso que se monetiza/);
+    expect(codex).toMatch(/no\s+saving\s+credited/);
+    expect(codex).not.toMatch(/licencia por asiento|el caso que se monetiza|per-seat licen[cs]e|the case that is monetized/i);
   });
 });

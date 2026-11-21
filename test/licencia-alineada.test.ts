@@ -386,9 +386,9 @@ describe("el README que viaja a npm promete lo que se cobra", () => {
 
 describe("las guías de terminales (también viajan a npm) no prometen de menos lo que viaja", () => {
   it("⛔ ni «solo cuentas y coste» ni cabeceras de sesión «sin consumirlas»", () => {
-    expect(leer("../docs/terminales/README.md")).not.toMatch(/solo\s+cuentas\s+y\s+coste/);
+    expect(leer("../docs/terminales/README.md")).not.toMatch(/solo\s+cuentas\s+y\s+coste|only\s+counts\s+and\s+cost/i);
     expect(leer("../docs/terminales/README.md")).toMatch(/LICENSE-CLOUD\.md\s+§5/);
-    expect(leer("../docs/terminales/claude-code.md")).not.toMatch(/sin\s+consumirlas/);
+    expect(leer("../docs/terminales/claude-code.md")).not.toMatch(/sin\s+consumirlas|without\s+(consuming|reading)\s+them/i);
   });
 
   it("⛔ el SDK no menciona un free tier que no existe", () => {
