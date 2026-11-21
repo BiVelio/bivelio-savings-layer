@@ -198,3 +198,219 @@ describe('el recorte no rompe los puntos de caché de cacheBreakpoints: "auto" e
     expect(munones(a.cuerpos)).toBeGreaterThan(0);
   });
 });
+
+/**
+ * VERIFICACIÓN 2 DE LA 1.2.4: CON LICENCIA, NINGUNA CARGA CUESTA MÁS QUE EN LA 1.2.3.
+ *
+ * En la 1.2.3 una licencia de pago no recortaba (le faltaba el literal). En la
+ * 1.2.4 toda licencia recorta, y eso rompía cachés que la 1.2.3 de pago no
+ * rompía (proveedor falso; coste con capa frente a sin capa, 1.2.3 → 1.2.4):
+ *   · Anthropic con la colocación por defecto, conversación de 12 turnos que
+ *     vuelve a leer el mismo fichero: el recorte de un resultado ANTERIOR al
+ *     último turno del usuario dejaba la marca en el `system` el resto de la
+ *     conversación. Sonnet −67,2 % → −30,1 %. Ahora solo se recortan los del
+ *     bucle en curso (E1).
+ *   · Gemini (lectura al 10 %, sin prima de escritura): 0 % → +11,9 % en un
+ *     agente de 60 pasos. Ahora no recorta (E2), con licencia y sin ella.
+ *   · DeepSeek (proveedor que la capa no reconoce): 0 % → +13,7 %. Con licencia
+ *     ya no recorta, como en la 1.2.3 (E3). Sin clave, como en la 1.2.3.
+ */
+
+/** Anthropic falso con la caché de prompt (reglas públicas, sin TTL): lee el prefijo más largo ya escrito en un punto marcado. */
+function anthropicConCache() {
+  const escrito = new Set<string>();
+  const cuerpos: Record<string, unknown>[] = [];
+  const porPeticion: { total: number; leidos: number; escritos: number }[] = [];
+  const tok = (s: string): number => Math.ceil(s.length / 4);
+  const fetchImpl = (async (_url: string, init: RequestInit) => {
+    const body = JSON.parse(String(init.body)) as Record<string, unknown>;
+    cuerpos.push(body);
+    const bloques: { texto: string; bp: boolean }[] = [];
+    for (const t of (body["tools"] as Record<string, unknown>[] | undefined) ?? []) {
+      const { cache_control, ...resto } = t;
+      bloques.push({ texto: "T:" + JSON.stringify(resto), bp: cache_control != null });
+    }
+    const system = body["system"];
+    if (typeof system === "string") bloques.push({ texto: "S:" + system, bp: false });
+    else for (const b of (system as Record<string, unknown>[] | undefined) ?? []) bloques.push({ texto: "S:" + String(b["text"] ?? ""), bp: b["cache_control"] != null });
+    for (const m of body["messages"] as { role: string; content: string | Record<string, unknown>[] }[]) {
+      if (typeof m.content === "string") bloques.push({ texto: `M:${m.role}:${m.content}`, bp: false });
+      else for (const b of m.content) {
+        const { cache_control, ...resto } = b;
+        bloques.push({ texto: `M:${m.role}:${JSON.stringify(resto)}`, bp: cache_control != null });
+      }
+    }
+    let acumulado = `modelo:${String(body["model"])}|`;
+    const pref = bloques.map((b) => {
+      acumulado += b.texto + "\u0001";
+      return { clave: acumulado, tokens: tok(acumulado) };
+    });
+    const total = pref.at(-1)?.tokens ?? 0;
+    const puntos = bloques.flatMap((b, i) => (b.bp ? [i] : []));
+    let leidos = 0;
+    let escritos = 0;
+    for (const p of puntos) {
+      for (let j = p; j >= Math.max(0, p - 20); j--) {
+        if (pref[j]!.tokens >= 1024 && escrito.has(pref[j]!.clave)) {
+          leidos = Math.max(leidos, pref[j]!.tokens);
+          break;
+        }
+      }
+    }
+    const ultimo = puntos.at(-1);
+    if (ultimo != null && pref[ultimo]!.tokens >= 1024 && pref[ultimo]!.tokens > leidos) escritos = pref[ultimo]!.tokens - leidos;
+    for (const p of puntos) if (pref[p]!.tokens >= 1024) escrito.add(pref[p]!.clave);
+    porPeticion.push({ total, leidos, escritos });
+    const usage = { input_tokens: total - leidos - escritos, output_tokens: 5, cache_read_input_tokens: leidos, cache_creation_input_tokens: escritos };
+    return new Response(
+      JSON.stringify({ id: "msg_falso", type: "message", role: "assistant", content: [{ type: "text", text: "Next." }], stop_reason: "end_turn", usage }),
+      { status: 200, headers: { "content-type": "application/json" } },
+    );
+  }) as unknown as typeof fetch;
+  const suma = (k: "total" | "leidos" | "escritos"): number => porPeticion.reduce((s, x) => s + x[k], 0);
+  /** Entrada a precio lleno: lectura 0,10×, escritura 1,25×. */
+  const coste = (): number => suma("total") - suma("leidos") - suma("escritos") + 0.1 * suma("leidos") + 1.25 * suma("escritos");
+  return { cuerpos, porPeticion, fetchImpl, coste, sinCapa: () => suma("total") };
+}
+
+const POLITICAS = (n: number): string =>
+  Array.from({ length: n }, (_, i) => `Policy ${i}: orders of kind ${i} ship within ${i + 1} days and may be returned within thirty days.`).join(" ");
+const configuracion = (version: number): string =>
+  Array.from({ length: 12 }, (_, i) => `${String(i + 1).padStart(3)}: export function handlerconfig_${i}(input) { return validate(input) && store.save("config", input, ${version}); }`).join("\n");
+const registroDeBuild = (t: number): string =>
+  `Here is the build log ${t}:\n` + Array.from({ length: 40 }, (_, i) => `[build ${t}] step ${i}: compiled module m${i} in ${i * 7 + t} ms, 0 warnings`).join("\n");
+
+/**
+ * Soporte de 12 turnos: en cada turno el usuario pega un registro largo y el
+ * asistente vuelve a leer el MISMO fichero pequeño. Las lecturas viejas quedan
+ * sustituidas y DELANTE del último turno del usuario: en el historial marcado.
+ */
+async function soporte12(modelo: string, config: Record<string, unknown>) {
+  const f = anthropicConCache();
+  const capa = createSavingsLayer({ provider: new AnthropicProvider({ apiKey: "clave-inventada", fetchImpl: f.fetchImpl }), silenceWarnings: true, ...config });
+  const hist: ChatMessage[] = [{ role: "system", content: "You are a coding assistant for an invented repository. " + POLITICAS(40) }];
+  const elision: string[] = [];
+  const pedir = async (): Promise<void> => {
+    const r = await capa.generate({ model: modelo, messages: [...hist], tools: HERRAMIENTAS, temperature: 0 } as SavingsRequest);
+    for (const t of r.report.traces) if (t.stage === "elision") elision.push(t.outcome);
+  };
+  for (let t = 0, id = 0; t < 12; t++) {
+    hist.push({ role: "user", content: `Turn ${t + 1}: please check the config again and tell me what changed. ${registroDeBuild(t)}` });
+    await pedir();
+    id++;
+    hist.push({ role: "assistant", content: "", toolCalls: [{ id: `call_${id}`, name: "read_file", arguments: JSON.stringify({ path: "src/config.ts" }) }] });
+    hist.push({ role: "tool", toolCallId: `call_${id}`, name: "read_file", content: configuracion(1 + (t >> 1)) });
+    await pedir();
+    hist.push({ role: "assistant", content: `Summary of turn ${t + 1}: the config looks the same as before, version ${1 + (t >> 1)}.` });
+  }
+  await capa.close();
+  return { ...f, elision };
+}
+
+describe("verificación 2: con licencia el recorte no cuesta más que la 1.2.3", () => {
+  it("Pro en soporte de 12 turnos con Sonnet conserva las lecturas del historial", async () => {
+    const pro = await soporte12("anthropic/claude-sonnet-4-5", licenciaPro());
+    const conElisionApagada = await (async () => {
+      const f = anthropicConCache();
+      const capa = createSavingsLayer({ provider: new AnthropicProvider({ apiKey: "clave-inventada", fetchImpl: f.fetchImpl }), silenceWarnings: true, ...licenciaPro() });
+      const hist: ChatMessage[] = [{ role: "system", content: "You are a coding assistant for an invented repository. " + POLITICAS(40) }];
+      for (let t = 0, id = 0; t < 12; t++) {
+        hist.push({ role: "user", content: `Turn ${t + 1}: please check the config again and tell me what changed. ${registroDeBuild(t)}` });
+        await capa.generate({ model: "anthropic/claude-sonnet-4-5", messages: [...hist], tools: HERRAMIENTAS, temperature: 0, savings: { elision: false } } as SavingsRequest);
+        id++;
+        hist.push({ role: "assistant", content: "", toolCalls: [{ id: `call_${id}`, name: "read_file", arguments: JSON.stringify({ path: "src/config.ts" }) }] });
+        hist.push({ role: "tool", toolCallId: `call_${id}`, name: "read_file", content: configuracion(1 + (t >> 1)) });
+        await capa.generate({ model: "anthropic/claude-sonnet-4-5", messages: [...hist], tools: HERRAMIENTAS, temperature: 0, savings: { elision: false } } as SavingsRequest);
+        hist.push({ role: "assistant", content: `Summary of turn ${t + 1}: the config looks the same as before, version ${1 + (t >> 1)}.` });
+      }
+      await capa.close();
+      return f;
+    })();
+    expect(pro.cuerpos.length).toBe(24);
+    // Ningún muñón en el historial marcado: los resultados viejos están todos
+    // delante del último turno del usuario, y ahí no se recortan.
+    expect(munones(pro.cuerpos)).toBe(0);
+    expect(pro.elision).toContain("partial");
+    // El historial marcado se sigue leyendo: desde el segundo turno lo leído
+    // crece con la conversación y las últimas peticiones leen casi todo (con el
+    // fallo, tras el primer recorte solo se marcaba el `system`).
+    const leidos = pro.porPeticion.map((p) => p.leidos);
+    for (let k = 5; k < leidos.length; k++) expect(leidos[k]).toBeGreaterThanOrEqual(leidos[k - 1]!);
+    for (const p of pro.porPeticion.slice(-4)) expect(p.leidos).toBeGreaterThan(0.8 * p.total);
+    // El dinero: lo mismo que con el recorte apagado (lo que hacía la 1.2.3 de
+    // pago), y muy por debajo de no llevar capa (−67 % medido con el banco).
+    expect(Math.round(pro.coste())).toBe(Math.round(conElisionApagada.coste()));
+    expect(pro.coste()).toBeLessThan(0.45 * pro.sinCapa());
+  });
+
+  it("también sin clave y con Haiku 4.5: el historial marcado no pierde lecturas", async () => {
+    for (const [modelo, config] of [
+      ["anthropic/claude-sonnet-4-5", {}],
+      ["anthropic/claude-haiku-4-5", licenciaPro()],
+    ] as const) {
+      const a = await soporte12(modelo, config);
+      expect(munones(a.cuerpos)).toBe(0);
+      expect(a.coste()).toBeLessThan(0.6 * a.sinCapa());
+    }
+  });
+
+  it("Pro en Gemini y DeepSeek, agente de 60 pasos, no cuesta más que sin capa: ni un muñón y el historial solo crece", async () => {
+    for (const [modelo, motivo] of [
+      ["google/gemini-2.5-flash", /bills cached input at 25% or less/],
+      ["gemini-2.5-flash", /bills cached input at 25% or less/],
+      ["google/gemini-2.5-pro", /bills cached input at 25% or less/],
+      ["deepseek/deepseek-chat", /unrecognised provider/],
+    ] as const) {
+      const f = openaiFalso();
+      const capa = createSavingsLayer({
+        provider: new OpenAICompatibleProvider({ baseUrl: "https://api.openai.com/v1", apiKey: "clave-inventada", fetchImpl: f.fetchImpl }),
+        silenceWarnings: true,
+        ...licenciaPro(),
+      });
+      const razones: string[] = [];
+      for (const messages of pasos(60)) {
+        const r = await capa.generate({ model: modelo, messages, tools: HERRAMIENTAS, temperature: 0 } as SavingsRequest);
+        const t = r.report.traces.find((x) => x.stage === "elision");
+        if (t) razones.push(`${t.outcome}: ${String(t.detail?.["reason"] ?? "")}`);
+      }
+      await capa.close();
+      expect(f.cuerpos.length).toBe(60);
+      expect(munones(f.cuerpos)).toBe(0);
+      // Lo que sale es lo que mandaría la app sin capa (el historial entero, que
+      // solo crece): la caché automática del proveedor lo lee igual que sin capa.
+      expect(historialSoloCrece(f.cuerpos)).toBe(true);
+      expect(f.coste()).toBeLessThan(0.2 * f.sinCache());
+      expect(razones.some((r) => r.startsWith("skipped") && motivo.test(r))).toBe(true);
+    }
+  });
+
+  it("Gemini sin clave tampoco recorta (antes: +11,9 % en el agente)", async () => {
+    const a = await agenteOpenAI("google/gemini-2.5-flash", {});
+    expect(munones(a.cuerpos)).toBe(0);
+    expect(historialSoloCrece(a.cuerpos)).toBe(true);
+  });
+
+  it("gpt-4o-mini y los agentes de Anthropic siguen recortando, con Pro y sin clave", async () => {
+    for (const config of [licenciaPro(), {}]) {
+      const mini = await agenteOpenAI("openai/gpt-4o-mini", config);
+      expect(munones(mini.cuerpos)).toBeGreaterThan(0);
+      for (const modelo of ["anthropic/claude-sonnet-4-5", "anthropic/claude-haiku-4-5"]) {
+        const agente = async (elision: boolean) => {
+          const f = anthropicConCache();
+          const capa = createSavingsLayer({ provider: new AnthropicProvider({ apiKey: "clave-inventada", fetchImpl: f.fetchImpl }), silenceWarnings: true, ...config });
+          for (const messages of pasos(30)) {
+            await capa.generate({ model: modelo, messages, tools: HERRAMIENTAS, temperature: 0, ...(elision ? {} : { savings: { elision: false } }) } as SavingsRequest);
+          }
+          await capa.close();
+          return f;
+        };
+        const con = await agente(true);
+        const sin = await agente(false);
+        // En un bucle de agente los resultados viejos van DETRÁS del último
+        // turno del usuario: el recorte sigue actuando y la factura baja.
+        expect(munones(con.cuerpos)).toBeGreaterThan(0);
+        expect(con.coste()).toBeLessThan(0.8 * sin.coste());
+      }
+    }
+  });
+});

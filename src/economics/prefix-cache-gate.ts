@@ -75,6 +75,9 @@
 //
 // No hace falta reintentar marcando: ver si una cabecera vuelve no exige
 // marcarla, así que la verja sigue observando sin gastar un céntimo.
+//
+// EN LA 1.2.4 LA REGLA DEL MODO VOLÁTIL ESTÁ APAGADA (`VERJA_DE_CABECERAS_ACTIVA`,
+// más abajo): se observa, pero se decide exactamente como en la 1.2.3.
 
 import {
   costeEsperado,
@@ -206,6 +209,22 @@ interface ClaseDeCabeceras {
 }
 
 const MAX_CLASES_DE_CABECERAS = 256;
+
+/**
+ * LA REGLA DE LA CLASE VOLÁTIL, APAGADA EN LA 1.2.4 (verificación 2): «no marcar
+ * una cabecera nunca vista en una clase volátil» salía MÁS CARA que la 1.2.3 en
+ * dos patrones normales, medidos con un proveedor falso que caduca la caché:
+ * tráfico mixto en el mismo modelo (llamadas auxiliares diminutas con la hora +
+ * chats con su system propio: de −9,8 % a +2,4 % con chats de 2 turnos) y
+ * ráfagas tras un rato de sesiones sueltas (noche de 40 + 1.200 chats × 2: de
+ * −26,5 % a +10,5 %). Además rompía `savings.cachePrefix` a partir de los 5
+ * minutos. Con la regla apagada la verja decide EXACTAMENTE como en la 1.2.3 y
+ * sigue observando las cabeceras (`observarCabecera`, `estadoDeCabeceras`), que
+ * no cuesta nada. Para la 1.2.5: no observar cabeceras por debajo del mínimo
+ * cacheable, meter el tamaño de la cabecera en la clase y hacer caducar la
+ * evidencia de volatilidad; los tests de la regla encendida están en `it.skip`.
+ */
+const VERJA_DE_CABECERAS_ACTIVA: boolean = false;
 
 /**
  * La tasa de aciertos a partir de la cual marcar la caché compensa.
@@ -433,7 +452,7 @@ export class VerjaDeCacheDePrefijo {
     // LA CABECERA NUNCA VISTA EN UNA CLASE VOLÁTIL. Solo aquí se aparta de la
     // 1.2.3, y solo en lo que no puede salir bien: escribir un prefijo cuya
     // cabecera, en esta clase, casi nunca vuelve antes de caducar.
-    if (cabecera?.volatil === true && !cabecera.vista) {
+    if (VERJA_DE_CABECERAS_ACTIVA && cabecera?.volatil === true && !cabecera.vista) {
       return {
         marcar: false,
         razon:
