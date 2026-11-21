@@ -195,8 +195,8 @@
       "missingFields": "Nhập email và mật khẩu của bạn."
     },
     "signupMedir": "Hoặc bắt đầu miễn phí với Measure: gói cloud miễn phí, không cần thẻ, chế độ bóng, tối đa {seats} chỗ và {requests} yêu cầu mỗi ngày. Hoạt động với phiên bản mới nhất của @bivelio/savings-layer.",
-    "signupPlanPro": "Bạn đã chọn {plan} — {price} mỗi ghế mỗi tháng. Tạo tài khoản, xác nhận email, rồi bạn sẽ thanh toán trong bảng điều khiển qua Stripe.",
-    "signupPlanTeam": "Bạn đã chọn {plan} — {price} mỗi tháng, bao gồm {seats} ghế. Tạo tài khoản, xác nhận email, rồi bạn sẽ thanh toán trong bảng điều khiển qua Stripe.",
+    "signupPlanPro": "Bạn đã chọn {plan} — {price} mỗi chỗ mỗi tháng. Tạo tài khoản, xác nhận email, rồi bạn sẽ thanh toán trong bảng điều khiển qua Stripe.",
+    "signupPlanTeam": "Bạn đã chọn {plan} — {price} mỗi tháng, bao gồm {seats} chỗ. Tạo tài khoản, xác nhận email, rồi bạn sẽ thanh toán trong bảng điều khiển qua Stripe.",
     "openSourceQuestion": "Chỉ muốn dùng engine mã nguồn mở?",
     "openSourceLink": "Cài đặt không cần tài khoản",
     "showPassword": "Hiện mật khẩu",
@@ -1255,11 +1255,11 @@
       "pasos": [
         {
           "title": "AI tính tiền theo từng chữ",
-          "body": "Mỗi yêu cầu gửi đến AI được trả tiền theo phần văn bản đi vào và đi ra. Savings đứng giữa con đường đó: một yêu cầu nó đã thấy và đã xác minh sẽ được trả lời mà không cần gọi lại nhà cung cấp, và phần bạn không phải trả rơi vào chiếc lọ của bạn."
+          "body": "Mỗi yêu cầu gửi đến AI được trả tiền theo phần văn bản đi vào và đi ra. Savings Layer đứng giữa con đường đó: một yêu cầu nó đã thấy và đã xác minh sẽ được trả lời mà không cần gọi lại nhà cung cấp, và phần bạn không phải trả rơi vào chiếc lọ của bạn."
         },
         {
           "title": "Bạn không trả hai lần cho cùng một thứ",
-          "body": "AI đọc lại ở mỗi lượt mọi thứ bạn đã gửi — và nhà cung cấp tính phí lần nữa. Savings chuẩn bị từng yêu cầu để nhà cung cấp áp dụng giá ưu đãi cho phần lặp lại. Khoản giảm giá là của nhà cung cấp; phần của chúng tôi là yêu cầu nó đúng cách."
+          "body": "AI đọc lại ở mỗi lượt mọi thứ bạn đã gửi — và nhà cung cấp tính phí lần nữa. Savings Layer chuẩn bị từng yêu cầu để nhà cung cấp áp dụng giá ưu đãi cho phần lặp lại. Khoản giảm giá là của nhà cung cấp; phần của chúng tôi là yêu cầu nó đúng cách."
         },
         {
           "title": "Một biên lai bạn có thể kiểm chứng",
@@ -1643,7 +1643,7 @@
         },
         {
           "q": "Có dùng được cho gói thuê bao như ChatGPT Plus không?",
-          "a": "Không phải dưới dạng tiết kiệm trên hóa đơn. Savings tối ưu và đo các lệnh gọi tới API trả theo mức sử dụng; một gói thuê bao giá cố định không phải là hóa đơn API có thể tối ưu. Qua gateway, lưu lượng đó vẫn được đo nhưng không được ghi nhận khoản tiết kiệm nào. Với giới hạn của gói thuê bao, có skill savings-mode, một tài nguyên bổ trợ mà hiệu quả chưa được đo."
+          "a": "Không phải dưới dạng tiết kiệm trên hóa đơn. Savings Layer tối ưu và đo các lệnh gọi tới API trả theo mức sử dụng; một gói thuê bao giá cố định không phải là hóa đơn API có thể tối ưu. Qua gateway, lưu lượng đó vẫn được đo nhưng không được ghi nhận khoản tiết kiệm nào. Với giới hạn của gói thuê bao, có skill savings-mode, một tài nguyên bổ trợ mà hiệu quả chưa được đo."
         },
         {
           "q": "Tôi có phải đổi nhà cung cấp không?",

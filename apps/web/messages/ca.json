@@ -1255,11 +1255,11 @@
       "pasos": [
         {
           "title": "La IA es cobra per paraules",
-          "body": "Cada petició a la IA es paga pel text que entra i surt. Savings es posa al mig d'aquest camí: una petició que ja ha vist i verificat es respon sense tornar a cridar el proveïdor, i el que no calia pagar cau al teu pot."
+          "body": "Cada petició a la IA es paga pel text que entra i surt. Savings Layer es posa al mig d'aquest camí: una petició que ja ha vist i verificat es respon sense tornar a cridar el proveïdor, i el que no calia pagar cau al teu pot."
         },
         {
           "title": "No pagues dues vegades pel mateix",
-          "body": "La IA rellegeix a cada torn tot el que ja li havies enviat — i el proveïdor ho cobra un altre cop. Savings prepara cada petició perquè el proveïdor apliqui el seu preu rebaixat al que es repeteix. El descompte el posa el proveïdor; la nostra part és demanar-lo bé."
+          "body": "La IA rellegeix a cada torn tot el que ja li havies enviat — i el proveïdor ho cobra un altre cop. Savings Layer prepara cada petició perquè el proveïdor apliqui el seu preu rebaixat al que es repeteix. El descompte el posa el proveïdor; la nostra part és demanar-lo bé."
         },
         {
           "title": "Un rebut que pots comprovar",
@@ -1643,7 +1643,7 @@
         },
         {
           "q": "Serveix per a una subscripció com ChatGPT Plus?",
-          "a": "No com a estalvi en una factura. Savings optimitza i mesura crides a una API que es paga per ús; una subscripció de tarifa plana no és una factura d’API optimitzable. A través del gateway aquest trànsit es mesura, però no se li acredita estalvi. Per als límits d’una subscripció hi ha l’skill savings-mode, un recurs complementari l’efecte del qual encara no està mesurat."
+          "a": "No com a estalvi en una factura. Savings Layer optimitza i mesura crides a una API que es paga per ús; una subscripció de tarifa plana no és una factura d’API optimitzable. A través del gateway aquest trànsit es mesura, però no se li acredita estalvi. Per als límits d’una subscripció hi ha l’skill savings-mode, un recurs complementari l’efecte del qual encara no està mesurat."
         },
         {
           "q": "He de canviar de proveïdor?",
