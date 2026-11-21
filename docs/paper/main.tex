@@ -635,11 +635,11 @@ estimator is implemented in \path{benchmarks/stats.ts} and called by
 \path{benchmarks/evidencia/}; harnesses are in \path{benchmarks/experimentos/}. The public
 benchmark index is \url{https://savings.bivelio.com/benchmarks}.
 
-The repository contains the offline recomputation code: the estimator in
-\path{benchmarks/stats.ts} and \texttt{resumir()} in \path{benchmarks/publicados/gsm8k/medir.ts}.
-Applied to the trials stored in the two historical GSM8K artifacts, it reproduces the published
-pooled points and interval endpoints exactly. New API experiments require credentials and
-execution costs and were not run for this revision.
+The repository contains the offline recomputation code. Applied to the trials stored in the two
+historical GSM8K artifacts, \texttt{resumir()} in \path{benchmarks/publicados/gsm8k/medir.ts},
+which calls that estimator, reproduces the published pooled points and interval endpoints
+exactly. New API experiments require credentials and execution costs and were not run for this
+revision.
 
 \section{Conflict of interest}\label{sec:coi}
 The original author is the founder of BiVelio Inc, which develops the evaluated product. This
