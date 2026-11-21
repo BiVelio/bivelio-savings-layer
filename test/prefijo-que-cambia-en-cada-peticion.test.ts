@@ -128,7 +128,7 @@ const sinCapa = (c: Cuenta): number => c.plena + c.leidos + c.escritos;
 
 function capa(fetchImpl: typeof fetch, extra: Record<string, unknown> = {}): SavingsPipeline {
   return new SavingsPipeline({
-    provider: new AnthropicProvider({ apiKey: "sk-ant-api03-FALSA", fetchImpl }),
+    provider: new AnthropicProvider({ apiKey: "clave-inventada", fetchImpl }),
     tokenizer: new TokenizerRegistry(),
     devUnlicensed: true,
     ...extra,
