@@ -33,7 +33,7 @@ def main(argv: Optional[List[str]] = None) -> int:
             print(f"  upstream: {st.upstream}")
             vence = f", expires {st.license_expires_at}" if st.license_expires_at else ""
             print(f"  license:  {st.license_state} ({st.license_plan or 'unknown plan'}{vence})")
-            print(f"  metering: {'on' if st.metering else 'off (no BIVELIO_SERVICE_KEY)'}")
+            print(f"  metering: {'on' if st.metering else 'off'}")
             return 0 if st.serving else 2
         informe = gw.report(a.id, wait=a.wait)
         print(json.dumps(
