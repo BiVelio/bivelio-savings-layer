@@ -20,7 +20,7 @@ import {
   filasPorModeloDelBanco,
   huellaDelPanel,
   pieDelTitular,
-  PANEL_DEL_BANCO,
+  rotulosDeLaCaptura,
 } from "@/lib/portada/panel-del-banco";
 
 /**
@@ -36,9 +36,11 @@ import {
  * LOS RÓTULOS DICEN LO QUE ES: un día del banco en una organización de
  * demostración. Donde el panel de un cliente dice «tu factura», «últimos 30
  * días», «live · tu organización» o enseña el selector de rango, aquí van los
- * `rotulos` de `PANEL_DEL_BANCO` (props que el panel de los clientes nunca
- * pasa). Y en vez de dólares de un banco que gastó céntimos, porcentajes y
- * peticiones: el titular con sus recuentos y el ahorro de cada modelo.
+ * `rotulos` de `PANEL_DEL_BANCO` en el idioma de la ruta (props que el panel
+ * de los clientes nunca pasa): `/es/captura-panel` da la captura española y
+ * `/en/captura-panel` la inglesa (`idiomaDeLaCaptura`). Y en vez de dólares
+ * de un banco que gastó céntimos, porcentajes y peticiones: el titular con
+ * sus recuentos y el ahorro de cada modelo.
  *
  * En producción no existe: `notFound()` antes de leer nada. Un build de Vercel
  * la compila, pero cualquier petición a ella devuelve la 404 propia.
@@ -54,11 +56,11 @@ export default async function CapturaDelPanel({ params }: { params: Promise<{ lo
 
   const usage = filasDiariasDelBanco();
   const porModelo = filasPorModeloDelBanco();
-  const R = PANEL_DEL_BANCO.rotulos;
+  const R = rotulosDeLaCaptura(locale);
 
   return (
     <div className="app" data-huella={huellaDelPanel()}>
-      <AppTopbar email="" plan={null} orgName={PANEL_DEL_BANCO.organizacion} />
+      <AppTopbar email="" plan={null} orgName={R.organizacion} />
       <div className="app-body">
         <AppSidebar role="owner" />
         <main className="app-main">
@@ -70,7 +72,7 @@ export default async function CapturaDelPanel({ params }: { params: Promise<{ lo
                   usage={usage}
                   visibilidad="con_datos"
                   rango={30}
-                  rotulos={{ antetitulo: R.antetitulo, pastilla: R.pastilla, pie: pieDelTitular() }}
+                  rotulos={{ antetitulo: R.antetitulo, pastilla: R.pastilla, pie: pieDelTitular(locale) }}
                 />
                 <div className="card card-pad">
                   <div className="n card-title">{t("usageExplorer.title")}</div>

@@ -1233,7 +1233,7 @@
       "ctaStart": "Mit Measure starten",
       "ctaBench": "Reproduzierbare Ergebnisse ansehen",
       "panelAlt": "Das Savings-Dashboard mit den Daten des öffentlichen Benchmarks: die gemessene Einsparung und ihre Aufteilung nach Modell.",
-      "panelCaption": "Dashboard mit den Daten des öffentlichen Benchmarks",
+      "panelCaption": "Demo-Dashboard mit dem {bateria}-Lauf des öffentlichen Benchmarks: Die {titular} beziehen sich auf alle vier Modelle zusammen, ohne den Cache-Preis-Kontrast. Der Beleg zeigt nur {modelo}.",
       "medidoEnVivo": "Live gemessen mit dem Zähler jedes Anbieters",
       "note": "In Minuten installiert. Deine Nachrichten laufen nie über unsere Server.",
       "proofTitle": "Gegen echten Provider gemessen",

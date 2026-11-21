@@ -1233,7 +1233,7 @@
       "ctaStart": "Comença amb Measure",
       "ctaBench": "Veure resultats reproduïbles",
       "panelAlt": "El tauler de Savings amb les dades del banc públic: l'estalvi mesurat i el seu repartiment per model.",
-      "panelCaption": "Tauler amb les dades del banc públic",
+      "panelCaption": "Tauler de demostració amb la tirada {bateria} del banc públic: el {titular} és el dels quatre models junts, sense el contrast de preus de memòria cau. El rebut és només {modelo}.",
       "medidoEnVivo": "Mesurat en directe amb el comptador de cada proveïdor",
       "note": "S'instal·la en minuts. Els teus missatges no passen pels nostres servidors.",
       "proofTitle": "Mesurat contra proveïdor real",

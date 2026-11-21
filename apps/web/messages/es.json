@@ -1233,7 +1233,7 @@
       "ctaStart": "Empezar con Measure",
       "ctaBench": "Ver resultados reproducibles",
       "panelAlt": "El panel de Savings con los datos del banco público: el ahorro medido y su reparto por modelo.",
-      "panelCaption": "Panel con los datos del banco público",
+      "panelCaption": "Panel de demostración con la tirada {bateria} del banco público: el {titular} es el de los cuatro modelos juntos, sin el contraste de precios de caché. El recibo es solo {modelo}.",
       "medidoEnVivo": "Medido en vivo con el contador de cada proveedor",
       "note": "Se instala en minutos. Tus mensajes no pasan por nuestros servidores.",
       "proofTitle": "Medido contra proveedor real",

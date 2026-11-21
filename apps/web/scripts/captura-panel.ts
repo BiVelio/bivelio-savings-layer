@@ -4,19 +4,22 @@
  *   pnpm dev                                # en apps/web, otra terminal
  *   node scripts/captura-panel.ts           # Node ≥ 22.6 (tipos borrados)
  *
- * Abre la ruta de desarrollo `/es/captura-panel` —el Resumen del panel con sus
- * componentes de verdad, alimentados SOLO con `lib/portada/panel-del-banco.ts`
- * (el flujo GSM8K del banco público del 2026-09-28)— en Chromium y escribe dos
- * imágenes, que la portada sirve con `next/image` en un <picture> (Vercel las
+ * Abre la ruta de desarrollo `/<idioma>/captura-panel` —el Resumen del panel
+ * con sus componentes de verdad, alimentados SOLO con
+ * `lib/portada/panel-del-banco.ts` (el flujo GSM8K del banco público del
+ * 2026-09-28)— en Chromium, en español y en inglés, y escribe dos imágenes por
+ * idioma, que la portada sirve con `next/image` en un <picture> (Vercel las
  * entrega en AVIF o WebP según el navegador; el PNG es la reserva):
  *
- *   · `assets/portada/panel-del-banco.png`: escritorio, 1360 px CSS a 2×, con
- *     la cáscara entera (barra, raíl, titular y tabla por modelo).
- *   · `assets/portada/panel-del-banco-movil.png`: móvil, el panel a 430 px CSS
- *     a 3× y recortado al titular y la tabla — menos cosas y más grandes, para
- *     que se lean en un teléfono.
+ *   · `assets/portada/panel-del-banco{,-en}.png`: escritorio, 1360 px CSS a
+ *     2×, con la cáscara entera (barra, raíl, titular y tabla por modelo).
+ *   · `assets/portada/panel-del-banco-movil{,-en}.png`: móvil, el panel a 430
+ *     px CSS a 3× y recortado al titular y la tabla — menos cosas y más
+ *     grandes, para que se lean en un teléfono.
  *
- * y `assets/portada/panel-del-banco.json` con la huella de las cifras pintadas.
+ * La española (sin sufijo) la ven `es` y `ca`; la inglesa (`-en`), los otros
+ * diez idiomas (`idiomaDeLaCaptura`). Y `assets/portada/panel-del-banco.json`
+ * con la huella de las cifras pintadas y la ruta de cada toma.
  *
  * Nada de la captura se retoca a mano. Lo único que se toca de la página es
  * lo que no es el panel: se esconde la barra pública del sitio (la ruta no
@@ -39,7 +42,12 @@ import sharp from "sharp";
 const WEB = join(dirname(fileURLToPath(import.meta.url)), "..");
 const BASE = process.env.CAPTURA_URL ?? "http://localhost:3000";
 const CARPETA = join(WEB, "assets", "portada");
-const RUTA = "/es/captura-panel";
+/** Cada idioma de la captura: su ruta, el idioma del navegador y el sufijo de sus ficheros. */
+const IDIOMAS = [
+  { ruta: "/es/captura-panel", locale: "es-ES", sufijo: "" },
+  { ruta: "/en/captura-panel", locale: "en-US", sufijo: "-en" },
+] as const;
+type Idioma = (typeof IDIOMAS)[number];
 
 /** El reloj de la página: el día siguiente a la tirada, para que el periodo del explorador la contenga. */
 const AHORA = new Date("2026-09-29T09:00:00Z");
@@ -57,13 +65,14 @@ const TOMAS: Toma[] = [
   { fichero: "panel-del-banco-movil.png", ancho: 430, alto: 1200, densidad: 3, soloElPanel: true },
 ];
 
-async function capturar(browser: Browser, toma: Toma): Promise<{ png: Buffer; huella: string; ancho: number; alto: number }> {
+async function capturar(browser: Browser, idioma: Idioma, toma: Toma): Promise<{ png: Buffer; huella: string; ancho: number; alto: number }> {
+  const RUTA = idioma.ruta;
   const page = await browser.newPage({
     viewport: { width: toma.ancho, height: toma.alto },
     deviceScaleFactor: toma.densidad,
     colorScheme: "light",
     reducedMotion: "reduce",
-    locale: "es-ES",
+    locale: idioma.locale,
   });
   await page.clock.setFixedTime(AHORA);
   // Nada sale de localhost (la etiqueta de Google Ads, por ejemplo).
@@ -115,24 +124,27 @@ try {
   const tmp = join(tmpdir(), "captura-panel");
   mkdirSync(tmp, { recursive: true });
   const kb = (b: Buffer) => `${(b.length / 1024).toFixed(0)} KB`;
-  const meta: Record<string, unknown> = { ruta: RUTA, reloj: AHORA.toISOString() };
+  const meta: Record<string, unknown> = { reloj: AHORA.toISOString() };
   const huellas = new Set<string>();
 
-  for (const toma of TOMAS) {
-    const { png, huella, ancho, alto } = await capturar(browser, toma);
-    huellas.add(huella);
-    const salida = join(CARPETA, toma.fichero);
-    const maestro = await sharp(png).png({ compressionLevel: 9, adaptiveFiltering: true, effort: 10 }).toBuffer();
-    writeFileSync(salida, maestro);
-    meta[toma.fichero] = { ancho, alto, densidad: toma.densidad };
-    console.log(`PNG  ${salida} · ${kb(maestro)} · ${ancho}×${alto}`);
-    const avif = await sharp(png).avif({ quality: 70, effort: 6 }).toBuffer();
-    const webp = await sharp(png).webp({ quality: 80, effort: 6 }).toBuffer();
-    writeFileSync(join(tmp, toma.fichero.replace(/\.png$/, ".avif")), avif);
-    writeFileSync(join(tmp, toma.fichero.replace(/\.png$/, ".webp")), webp);
-    console.log(`     a ${ancho}px · AVIF ${kb(avif)} · WebP ${kb(webp)}  (${tmp})`);
+  for (const idioma of IDIOMAS) {
+    for (const toma of TOMAS) {
+      const { png, huella, ancho, alto } = await capturar(browser, idioma, toma);
+      huellas.add(huella);
+      const fichero = toma.fichero.replace(/\.png$/, `${idioma.sufijo}.png`);
+      const salida = join(CARPETA, fichero);
+      const maestro = await sharp(png).png({ compressionLevel: 9, adaptiveFiltering: true, effort: 10 }).toBuffer();
+      writeFileSync(salida, maestro);
+      meta[fichero] = { ruta: idioma.ruta, ancho, alto, densidad: toma.densidad };
+      console.log(`PNG  ${salida} · ${kb(maestro)} · ${ancho}×${alto}`);
+      const avif = await sharp(png).avif({ quality: 70, effort: 6 }).toBuffer();
+      const webp = await sharp(png).webp({ quality: 80, effort: 6 }).toBuffer();
+      writeFileSync(join(tmp, fichero.replace(/\.png$/, ".avif")), avif);
+      writeFileSync(join(tmp, fichero.replace(/\.png$/, ".webp")), webp);
+      console.log(`     a ${ancho}px · AVIF ${kb(avif)} · WebP ${kb(webp)}  (${tmp})`);
+    }
   }
-  if (huellas.size !== 1) throw new Error("las dos tomas no pintan las mismas cifras");
+  if (huellas.size !== 1) throw new Error("las tomas no pintan las mismas cifras");
   // Qué cifras pintan estas imágenes: la verja compara la huella con la de
   // lib/portada/panel-del-banco.ts y exige volver a capturar si cambian.
   meta.huella = [...huellas][0];

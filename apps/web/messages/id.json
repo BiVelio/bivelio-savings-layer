@@ -1233,7 +1233,7 @@
       "ctaStart": "Mulai dengan Measure",
       "ctaBench": "Lihat hasil yang dapat direproduksi",
       "panelAlt": "Dasbor Savings dengan data bangku uji publik: penghematan yang diukur dan pembagiannya per model.",
-      "panelCaption": "Dasbor dengan data bangku uji publik",
+      "panelCaption": "Dasbor demo dengan putaran {bateria} bangku uji publik: {titular} adalah gabungan keempat model, tanpa kontras harga cache. Struknya hanya untuk {modelo}.",
       "medidoEnVivo": "Diukur langsung dengan penghitung milik setiap penyedia",
       "note": "Terpasang dalam hitungan menit. Pesan Anda tidak pernah melewati server kami.",
       "proofTitle": "Diukur terhadap penyedia nyata",
