@@ -1,16 +1,17 @@
-# Continue (CLI `cn` y extensiones) a través del gateway
+# Continue (`cn` CLI and extensions) through the gateway
 
-**Fuente:** `docs/investigacion/2026-09-27/agentes-de-codigo.md`: código de
-`continuedev/continue` (extensión v2.1.0, junio de 2026) y su doc de `cn`. Continue
-se configura por **archivo** (`~/.continue/config.yaml`, el mismo para la CLI y
-las extensiones de VS Code y JetBrains) [V]: no hay envoltorio, `bvsala doctor`
-imprime el bloque.
+**Source:** `docs/investigacion/2026-09-27/agentes-de-codigo.md`: code of
+`continuedev/continue` (extension v2.1.0, June 2026) and its `cn` docs. Continue
+is configured through a **file** (`~/.continue/config.yaml`, the same one for
+the CLI and for the VS Code and JetBrains extensions) [V]: there is no wrapper,
+`bvsala doctor` prints the block.
 
-## La forma del URL [V]
+## The shape of the URL [V]
 
-El proveedor `anthropic` de Continue tiene `apiBase` por defecto
-`https://api.anthropic.com/v1/`, añade la barra final si falta y resuelve
-`new URL("messages", apiBase)`. Por eso: **con `/v1`**; la barra final la pone él.
+Continue's `anthropic` provider has a default `apiBase` of
+`https://api.anthropic.com/v1/`, adds the trailing slash if it is missing and
+resolves `new URL("messages", apiBase)`. So: **with `/v1`**; it adds the
+trailing slash itself.
 
 ## `~/.continue/config.yaml`
 
@@ -23,25 +24,25 @@ models:
     apiBase: http://127.0.0.1:8402/v1
 ```
 
-Y `bvsala gateway` corriendo aparte. En la CLI también vale `cn --config <fichero>`
-con un fichero que lleve ese `apiBase`.
+And `bvsala gateway` running separately. On the CLI, `cn --config <file>` with a
+file that carries that `apiBase` works too.
 
-## Comprobar
+## Checking
 
 ```
-[gateway] POST /v1/messages  · <modelo> · $0.001234 (in 120, cache↑0 cache↓0, out 8)
+[gateway] POST /v1/messages  · <model> · $0.001234 (in 120, cache↑0 cache↓0, out 8)
 ```
 
-- `[gateway] POST /messages → 404` → falta el `/v1`.
-- nada en el log → el modelo activo no es el de este bloque.
+- `[gateway] POST /messages → 404` → the `/v1` is missing.
+- nothing in the log → the active model is not the one in this block.
 
-## La trampa típica
+## The typical pitfall
 
-- **Gateway apagado con la config escrita**: Continue falla con ese modelo hasta
-  que arranques `bvsala gateway`.
-- El autocompletado usa su propio modelo (`roles: [autocomplete]`): si no apunta
-  al gateway, no se mide.
+- **Gateway off with the config written**: Continue fails with that model until
+  you start `bvsala gateway`.
+- Autocomplete uses its own model (`roles: [autocomplete]`): if it does not
+  point at the gateway, it is not metered.
 
-## Nota BYOK
+## BYOK note
 
-**API key exclusivamente.** Nunca el OAuth de una suscripción Claude Pro/Max.
+**API key only.** Never the OAuth of a Claude Pro/Max subscription.

@@ -1,38 +1,42 @@
-# opencode a través del gateway
+# opencode through the gateway
 
-**Fuente:** `docs/PASARELA-S3-TERMINALES.md` §3 [V] y
-`docs/investigacion/2026-09-27/agentes-de-codigo.md` (código de
-`anomalyco/opencode` v1.18.32, 2026-09-27). opencode enruta por **configuración**,
-y su capa de protocolo añade `/messages` a `https://api.anthropic.com/v1` por
-defecto: por eso aquí el URL lleva `/v1` [V].
+**Source:** `docs/PASARELA-S3-TERMINALES.md` §3 [V] and
+`docs/investigacion/2026-09-27/agentes-de-codigo.md` (code of
+`anomalyco/opencode` v1.18.32, 2026-09-27). opencode routes through
+**configuration**, and its protocol layer appends `/messages` to
+`https://api.anthropic.com/v1` by default: that is why the URL carries `/v1`
+here [V].
 
-## Qué necesitas
+## What you need
 
-- `opencode` instalado, proveedor `anthropic` con tu **API key** de Anthropic.
-- `bvsala` instalado. Open core: sin claves el gateway arranca en modo Community (todo el ahorro local, cero telemetría); `BIVELIO_SERVICE_KEY` añade el panel y los entitlements de la org (ver [README](README.md)).
+- `opencode` installed, the `anthropic` provider with your Anthropic **API key**.
+- `bvsala` installed. Open core: with no keys the gateway starts in Community mode (all the local saving, zero telemetry); `BIVELIO_SERVICE_KEY` adds the dashboard and the org's entitlements (see [README](README.md)).
 
-## Envoltorio: `bvsala opencode [args…]`
+## Wrapper: `bvsala opencode [args…]`
 
 ```bash
-export BIVELIO_SERVICE_KEY=bvk_…  # OPCIONAL: panel + entitlements de org (sin ella: modo Community)
+export BIVELIO_SERVICE_KEY=bvk_…  # OPTIONAL: dashboard + org entitlements (without it: Community mode)
 bvsala opencode
 ```
 
-opencode acepta la configuración entera en la variable `OPENCODE_CONFIG_CONTENT`
-y la fusiona **por encima** de la global y de la de proyecto (`config.ts`: se
-carga después de `opencode.json` global, del de proyecto y de `.opencode/`; solo
-la config de cuenta remota y la gestionada por la empresa van después) [V]. El
-envoltorio arranca un gateway efímero y lanza `opencode` con esa variable
-apuntando `provider.anthropic.options.baseURL` a `http://127.0.0.1:<puerto>/v1`.
-**No escribe nada en disco** y todo muere al salir.
+opencode accepts the whole configuration in the `OPENCODE_CONFIG_CONTENT`
+variable and merges it **on top of** the global one and the project one
+(`config.ts`: it is loaded after the global `opencode.json`, the project one and
+`.opencode/`; only the remote account config and the one managed by the company
+come later) [V]. The wrapper starts an ephemeral gateway and launches `opencode`
+with that variable pointing `provider.anthropic.options.baseURL` at
+`http://127.0.0.1:<port>/v1`. **It writes nothing to disk** and everything dies
+on exit.
 
-- Si ya exportas tu propio `OPENCODE_CONFIG_CONTENT`, el envoltorio lo
-  **fusiona**: solo cambia `provider.anthropic.options.baseURL`; tu clave, tus
-  modelos y lo demás siguen igual. Si no es un objeto JSON (por ejemplo, JSONC
-  con comentarios), se niega antes de arrancar y no repite su valor.
-- Solo pasa por el gateway el proveedor `anthropic`. Los demás proveedores
-  (OpenAI, OpenCode Zen, OpenRouter…) van directos y no se miden.
-- Al salir imprime cuántas peticiones midió y cuáles reenvió sin medir, y por qué.
+- If you already export your own `OPENCODE_CONFIG_CONTENT`, the wrapper
+  **merges** it: it only changes `provider.anthropic.options.baseURL`; your key,
+  your models and the rest stay the same. If it is not a JSON object (JSONC with
+  comments, for example), it refuses before starting and does not repeat its
+  value.
+- Only the `anthropic` provider goes through the gateway. The other providers
+  (OpenAI, OpenCode Zen, OpenRouter…) go direct and are not metered.
+- On exit it prints how many requests it metered and which ones it forwarded
+  without metering, and why.
 
 ## Manual: `~/.config/opencode/opencode.json`
 
@@ -48,20 +52,22 @@ apuntando `provider.anthropic.options.baseURL` a `http://127.0.0.1:<puerto>/v1`.
 }
 ```
 
-**Con `/v1`, sin barra final.** Es la clave `provider.anthropic.options.baseURL`
-[V]. El `opencode.json` de proyecto pisa al global: si tienes uno en el repo,
-ahí es donde manda.
+**With `/v1`, no trailing slash.** It is the
+`provider.anthropic.options.baseURL` key [V]. The project `opencode.json`
+overrides the global one: if you have one in the repo, that is the one that
+wins.
 
-### Alternativa [V]: `baseURL` desde variable de entorno
+### Alternative [V]: `baseURL` from an environment variable
 
 ```json
 { "provider": { "anthropic": { "options": { "baseURL": "{env:BVSALA_BASE_URL}" } } } }
 ```
 
-Escrito una vez, habilita un uso puro-env (`BVSALA_BASE_URL=http://127.0.0.1:8402/v1 opencode`).
-**Trampa:** sin la variable, el `baseURL` queda vacío y opencode no funciona.
+Written once, it enables a pure-env use (`BVSALA_BASE_URL=http://127.0.0.1:8402/v1 opencode`).
+**Pitfall:** without the variable, the `baseURL` is empty and opencode does not
+work.
 
-## Arrancar y comprobar
+## Starting and checking
 
 ```bash
 bvsala gateway        # http://127.0.0.1:8402
@@ -69,21 +75,22 @@ opencode
 ```
 
 ```
-[gateway] POST /v1/messages  · <modelo> · $0.001234 (in 120, cache↑0 cache↓0, out 8)
+[gateway] POST /v1/messages  · <model> · $0.001234 (in 120, cache↑0 cache↓0, out 8)
 ```
 
-## La trampa típica
+## The typical pitfall
 
-- **Sin `/v1`** → opencode pide `http://127.0.0.1:8402/messages` → `[gateway] POST /messages → 404`.
-- **Barra final** (`…/v1/`) → no.
-- **Config de proyecto** con otro `baseURL` pisando al global sin que lo sepas
-  (con el envoltorio no pasa: su variable manda sobre los dos).
-- **Gateway apagado con la config escrita**: opencode falla hasta que arranques
-  `bvsala gateway` de nuevo. La config es persistente; el gateway, no. (La
-  variante `{env:…}` sin exportar la variable también falla, por vacío.) El
-  envoltorio no tiene esta trampa.
+- **No `/v1`** → opencode asks for `http://127.0.0.1:8402/messages` → `[gateway] POST /messages → 404`.
+- **Trailing slash** (`…/v1/`) → no.
+- **A project config** with another `baseURL` overriding the global one without
+  you knowing (it does not happen with the wrapper: its variable wins over
+  both).
+- **Gateway off with the config written**: opencode fails until you start
+  `bvsala gateway` again. The config is persistent; the gateway is not. (The
+  `{env:…}` variant without exporting the variable also fails, because it is
+  empty.) The wrapper does not have this pitfall.
 
-## Nota BYOK
+## BYOK note
 
-**API key exclusivamente.** opencode documenta expresamente que el OAuth de
-Claude Pro/Max no puede usarse en harnesses de terceros; esta receta lo respeta.
+**API key only.** opencode expressly documents that the Claude Pro/Max OAuth
+cannot be used in third-party harnesses; this recipe respects that.

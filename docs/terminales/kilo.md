@@ -1,38 +1,41 @@
-# Kilo Code a través del gateway
+# Kilo Code through the gateway
 
-**Fuente:** `docs/investigacion/2026-09-27/agentes-de-codigo.md` (código de
-`Kilo-Org/kilocode` v7.8.1, 2026-09-25). Desde la serie 7, Kilo es un fork de
-opencode (`.opencode-version`: v1.18.26): la CLI (`kilo`), la extensión de VS
-Code y la de JetBrains leen la misma configuración, `kilo.json`, y el proveedor
-`anthropic` se apunta con `provider.anthropic.options.baseURL`. Su capa de
-protocolo añade `/messages` a `https://api.anthropic.com/v1`: **con `/v1`** [V].
-Esto sustituye a la receta anterior (proveedor custom por UI, forma inferida).
+**Source:** `docs/investigacion/2026-09-27/agentes-de-codigo.md` (code of
+`Kilo-Org/kilocode` v7.8.1, 2026-09-25). Since the 7 series, Kilo is a fork of
+opencode (`.opencode-version`: v1.18.26): the CLI (`kilo`), the VS Code
+extension and the JetBrains one read the same configuration, `kilo.json`, and
+the `anthropic` provider is pointed with `provider.anthropic.options.baseURL`.
+Its protocol layer appends `/messages` to `https://api.anthropic.com/v1`: **with
+`/v1`** [V]. This replaces the previous recipe (a custom provider through the
+UI, shape inferred).
 
-## Qué necesitas
+## What you need
 
-- Kilo (CLI `kilo`, o la extensión) con el proveedor **`anthropic`** y tu **API key** de Anthropic.
-- `bvsala` instalado. Open core: sin claves el gateway arranca en modo Community (todo el ahorro local, cero telemetría); `BIVELIO_SERVICE_KEY` añade el panel y los entitlements de la org (ver [README](README.md)).
+- Kilo (the `kilo` CLI, or the extension) with the **`anthropic`** provider and your Anthropic **API key**.
+- `bvsala` installed. Open core: with no keys the gateway starts in Community mode (all the local saving, zero telemetry); `BIVELIO_SERVICE_KEY` adds the dashboard and the org's entitlements (see [README](README.md)).
 
-**Lo que no pasa por aquí:** el proveedor por defecto de Kilo es su propia
-pasarela (Kilo Gateway, modelos alojados por Kilo con su cuenta). Ese tráfico va
-a Kilo, no a un base URL tuyo, y no se mide. Tampoco los demás proveedores.
+**What does not go through here:** Kilo's default provider is its own gateway
+(Kilo Gateway, models hosted by Kilo with its account). That traffic goes to
+Kilo, not to a base URL of yours, and is not metered. Neither are the other
+providers.
 
-## Envoltorio (CLI): `bvsala kilo [args…]`
+## Wrapper (CLI): `bvsala kilo [args…]`
 
 ```bash
-export BIVELIO_SERVICE_KEY=bvk_…  # OPCIONAL: panel + entitlements de org (sin ella: modo Community)
+export BIVELIO_SERVICE_KEY=bvk_…  # OPTIONAL: dashboard + org entitlements (without it: Community mode)
 bvsala kilo
 ```
 
-Kilo acepta la configuración entera en `KILO_CONFIG_CONTENT` y la fusiona por
-encima de la global y de la de proyecto [V]. El envoltorio arranca un gateway
-efímero y lanza `kilo` con esa variable apuntando el proveedor `anthropic` a
-`http://127.0.0.1:<puerto>/v1`. **No escribe nada en disco.** Si ya exportas tu
-propio `KILO_CONFIG_CONTENT`, lo fusiona y solo cambia ese `baseURL`; si no es un
-objeto JSON, se niega antes de arrancar sin repetir su valor. Al salir imprime
-cuántas peticiones midió y cuáles reenvió sin medir, y por qué.
+Kilo accepts the whole configuration in `KILO_CONFIG_CONTENT` and merges it on
+top of the global one and the project one [V]. The wrapper starts an ephemeral
+gateway and launches `kilo` with that variable pointing the `anthropic` provider
+at `http://127.0.0.1:<port>/v1`. **It writes nothing to disk.** If you already
+export your own `KILO_CONFIG_CONTENT`, it merges it and only changes that
+`baseURL`; if it is not a JSON object, it refuses before starting without
+repeating its value. On exit it prints how many requests it metered and which
+ones it forwarded without metering, and why.
 
-## Manual (CLI y extensiones): `~/.config/kilo/kilo.json`
+## Manual (CLI and extensions): `~/.config/kilo/kilo.json`
 
 ```json
 {
@@ -46,28 +49,28 @@ cuántas peticiones midió y cuáles reenvió sin medir, y por qué.
 }
 ```
 
-**Con `/v1`, sin barra final.** Precedencia (de menos a más): global
-(`~/.config/kilo/kilo.json`), `KILO_CONFIG`, proyecto (`./kilo.json`,
-`.kilo/kilo.json`), `KILO_CONFIG_CONTENT`, gestionada [V]. Arranca el gateway
-aparte con `bvsala gateway`.
+**With `/v1`, no trailing slash.** Precedence (lowest to highest): global
+(`~/.config/kilo/kilo.json`), `KILO_CONFIG`, project (`./kilo.json`,
+`.kilo/kilo.json`), `KILO_CONFIG_CONTENT`, managed [V]. Start the gateway
+separately with `bvsala gateway`.
 
-## Comprobar
+## Checking
 
 ```
-[gateway] POST /v1/messages  · <modelo> · $0.001234 (in 120, cache↑0 cache↓0, out 8)
+[gateway] POST /v1/messages  · <model> · $0.001234 (in 120, cache↑0 cache↓0, out 8)
 ```
 
-- `[gateway] POST /messages → 404` → falta el `/v1`.
-- `[gateway] POST /v1/v1/messages → 404` → sobra un `/v1`.
-- nada en el log → el modelo activo no es del proveedor `anthropic` (¿Kilo Gateway?).
+- `[gateway] POST /messages → 404` → the `/v1` is missing.
+- `[gateway] POST /v1/v1/messages → 404` → there is one `/v1` too many.
+- nothing in the log → the active model does not belong to the `anthropic` provider (Kilo Gateway?).
 
-## La trampa típica
+## The typical pitfall
 
-- **Gateway apagado con la config escrita**: `kilo.json` recuerda el base URL;
-  sin `bvsala gateway` corriendo, Kilo falla hasta que lo arranques o quites la
-  clave. El envoltorio no tiene esta trampa.
+- **Gateway off with the config written**: `kilo.json` remembers the base URL;
+  without `bvsala gateway` running, Kilo fails until you start it or remove the
+  key. The wrapper does not have this pitfall.
 
-## Nota BYOK
+## BYOK note
 
-**API key exclusivamente.** Anthropic prohíbe usar el OAuth de Claude Pro/Max en
-harnesses de terceros; esta receta es la del proveedor `anthropic` con API key.
+**API key only.** Anthropic forbids using the Claude Pro/Max OAuth in
+third-party harnesses; this recipe is the `anthropic` provider with an API key.

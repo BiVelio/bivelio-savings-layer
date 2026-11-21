@@ -1,53 +1,54 @@
-# Cline a través del gateway
+# Cline through the gateway
 
-**Fuente:** `docs/PASARELA-S3-TERMINALES.md` §3 [V]. Cline configura el
-proveedor por **UI** (extensión de VS Code), así que aquí no hay archivo ni
-envoltorio: solo pasos y la forma exacta del URL, que es **con `/v1`**.
+**Source:** `docs/PASARELA-S3-TERMINALES.md` §3 [V]. Cline configures the
+provider through its **UI** (a VS Code extension), so there is no file and no
+wrapper here: only steps and the exact shape of the URL, which is **with
+`/v1`**.
 
-Por qué con `/v1` (refutación verificada): Cline `main` ya usa
-`@ai-sdk/anthropic`, no el SDK TS oficial; su `normalizeBaseURL` solo añade
-`/v1` cuando el URL es exactamente `https://api.anthropic.com`, y `builtins.ts`
-fija `https://api.anthropic.com/v1` [V]. Con un URL custom, lo que pongas es lo
-que se usa.
+Why with `/v1` (a verified refutation): Cline `main` already uses
+`@ai-sdk/anthropic`, not the official TS SDK; its `normalizeBaseURL` only adds
+`/v1` when the URL is exactly `https://api.anthropic.com`, and `builtins.ts`
+sets `https://api.anthropic.com/v1` [V]. With a custom URL, what you type is
+what is used.
 
-## Qué necesitas
+## What you need
 
-- Cline instalado en VS Code.
-- Tu **API key** de Anthropic.
-- `bvsala gateway` corriendo en `http://127.0.0.1:8402` (sin claves: modo Community; `BIVELIO_SERVICE_KEY` opcional; ver [README](README.md)).
+- Cline installed in VS Code.
+- Your Anthropic **API key**.
+- `bvsala gateway` running on `http://127.0.0.1:8402` (no keys: Community mode; `BIVELIO_SERVICE_KEY` is optional; see [README](README.md)).
 
-## Pasos en la UI
+## Steps in the UI
 
-1. Abre los ajustes de Cline → **API Provider**: elige **Anthropic**.
-2. Pega tu **Anthropic API Key**.
-3. Marca **«Use custom base URL»** y escribe exactamente:
+1. Open Cline's settings → **API Provider**: choose **Anthropic**.
+2. Paste your **Anthropic API Key**.
+3. Tick **"Use custom base URL"** and type exactly:
 
    ```
    http://127.0.0.1:8402/v1
    ```
 
-   **Con `/v1`, sin barra final.**
-4. Elige el modelo y guarda.
+   **With `/v1`, no trailing slash.**
+4. Choose the model and save.
 
-## Comprobar que funciona
+## Checking that it works
 
-Manda un mensaje trivial desde Cline y mira la ventana del gateway:
+Send a trivial message from Cline and look at the gateway window:
 
 ```
-[gateway] POST /v1/messages  · <modelo> · $0.001234 (in 120, cache↑0 cache↓0, out 8)
+[gateway] POST /v1/messages  · <model> · $0.001234 (in 120, cache↑0 cache↓0, out 8)
 ```
 
-## La trampa típica
+## The typical pitfall
 
-- **Sin `/v1`** → Cline pide `…/messages` → `[gateway] POST /messages → 404` y
-  la UI muestra un error genérico de API. Añade el `/v1`.
-- **Barra final** → no.
-- **Gateway apagado**: la UI recuerda el base URL custom; cuando no tengas
-  `bvsala gateway` corriendo, Cline fallará hasta que lo arranques o desmarques
-  la casilla.
+- **No `/v1`** → Cline asks for `…/messages` → `[gateway] POST /messages → 404`
+  and the UI shows a generic API error. Add the `/v1`.
+- **Trailing slash** → no.
+- **Gateway off**: the UI remembers the custom base URL; when you do not have
+  `bvsala gateway` running, Cline will fail until you start it or untick the
+  box.
 
-## Nota BYOK
+## BYOK note
 
-**API key exclusivamente.** Anthropic prohíbe usar el OAuth de Claude Pro/Max en
-harnesses de terceros (Cline estuvo en la primera oleada del bloqueo de
-ene-2026). Esta receta es la del proveedor Anthropic con API key; nada más.
+**API key only.** Anthropic forbids using the Claude Pro/Max OAuth in
+third-party harnesses (Cline was in the first wave of the January 2026 block).
+This recipe is the Anthropic provider with an API key; nothing else.

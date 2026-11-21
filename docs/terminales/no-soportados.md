@@ -1,30 +1,32 @@
-# Lo que el gateway no mide hoy, y por qué
+# What the gateway does not meter today, and why
 
-**Fuente:** `docs/investigacion/2026-09-27/agentes-de-codigo.md`. Decir que no es
-parte de la receta: un terminal apuntado al gateway que no se puede medir sería
-pagar por un proxy vacío.
+**Source:** `docs/investigacion/2026-09-27/agentes-de-codigo.md`. Saying no is
+part of the recipe: a terminal pointed at the gateway that cannot be metered
+would mean paying for an empty proxy.
 
-> Actualización 2026-11 (open core): Gemini CLI **ya se mide**
-> ([gemini.md](gemini.md)) y Cursor **ya tiene receta** para su override de base
-> URL BYOK ([cursor.md](cursor.md)). Quedan aquí los casos que siguen sin medirse.
+> Update 2026-11 (open core): Gemini CLI **is now metered**
+> ([gemini.md](gemini.md)) and Cursor **now has a recipe** for its BYOK base URL
+> override ([cursor.md](cursor.md)). What is left here are the cases that are
+> still not metered.
 
-## Copilot con modelos de GitHub — no pasa por un base URL
+## Copilot with GitHub's models — does not go through a base URL
 
-Sin BYOK, Copilot (CLI y VS Code) usa los modelos alojados por GitHub, que van a
-GitHub y no a un base URL tuyo. Con BYOK sí se mide: ver [copilot.md](copilot.md).
+Without BYOK, Copilot (CLI and VS Code) uses the models GitHub hosts, which go
+to GitHub and not to a base URL of yours. With BYOK it is metered: see
+[copilot.md](copilot.md).
 
-## Kilo Gateway — no pasa por un base URL tuyo
+## Kilo Gateway — does not go through a base URL of yours
 
-El proveedor por defecto de Kilo son sus modelos alojados; ese tráfico va a Kilo.
-Con el proveedor `anthropic` y tu clave sí se mide: ver [kilo.md](kilo.md).
+Kilo's default provider is its hosted models; that traffic goes to Kilo. With
+the `anthropic` provider and your key it is metered: see [kilo.md](kilo.md).
 
-## Cursor con sus modelos propios — no pasa por un base URL tuyo
+## Cursor with its own models — does not go through a base URL of yours
 
-Con modelos de Cursor (sin BYOK) las peticiones van a los servidores de Cursor y
-no alcanzan un gateway en `127.0.0.1`; su panel de uso es el medidor ahí. Con tu
-propia clave OpenAI-compatible sí se mide: ver [cursor.md](cursor.md).
+With Cursor's models (no BYOK) the requests go to Cursor's servers and do not
+reach a gateway on `127.0.0.1`; its usage dashboard is the meter there. With
+your own OpenAI-compatible key it is metered: see [cursor.md](cursor.md).
 
-## Modelos locales (Ollama, vLLM, LM Studio) — sin precio de lista
+## Local models (Ollama, vLLM, LM Studio) — no list price
 
-Se reenvían y el log lo dice; no hay precio de lista que meter en dólares. Ver
-[ollama.md](ollama.md).
+They are forwarded and the log says so; there is no list price to meter in
+dollars. See [ollama.md](ollama.md).
