@@ -20,6 +20,7 @@
 
 import { BETA_CONTEXT_MANAGEMENT, TRIGGER_POR_DEFECTO_DE_LA_API, configDeDiales } from "./diales.js";
 import { parsearParaReescribir } from "./reserializacion.js";
+import { LINEA_PALANCAS_SIN_CLAVE } from "./textos-publicos.js";
 
 /**
  * Ajusta el cuerpo de una petición /v1/messages: fusiona nuestros diales en su
@@ -215,11 +216,12 @@ export function describirEstadoDeElision(
     };
   }
   if (comunidad) {
+    // 1.2.4 · hasta la 1.2.3 decía «savings levers: ON» y debajo salían tres
+    // OFF: con Claude Code de fábrica (suscripción, o clave con caché de 5 min)
+    // no había nada que rebajar y el cartel se leía como «estoy ahorrando». La
+    // línea dice ahora cuál actúa, cuándo, y la variable de cada una de las demás.
     return {
-      linea:
-        "savings levers: ON (community mode: free, no key needed) · cache TTL tuning ON for Anthropic API-key traffic " +
-        "(subscription traffic is never touched) · BVSALA_GATEWAY_ELISION=0 turns them off" +
-        diales,
+      linea: LINEA_PALANCAS_SIN_CLAVE + diales,
       aviso: dialesArmados,
     };
   }

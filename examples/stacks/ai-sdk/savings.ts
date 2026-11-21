@@ -5,10 +5,10 @@ import { openai } from "@ai-sdk/openai";
 import { savingsMiddleware } from "@bivelio/savings-layer/ai-sdk";
 
 export const savings = savingsMiddleware({
-  // OPEN CORE: no license needed. With no BiVelio keys set, the layer runs with every local
-  // saving lever on and sends nothing to BiVelio. Savings Cloud (optional): set BIVELIO_SERVICE_KEY
-  // (and BIVELIO_LICENSE_KEY) and usage reaches your dashboard and the license renews itself.
-  // A license key that IS set but invalid still fails closed.
+  // OPEN CORE: no license needed. With no BiVelio keys set, the layer runs free and sends nothing
+  // to BiVelio. Savings Cloud (optional): set BIVELIO_LICENSE_KEY and BIVELIO_SERVICE_KEY and usage
+  // reaches your dashboard and the license renews itself. A key only adds the cloud: it switches no
+  // lever off. A license key that IS set but invalid still fails closed.
   licenseKey: process.env.BIVELIO_LICENSE_KEY || undefined,
   licenseServerUrl: "https://savings.bivelio.com",
   serviceAccountKey: process.env.BIVELIO_SERVICE_KEY || undefined,
