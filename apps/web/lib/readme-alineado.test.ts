@@ -47,11 +47,15 @@ describe("el README que viaja a npm dice lo mismo que el código", () => {
     expect(readme).toMatch(/first month carries no commission/i);
     expect(readme).toMatch(/never from estimates/i);
     expect(readme).toMatch(/No trial\./);
-    // La única licencia gratuita es Medir, y el README dice qué es y qué NO hace.
+    // La única licencia gratuita es Medir, y el README dice qué es. 1.2.4 · Medir
+    // AHORRA como sin clave y nunca factura; la sombra (solo observar) es una opción
+    // en cualquier plan, y el README sigue diciendo qué NO hace ese modo.
     expect(readme).toMatch(/free\s+\*\*Measure\*\* license/);
-    expect(readme).toMatch(/\*\*shadow mode\*\*/);
+    expect(readme).toMatch(/Since 1\.2\.4 a Measure license \*\*saves\*\*/);
+    expect(readme).toMatch(/Measure never bills anything\./);
+    expect(readme).toMatch(/\*\*Shadow mode is now a choice\.\*\*/);
     expect(readme).toMatch(/nothing is served from any cache/);
-    expect(readme).toMatch(/never part of any commission/);
+    expect(readme).not.toMatch(/a lower bound, never part of any commission/);
     expect(readme).not.toMatch(/No free tier/);
   });
 

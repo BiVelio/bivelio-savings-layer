@@ -12,12 +12,12 @@ Read "What it meters" and the pending validations before announcing figures.
 - A Codex login: an **OpenAI API key** (the case with a per-token invoice) or a
   ChatGPT subscription (it is routed and metered at list-price equivalent,
   **with no saving credited**: there is no per-token invoice; see below).
-- `bvsala` installed. Open core: with no keys the gateway starts in Community mode (all the local saving, zero telemetry); `BIVELIO_SERVICE_KEY` adds the dashboard and the org's entitlements (see [README](README.md)).
+- `bvsala` installed. Open core: with no keys the gateway starts in Community mode (free, zero telemetry: it measures every request, and one lever is on by default, cache TTL tuning); `BIVELIO_SERVICE_KEY` only adds the cloud dashboard (see [README](README.md)).
 
 ## Wrapper: `bvsala codex [args…]`
 
 ```bash
-export BIVELIO_SERVICE_KEY=bvk_…  # OPTIONAL: dashboard + org entitlements (without it: Community mode)
+export BIVELIO_SERVICE_KEY=bvk_…  # OPTIONAL: only adds the cloud dashboard (without it: Community mode)
 bvsala codex                       # every argument is passed as is to codex
 ```
 
