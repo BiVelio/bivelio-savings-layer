@@ -23,9 +23,11 @@ without one.
    licensed, not sold. Under a Measure license the Software applies exactly the
    same saving levers as it does with no key; the dashboard shows your savings,
    and usage recorded under a Measure license is never billed and never part of
-   any commission. Under a paid license (Pro, Team, Enterprise) the Software
-   applies the same levers too, except that trimming of superseded tool results
-   only acts inside a tool loop on Anthropic through `AnthropicProvider`.
+   any commission. Under a paid license (Pro, Team, Enterprise) the SDK applies
+   the same levers too, except that trimming of superseded tool results only acts
+   inside a tool loop on Anthropic through `AnthropicProvider`; in the local
+   gateway each lever also requires your organization's license to include it,
+   checked fail-closed, as in version 1.2.3.
 
 2. LICENSE KEY; FAIL-CLOSED CLOUD. The Cloud Services require a valid, active
    License Key. Expiry, non-payment, revocation, suspension, or termination of your

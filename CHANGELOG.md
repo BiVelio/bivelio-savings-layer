@@ -34,9 +34,7 @@
   in 1.2.3 (`elision` trace `skipped`). This is the only lever a paid license
   applies differently from no key in the SDK. The free Measure license has no such
   exception and trims exactly as with no key, so a Measure layer never costs more
-  than a layer with no key (with the exception, a chat with tool calls and 6-minute
-  pauses on Sonnet cost +21.9 % against not using the layer under Measure; with no
-  key it saves 73 %). It is decided in the client, so it works with the
+  than a layer with no key. It is decided in the client, so it works with the
   license you already have. Opt out per request with
   `savings: { elision: false }`. An expired, revoked or invalid license still fails
   closed, as before.
@@ -118,6 +116,9 @@
   of `max_output_tokens` is a truncated one), and an answer that carries the
   provider's own tool outputs (web search, code interpreter) is never replayed. A
   `ChatOpenAI` instance on Chat Completions already worked. 1.2.3 had the same bug.
+  Reasoning models on the Responses API (gpt-5, the o series) still reach the
+  provider on every repeat, as in 1.2.3: their answer carries a reasoning item the
+  adapter does not replay. With those models, pass a `ChatOpenAI` instance.
 - **The Python client no longer says the gateway needs a key.** When no gateway
   answered, it said the gateway "needs BIVELIO_SERVICE_KEY"; it starts with no key,
   free, in COMMUNITY mode, and the message now says so. `python -m bvsala status`

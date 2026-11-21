@@ -6,11 +6,11 @@
 // proxy that repeat is `estimated`, not valued by reference (README.md, § 4). It
 // prints `ok: …` or `not ok: …` and exits 0 or 1.
 //
-//   LITELLM_BASE_URL=http://localhost:4000 LITELLM_API_KEY=… BIVELIO_LICENSE_KEY=… node check.mjs
+//   LITELLM_BASE_URL=http://localhost:4000 LITELLM_API_KEY=… node check.mjs
 //
 // From this repository: LITELLM_BASE_URL=http://127.0.0.1:4000 pnpm example:litellm
 // (the layer runs from source with BVSALA_DEV_OPEN=1; the published package needs
-// BIVELIO_LICENSE_KEY). The recipe is in ./README.md.
+// no key). The recipe is in ./README.md.
 import { createSavingsLayer, OpenAICompatibleProvider } from "@bivelio/savings-layer";
 
 const base = (process.env.LITELLM_BASE_URL ?? "http://localhost:4000").replace(/\/+$/, "");
@@ -21,7 +21,7 @@ const layer = createSavingsLayer({
     apiKey: process.env.LITELLM_API_KEY, // a LiteLLM virtual key (or none, if your proxy has no auth)
     stripProviderPrefix: true, // LiteLLM receives `gpt-4o-mini`, its model_name
   }),
-  licenseKey: process.env.BIVELIO_LICENSE_KEY,
+  licenseKey: process.env.BIVELIO_LICENSE_KEY, // optional: only adds the cloud
 });
 
 const request = {

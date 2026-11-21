@@ -13,7 +13,7 @@ $0.15/1M — the most aggressive cheap sibling for Claude traffic.
 ```bash
 bvsala gateway --upstream deepseek --port 8402
 ANTHROPIC_BASE_URL=http://127.0.0.1:8402 \
-ANTHROPIC_AUTH_TOKEN=<your DeepSeek API key> \
+ANTHROPIC_AUTH_TOKEN="$DEEPSEEK_API_KEY" \
 ANTHROPIC_MODEL=deepseek-flash \
 claude
 ```

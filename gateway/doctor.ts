@@ -312,7 +312,7 @@ const TERMINALES: readonly Terminal[] = [
       "if you see `/v1/v1/messages`, there is one /v1 too many.",
     receta: ({ base, puerto }) => [
       `start: bvsala gateway --upstream deepseek --port ${puerto}   (the gateway rewrites /v1/messages to DeepSeek's /anthropic endpoint)`,
-      `env:   ANTHROPIC_BASE_URL=${base}   ANTHROPIC_AUTH_TOKEN=<your DeepSeek API key>   ANTHROPIC_MODEL=deepseek-flash`,
+      `env:   ANTHROPIC_BASE_URL=${base}   ANTHROPIC_AUTH_TOKEN="$DEEPSEEK_API_KEY"   ANTHROPIC_MODEL=deepseek-flash`,
       "Why: DeepSeek cache reads cost $0.003/1M and off-peak input $0.15/1M — the cheapest sibling for Claude traffic,",
       "served in Anthropic's own protocol. Metered for models with a list price in the catalog.",
     ],
