@@ -31,7 +31,7 @@ and every pair as a CSV download.
   rate times what that traffic would cost without the layer. The SDK says so once
   per process when it starts (`silenceWarnings: true` mutes that notice too).
 - **It is never billed.** Pairs travel on their own channel into their own table.
-  They never enter measured savings, your statement or any commission.
+  They never enter measured savings, your statement or any charge.
 - **Only requests served intact are checked.** Requests that took the fail-open path,
   were cut off, missed their output contract or came back without a provider counter
   are counted as excluded and never sent twice. `savings: { verification: false }`
@@ -58,7 +58,7 @@ With `savings: { crossProviderShadow: true }`, each report adds
 `report.crossProviderShadow`: the same measured usage priced at the list rates of
 DeepSeek, Qwen and GLM siblings. Nothing is routed and nothing is billed — it is a
 priced comparison for your routing decisions (`basis: "shadow"`), never credited as
-a saving and never part of any commission.
+a saving and never part of any charge.
 
 ```ts
 const { report } = await layer.generate({

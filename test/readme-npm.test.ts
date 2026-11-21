@@ -334,3 +334,51 @@ describe("docs/terminales va en inglés, como el README que lo enlaza", () => {
     expect(leer("docs/terminales/copilot.md")).toContain('## Copilot in VS Code (BYOK, "Custom Endpoint")');
   });
 });
+
+/**
+ * DOS DETALLES DEL README QUE NO CUADRABAN CON EL PAQUETE (auditoría de medios).
+ *
+ * m27 · la insignia y los requisitos decían «Node ≥ 20» y `engines` exige
+ * 20.19; el banco publicado se enlazaba a /how-it-works y vive en /benchmarks.
+ * m29 · varias frases hablaban de lo que «llega a tu factura» y de «la base de
+ * la comisión», cuando Pro y Team no llevan comisión (la comisión solo se
+ * nombra donde se explica el plan antiguo, cerrado).
+ */
+describe("el README dice la versión de Node del paquete y no habla de comisión donde no la hay", () => {
+  it("⛔ «Node ≥ 20.19» en la insignia y en los requisitos, como `engines`", () => {
+    const pkg = JSON.parse(leer("package.json")) as { engines: { node: string } };
+    const minimo = /^>=(\d+\.\d+)\.0$/.exec(pkg.engines.node)?.[1];
+    expect(minimo).toBeDefined();
+    expect(readme).toContain(`badge/node-%E2%89%A5${minimo}-`);
+    expect(readme).toContain(`alt="Node ≥ ${minimo}"`);
+    expect(readme).toContain(`- **Node ≥ ${minimo}.**`);
+    expect(readme).not.toMatch(/Node ≥ 20[^.\d]/);
+  });
+
+  it("el banco publicado se enlaza a /benchmarks", () => {
+    const plano = readme.replace(/\s+/g, " ");
+    expect(plano).not.toMatch(/benchmark, trial by trial[^.]*how-it-works/);
+    expect(plano.match(/benchmark, trial by trial[^.]*?savings\.bivelio\.com\/en\/benchmarks/g)?.length).toBe(2);
+  });
+
+  it("⛔ ni «reach your invoice» ni «the commission base» ni «never carries commission»", () => {
+    const plano = readme.replace(/\s+/g, " ");
+    expect(plano).not.toMatch(/reach(es)? your invoice/);
+    expect(plano).not.toMatch(/commission base/);
+    expect(plano).not.toMatch(/never carries commission/);
+    expect(plano).not.toMatch(/estimated savings are never billed/);
+    expect(plano).toContain("Only `measured` and `reference` figures are credited as savings in your report and dashboard");
+    // Lo que sí queda: Pro y Team sin comisión, y el plan antiguo explicado como cerrado.
+    expect(plano).toMatch(/No commission on your savings/);
+    expect(plano).toMatch(/Legacy plans, closed to new customers/);
+  });
+
+  it("⛔ las guías enlazadas no nombran una comisión fuera del plan antiguo", () => {
+    // herramientas.md conserva una mención en el apartado de la compactación,
+    // cuyo texto está en revisión aparte; el resto no la nombra.
+    for (const f of ["cache-de-prompt.md", "palancas-de-precio.md", "medir.md"]) {
+      expect(leer(`docs/guias/${f}`), f).not.toMatch(/commission/i);
+    }
+    expect(leer("docs/terminales/README.md")).not.toMatch(/commission/i);
+  });
+});
