@@ -1,5 +1,103 @@
 # Changelog
 
+## 1.2.4 — 2026-11-21 — the free Measure plan saves, paid plans carry every lever, honest texts
+
+### Changed: what you will notice after upgrading
+
+- **A Measure license now applies the levers.** Up to 1.2.3 the free Measure
+  license ran the SDK and the gateway in shadow mode: every request went to the
+  provider untouched and nothing was served from cache, so setting the free key
+  saved less than setting none. From 1.2.4 a layer or a gateway with a Measure
+  license does exactly what it does with no key: same calls, same request bodies,
+  same savings in the report. If you run Measure today, your traffic starts being cached,
+  deduplicated, trimmed and cache-marked as soon as you upgrade, and the usage sent
+  to your dashboard carries real savings instead of `shadow` records. Measure usage
+  is still never billed. To keep only watching, opt in on any plan:
+  `observeOnly: true` in the SDK, or `BVSALA_GATEWAY_OBSERVE_ONLY=1` in the gateway.
+  In observe-only mode `report.measure.wouldHaveSaved` is reported as before, and
+  submitting a batch throws an `Error`, because a batch is itself a lever.
+- **Pro, Team and Enterprise licenses carry every lever the open core has.** A paid
+  license had one lever fewer than no key: trimming of superseded tool results
+  (an old tool result is replaced by a stub when a newer call re-reads the same
+  resource) asked for a feature that no issued license carried. A live license of
+  any plan now grants in the SDK everything the keyless mode grants, so that
+  trimming runs by default with Pro and Team too. It is decided in the client, so it
+  works with the license you already have. Opt out per request with
+  `savings: { elision: false }`. An expired, revoked or invalid license still fails
+  closed, as before.
+- **The gateway's levers no longer depend on your organization's feature list.**
+  With a license of any plan, `bvsala` applies the same levers as with no keys: cache
+  TTL tuning by default, and sibling model routing, per-turn effort and the context
+  dials only with their own flags. Up to 1.2.3 a paid organization whose license
+  row lacked a feature, a gateway started in-process without a service key, or an
+  unreachable entitlements endpoint left those levers off without an error.
+  `BVSALA_GATEWAY_ELISION=0` still turns them all off, and a blocked, expired or
+  revoked license still answers 402. The startup lines say "free on every plan"
+  instead of "ON if your organization's licence includes …; fail-closed".
+- **A system prompt that changes on every request stops paying the cache-write
+  premium.** With a value that changes on every request inside the system prompt
+  (the current time, for example), 1.2.3 marked the prefix for provider caching on
+  every Anthropic request and never read it back: in a run of 60 such requests all
+  60 were marked, +21.6 % against not using the layer. The prefix-cache gate now also counts per class of request (model,
+  tools and placement) when the prefix carries history or per-request content is
+  detected in the system prompt: 8 of 60 are marked, +2.9 %, and it re-checks only
+  occasionally afterwards. Sessions that each have their own stable system prompt
+  are marked as in 1.2.3. To get the cache discount on such a prompt, put the
+  changing value on a line of its own and set `savings.cachePrefix: true`, or move
+  it to the end of the prompt; the console warning says so.
+- **`bvsala` shows the money when it exits.** The exit summary of the terminal
+  wrappers adds the spend at list price and the saving by basis (measured, by
+  reference, estimated). When nothing was saved it says why: on a subscription no
+  saving is credited, and otherwise which traffic cache TTL tuning is credited on.
+  When the levers cost more than they saved, it says so and names the variable that
+  turns them off.
+- **The startup banner says which lever acts.** With no keys it no longer prints
+  "every local saving lever on" above three levers that are OFF: it says that cache
+  TTL tuning is the only gateway lever on by default, that it only acts on Anthropic
+  API-key traffic asking for the 1-hour cache, that on a Claude or ChatGPT
+  subscription the run only measures, and the variable for each opt-in lever.
+  `--help`, `bvsala doctor` and `bvsala init` say that a BiVelio key only adds the
+  cloud.
+- **`bvsala doctor` checks each terminal against its own route.** Gemini CLI, Cursor,
+  Aider, DeepSeek and Ollama name the log line of their own protocol
+  (`:generateContent`, `/v1/chat/completions`, …) instead of inheriting the
+  `/v1/messages` check, and the report has no Spanish left in it.
+- **Usage ingest answers 503 instead of accepting a batch blind.** When the cloud
+  cannot read your organization's license during ingest, it retries once and then
+  answers 503 without storing the batch. The SDK and the gateway re-queue a batch
+  on any 5xx, so no usage is lost; it arrives on the next flush.
+
+### Fixed
+
+- **A failed entitlements fetch, or a deleted service key, no longer says
+  "savings features disabled".** The gateway's levers keep working in both cases;
+  the lines now say what is actually lost (the organization status refresh, or the
+  usage reporting to your dashboard).
+
+### Documentation and license texts
+
+- **README and PyPI page.** They list what is on by default (exact cache,
+  deduplication, local resolvers, prompt-cache placement, trimming of superseded
+  tool results, compact serialization of the structured data you pass) and what you
+  switch on. "Shared caches" is gone from the paid column: BiVelio hosts no cache.
+  A cache shared by several machines is a store you run, through the `exactCache`
+  option (three methods, `get`, `set`, `delete`, over a key-value store such as
+  Redis), free and with no key. The README says that the package ships no compressor
+  (compaction of JSON tool outputs is opt-in and lossless) and that no compression
+  figure is published. It says that with Claude Code out of the box the gateway
+  measures and the default lever saves nothing, because that lever only acts when
+  the client asks for the 1-hour cache. The −82.76 % figure is stated with the
+  opt-in it needs (`savings.cachePrefix: true`) and with what it was measured
+  against (the layer itself without that option, 20 requests per arm).
+- **Terminal guides in English.** The per-terminal guides in `docs/terminales`
+  (shipped in the package) are in English, with the real log lines.
+- **`LICENSE-CLOUD.md` §1 and `NOTICE`.** §1 now says that under a Measure license
+  the software applies its saving levers exactly as with no key and that Measure
+  usage is never billed and never part of any commission; "shared caches" is
+  removed from the list of Cloud Services in both files.
+- **`SECURITY.md`, Availability.** The gateway section says that the levers do not
+  depend on the entitlements fetch.
+
 ## 1.2.3 — 2026-11-21 — fixes from the pre-launch audit
 
 ### Changed: what you will notice after upgrading
