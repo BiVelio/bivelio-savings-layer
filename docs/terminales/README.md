@@ -252,8 +252,8 @@ A proxy in front of your provider can raise your bill without breaking anything
 you can see: a lost cache marker, a dropped beta header, a block it does not
 recognise. This gateway is built not to do that, and a test suite checks it
 against a fake upstream on 127.0.0.1: `test/gateway-no-empeora.test.ts`, which
-runs in our CI on every pull request and every push to `main`. The source
-repository is not public, so this section lists exactly what the suite checks.
+runs in our CI on every pull request and every push to `main`. The suite is in
+the public repository, and this section lists exactly what it checks.
 
 **With no lever armed, your provider receives what your client sent, byte for
 byte:**

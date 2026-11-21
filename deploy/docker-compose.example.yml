@@ -2,7 +2,7 @@
 # ============================================================================
 # A single-host starting point (Docker Compose) for the BV-SALA product surface.
 # It reuses the BiVelio platform stack (Keycloak, Postgres, Qdrant). Scale each
-# piece out as revenue grows (see docs/COMMERCIALIZATION-PLAN.md §7.1).
+# piece out as revenue grows.
 #
 # This deploys the PRODUCT ONLY. The official bivelio.com corporate site is a
 # separate repo on its own host and is NOT part of this compose file.
