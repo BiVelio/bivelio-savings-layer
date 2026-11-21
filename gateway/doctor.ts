@@ -288,8 +288,8 @@ const TERMINALES: readonly Terminal[] = [
     configs: [".cursor"],
     detectable: true,
     comprobar:
-      "check: the gateway log must show `[gateway] POST /v1/chat/completions …`; nothing in the log means the request " +
-      "went through Cursor's servers, not through your key.",
+      "check: the gateway log must show `[gateway] POST /v1/chat/completions …`; nothing in the log means Cursor served " +
+      "the request with one of its own models, which never reach a local gateway.",
     receta: ({ baseV1, puerto }) => [
       "mechanism: Cursor → Settings → Models → OpenAI API Base URL override (BYOK: your own API key for OpenAI-compatible models).",
       `start: bvsala gateway --upstream openai --port ${puerto}   (deepseek, qwen, glm, moonshot and ollama work the same)`,
