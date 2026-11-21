@@ -150,9 +150,9 @@ save (see [LICENSE-CLOUD.md](./LICENSE-CLOUD.md) §6).
 
 The cloud subscription is a fixed fee, paid whether or not you save: **Pro
 €15 / seat / month** or **€150 / seat / year**; **Team €129 / month with 10 seats included** (**€12 per extra seat**; **€1,290 / year, €120 per extra seat**), EUR, VAT not included. **No commission on your savings — you keep every euro you save.** No trial. The free
-**Measure** license (no card) still exists for the cloud: it runs the layer in
-**shadow mode** — nothing is served from any cache, nothing you send is
-changed — and shows what the levers would have saved, request by request.
+**Measure** license (no card) is the free cloud plan: the layer saves exactly as
+it does with no key, and your dashboard shows the real savings. It is never
+billed and never part of any commission.
 
 **Legacy plans, closed to new customers.** An earlier modality charged a lower per-seat fee plus a tiered commission on measured savings only: the first month carries no commission, and the commission runs from **10 % down to 4 %** by volume — keeping you **at least 90 % of every euro saved**, never from estimates, and shadow-mode usage was never part of any commission. It is closed to new customers; a subscription already on it keeps it unchanged. Your
 prompts, completions and provider keys never reach BiVelio: a cloud key sends
@@ -171,14 +171,20 @@ your savings. The prices are above, in [LICENSE-CLOUD.md](./LICENSE-CLOUD.md) §
 the Published Pricing it refers to,
 **[savings.bivelio.com/pricing](https://savings.bivelio.com/pricing)**. No trial. There is one free license,
 **Measure** — no card, one organization per verified account, up to 5 seats and 20,000
-requests a day: the layer runs in **shadow mode**. Every request goes to your provider
+requests a day: the layer applies every lever, exactly as it does with no key, and your
+dashboard shows the real savings — never billed, never part of any commission. What a paid
+plan adds is the cloud beyond those limits (more seats, more volume, the team dashboard),
+not the saving. This is new in 1.2.4: up to 1.2.3 a Measure key ran the layer in shadow
+mode, so update to save with it. Once you upgrade, a layer with `serviceAccountKey` and
+`licenseServerUrl` picks up the paid license by itself, without a restart.
+
+If you only want to watch before the layer touches your traffic, **observe-only mode** is
+an explicit option on any plan — `observeOnly: true` in the SDK,
+`BVSALA_GATEWAY_OBSERVE_ONLY=1` in the gateway. Every request then goes to your provider
 exactly as you built it, nothing is served from any cache, no lever is applied, and
 `report.measure.wouldHaveSaved` (with `basis: "shadow"`) says what the exact cache and
 in‑flight coalescing would have saved on that request, valued with your provider's own
-counter — a lower bound, never part of any commission. Inside the cloud, the levers need a
-paid plan (without the cloud, the open core runs every local lever with no key at all): once
-you upgrade, a layer with `serviceAccountKey` and `licenseServerUrl` picks up the paid
-license by itself and turns them on without a restart.
+counter — a lower bound, shown apart from measured savings.
 
 The earlier plan — a lower per‑seat fee plus a tiered commission on measured savings
 only — is **closed to new customers**; a subscription already on it keeps it unchanged.

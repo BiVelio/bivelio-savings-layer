@@ -10,25 +10,61 @@
 > **correos desechables bloqueados** en el alta; **la rebaja de TTL** entra en el
 > «habrías ahorrado» de la pasarela; migración **0033** (tras la 0032 de #412).
 
-## Qué es
+> **Cambio del 2026-11-21 (versión 1.2.4), decisión del dueño: «solo debemos
+> cobrar si utilizan nuestro CLOUD».** Medir deja de correr en sombra: **ahorra de
+> verdad**, igual que la capa sin clave, y el panel enseña el ahorro real. La
+> sombra pasa a ser una opción explícita, en cualquier plan (`observeOnly: true`
+> en el SDK, `BVSALA_GATEWAY_OBSERVE_ONLY=1` en la pasarela). Los límites (5
+> asientos, 20 000 peticiones/día) no cambian, y Medir sigue sin generar jamás
+> comisión, cargo ni referencia cobrable.
+
+## Qué es (desde la 1.2.4)
 
 Una licencia firmada más —Ed25519, verificada **offline** como las de pago— con
-`plan: "measure"` y **sin features**. Con ella:
+`plan: "measure"` y `features: []`. Es el **plan gratuito de la nube**: lo que da
+es el panel con el uso y el ahorro de la organización, dentro de sus límites. Las
+palancas no las da la licencia: son del open core y actúan igual sin clave.
 
-| Superficie | Qué hace | Qué NO hace |
-|---|---|---|
-| SDK (`createSavingsLayer`) | La petición sale por la **llamada directa** (la del fail‑open): `{model, messages, tools, schema, maxOutputTokens, temperature, seed, reasoningEffort}` tal cual. Mide el gasto con el contador del proveedor y publica `report.measure` | Ninguna etapa del optimizador mira la petición: ni resolvers, ni caché exacta o semántica, ni singleflight, ni compresión, elisión, cascada, codebook, marcas de caché de prefijo, tier diferido o lotes (`batches.submit` → `LicenseError` status `measure`). La verificación A/B no lanza copias |
-| Pasarela (`bvsala`) | Proxy byte a byte; mide el uso; registra como `shadow` lo que el **modelo hermano** y la **rebaja de TTL** habrían ahorrado sobre ese mismo usage | Ni diales, ni hermano, ni esfuerzo, ni TTL, ni coalescencia, ni inyección de `stream_options`, ni el carril de investigación de la elisión |
-| Servidor | Ingiere el uso para el panel | Nunca comisión ni referencia cobrable (ver abajo) |
+| Superficie | Qué hace con una licencia Medir |
+|---|---|
+| SDK (`createSavingsLayer`) | **Lo mismo que sin clave**: todas las palancas por defecto, las mismas opcionales, lotes incluidos. El gate concede por el PLAN, como el gate comunitario (`src/license/live-gate.ts`), mientras la licencia está viva. `report.measure` no aparece |
+| Pasarela (`bvsala`) | **Lo mismo que el modo comunitario**: rebaja de TTL, y las palancas con bandera (hermano, esfuerzo, diales, coalescencia) si el operador las enciende. Las concede localmente aunque la nube sirva `features: []` (`gateway/servidor.ts`, `canal`); el canal de la organización se sigue consultando para el bloqueo (`reason`) |
+| Servidor | Ingiere el uso **con su ahorro real** para el panel, con los topes de siempre. Nunca comisión ni referencia cobrable (ver «Nunca comisión») |
 
-Se decide **por petición** (`licenseGate.plan()` en el SDK, `live.license.payload.plan`
-en la pasarela): al pasar a pago, el refresco de licencia recoge la de pago y la
-siguiente petición ya aplica palancas, sin reiniciar.
+Medir **no concede nada que no esté ya abierto sin clave**: en el cliente no hay
+ninguna palanca «solo de pago» (el gate comunitario las concede todas). Una
+licencia de pago sigue mandada por sus `features` y por las de su organización,
+como antes.
 
-El fail‑closed **no cambia**: sin clave no hay capa, y la org sin NINGUNA licencia
-sigue recibiendo el 402 `no-license` de #314. Lo que se abre es una licencia más.
+**Por qué cambió.** Medir nació el 2026-09-29 (#417), con el producto cerrado:
+sin licencia no había capa, y la sombra era la forma de probar sin regalar las
+palancas. El 2026-11-03 (#523, 1.0.0) se abrió el núcleo: sin clave, todo gratis.
+Medir no se actualizó, y desde ese día poner la clave gratuita era **peor** que no
+poner ninguna (la misma carga: 5 llamadas al proveedor sin clave, 21 con Medir).
 
-## «Esto habrías ahorrado» (`report.measure`)
+**Clientes ya publicados (≤ 1.2.3).** Deciden por el nombre del plan, así que con
+una clave Medir **siguen en sombra hasta actualizar**: no se rompen, solo no
+ahorran. Sus registros `shadow` se aceptan igual y el panel los enseña aparte,
+como «lo que habrías ahorrado».
+
+## El modo solo‑observar (la sombra opcional)
+
+Para quien quiera **mirar sin tocar el tráfico**, en cualquier plan (sin clave,
+Medir o de pago). Apagado por defecto.
+
+| Superficie | Cómo se enciende | Qué hace | Qué NO hace |
+|---|---|---|---|
+| SDK | `createSavingsLayer({ …, observeOnly: true })` | La petición sale por la **llamada directa** (la del fail‑open): `{model, messages, tools, schema, maxOutputTokens, temperature, seed, reasoningEffort}` tal cual. Mide el gasto con el contador del proveedor y publica `report.measure` | Ninguna etapa del optimizador mira la petición: ni resolvers, ni caché exacta o semántica, ni singleflight, ni compresión, elisión, cascada, codebook, marcas de caché de prefijo, tier diferido o lotes (`batches.submit` lanza un `Error` que nombra `observeOnly`; ya no es un `LicenseError`). La verificación A/B no lanza copias |
+| Pasarela | `BVSALA_GATEWAY_OBSERVE_ONLY=1` (`soloObservar`) | Proxy byte a byte; mide el uso; registra como `shadow` lo que el **modelo hermano** y la **rebaja de TTL** habrían ahorrado sobre ese mismo usage | Ni diales, ni hermano, ni esfuerzo, ni TTL, ni coalescencia, ni inyección de `stream_options`, ni el carril de investigación de la elisión |
+
+**No es `BVSALA_GATEWAY_SHADOW`.** Esa variable ya existía y significa otra cosa:
+estima solo la **elisión** mientras el resto de palancas actúa. `OBSERVE_ONLY`
+las apaga todas. Tampoco es `modelCascade: "shadow"` ni
+`savings.crossProviderShadow`, que ponen en sombra UNA palanca.
+
+Es fijo para el proceso (una opción de configuración), no depende de la licencia.
+
+### «Esto habrías ahorrado» (`report.measure`)
 
 ```ts
 report.measure = {
@@ -50,16 +86,16 @@ guarda **hashes e instantes**, nunca una respuesta. Es por proceso: en una flota
 con Redis compartido la cifra es una **cota inferior**. Todo lo demás va en
 `notSimulated`.
 
-El emisor manda, además del registro medido (baseline == actual), un registro
+En modo solo‑observar el emisor manda, además del registro medido (baseline == actual), un registro
 `basis: "shadow"` con id `<requestId>:shadow` cuando `usd > 0`. La RPC 0021 lo
 acumula solo en `shadow_*`, que ningún cierre lee.
 
 ### En la pasarela: el modelo hermano y la rebaja de TTL
 
-La pasarela reenvía el cuerpo intacto y, con el usage que el proveedor declara,
+En modo solo‑observar la pasarela reenvía el cuerpo intacto y, con el usage que el proveedor declara,
 calcula **un** registro `shadow` por petición (`/v1/messages`, API oficial,
 tráfico facturado por token, respuesta cobrada) con la misma aritmética que
-acreditan las palancas de pago:
+acreditan las palancas cuando se aplican:
 
 - **Modelo hermano** (palanca C): el mismo usage a otro precio de catálogo.
 - **Rebaja de TTL** (`cache_ttl_tuning`): la capa toma la **misma decisión** que
@@ -72,27 +108,55 @@ acreditan las palancas de pago:
   cliente o herramientas de servidor → 0 (el usage no dice qué bloque escribió
   qué).
 
-Nunca se aplica ni se cobra: `test/gateway-licencia-medir.test.ts` fija que el
-upstream recibe la marca `"ttl":"1h"` byte a byte, que lo medido queda con
-baseline == actual y que la sombra es exactamente 0,75 $ en su ejemplo.
+Nunca se aplica ni se cobra: `test/gateway-licencia-medir.test.ts` fija que, en
+modo solo‑observar, el upstream recibe la marca `"ttl":"1h"` byte a byte, que lo
+medido queda con baseline == actual y que la sombra es exactamente 0,75 $ en su
+ejemplo. El mismo fichero fija lo contrario para Medir SIN esa opción: los mismos
+bytes y las mismas llamadas que el modo comunitario.
 
 ## Nunca comisión
 
-`app/api/metering/usage` → `decideEntitlement` devuelve `measure-license` para
-una org con Medir viva y sin licencia de pago ni suscripción que cubra. Entonces,
-antes de la RPC, `neutralizarParaMedir`:
+Hasta la 1.2.3 el candado era uno: la ingesta ponía a cero el ahorro de una org
+Medir. Ahora ese ahorro es real y se guarda, así que el candado es de **tres
+piezas**, todas en el servidor (lo único que un cliente no puede parchear):
 
-- `reference` → `estimated`, sin puntero: ninguna fila en `reference_hits`;
-- todo registro no‑sombra: baseline == actual, sin tokens eliminados ni
-  comprimidos, sin llamada evitada, sin suelo de elisión, `netSavings` 0;
-- `shadow` pasa intacto.
+1. **Ingesta** (`app/api/metering/usage` → `protegerIngestaDeMedir`). Para una org
+   con Medir viva y sin licencia de pago ni suscripción que cubra
+   (`decideEntitlement` → `measure-license`):
+   - `reference` → `estimated`, sin puntero: ninguna fila en `reference_hits`, ni
+     un céntimo en `reference_*`. **Siempre.**
+   - el ahorro medido y el estimado entran **tal cual** (es lo que enseña el panel);
+   - `shadow` pasa intacto (clientes ≤ 1.2.3 y sombra opcional).
+2. **Cierre mensual** (`/api/cron/cierre-extractos` → `orgsExentasPorMedir`,
+   `lib/billing/plan-de-la-org.ts`). Una organización con licencia Medir y sin
+   historia de la modalidad con comisión se cierra **exenta**: la comisión se
+   calcula para información y el **cargo es 0**. Falla cerrado: si no se pueden
+   leer las licencias, el cierre se aplaza.
+3. **Facturación** (`/api/cron/facturar-extractos`), segunda verja: aunque un
+   extracto suyo llegara con cargo, no se crea factura ni línea en Stripe.
 
-Con el SDK honrado no cambia nada. Existe por el SDK parcheado. Fijado en
-`apps/web/app/api/metering/usage/medir.test.ts`, incluido que el extracto que
-saldría de esos registros cobra 0.
+**La modalidad con comisión (cerrada a clientes nuevos) no cambia en nada.** Una
+organización que tiene o tuvo una suscripción de esa modalidad
+(`tieneHistoriaDeComision`: cualquier fila de `subscriptions`, en cualquier
+estado, cuyo precio no sea de Pro ni de Equipo) NO entra en la exención, y si
+vuelve a Medir su ingesta se sigue **neutralizando como antes** (baseline ==
+actual, `neutralizarParaMedir`): su último mes pagado se cierra con comisión
+sobre lo que ahorró pagando, y lo que ahorre gratis después no entra en esa base.
+La contrapartida: esa organización ve ahorro 0 en su panel mientras esté en
+Medir, igual que antes de la 1.2.4.
 
-`hasValidLicense` ya **no** cuenta una Medir: el barrido de impago y el invariante
-«paga y no tiene licencia» la tratan como «sin licencia pagada».
+El resto de la cadena no calcula comisión: el webhook de Stripe y el barrido de
+impago (`/api/cron/dunning`) solo gestionan suscripciones, licencias y el estado
+de cargos ya emitidos, y `/api/cron/cobrar-asientos` solo recorre organizaciones
+con una suscripción viva (una org que solo tiene Medir no tiene ninguna).
+
+Fijado en `apps/web/lib/billing/medir-nunca-comision.test.ts`,
+`apps/web/app/api/metering/usage/medir.test.ts`,
+`apps/web/app/api/cron/cierre-extractos/medir.test.ts` y
+`apps/web/app/api/cron/facturar-extractos/medir.test.ts`.
+
+`hasValidLicense` sigue **sin** contar una Medir: el barrido de impago y el
+invariante «paga y no tiene licencia» la tratan como «sin licencia pagada».
 
 ## Límites anti‑abuso
 
@@ -109,11 +173,11 @@ saldría de esos registros cobra 0.
 | Bloqueo del operador | — | `medir_altas.bloqueada` | 403 `measure_blocked`; nunca se reactiva desde el alta |
 
 **Por qué 5 asientos.** Un asiento es una máquina o identidad de servicio. Medir
-sirve para que un equipo piloto (un responsable y unos pocos desarrolladores o
-servicios) vea una cifra representativa antes de pagar; cinco lo cubren y quedan
-por debajo de cualquier despliegue de producción de más de un equipo. Pasado el
-tope la capa sigue funcionando —en sombra no hay nada que quitarle—: lo que se
-pierde es la medición de ese asiento, que es justo el incentivo a pasar a pago.
+sirve para que un equipo pequeño (un responsable y unos pocos desarrolladores o
+servicios) tenga su panel gratis; cinco lo cubren y quedan por debajo de
+cualquier despliegue de producción de más de un equipo. Pasado el tope la capa
+sigue funcionando **y ahorrando** —las palancas son locales—: lo que se pierde es
+la medición en la nube de ese asiento, que es justo el incentivo a pasar a pago.
 
 **Por qué 20 000/día.** ~600 000 peticiones al mes caben en un piloto y acotan el
 coste de servir un panel gratis a quien lo use como observabilidad de producción.
@@ -149,8 +213,8 @@ fuente, fecha y recuento.
 
 ## Al cancelar o dejar de pagar: vuelta a Medir
 
-La org que deja de pagar **no se queda sin capa**: sigue viendo lo que habría
-ahorrado (`lib/license/medir.ts#volverAMedir`).
+La org que deja de pagar **no se queda sin capa**: sigue ahorrando y con su
+panel, dentro de los límites de Medir (`lib/license/medir.ts#volverAMedir`).
 
 | Vía | Qué se corta | Luego |
 |---|---|---|
@@ -181,6 +245,10 @@ vigencia en campos propios que solo leen los verificadores nuevos
 `test/licencia-medir.test.ts` («un verificador ANTERIOR…»). La fila de
 `licenses` guarda la vigencia real: el servidor no se engaña.
 
+(1.2.4: la forma del token **no cambia**. Ya no hay palancas que «proteger» de
+una versión vieja —son gratis sin clave—, pero cambiar el token la víspera de un
+lanzamiento no aporta nada, y así los clientes ≤ 1.2.3 siguen leyéndolo igual.)
+
 Los dos refrescos de licencia (SDK `LicenseRefresher`, pasarela `LicenseRenewer`)
 miran **en cada vuelta** mientras la licencia vigente sea Medir —nunca llegaría a
 estar «cerca de caducar»— y adoptan la de pago aunque caduque antes (mensual
@@ -193,7 +261,9 @@ sesión + correo verificado → rol `descargar_licencia` → organización (la d
 usuario; se crea si no tiene) → fila en `medir_altas` → licencia firmada y
 persistida (`lib/license/medir.ts#emitirLicenciaMedir`, fail‑closed) → token.
 No aparece para una org `de-pago`. En la vista general, una org `solo-medir` ve
-la tarjeta «What you would have saved» con el CTA a `/dashboard/account`.
+la tarjeta «Your savings» (`MedirSavingsCard`): el ahorro **real** —medido y
+estimado, por separado— y, solo si hay registros de sombra (clientes ≤ 1.2.3 o
+modo solo‑observar), «What you would have saved» aparte. CTA a `/dashboard/account`.
 
 El servicio de control plane (`services/licensing`) expone lo mismo para el
 operador: `POST /licenses/issue-measure { orgId }` (token de admin), y `issue()`
@@ -229,3 +299,7 @@ normaliza cualquier `plan: "measure"` (sin features, asientos ≤ 5, vigencia la
    optimización, ahorro estimado nunca facturado); §2 dice que al acabar una
    suscripción de pago BiVelio puede dar una Measure license, con la que la capa
    sigue solo en sombra. La §6 (precios) no se toca: la cambia #411.
+   **1.2.4:** la frase de §1 de LICENSE-CLOUD.md que describía Measure como «shadow
+   mode only» se cambió por «the Software applies its saving levers exactly as it
+   does with no key… never billed and never part of any commission». **Pendiente
+   de que el dueño revise ese texto.**
