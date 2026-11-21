@@ -1234,7 +1234,7 @@
       "ctaStart": "Inizia con Measure",
       "ctaBench": "Vedi i risultati riproducibili",
       "panelAlt": "La dashboard di Savings con i dati del banco pubblico: il risparmio misurato e la sua ripartizione per modello.",
-      "panelCaption": "Dashboard con i dati del banco pubblico",
+      "panelCaption": "Dashboard dimostrativa con l'esecuzione {bateria} del banco pubblico: il {titular} vale per i quattro modelli insieme, senza il contrasto dei prezzi della cache. La ricevuta riguarda solo {modelo}.",
       "medidoEnVivo": "Misurato dal vivo con il contatore di ogni fornitore",
       "note": "Si installa in pochi minuti. I tuoi messaggi non passano mai dai nostri server.",
       "proofTitle": "Misurato contro un provider reale",

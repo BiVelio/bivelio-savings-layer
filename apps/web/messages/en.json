@@ -1234,7 +1234,7 @@
       "ctaStart": "Start with Measure",
       "ctaBench": "See reproducible results",
       "panelAlt": "The Savings dashboard with the public bench's data: the measured saving and its split by model.",
-      "panelCaption": "Dashboard with the public bench's data",
+      "panelCaption": "Demo dashboard with the public bench's {bateria} run: {titular} is for the four models together, without the cache-pricing contrast. The receipt is {modelo} alone.",
       "medidoEnVivo": "Measured live with each provider's own counter",
       "note": "Installs in minutes. Your messages never pass through our servers.",
       "proofTitle": "Measured against a real provider",

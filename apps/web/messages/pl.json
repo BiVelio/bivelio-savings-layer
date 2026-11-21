@@ -1234,7 +1234,7 @@
       "ctaStart": "Zacznij od Measure",
       "ctaBench": "Zobacz powtarzalne wyniki",
       "panelAlt": "Panel Savings z danymi publicznego benchmarku: zmierzona oszczędność i jej podział według modelu.",
-      "panelCaption": "Panel z danymi publicznego benchmarku",
+      "panelCaption": "Panel demonstracyjny z przebiegiem {bateria} publicznego benchmarku: {titular} dotyczy czterech modeli razem, bez kontrastu cen pamięci podręcznej. Paragon dotyczy tylko {modelo}.",
       "medidoEnVivo": "Mierzone na żywo licznikiem każdego dostawcy",
       "note": "Instalacja w kilka minut. Twoje wiadomości nigdy nie przechodzą przez nasze serwery.",
       "proofTitle": "Zmierzone względem prawdziwego dostawcy",

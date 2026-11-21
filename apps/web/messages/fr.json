@@ -1234,7 +1234,7 @@
       "ctaStart": "Commencer avec Measure",
       "ctaBench": "Voir les résultats reproductibles",
       "panelAlt": "Le tableau de bord de Savings avec les données du banc public : l'économie mesurée et sa répartition par modèle.",
-      "panelCaption": "Tableau de bord avec les données du banc public",
+      "panelCaption": "Tableau de bord de démonstration avec la passe {bateria} du banc public : {titular} pour les quatre modèles ensemble, sans le contraste de tarification du cache. Le reçu ne porte que sur {modelo}.",
       "medidoEnVivo": "Mesuré en direct avec le compteur de chaque fournisseur",
       "note": "Installé en quelques minutes. Vos messages ne passent jamais par nos serveurs.",
       "proofTitle": "Mesuré contre un fournisseur réel",

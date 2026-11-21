@@ -379,7 +379,7 @@ describe("Gemini: compatible ≠ medido; lo medido, con su informe", () => {
   const celdas = (modelo: string): J[] => (inf.resultados as J[]).filter((c) => c.modelo === modelo);
   const medida = (c: J) => c.estado === "medida" && c.medicion?.estado === "medido";
 
-  it("el informe es una tirada EN VIVO del banco semanal, de ese día, y la más reciente publicada", () => {
+  it("el informe es una tirada EN VIVO del banco semanal, de ese día, y la más reciente publicada que midió a Gemini", () => {
     expect(inf.modo).toBe("vivo");
     expect(String(inf.inicio).slice(0, 10)).toBe(G.fecha);
     const dir = join(RAIZ_REPO, "docs", "benchmarks");
@@ -389,6 +389,10 @@ describe("Gemini: compatible ≠ medido; lo medido, con su informe", () => {
       .map((f) => JSON.parse(readFileSync(f, "utf8")) as J)
       // Un banco parcial (le faltan celdas de su plan) no es «la tirada semanal».
       .filter((j) => j.modo === "vivo" && j.resultados.length >= j.plan.length)
+      // Una tirada más reciente que NO pudo medir a G.medido (la de la 1.2.3,
+      // 2026-11-20: crédito de prepago de Gemini agotado) no cambia lo que se
+      // midió de Gemini. Una que SÍ lo mida obliga a poner aquí su informe.
+      .filter((j) => (j.resultados as J[]).some((c) => c.modelo === G.medido.modelo && medida(c)))
       .map((j) => String(j.inicio));
     expect(inicios.every((x) => x <= inf.inicio)).toBe(true);
   });
@@ -788,9 +792,18 @@ describe("el héroe: las cifras van en la captura del banco público, y el texto
     });
   }
 
-  it("en/es: el pie dice de dónde salen los datos del panel", () => {
-    expect(cargar("es")["landing.hero.panelCaption"]).toBe("Panel con los datos del banco público");
-    expect(cargar("en")["landing.hero.panelCaption"]).toBe("Dashboard with the public bench's data");
+  it("el pie dice de dónde salen los datos del panel y por qué su titular no es la cifra del recibo (auditoría m10)", () => {
+    expect(cargar("es")["landing.hero.panelCaption"]).toBe(
+      "Panel de demostración con la tirada {bateria} del banco público: el {titular} es el de los cuatro modelos juntos, sin el contraste de precios de caché. El recibo es solo {modelo}.",
+    );
+    expect(cargar("en")["landing.hero.panelCaption"]).toBe(
+      "Demo dashboard with the public bench's {bateria} run: {titular} is for the four models together, without the cache-pricing contrast. The receipt is {modelo} alone.",
+    );
+    // Los doce, con sus tres marcadores (las cifras llegan por parámetro).
+    for (const loc of LOCALES) {
+      const v = cargar(loc)["landing.hero.panelCaption"]!;
+      for (const m of ["{bateria}", "{titular}", "{modelo}"]) expect(v, `${loc} ${m}`).toContain(m);
+    }
     expect(cargar("es")["landing.hero.medidoEnVivo"]).toBe("Medido en vivo con el contador de cada proveedor");
   });
 
@@ -798,15 +811,23 @@ describe("el héroe: las cifras van en la captura del banco público, y el texto
     const src = codigo("app/[locale]/page.tsx");
     expect(src).toContain('import panelDelBanco from "@/assets/portada/panel-del-banco.png";');
     expect(src).toContain('import panelDelBancoMovil from "@/assets/portada/panel-del-banco-movil.png";');
-    // Las dos tomas, con next/image (getImageProps) y prioridad.
+    expect(src).toContain('import panelDelBancoEn from "@/assets/portada/panel-del-banco-en.png";');
+    expect(src).toContain('import panelDelBancoMovilEn from "@/assets/portada/panel-del-banco-movil-en.png";');
+    // Las dos tomas, con next/image (getImageProps) y prioridad: en español
+    // para es y ca, en inglés para el resto (idiomaDeLaCaptura).
+    expect(src).toMatch(/const capturaEnEspanol = idiomaDeLaCaptura\(locale\) === "es";/);
     expect(src).toMatch(/const comunes = \{ alt: "", quality: 80, priority: true \} as const;/);
-    expect(src).toMatch(/getImageProps\(\{\s*\.\.\.comunes,\s*src: panelDelBanco,/);
-    expect(src).toMatch(/getImageProps\(\{\s*\.\.\.comunes,\s*src: panelDelBancoMovil,/);
+    expect(src).toMatch(/getImageProps\(\{\s*\.\.\.comunes,\s*src: capturaEnEspanol \? panelDelBanco : panelDelBancoEn,/);
+    expect(src).toMatch(/getImageProps\(\{\s*\.\.\.comunes,\s*src: capturaEnEspanol \? panelDelBancoMovil : panelDelBancoMovilEn,/);
     const ini = src.indexOf('className="hero hero-panel"');
     const heroe = src.slice(ini, src.indexOf("</section>", ini));
     expect(heroe).toMatch(/<source\s+media="\(max-width: 640px\)"\s+srcSet=\{panelMovil\.srcSet\}/);
     expect(heroe).toContain('<img {...panelEscritorio} alt={t("hero.panelAlt")} />');
-    expect(heroe).toMatch(/<figcaption>\s*<Link href="\/benchmarks">\{t\("hero\.panelCaption"\)\}<\/Link>\s*<\/figcaption>/);
+    expect(heroe).toMatch(
+      /<figcaption>\s*<Link href="\/benchmarks">\s*\{t\("hero\.panelCaption", \{ bateria: V\.bateria, titular: pct1\.format\(titularDelPanel\(\)\), modelo: V\.openai\.modelo\.split\("\/"\)\.pop\(\) \?\? "" \}\)\}\s*<\/Link>\s*<\/figcaption>/,
+    );
+    // El modelo del pie es el del recibo de al lado (V.openai).
+    expect(heroe).toContain('{ etiqueta: t("receipt.model"), valor: V.openai.modelo.split("/").pop(), mono: true }');
     expect(heroe).toContain('{t("hero.medidoEnVivo")}');
     // Ni una cifra escrita en el JSX del héroe (fuera de atributos y del SVG del candado).
     const texto = heroe.replace(/<svg[\s\S]*?<\/svg>/g, "").replace(/\{[^{}]*\}/g, "").replace(/"[^"]*"/g, "");

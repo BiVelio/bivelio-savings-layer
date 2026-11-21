@@ -1234,7 +1234,7 @@
       "ctaStart": "Measure ile başlayın",
       "ctaBench": "Tekrarlanabilir sonuçları görün",
       "panelAlt": "Herkese açık test tezgâhının verileriyle Savings paneli: ölçülen tasarruf ve modele göre dağılımı.",
-      "panelCaption": "Herkese açık test tezgâhının verileriyle panel",
+      "panelCaption": "Herkese açık test tezgâhının {bateria} koşusuyla demo paneli: {titular} dört modelin birlikte sonucudur, önbellek fiyatlandırma kontrastı hariç. Fiş yalnızca {modelo} içindir.",
       "medidoEnVivo": "Her sağlayıcının kendi sayacıyla canlı ölçüldü",
       "note": "Dakikalar içinde kurulur. Mesajlarınız asla bizim sunucularımızdan geçmez.",
       "proofTitle": "Gerçek sağlayıcıya karşı ölçüldü",
