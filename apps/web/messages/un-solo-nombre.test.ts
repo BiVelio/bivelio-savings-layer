@@ -46,6 +46,9 @@ const BV_SALA_PERMITIDO = new Set([
 
 /** Textos donde «Savings» a secas nombraba el producto o el panel. */
 const ANTES_SAVINGS_A_SECAS = [
+  "landing.explica.pasos.0.body",
+  "landing.explica.pasos.1.body",
+  "landing.faq.items.3.a",
   "auth.successBody",
   "app.tour.steps.welcome.title",
   "dashboard.proof.diagramB",

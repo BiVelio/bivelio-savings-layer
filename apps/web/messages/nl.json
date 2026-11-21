@@ -1255,11 +1255,11 @@
       "pasos": [
         {
           "title": "AI rekent per woord",
-          "body": "Elk verzoek aan een AI wordt betaald per tekst die erin en eruit gaat. Savings gaat midden op dat pad staan: een verzoek dat het al heeft gezien en geverifieerd, wordt beantwoord zonder de provider opnieuw aan te roepen, en wat je niet hoefde te betalen valt in jouw pot."
+          "body": "Elk verzoek aan een AI wordt betaald per tekst die erin en eruit gaat. Savings Layer gaat midden op dat pad staan: een verzoek dat het al heeft gezien en geverifieerd, wordt beantwoord zonder de provider opnieuw aan te roepen, en wat je niet hoefde te betalen valt in jouw pot."
         },
         {
           "title": "Je betaalt niet twee keer voor hetzelfde",
-          "body": "Een AI leest bij elke beurt alles opnieuw wat je al had gestuurd — en de aanbieder rekent het opnieuw aan. Savings bereidt elk verzoek zo voor dat de aanbieder zijn kortingsprijs toepast op de herhalingen. De korting is van de aanbieder; ons deel is er goed om vragen."
+          "body": "Een AI leest bij elke beurt alles opnieuw wat je al had gestuurd — en de aanbieder rekent het opnieuw aan. Savings Layer bereidt elk verzoek zo voor dat de aanbieder zijn kortingsprijs toepast op de herhalingen. De korting is van de aanbieder; ons deel is er goed om vragen."
         },
         {
           "title": "Een bon die je kunt controleren",
@@ -1643,7 +1643,7 @@
         },
         {
           "q": "Werkt het met een abonnement zoals ChatGPT Plus?",
-          "a": "Niet als besparing op een factuur. Savings optimaliseert en meet aanroepen van een API die je naar gebruik betaalt; een abonnement met vast tarief is geen API-factuur die je kunt optimaliseren. Via de gateway wordt dat verkeer wel gemeten, maar er wordt geen besparing aan toegeschreven. Voor de limieten van een abonnement is er de skill savings-mode, een aanvullend hulpmiddel waarvan het effect nog niet gemeten is."
+          "a": "Niet als besparing op een factuur. Savings Layer optimaliseert en meet aanroepen van een API die je naar gebruik betaalt; een abonnement met vast tarief is geen API-factuur die je kunt optimaliseren. Via de gateway wordt dat verkeer wel gemeten, maar er wordt geen besparing aan toegeschreven. Voor de limieten van een abonnement is er de skill savings-mode, een aanvullend hulpmiddel waarvan het effect nog niet gemeten is."
         },
         {
           "q": "Moet ik van provider wisselen?",

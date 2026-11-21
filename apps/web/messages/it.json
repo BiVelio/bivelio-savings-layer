@@ -1255,11 +1255,11 @@
       "pasos": [
         {
           "title": "L'IA si paga a parole",
-          "body": "Ogni richiesta a un'IA si paga in base al testo che entra ed esce. Savings si mette in mezzo a quel percorso: una richiesta che ha già visto e verificato riceve risposta senza richiamare il fornitore, e ciò che non hai dovuto pagare cade nel tuo barattolo."
+          "body": "Ogni richiesta a un'IA si paga in base al testo che entra ed esce. Savings Layer si mette in mezzo a quel percorso: una richiesta che ha già visto e verificato riceve risposta senza richiamare il fornitore, e ciò che non hai dovuto pagare cade nel tuo barattolo."
         },
         {
           "title": "Non paghi due volte la stessa cosa",
-          "body": "L'IA rilegge a ogni turno tutto ciò che le avevi già inviato — e il fornitore lo fattura di nuovo. Savings prepara ogni richiesta perché il fornitore applichi il suo prezzo ridotto alle ripetizioni. Lo sconto lo fa il fornitore; la nostra parte è chiederlo bene."
+          "body": "L'IA rilegge a ogni turno tutto ciò che le avevi già inviato — e il fornitore lo fattura di nuovo. Savings Layer prepara ogni richiesta perché il fornitore applichi il suo prezzo ridotto alle ripetizioni. Lo sconto lo fa il fornitore; la nostra parte è chiederlo bene."
         },
         {
           "title": "Una ricevuta che puoi verificare",
@@ -1643,7 +1643,7 @@
         },
         {
           "q": "Serve per un abbonamento come ChatGPT Plus?",
-          "a": "Non come risparmio su una fattura. Savings ottimizza e misura chiamate a un’API pagata a consumo; un abbonamento a tariffa fissa non è una fattura API ottimizzabile. Tramite il gateway quel traffico viene misurato, ma non gli viene accreditato alcun risparmio. Per i limiti di un abbonamento esiste lo skill savings-mode, una risorsa complementare il cui effetto non è ancora stato misurato."
+          "a": "Non come risparmio su una fattura. Savings Layer ottimizza e misura chiamate a un’API pagata a consumo; un abbonamento a tariffa fissa non è una fattura API ottimizzabile. Tramite il gateway quel traffico viene misurato, ma non gli viene accreditato alcun risparmio. Per i limiti di un abbonamento esiste lo skill savings-mode, una risorsa complementare il cui effetto non è ancora stato misurato."
         },
         {
           "q": "Devo cambiare provider?",

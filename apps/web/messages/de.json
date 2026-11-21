@@ -1255,11 +1255,11 @@
       "pasos": [
         {
           "title": "KI wird pro Wort abgerechnet",
-          "body": "Jede Anfrage an eine KI wird nach dem Text bezahlt, der hinein- und hinausgeht. Savings stellt sich mitten auf diesen Weg: Eine Anfrage, die es schon gesehen und geprüft hat, wird beantwortet, ohne den Anbieter erneut aufzurufen – und was du nicht bezahlen musstest, fällt in dein Glas."
+          "body": "Jede Anfrage an eine KI wird nach dem Text bezahlt, der hinein- und hinausgeht. Savings Layer stellt sich mitten auf diesen Weg: Eine Anfrage, die es schon gesehen und geprüft hat, wird beantwortet, ohne den Anbieter erneut aufzurufen – und was du nicht bezahlen musstest, fällt in dein Glas."
         },
         {
           "title": "Du zahlst nicht zweimal für dasselbe",
-          "body": "Die KI liest bei jedem Zug alles neu, was Sie ihr schon geschickt hatten — und der Anbieter berechnet es erneut. Savings bereitet jede Anfrage so vor, dass der Anbieter seinen reduzierten Preis auf die Wiederholungen anwendet. Der Rabatt kommt vom Anbieter; unser Teil ist, ihn richtig anzufordern."
+          "body": "Die KI liest bei jedem Zug alles neu, was Sie ihr schon geschickt hatten — und der Anbieter berechnet es erneut. Savings Layer bereitet jede Anfrage so vor, dass der Anbieter seinen reduzierten Preis auf die Wiederholungen anwendet. Der Rabatt kommt vom Anbieter; unser Teil ist, ihn richtig anzufordern."
         },
         {
           "title": "Ein Beleg, den du prüfen kannst",
@@ -1643,7 +1643,7 @@
         },
         {
           "q": "Hilft es bei einem Abo wie ChatGPT Plus?",
-          "a": "Nicht als Ersparnis auf einer Rechnung. Savings optimiert und misst Aufrufe einer API, die nach Verbrauch bezahlt wird; ein Pauschal-Abo ist keine optimierbare API-Rechnung. Über das Gateway wird dieser Traffic gemessen, aber es wird ihm keine Ersparnis gutgeschrieben. Für die Limits eines Abos gibt es den Skill savings-mode, eine ergänzende Ressource, deren Wirkung noch nicht gemessen ist."
+          "a": "Nicht als Ersparnis auf einer Rechnung. Savings Layer optimiert und misst Aufrufe einer API, die nach Verbrauch bezahlt wird; ein Pauschal-Abo ist keine optimierbare API-Rechnung. Über das Gateway wird dieser Traffic gemessen, aber es wird ihm keine Ersparnis gutgeschrieben. Für die Limits eines Abos gibt es den Skill savings-mode, eine ergänzende Ressource, deren Wirkung noch nicht gemessen ist."
         },
         {
           "q": "Muss ich den Anbieter wechseln?",

@@ -1255,11 +1255,11 @@
       "pasos": [
         {
           "title": "AI menagih per kata",
-          "body": "Setiap permintaan ke AI dibayar berdasarkan teks yang masuk dan keluar. Savings berdiri di tengah jalur itu: permintaan yang sudah pernah dilihat dan diverifikasi dijawab tanpa memanggil penyedia lagi, dan yang tak perlu Anda bayar jatuh ke toples Anda."
+          "body": "Setiap permintaan ke AI dibayar berdasarkan teks yang masuk dan keluar. Savings Layer berdiri di tengah jalur itu: permintaan yang sudah pernah dilihat dan diverifikasi dijawab tanpa memanggil penyedia lagi, dan yang tak perlu Anda bayar jatuh ke toples Anda."
         },
         {
           "title": "Anda tidak membayar dua kali untuk hal yang sama",
-          "body": "AI membaca ulang setiap giliran semua yang sudah Anda kirim — dan penyedia menagihnya lagi. Savings menyiapkan setiap permintaan agar penyedia menerapkan harga diskonnya pada pengulangan. Diskonnya milik penyedia; bagian kami adalah memintanya dengan benar."
+          "body": "AI membaca ulang setiap giliran semua yang sudah Anda kirim — dan penyedia menagihnya lagi. Savings Layer menyiapkan setiap permintaan agar penyedia menerapkan harga diskonnya pada pengulangan. Diskonnya milik penyedia; bagian kami adalah memintanya dengan benar."
         },
         {
           "title": "Struk yang bisa Anda periksa",
@@ -1643,7 +1643,7 @@
         },
         {
           "q": "Apakah berguna untuk langganan seperti ChatGPT Plus?",
-          "a": "Tidak sebagai penghematan pada tagihan. Savings mengoptimalkan dan mengukur panggilan ke API yang dibayar per pemakaian; langganan bertarif tetap bukan tagihan API yang bisa dioptimalkan. Melalui gateway, trafik itu diukur, tetapi tidak ada penghematan yang dikreditkan. Untuk batas langganan tersedia skill savings-mode, sumber daya pelengkap yang efeknya belum diukur."
+          "a": "Tidak sebagai penghematan pada tagihan. Savings Layer mengoptimalkan dan mengukur panggilan ke API yang dibayar per pemakaian; langganan bertarif tetap bukan tagihan API yang bisa dioptimalkan. Melalui gateway, trafik itu diukur, tetapi tidak ada penghematan yang dikreditkan. Untuk batas langganan tersedia skill savings-mode, sumber daya pelengkap yang efeknya belum diukur."
         },
         {
           "q": "Apakah saya harus ganti penyedia?",

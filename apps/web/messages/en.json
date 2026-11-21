@@ -1255,11 +1255,11 @@
       "pasos": [
         {
           "title": "AI charges you per word",
-          "body": "Every request to an AI is paid for by the text going in and out. Savings stands in the middle of that path: a request it has already seen and verified is answered without calling the provider again, and whatever you didn't have to pay for drops into your jar."
+          "body": "Every request to an AI is paid for by the text going in and out. Savings Layer stands in the middle of that path: a request it has already seen and verified is answered without calling the provider again, and whatever you didn't have to pay for drops into your jar."
         },
         {
           "title": "You don't pay twice for the same thing",
-          "body": "An AI re-reads everything you already sent it, turn after turn — and the provider charges for it again. Savings prepares every request so the provider applies its discounted price to the repeats. The discount is the provider's; our part is asking for it properly."
+          "body": "An AI re-reads everything you already sent it, turn after turn — and the provider charges for it again. Savings Layer prepares every request so the provider applies its discounted price to the repeats. The discount is the provider's; our part is asking for it properly."
         },
         {
           "title": "A receipt you can verify",
@@ -1643,7 +1643,7 @@
         },
         {
           "q": "Does it work with a subscription like ChatGPT Plus?",
-          "a": "Not as savings on a bill. Savings optimizes and measures calls to an API you pay for by usage; a flat-rate subscription is not an API bill that can be optimized. Through the gateway that traffic is measured, but no saving is credited to it. For subscription limits there is the savings-mode skill, a complementary resource whose effect has not been measured yet."
+          "a": "Not as savings on a bill. Savings Layer optimizes and measures calls to an API you pay for by usage; a flat-rate subscription is not an API bill that can be optimized. Through the gateway that traffic is measured, but no saving is credited to it. For subscription limits there is the savings-mode skill, a complementary resource whose effect has not been measured yet."
         },
         {
           "q": "Do I have to change provider?",
