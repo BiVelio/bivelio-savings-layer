@@ -15,18 +15,28 @@ stream and turns it into cost. Neither your prompts, nor the responses, nor your
 provider key are sent from your machine to BiVelio: only the usage of each
 request travels —token counts, cost, the model id, a request id and the opaque
 seat and session ids—, and the exact list of fields is in LICENSE-CLOUD.md §5.
-**Open core**: it starts with no key at all, in Community mode —every local
-lever armed, zero telemetry, and the measurement stays on this machine: one log
-line per request, the summary on exit and the local `/_bvsala` routes—.
-`BIVELIO_SERVICE_KEY` (optional) adds the dashboard, the org's entitlements and
-license collection; a license that is PRESENT but expired or revoked only
-refuses NEW requests with an HTTP 402 until it is renewed, never one in flight.
+**Open core**: it starts with no key at all, in Community mode —free, zero
+telemetry, and the measurement stays on this machine: one log line per request,
+the summary on exit and the local `/_bvsala` routes—.
+Every gateway lever is free, with no key; one is on by default (cache TTL tuning) and the others you switch on.
+`BIVELIO_SERVICE_KEY` (optional) only adds the cloud: the dashboard and license
+collection. With the free Measure license it switches no lever off; with a paid
+license the levers follow that license, as in 1.2.3 (checked fail-closed: with no
+service key, or while savings.bivelio.com cannot confirm it, requests travel
+untouched). One dependency comes with a key, the free Measure key included:
+with BIVELIO_SERVICE_KEY set, the gateway needs savings.bivelio.com to start (or a
+valid BIVELIO_LICENSE_KEY as a fallback); once running it keeps serving without it.
+With no key there is no such dependency. A license that is PRESENT but expired or
+revoked only refuses NEW requests with an HTTP 402 until it is renewed (or until you
+unset the keys and relaunch, free in Community mode), never one in flight.
 Metering is best-effort: with ingestion down, it forwards and warns.
 
 It measures every request with the provider's own counter. The **default
-lever**: it lowers the cache-write TTL while the session stays warm — it changes
-the rate, never the content the model reads. It only has something to lower when
-the client pays per token and asks for the one-hour cache: Claude Code on an API
+lever** lowers the cache-write TTL from one hour to five minutes only on turns
+where a large part of the prompt is new (at least 30 % of the request body: a
+session's first turn, a compaction) and leaves chained turns as they are — it
+changes the rate, never the content the model reads. It only has something to
+lower when the client pays per token and asks for the one-hour cache: Claude Code on an API
 key asks for the five-minute one unless you set `promptCacheTtl` to `1h`, so out
 of the box the gateway only measures. The others (sibling model, per-turn
 effort) stay off until you turn them on. And it measures **all the inference
@@ -76,13 +86,25 @@ variable (`OPENCODE_CONFIG_CONTENT`, `KILO_CONFIG_CONTENT`), merged with yours.
 The manual recipe in each guide does exactly the same. For the rest,
 `bvsala doctor` prints the exact block for each installed terminal.
 
-**On exit, every wrapper says what it metered.** Inside a wrapper the
-per-request log stays silent so that it does not write over the TUI, so when it
-finishes it prints a line like this one to stderr:
+**On exit, every wrapper says what it metered, what it cost and what it
+saved.** Inside a wrapper the per-request log stays silent so that it does not
+write over the TUI, so when it finishes it prints a line like these to stderr:
 
 ```
-[bvsala copilot] metering in this run: 41 request(s) metered with the provider's usage · 3 forwarded but NOT metered (nothing is estimated in their place): 3 × the request did not ask for usage (stream_options.include_usage). What each reason means and what to do: docs/terminales/README.md.
+[bvsala claude] metering in this run: 16 inference request(s) went through the gateway · 16 request(s) metered with the provider's usage · spent $1.84 at list-price equivalent (subscription traffic: there is no per-token invoice) · saved $0.00: no saving is credited on a subscription (there is no per-token invoice); with the defaults the gateway changes nothing there. Per-request detail: run it again with BVSALA_GATEWAY_LOG=1 (one line per request, on stderr).
+[bvsala copilot] metering in this run: 41 request(s) metered with the provider's usage · spent $0.9312 at list price · saved $0.0410 (measured) · 3 forwarded but NOT metered (nothing is estimated in their place): 3 × the request did not ask for usage (stream_options.include_usage). What each reason means and what to do: docs/terminales/README.md. Per-request detail: run it again with BVSALA_GATEWAY_LOG=1 (one line per request, on stderr).
 ```
+
+The money is the sum of the same per-request reports your dashboard would
+receive: `spent` is the provider's own usage at list price, and the saving is
+shown by basis (`measured`, `by reference`, `estimated`), never added into one
+figure. When nothing was credited the line says why: on a Claude or ChatGPT
+subscription no saving is credited and, with the defaults, the gateway changes
+nothing; on an API key the default lever (cache TTL tuning) is credited only
+when the client asks for the one-hour cache from the official API. If
+that lever cost more than it saved (a five-minute entry expired during a long
+pause and was rewritten), the line says so too, with the variable that turns it
+off. The figures above are made up.
 
 The reasons are the ones in the `· not metered: …` table below. If no request
 went through the gateway, it says that too: the terminal was not pointed at it.
@@ -98,15 +120,16 @@ npm i -g @bivelio/savings-layer      # brings the `bvsala` binary
 bvsala gateway                        # listens on http://127.0.0.1:8402 — no keys: Community mode
 bvsala gateway --port 8500            # another port if 8402 is taken
 bvsala gateway --upstream deepseek    # Claude Code with DeepSeek; qwen|glm|moonshot|minimax|gemini|ollama|vllm|lmstudio too
-export BIVELIO_SERVICE_KEY=bvk_…      # OPTIONAL: dashboard + org entitlements (without it: Community mode)
+export BIVELIO_SERVICE_KEY=bvk_…      # OPTIONAL: only adds the cloud dashboard (without it: Community mode)
 ```
 
 On startup it prints, among others, these lines:
 
 ```
 [bvsala gateway] v1.2.x listening on http://127.0.0.1:8402 → https://api.anthropic.com
-[bvsala gateway] COMMUNITY MODE (open core): every local saving lever on, zero telemetry - no BiVelio keys set
+[bvsala gateway] COMMUNITY MODE (open core): no BiVelio keys set - free, zero telemetry, nothing sent to BiVelio
 [bvsala gateway] metering: LOCAL ONLY (community mode, no BiVelio service key): every request is measured on this machine with the provider's usage and nothing is sent to BiVelio · per-request reports with x-bvsala-report
+[bvsala gateway] savings levers (community mode: free, no key needed): cache TTL tuning is the only one ON by default and it only acts on Anthropic API-key traffic that asks for the 1-hour cache - on a Claude or ChatGPT subscription the default lever changes nothing and this run only measures · BVSALA_GATEWAY_ELISION=0 turns it off · opt-in: BVSALA_GATEWAY_SIBLING_MODEL=1, BVSALA_GATEWAY_EFFORT=low|medium · context elision dials OFF (BVSALA_GATEWAY_DIALES_ELISION=1 turns them on)
 ```
 
 With `BIVELIO_SERVICE_KEY` the license is collected automatically (a `license:
@@ -116,10 +139,10 @@ does not start (it exits with code 1), the message says exactly what is missing:
 | Message | What is happening | Fix |
 |---|---|---|
 | `BIVELIO_SERVICE_KEY is not recognised` | the key was deleted, rotated or only half copied | create another one |
-| `your organization has no active BiVelio license` | there is no subscription | subscribe in Account and start again |
-| `your BiVelio license expired on …` | the license expired and its grace period is over | renew in Account |
+| `your organization has no active BiVelio license` | there is no subscription | subscribe in Account and start again, or unset the keys and relaunch, free |
+| `your BiVelio license expired on …` | the license expired and its grace period is over | renew in Account, or unset the keys and relaunch, free |
 | `could not collect your license from savings.bivelio.com` | savings.bivelio.com cannot be reached | check the connection; as a fallback, `BIVELIO_LICENSE_KEY` (verified offline and replaced by hand every period) |
-| an HTTP 402 in the terminal in the middle of a session | the license expired or was revoked with the session open | renew; the requests already in flight were not cut |
+| an HTTP 402 in the terminal in the middle of a session | the license expired or was revoked with the session open | renew, or unset the keys and relaunch, free; the requests already in flight were not cut |
 
 If you run `bvsala gateway` as a service (launchd/systemd), a license failure
 ends up in the service log with exit code 1 and the terminal only sees
@@ -151,7 +174,7 @@ other lines mean:
 |---|---|---|
 | `[gateway] POST /v1/v1/messages → 404` | the base URL has one `/v1` **too many** for that terminal | remove the `/v1` |
 | `[gateway] POST /messages → 404` | the base URL is **missing** `/v1` (the SDK only appends `/messages`) | add the `/v1` |
-| `[gateway] POST /v1/messages → 402 (license expired)` | the license expired, was revoked or the org is blocked: NEW requests are refused (the ones in flight finished) | renew in Account; the terminal shows the reason |
+| `[gateway] POST /v1/messages → 402 (license expired)` | the license expired, was revoked or the org is blocked: NEW requests are refused (the ones in flight finished) | renew in Account, or unset the keys and relaunch, free; the terminal shows the reason |
 | nothing at all | the terminal is not pointed at the gateway (config not read, env overridden by config, another port) | check the pitfall in its guide |
 
 Every request the gateway forwards **without metering** leaves its own line with
@@ -214,7 +237,7 @@ systems. What changes is how the key is set in the session — the `export` in
 these guides is POSIX; in PowerShell:
 
 ```powershell
-$env:BIVELIO_SERVICE_KEY = "bvk_…"  # OPTIONAL: dashboard + org entitlements (without it: Community mode)
+$env:BIVELIO_SERVICE_KEY = "bvk_…"  # OPTIONAL: only adds the cloud dashboard (without it: Community mode)
 bvsala claude
 ```
 

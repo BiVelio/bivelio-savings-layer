@@ -379,8 +379,11 @@ describe("el README que viaja a npm promete lo que se cobra", () => {
   });
 
   it("remite a la LICENSE-CLOUD.md para la lista de campos y para las tarifas", () => {
-    expect(readme).toMatch(/LICENSE-CLOUD\.md\]\(\.\/LICENSE-CLOUD\.md\) §5/);
-    expect(readme).toMatch(/LICENSE-CLOUD\.md\]\(\.\/LICENSE-CLOUD\.md\) §6/);
+    // Enlace ABSOLUTO a GitHub (verificación final de la 1.2.4): npmjs.com no
+    // garantiza reescribir uno relativo, y son los términos que se aceptan.
+    const enlace = "LICENSE-CLOUD.md](https://github.com/BiVelio/bivelio-savings-layer/blob/main/LICENSE-CLOUD.md)";
+    expect(readme).toContain(`${enlace} §5`);
+    expect(readme).toContain(`${enlace} §6`);
   });
 });
 
@@ -455,5 +458,18 @@ describe("⛔ nada de lo que viaja en el tarball vuelve a «solo cuentas y coste
     const bin = plano(leer("../gateway/bin.ts"));
     expect(bin).toMatch(/Your prompts, completions and provider keys never reach BiVelio/);
     expect(bin).toMatch(/LICENSE-CLOUD\.md §5 lists every field/);
+  });
+
+  it("ni LICENSE-CLOUD.md ni NOTICE cuentan «shared caches» entre los servicios de la nube: no existen", () => {
+    // Decisión del dueño (21-11-2026, revisión de #612): la nube es panel,
+    // medición, entitlements de la organización y gestión de licencias. Una
+    // licencia que enumera un servicio que no hay promete de más.
+    for (const [nombre, texto] of [["LICENSE-CLOUD.md", licencia], ["NOTICE", leer("../NOTICE")]] as const) {
+      expect(plano(texto), nombre).not.toMatch(/shared caches?/i);
+    }
+    expect(plano(licencia)).toContain(
+      "the BiVelio dashboard, cloud metering, organization entitlements, license management and support (the \"Cloud Services\")",
+    );
+    expect(plano(leer("../NOTICE"))).toContain("(dashboard, metering, organization entitlements, license management)");
   });
 });

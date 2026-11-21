@@ -5,8 +5,10 @@ import { afterEach, describe, it, expect, vi } from "vitest";
 
 import {
   LicenseRenewer,
+  SALIDA_GRATUITA,
   licenseVerdict,
   refusalBody,
+  startupFailureMessage,
   resolveStartupLicense,
   transitionLine,
   verifyGatewayLicense,
@@ -108,6 +110,8 @@ describe("resolveStartupLicense — el arranque, en orden estricto", () => {
       const r = await arrancar({ serviceAccountKey, fetchImpl: f as unknown as typeof fetch });
       expect(r).toMatchObject({ ok: true, source: "community", license: null, status: "active" });
       expect(r.ok && r.line).toContain("COMMUNITY MODE");
+      // No todas las palancas van encendidas por defecto: la línea no lo afirma (revisión de #612).
+      expect(r.ok && r.line).toBe("COMMUNITY MODE (open core): free, zero telemetry - no BiVelio keys set");
       expect(llamadas(f)).toHaveLength(0);
     }
     // El fail-closed que queda: una clave PRESENTE pero inválida.
@@ -449,8 +453,26 @@ describe("refusalBody — el 402 que enseñan Claude Code y Codex", () => {
       expect(json.error.message).toContain("requests already in flight were not interrupted");
       if (estado === "invalid") expect(json.error.message).toContain("support@bivelio.com");
       else expect(json.error.message).toContain("/dashboard/account");
+      // «Solo se cobra el Cloud»: pagar no es el único remedio (verificación final de la 1.2.4).
+      if (estado === "invalid") expect(json.error.message).not.toContain(SALIDA_GRATUITA);
+      else expect(json.error.message).toContain(SALIDA_GRATUITA);
     });
   }
+
+  it("la salida gratuita nombra las dos variables, es ASCII y no pide pagar", () => {
+    expect(SALIDA_GRATUITA).toMatch(/^[\x20-\x7E]+$/);
+    expect(SALIDA_GRATUITA).toContain("unset BIVELIO_SERVICE_KEY and BIVELIO_LICENSE_KEY");
+    expect(SALIDA_GRATUITA).toContain("COMMUNITY mode needs no license");
+    expect(SALIDA_GRATUITA).not.toMatch(/subscribe|renew|upgrade/i);
+  });
+
+  it("al arrancar sin licencia, caducada o sin poder recogerla, también se dice la salida gratuita", () => {
+    expect(startupFailureMessage("no-license")).toContain(SALIDA_GRATUITA);
+    expect(startupFailureMessage("license-expired", { expiresAt: 1_800_000_000, graceDays: 21 })).toContain(SALIDA_GRATUITA);
+    expect(startupFailureMessage("unreachable", { cause: "timed out after 10 s" })).toContain(SALIDA_GRATUITA);
+    // Una clave mal pegada no se arregla quitándola a ciegas: ahí no.
+    expect(startupFailureMessage("license-invalid", { reason: "bad signature" })).not.toContain(SALIDA_GRATUITA);
+  });
 });
 
 describe("transitionLine — una línea por transición, nunca por petición", () => {

@@ -250,6 +250,18 @@ con `?periodo=` del mes que tocaba.
   `stripe_invoice_id`; sin ella, una relanzada del cron **no** duplica (la
   clave de idempotencia de Stripe lo impide) pero el panel no enseña la
   factura.
+- **«Extracto con cargo de comisión en una organización SIN la modalidad con comisión: no se factura, revisar»**:
+  la tercera verja (1.2.4). El extracto trae cargo, pero la organización no
+  tiene ninguna suscripción con un precio de la modalidad con comisión
+  (`STRIPE_PRICE_ID_MONTHLY`, `_YEARLY` o `STRIPE_PRICE_IDS_EXTRA`) cuyo
+  período llegue a ese mes: Pro en `unpaid`, Pro cancelado el día 1 de
+  madrugada, Enterprise o piloto con licencia a mano, `price_id` nulo,
+  ex-comisión que pasó por Pro… No se ha creado factura ni fila en
+  `bvsala.cargos`. Revisarla a mano: si de verdad no lleva comisión (lo
+  normal), marcar `comision_exenta` si es un contrato a mano y no hacer nada
+  más; si es un precio de comisión que el despliegue no conoce, añadirlo a
+  `STRIPE_PRICE_IDS_EXTRA` y relanzar `facturar-extractos?periodo=`.
+  `?seco=1` lo enseña antes como «revisar».
 - **«La facturación de la comisión está fallando»**: una org falló y el cron
   siguió con las demás. `motivo` trae el error de Stripe; arreglar y relanzar
   el período: las ya facturadas no se tocan.

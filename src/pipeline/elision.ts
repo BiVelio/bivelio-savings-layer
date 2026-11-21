@@ -235,6 +235,18 @@ export function seleccionarSupersesion(messages: ChatMessage[]): EleccionElision
 }
 
 /**
+ * La misma elección sin los índices anteriores a `desde`, con sus bytes
+ * recontados. La usa el pipeline para no recortar los tool_result que quedan
+ * dentro del historial que marca la caché de prefijo (verificación 2 de la 1.2.4).
+ */
+export function eleccionDesde(messages: ChatMessage[], eleccion: EleccionElision, desde: number): EleccionElision {
+  const indices = eleccion.indices.filter((i) => i >= desde);
+  let bytesOriginales = 0;
+  for (const i of indices) bytesOriginales += bytesDe(messages[i]!.content);
+  return { indices, bytesOriginales };
+}
+
+/**
  * Reescribe el cuerpo de los tool_result elididos con el muñón estable,
  * conservando `role`, `toolCallId`, `name`, `toolCalls`, `metadata` y el orden.
  * Devuelve un array NUEVO; el original no se muta. Sin índices, devuelve el

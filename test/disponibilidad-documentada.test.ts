@@ -173,8 +173,16 @@ describe("SECURITY.md · Availability dice los plazos del código", () => {
     // (se ejecuta abajo, «gateway: entitlements sin temporizador»).
     expect(disponibilidad).toContain("There is no retry timer");
     expect(disponibilidad).toContain(
-      `tries again with the first request that arrives more than ${REINTENTO_CANAL_MS / 1000} seconds later, and that request is still served without savings features`,
+      `tries again with the first request that arrives more than ${REINTENTO_CANAL_MS / 1000} seconds later`,
     );
+    // 1.2.4 · decisiones del dueño (21-11-2026). Con Medir las palancas no cuelgan
+    // de este canal (gateway/servidor.ts las concede localmente, como sin claves):
+    // una caída no las apaga. Con una licencia de pago, como en la 1.2.3: una
+    // caída las apaga (fail-closed) y el tráfico sigue intacto.
+    expect(disponibilidad).toContain("With the free Measure license (since 1.2.4) the levers do not depend on this fetch");
+    expect(disponibilidad).toContain("if the status cannot be fetched the levers keep working and traffic keeps flowing");
+    expect(disponibilidad).toContain("With a paid license the gateway works as in 1.2.3: if they cannot be fetched, savings features switch off");
+    expect(disponibilidad).toContain("still served without savings features");
   });
 
   it("la gracia por defecto de una licencia de suscripción", () => {
@@ -242,7 +250,7 @@ describe("SECURITY.md · Availability, comprobado ejecutando", () => {
     expect(live.gate.status()).toBe("expired");
   });
 
-  it("gateway: entitlements sin temporizador — el reintento lo trae la primera petición pasados 60 s, y esa aún va sin palancas", async () => {
+  it("gateway: entitlements sin temporizador — el reintento lo trae la primera petición pasados 60 s (el canal en sí sigue fail-closed; las palancas ya no cuelgan de él)", async () => {
     vi.useFakeTimers();
     try {
       let llamadas = 0;

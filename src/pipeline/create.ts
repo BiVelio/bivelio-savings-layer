@@ -78,7 +78,7 @@ const AVISO_TOKENIZADOR =
   "[bvsala] `gpt-tokenizer` is not installed, so token counts for OpenAI models are " +
   "ESTIMATED with a built-in heuristic and the reconstructed savings are less accurate. " +
   "Savings where the layer removed something are reported as `estimated` either way, " +
-  "and estimated savings are never billed. Install it once (`npm i gpt-tokenizer`) and " +
+  "and estimated savings are always shown apart from measured ones. Install it once (`npm i gpt-tokenizer`) and " +
   "the SDK loads it automatically.";
 
 /** The public handle returned by {@link createSavingsLayer}. */
@@ -132,7 +132,7 @@ export interface SavingsLayer {
  * XGrammar/llguidance backends, etc.).
  *
  * Open core: no `licenseKey` is needed. Without one the layer runs on the
- * COMMUNITY gate — every local saving lever on, zero telemetry, zero network.
+ * COMMUNITY gate — free, zero telemetry, zero network.
  * A `licenseKey` (from savings.bivelio.com) turns on the paid surfaces: cloud
  * metering, license renewal/revocation and org entitlements. An INVALID or
  * EXPIRED key still fails closed with {@link LicenseError}; only its absence is
@@ -274,8 +274,8 @@ export function createSavingsLayer(
         isActive: () => gate.isActive(),
         status: () => gate.status(),
         reason: () => gate.reason(),
-        // Conmutable como el resto: al recoger la licencia de pago que sustituye
-        // a la Medir, el modo sombra se apaga solo en la siguiente petición.
+        // Conmutable como el resto. Informativo desde la 1.2.4: el plan ya no
+        // decide qué palancas actúan (Medir ahorra igual que sin clave).
         plan: () => gate.plan?.(),
       };
       // `licenseServerUrl` is a BASE url (e.g. https://savings.bivelio.com); the SDK

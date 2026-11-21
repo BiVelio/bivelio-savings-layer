@@ -21,9 +21,18 @@ import {
  *
  * Mismos pasos de autenticación que `metering/usage`: Bearer de la clave de
  * servicio → sha256 → `service_accounts` → la org se DERIVA en el servidor (el
- * cuerpo no lleva org). Después el candado de entitlement (402, fail-open ante
- * error de BD, como allí), el interruptor de incidencias
- * `BVSALA_INGEST_VERIFICATION_OFF` y el validador de lista blanca.
+ * cuerpo no lleva org). Después el candado de entitlement (402), el interruptor
+ * de incidencias `BVSALA_INGEST_VERIFICATION_OFF` y el validador de lista blanca.
+ *
+ * EL CANDADO ES FAIL-OPEN AQUÍ, A PROPÓSITO, Y YA NO «COMO ALLÍ». Desde la 1.2.4
+ * el ingest de USO reintenta la lectura de licencias y, si sigue fallando,
+ * devuelve 503: allí la lectura decide también si el lote de una org en Measure
+ * se neutraliza, y entrar a ciegas podía acabar en un cargo. Aquí esa lectura
+ * solo decide el 402, y lo que entra no puede cobrarse: va por
+ * `ingest_verification_batch` a `bvsala.verification_*` (0030), tablas que
+ * ningún fichero de facturación, cierre o extracto lee
+ * (test/banco-propio-nunca-factura.test.ts). Un 503 aquí solo haría perder
+ * pares de un instrumento informativo durante una caída de la base de datos.
  *
  * Un fallo de la función SQL avisa en nivel «aviso», no crítico: no son datos de
  * facturación.
@@ -55,8 +64,8 @@ export async function POST(req: Request): Promise<NextResponse> {
   if (!sa) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
   const orgId = sa.org_id as string;
 
-  // El mismo candado que el ingest de uso: una org sin licencia ni suscripción
-  // vigentes no ingiere (402). Fail-open ante error de BD, como allí.
+  // Una org sin licencia ni suscripción vigentes no ingiere (402). Fail-open
+  // ante error de BD: aquí no hay dinero que proteger (ver la cabecera).
   const [{ data: licenses, error: licErr }, { data: subs, error: subErr }] = await Promise.all([
     supabase.from("licenses").select("revoked, expires_at, grace_days").eq("org_id", orgId),
     supabase.from("subscriptions").select("status, current_period_end").eq("org_id", orgId),

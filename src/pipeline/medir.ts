@@ -1,29 +1,39 @@
 /**
- * LA LICENCIA «MEDIR» — el modo sombra del SDK.
+ * EL MODO SOLO-OBSERVAR — la sombra OPCIONAL del SDK (`observeOnly: true`).
  *
- * Con una licencia de plan `measure` (gratuita, permanente, sin tarjeta) la capa
- * NO aplica ninguna palanca: la petición sale al proveedor exactamente como la
- * construyó el cliente (el mismo camino directo que el fail-open, sin cachés, sin
- * singleflight, sin resolvers, sin compresión, sin cascada, sin marcas de caché
- * de prefijo, sin tier diferido) y NADA se sirve de caché. Lo que sí hace es
- * calcular, al lado, lo que habría ahorrado, y lo publica en `report.measure`
- * con `basis: "shadow"`: hipotético por construcción, jamás en la base de la
- * comisión ni sumado al dinero medido.
+ * HISTORIA. Hasta la 1.2.3 este modo lo forzaba la licencia «Medir» (plan
+ * `measure`): era la forma de probar gratis un producto que, sin licencia, no
+ * funcionaba. Desde el open core (1.0.0) las palancas son gratis sin clave, y
+ * desde la 1.2.4 la licencia Medir las aplica igual que una capa sin clave. La
+ * sombra queda como una ELECCIÓN del cliente, en cualquier plan, para quien
+ * quiera ver lo que la capa haría antes de dejarla tocar el tráfico.
+ *
+ * Con `observeOnly: true` la capa NO aplica ninguna palanca: la petición sale al
+ * proveedor exactamente como la construyó el cliente (el mismo camino directo
+ * que el fail-open, sin cachés, sin singleflight, sin resolvers, sin compresión,
+ * sin cascada, sin marcas de caché de prefijo, sin tier diferido) y NADA se
+ * sirve de caché. Lo que sí hace es calcular, al lado, lo que habría ahorrado, y
+ * lo publica en `report.measure` con `basis: "shadow"`: hipotético por
+ * construcción, jamás sumado al dinero medido.
  *
  * Qué se simula, y por qué solo eso: las dos palancas que EVITAN la llamada —la
  * caché exacta y la coalescencia de duplicados en vuelo— se pueden valorar sin
  * inventar nada, porque la llamada que se habría evitado es ESTA, y su coste lo
  * acaba de declarar el contador del proveedor. Todo lo demás (caché semántica,
  * compresión, elisión, cascada, codebook, tier diferido…) necesita una llamada
- * al modelo, un embebedor o un derecho de pago para estimarse con honradez, así
- * que se enumera en `notSimulated`: la cifra es una COTA INFERIOR.
+ * al modelo o un embebedor para estimarse con honradez, así que se enumera en
+ * `notSimulated`: la cifra es una COTA INFERIOR.
  *
  * Esta memoria guarda CLAVES (hashes sha256 de la identidad de la petición) y un
  * instante, nunca una respuesta ni un texto: no hay nada que servir porque no se
  * guarda nada servible.
  */
 
-/** Dónde se activan las palancas (la cuenta de la organización, con su checkout). */
+/**
+ * La cuenta de la organización. Sigue viajando en `report.measure.upgradeUrl` por
+ * compatibilidad del tipo publicado; desde la 1.2.4 las palancas no se «activan»
+ * pagando, sino apagando `observeOnly`.
+ */
 export const URL_DE_PAGO = "https://savings.bivelio.com/dashboard/account";
 
 /** Las palancas que el modo sombra NO simula (por eso la cifra es una cota inferior). */
@@ -43,14 +53,14 @@ export const PALANCAS_NO_SIMULADAS: readonly string[] = [
 /**
  * El aviso de una vez por proceso. En INGLÉS y sin caracteres raros, como todo lo
  * que ve el cliente del paquete publicado. Dice las tres cosas que importan: que
- * no se cambia nada, dónde está la cifra, y cómo se pasa a pago.
+ * no se cambia nada, dónde está la cifra, y cómo se vuelve a ahorrar.
  */
 export const AVISO_MEDIR =
-  "[bvsala] Measure license: the layer is running in SHADOW mode. Every request goes to your " +
+  "[bvsala] observeOnly is on: the layer is running in OBSERVE-ONLY mode. Every request goes to your " +
   "provider exactly as you built it and nothing is served from any cache; `report.measure." +
-  "wouldHaveSaved` shows what the levers would have saved (a lower bound, never billed). " +
-  `To turn the levers on, upgrade to a paid plan at ${URL_DE_PAGO} - the layer picks up the ` +
-  "new license by itself (with `serviceAccountKey` and `licenseServerUrl`) or on restart.";
+  "wouldHaveSaved` shows what the levers would have saved (a lower bound, hypothetical). " +
+  "To actually save, remove `observeOnly` (or set it to false): the levers are on by default, " +
+  "with or without a license key.";
 
 /** Tope de claves recordadas: acota la memoria de un proceso de vida larga. */
 export const MAX_CLAVES_VISTAS = 10_000;

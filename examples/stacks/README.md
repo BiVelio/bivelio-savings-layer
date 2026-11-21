@@ -34,8 +34,9 @@ the test suite fails if a file here and the command's output ever differ.
   does (a Web `Request` in, a `Response` out) without starting Next.js.
 
 From this repository the layer runs from source with `BVSALA_DEV_OPEN=1`, which the
-`pnpm example:*` scripts set. The published package has no unlicensed mode: in your
-project the same files need `BIVELIO_LICENSE_KEY`, and without it the check says so and
-points to https://savings.bivelio.com/dashboard/install.
+`pnpm example:*` scripts set. The published package runs these same files with no key
+(COMMUNITY mode: free, nothing sent to BiVelio); a BiVelio key only adds the cloud, and a
+key that is set but does not verify makes the check say so and point to
+https://savings.bivelio.com/dashboard/install.
 
 The examples use `gpt-4o-mini` and `claude-haiku-4-5`; put the model you use.

@@ -23,7 +23,7 @@ export interface ResolvedGate extends LicenseGate {
    * branching does not change — but the advice given to the customer differs.
    */
   reason(): string | undefined;
-  /** The signed plan while the license grants (`"measure"` = shadow mode). */
+  /** The signed plan while the license grants (`"measure"` = the free cloud plan). */
   plan?(): string | undefined;
   /** Unix seconds after which the online status should be re-checked (poller anchor). */
   refreshAfter?(): number | undefined;
@@ -70,9 +70,26 @@ export function liveGateFromKey(
       ? verifyLicenseToken(key, publicKey)
       : { signatureValid: false as const, reason: shape };
   const payload: LicenseTokenPayload | undefined = v.signatureValid ? v.payload : undefined;
-  // Una licencia Medir («measure») no concede NINGÚN feature, lleve lo que lleve
-  // el token: el pipeline la corre en sombra y ninguna palanca se aplica.
-  const features = new Set<string>(payload?.plan === "measure" ? [] : (payload?.features ?? []));
+  // UNA LICENCIA VIVA, DEL PLAN QUE SEA, CONCEDE LO MISMO QUE NO TRAER CLAVE (1.2.4).
+  //
+  // Regla del producto: las palancas son gratis para todos; la clave solo añade
+  // la nube. Sin clave manda el gate comunitario (license/community.ts), que
+  // concede TODO feature local. Una clave no puede dar MENOS que no ponerla, y
+  // hasta la 1.2.3 lo hacía de dos maneras:
+  //  · Medir («measure») salía con `features: []` y el pipeline la corría en
+  //    sombra: un resto del modelo cerrado anterior a la 1.0.0;
+  //  · Pro y Team llevaban la lista firmada de su token (PRO_FEATURES), que no
+  //    incluye `tool_result_elision`: quien pagaba se quedaba sin el recorte de
+  //    resultados de herramientas sustituidos que sí tenía quien no ponía clave.
+  // Por eso aquí ya NO se mira `payload.features`: concede la licencia viva,
+  // exactamente como el gate comunitario. Se decide en el CLIENTE a propósito,
+  // para que valga también con las licencias ya emitidas (su token no cambia, y
+  // los clientes ≤ 1.2.3 lo siguen leyendo como antes). El array firmado sigue
+  // viajando en el token y lo sigue usando el servidor para lo que es de pago:
+  // la nube (asientos, volumen, panel de equipo).
+  //
+  // Lo que NO cambia: una licencia caducada, revocada, sin frescura o que no
+  // verifica no concede nada (`granted()` abajo) y el pipeline falla cerrado.
 
   const status = (): LicenseStatus => {
     // Vacía tras normalizar = no hay clave. Es el mismo caso —y el mismo
@@ -128,7 +145,7 @@ export function liveGateFromKey(
   };
 
   return {
-    isEntitled: (feature: string) => granted() && features.has(feature),
+    isEntitled: (_feature: string) => granted(),
     isActive: () => granted(),
     status,
     reason: () => (payload ? undefined : v.reason),

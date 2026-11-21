@@ -1,7 +1,7 @@
 # Claude Code through the gateway
 
-**Source:** `docs/PASARELA-S3-TERMINALES.md` §1 (conformance with Claude Code's
-official gateway protocol, read in full on 2026-08-30). It is the reference
+Conformance with Claude Code's official gateway protocol, read in full on
+2026-08-30. It is the reference
 terminal: the passthrough meets 10 of the protocol's 12 requirements by
 construction, with a test.
 
@@ -17,12 +17,12 @@ construction, with a test.
   the login is still the active credential and "its usage limits and billing
   apply" [V] — but there is no per-token invoice there: the gateway meters it at
   list-price equivalent and never credits it any saving.
-- `bvsala` installed. Open core: with no keys the gateway starts in Community mode (all the local saving, zero telemetry); `BIVELIO_SERVICE_KEY` adds the dashboard and the org's entitlements (see [README](README.md)).
+- `bvsala` installed. Open core: with no keys the gateway starts in Community mode (free, zero telemetry: it measures every request, and one lever is on by default, cache TTL tuning); `BIVELIO_SERVICE_KEY` only adds the cloud dashboard (see [README](README.md)).
 
 ## Wrapper: `bvsala claude` (recommended)
 
 ```bash
-export BIVELIO_SERVICE_KEY=bvk_…  # OPTIONAL: dashboard + org entitlements (without it: Community mode)
+export BIVELIO_SERVICE_KEY=bvk_…  # OPTIONAL: only adds the cloud dashboard (without it: Community mode)
 bvsala claude                    # every argument is passed as is: bvsala claude -p "hello"
 ```
 
@@ -59,8 +59,10 @@ respected.
 **With `bvsala claude` (the wrapper), the check is the summary it prints on
 exit** (and your dashboard, if you set `BIVELIO_SERVICE_KEY`): the per-request
 log is silent by default — printing it wrote over Claude Code's TUI (the words
-landed on top of the dialogs). If you want to see it anyway,
-`BVSALA_GATEWAY_LOG=1 bvsala claude`.
+landed on top of the dialogs). The summary says how many requests it metered,
+what they cost at list price and what the levers saved; with a claude.ai login,
+or on an API key with the five-minute cache, that is $0.00 and the line says
+why. For one line per request, `BVSALA_GATEWAY_LOG=1 bvsala claude`.
 
 With a plain `bvsala gateway` (two terminals), the log is the check, in this
 order:

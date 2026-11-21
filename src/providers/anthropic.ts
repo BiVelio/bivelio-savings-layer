@@ -123,6 +123,11 @@ export interface AnthropicOptions {
    * Ignored on requests whose breakpoints were placed by the layer's placer
    * (`cacheBreakpoints: "auto"`): the placer already decides whether the tail is
    * marked, from the reuse it measured on your traffic.
+   *
+   * With a BiVelio key, trimming of superseded tool results stays off on a
+   * provider with this option: a stub in the middle of the history would break
+   * the cache it writes. With no key it trims as in 1.2.3; compare a long agent
+   * loop with `savings: { elision: false }`.
    */
   automaticCache?: boolean;
   /**
@@ -233,6 +238,16 @@ const AVISO_DE_TEXTO: Record<MotivoDeTexto, string> = {
 export class AnthropicProvider implements Provider {
   readonly id: string;
   private readonly opts: AnthropicOptions;
+  /**
+   * @internal Whether this provider caches the whole history by itself
+   * (`automaticCache`). The layer reads it: with a BiVelio key, superseded tool
+   * results are only trimmed when this is `false`, which only an
+   * `AnthropicProvider` without `automaticCache` reports. Not part of the
+   * public API; it may change without notice.
+   */
+  get cachesWholePrompt(): boolean {
+    return this.opts.automaticCache === true;
+  }
   private readonly fetchImpl: typeof fetch;
   // Los pares de búsqueda de cada respuesta con `toolSearch`, por los ids de sus
   // llamadas, para devolverlos en el turno siguiente. En proceso y acotada.

@@ -15,9 +15,11 @@ import {
   huecoDeVolumen,
   inicioDeMes,
   LIMITES_MEDIR,
-  neutralizarParaMedir,
+  protegerIngestaDeMedir,
   URL_DE_PAGO_MEDIR,
 } from "@/lib/license/medir";
+import { tieneHistoriaDeComision, type SuscripcionConPrecio } from "@/lib/billing/plan-de-la-org";
+import { preciosSinComision } from "@/lib/stripe/env";
 import { alertar } from "@/lib/observabilidad/alerta";
 import { createAdminClient } from "@/lib/supabase/admin";
 
@@ -63,37 +65,50 @@ export async function POST(req: Request): Promise<NextResponse> {
   // tier; ver `decideEntitlement`). La lógica refleja la del SDK para que no se
   // contradigan.
   //
-  // Fail-OPEN ante error de BD: el trabajo primario de este endpoint es no
-  // PERDER datos de facturación, así que un fallo transitorio de la consulta de
-  // entitlement no debe descartar el uso de un cliente que paga. La revocación
-  // la refuerzan también el gate del SDK y el poller; una ventana breve durante
-  // una caída de BD es aceptable, tirar el uso legítimo no.
+  // Fail-CLOSED ante error de BD, con UN reintento (decisión del dueño,
+  // 21-11-2026). Hasta la 1.2.3 esto era fail-open: un fallo de la consulta
+  // dejaba entrar el lote a ciegas. Desde la 1.2.4 el cliente Measure ahorra de
+  // verdad, y un lote que entra sin saber quién es la org entra SIN topes y SIN
+  // el candado de cobro: en una org Measure con historia de comisión (a la que
+  // el cierre no exime a propósito) ese lote acababa en la base de comisión. Así
+  // que: se reintentan una vez las dos lecturas y, si siguen fallando, 503 SIN
+  // llamar a la RPC. No se pierde uso de quien paga: el emisor reencola el lote
+  // ante cualquier 5xx (src/metering/emitter.ts) y lo reenvía en el siguiente
+  // flush, cuando la lectura ya responde.
   // TODAS las suscripciones de la org, no solo la más nueva. Con `limit(1)` una
   // fila NO vigente más reciente hacía sombra a la vigente más antigua y el
   // ingest devolvía 402 a un cliente que paga. Ver `hasActiveSubscription`.
-  const [{ data: licenses, error: licErr }, { data: subs, error: subErr }] = await Promise.all([
-    supabase.from("licenses").select("revoked, expires_at, grace_days, plan").eq("org_id", orgId),
-    supabase.from("subscriptions").select("status, current_period_end").eq("org_id", orgId),
-  ]);
-  // ¿Solo licencia Medir (gratuita, en sombra)? Entonces su uso entra para el
-  // panel, con topes y NEUTRALIZADO: jamás comisión ni referencia cobrable.
-  let soloMedir = false;
+  const leerEntitlement = () =>
+    Promise.all([
+      supabase.from("licenses").select("revoked, expires_at, grace_days, plan").eq("org_id", orgId),
+      supabase.from("subscriptions").select("status, current_period_end, price_id").eq("org_id", orgId),
+    ]);
+  let [{ data: licenses, error: licErr }, { data: subs, error: subErr }] = await leerEntitlement();
   if (licErr || subErr) {
-    console.error("[metering/usage] entitlement lookup failed (fail-open):", licErr ?? subErr);
-  } else {
-    const decision = decideEntitlement(licenses ?? [], subs ?? [], Date.now());
-    soloMedir = decision.reason === "measure-license";
-    if (decision.blocked) {
-      return NextResponse.json(
-        {
-          error: "subscription required",
-          reason: decision.reason,
-          detail:
-            "This organization has no active BiVelio license or subscription. Subscribe or renew at https://savings.bivelio.com/dashboard/account",
-        },
-        { status: 402 },
-      );
-    }
+    console.warn("[metering/usage] entitlement lookup failed, retrying once:", licErr ?? subErr);
+    [{ data: licenses, error: licErr }, { data: subs, error: subErr }] = await leerEntitlement();
+  }
+  if (licErr || subErr) {
+    console.error("[metering/usage] entitlement lookup failed twice (fail-closed, 503):", licErr ?? subErr);
+    return NextResponse.json({ error: "entitlement lookup failed" }, { status: 503 });
+  }
+  // ¿Solo licencia Medir (gratuita)? Entonces su uso entra para el panel, con
+  // topes y PROTEGIDO: jamás comisión ni referencia cobrable. Desde la 1.2.4 su
+  // ahorro real se guarda (ver `protegerIngestaDeMedir`); solo se neutraliza
+  // como antes si la organización tiene o tuvo la modalidad con comisión.
+  const decision = decideEntitlement(licenses ?? [], subs ?? [], Date.now());
+  const soloMedir = decision.reason === "measure-license";
+  const historiaDeComision = tieneHistoriaDeComision((subs ?? []) as SuscripcionConPrecio[], preciosSinComision());
+  if (decision.blocked) {
+    return NextResponse.json(
+      {
+        error: "subscription required",
+        reason: decision.reason,
+        detail:
+          "This organization has no active BiVelio license or subscription. Subscribe or renew at https://savings.bivelio.com/dashboard/account",
+      },
+      { status: 402 },
+    );
   }
 
   let records;
@@ -105,7 +120,7 @@ export async function POST(req: Request): Promise<NextResponse> {
   }
   if (records.length === 0) return NextResponse.json({ ingested: 0 }, { status: 202 });
 
-  // ── LICENCIA MEDIR · topes y neutralización (antes de TODO lo demás) ────────
+  // ── LICENCIA MEDIR · topes y candado de cobro (antes de TODO lo demás) ──────
   let rechazadosPorAsiento = 0;
   if (soloMedir) {
     const ahora = Date.now();
@@ -129,7 +144,7 @@ export async function POST(req: Request): Promise<NextResponse> {
             reason: "measure-seat-limit",
             detail:
               `The free Measure plan measures up to ${LIMITES_MEDIR.asientos} seats per month and this one is over the limit. ` +
-              `Your layer keeps working unchanged; to measure every seat and turn the levers on, upgrade at ${URL_DE_PAGO_MEDIR}`,
+              `Your layer keeps working and saving unchanged; to measure every seat on your dashboard, upgrade at ${URL_DE_PAGO_MEDIR}`,
           },
           { status: 402 },
         );
@@ -155,7 +170,7 @@ export async function POST(req: Request): Promise<NextResponse> {
             reason: "measure-volume-limit",
             detail:
               `The free Measure plan measures up to ${LIMITES_MEDIR.peticionesDiarias} requests per day and today is full. ` +
-              `Your layer keeps working unchanged; to measure all your traffic, upgrade at ${URL_DE_PAGO_MEDIR}`,
+              `Your layer keeps working and saving unchanged; to measure all your traffic on your dashboard, upgrade at ${URL_DE_PAGO_MEDIR}`,
           },
           { status: 429 },
         );
@@ -166,11 +181,14 @@ export async function POST(req: Request): Promise<NextResponse> {
         records = records.filter((r) => !fuera.has(r.requestId) && !fuera.has(r.requestId.replace(/:shadow$/, "")));
       }
     }
-    const n = neutralizarParaMedir(records);
-    if (n.neutralizados > 0 || n.referencias > 0) {
-      // Con el SDK honrado nunca pasa: en sombra no hay palanca que ahorre. Si
-      // pasa, alguien corre palancas con una licencia gratuita.
-      console.warn("[metering/usage] measure: ahorro neutralizado en una org Medir", { org: orgId, ...n });
+    // EL CANDADO DE COBRO. Las referencias, siempre fuera; el ahorro medido se
+    // guarda salvo en una org con historia de comisión, que sigue neutralizada.
+    const n = protegerIngestaDeMedir(records, { historiaDeComision });
+    if (historiaDeComision && (n.neutralizados > 0 || n.referencias > 0)) {
+      console.warn("[metering/usage] measure: ahorro neutralizado en una org Medir con historia de comisión", {
+        org: orgId,
+        ...n,
+      });
     }
   }
 

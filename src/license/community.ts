@@ -11,11 +11,12 @@ import type { LicenseGate } from "../contracts/types.js";
  * phones home: usage metering, license renewal and team features only exist
  * when a `serviceAccountKey` is configured.
  *
- * What a license key still adds (the paid product, when you want it):
- *   - cloud dashboard + team-shared savings (metering ingest),
- *   - automatic license renewal and revocation checks,
- *   - org-wide entitlements (shared semantic caches, central policy),
+ * What a BiVelio key adds is the cloud, and only the cloud (1.2.4: a live
+ * license of any plan grants exactly what this gate grants, see live-gate.ts):
+ *   - the team dashboard and shared measurement (metering ingest),
+ *   - seats and license management (automatic renewal, revocation checks),
  *   - Enterprise support contracts.
+ * BiVelio hosts no cache: a cache shared by several machines is a store you run.
  *
  * The gate answers exactly like an active license so that the pipeline's
  * fail-closed entry check, which throws without an ACTIVE gate, keeps its

@@ -198,24 +198,26 @@ export interface SavingsToggles {
   semanticCache?: boolean | "safe-only" | "include-agentic";
   compression?: boolean | "auto";
   /**
-   * OPT-IN. Elide old, large tool_results from a multi-turn context before the
-   * request is sent, replacing each one's body with a short stable stub while
-   * keeping its `role:"tool"`, `toolCallId` and position. This is the v0
-   * (age × size) policy the shadow lane measures — productionized to actually
-   * shorten the outgoing prompt, on the generic tool_result segment nothing else
-   * in the pipeline touches.
+   * ON BY DEFAULT (set `false` to opt out). Replaces an older tool_result with a
+   * short stub when a newer call to the same tool with the same arguments
+   * supersedes it; the newest result is never touched. The stub keeps the
+   * message's `role:"tool"`, `toolCallId` and position, and results under 1 KB
+   * are left as they are. With a BiVelio key it only acts inside a tool loop on
+   * Anthropic (`AnthropicProvider` with the default cache placement, no
+   * `automaticCache`, and only results after your last user message); with no
+   * key it acts on every provider, as in 1.2.3.
    *
-   * IT ONLY RUNS WHEN THE POLICY ALLOWS IT. Like the semantic cache, elision is
+   * IT ONLY RUNS WHEN THE POLICY ALLOWS IT. Like the semantic cache, it is
    * disabled for write/destructive tools, freshness-sensitive, personalized or
    * stochastic requests, and for `freshnessBucket: "day"` — dropping the output
    * of a past action, or old context a fresh answer still needs, is exactly the
    * degradation the layer must not cause.
    *
-   * FIDELITY FLOOR. The newest tool_results are never elided (a keep-floor of at
-   * least 8, imported from the provider dial S4a); v0's own age≥2 rule is weaker
-   * than that floor, so the floor wins. What it removes is a COUNT on the panel
-   * (`eliminated_tokens`); its money value is estimated only in the shadow lane
-   * and never enters your commission — your invoice stays the source of truth.
+   * Replacing a result in the middle of the history changes the prompt a
+   * provider may have cached: with `cacheBreakpoints: "auto"`,
+   * `AnthropicProvider({ automaticCache: true })` or a provider that caches the
+   * whole prompt by itself, trimming can cost more than it saves; set `false`
+   * there. What it removes is a COUNT on the panel (`eliminated_tokens`).
    */
   elision?: boolean;
   /**
@@ -1546,9 +1548,13 @@ export interface SavingsReport {
   };
 
   /**
-   * Present only when the layer runs on the free «Measure» license (shadow
-   * mode): what the levers would have saved on this request. Nothing was
+   * Present only in observe-only mode (`observeOnly: true` in the layer
+   * config): what the levers would have saved on this request. Nothing was
    * applied — `cost` is this call's measured spend with no saving claimed.
+   * (Up to 1.2.3 the free «Measure» license forced this mode; since 1.2.4 a
+   * Measure license applies the same levers as no key, except that with a key
+   * trimming of superseded tool results only acts inside a tool loop on
+   * Anthropic, and this block is absent unless you opt in.)
    */
   measure?: MeasureReport;
 
@@ -1625,18 +1631,20 @@ export interface LicenseGate {
    */
   reason?(): string | undefined;
   /**
-   * The plan of the license in force, when there is one. `"measure"` (the free
-   * «Measure» license) puts the layer in SHADOW MODE: the request goes to the
-   * provider exactly as you built it, nothing is served from any cache, and
-   * `report.measure` says what the levers would have saved. Optional because a
-   * gate is implemented by the caller; without it, the layer is not in shadow.
+   * The plan of the license in force, when there is one (`"community"` with no
+   * key, `"measure"` for the free «Measure» cloud license, or a paid plan).
+   * Since 1.2.4 a Measure license applies the same levers as no key, with one
+   * exception: when this returns a plan other than `"community"`, trimming of
+   * superseded tool results only acts inside a tool loop on Anthropic (default
+   * cache placement, no `automaticCache`). Optional because a gate is
+   * implemented by the caller; without it the layer trims as with no key.
    */
   plan?(): string | undefined;
 }
 
 /**
- * What a layer running on the free «Measure» license would have saved on this
- * request. Present ONLY in shadow mode. Nothing here was applied: the request
+ * What a layer in observe-only mode (`observeOnly: true`) would have saved on
+ * this request. Present ONLY in that mode. Nothing here was applied: the request
  * went to your provider untouched and nothing was served from a cache.
  *
  * Every figure is HYPOTHETICAL (`basis: "shadow"`): it is never part of
@@ -1645,7 +1653,7 @@ export interface LicenseGate {
  */
 export interface MeasureReport {
   mode: "shadow";
-  /** Always false: in shadow mode no lever changes the request or avoids a call. */
+  /** Always false: in observe-only mode no lever changes the request or avoids a call. */
   applied: false;
   wouldHaveSaved: {
     /** USD this request would not have cost with the simulated levers on. */
@@ -1664,10 +1672,10 @@ export interface MeasureReport {
   };
   /**
    * Levers this shadow does NOT simulate, so `wouldHaveSaved` is a LOWER bound:
-   * they need a model call, an embedding, or a paid entitlement to estimate.
+   * they need a model call or an embedding to estimate.
    */
   notSimulated: string[];
-  /** Where to turn the levers on. */
+  /** The organization account page. Kept for compatibility: the levers turn on by removing `observeOnly`. */
   upgradeUrl: string;
 }
 

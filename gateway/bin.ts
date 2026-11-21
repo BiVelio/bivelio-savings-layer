@@ -29,6 +29,17 @@ import {
   upstreamHeredado,
 } from "./envoltorios.js";
 import { resumenDeMedicion } from "./recuento.js";
+import { UMBRAL_REESCRITURA } from "./tarifa.js";
+import {
+  FRASE_DEPENDENCIA_GATEWAY,
+  FRASE_LA_CLAVE_SOLO_ANADE_GATEWAY,
+  FRASE_PALANCAS_GATEWAY,
+  LINEA_MODO_COMUNITARIO,
+  LINEA_PALANCAS_SOLO_OBSERVAR,
+  LO_QUE_ANADE_LA_NUBE,
+  VARIABLE_GATEWAY_SOLO_OBSERVAR,
+  enLineas,
+} from "./textos-publicos.js";
 import { leerEnrolamiento, planDeAnillo2 } from "./anillo2.js";
 import { flagDeUpstream, resolverUpstream } from "./upstream.js";
 import { connect } from "node:net";
@@ -91,6 +102,16 @@ import { EMBEDDED_PUBLIC_KEY } from "../src/license/index.js";
  */
 const decision = decidirArranque(process.argv.slice(2));
 
+/** Las frases comunes de textos-publicos.ts, al ancho de la ayuda. */
+const PIE_DE_PALANCAS = enLineas(
+  `${FRASE_PALANCAS_GATEWAY} ${FRASE_LA_CLAVE_SOLO_ANADE_GATEWAY} ${FRASE_DEPENDENCIA_GATEWAY} To only observe, without ` +
+    `changing any request, set ${VARIABLE_GATEWAY_SOLO_OBSERVAR}=1.`,
+  98,
+).join("\n");
+
+/** El umbral de la rebaja de TTL, el MISMO número que decide (gateway/tarifa.ts), en %. */
+const UMBRAL_TTL_PCT = Math.round(UMBRAL_REESCRITURA * 100);
+
 function ayuda(): void {
   console.log(`bvsala ${BV_SALA_VERSION} — BiVelio Savings Layer
 
@@ -99,9 +120,11 @@ Commands:
                          Local saving + metering proxy (default port 8402) for anything that honours a
                          base URL: Claude Code, opencode, Goose, Crush… and the official OpenAI
                          and Anthropic SDKs in any language, Python included.
-                         Works out of the box — no keys needed (COMMUNITY mode: every local lever
-                         on, zero telemetry). BIVELIO_SERVICE_KEY adds the cloud dashboard,
-                         org entitlements and team metering.
+                         Works out of the box, free, with no keys and zero telemetry (COMMUNITY
+                         mode): it meters every request, and one lever is on by default (cache
+                         TTL tuning; the others are opt-in, see Environment). On a Claude or
+                         ChatGPT subscription, with the defaults, it only measures. BIVELIO_SERVICE_KEY only adds the
+                         cloud: ${LO_QUE_ANADE_LA_NUBE}.
                          --upstream openai | anthropic | gemini | deepseek | qwen | glm |
                          moonshot | minimax | openrouter | ollama | vllm | lmstudio | an
                          origin URL (default: anthropic). DeepSeek rewrites Anthropic
@@ -130,8 +153,9 @@ Commands:
                          (ANTHROPIC_API_BASE); OpenAI with BVSALA_GATEWAY_UPSTREAM=openai.
   gemini [args…]         Run the Gemini CLI through the gateway (GOOGLE_GEMINI_BASE_URL,
                          upstream gemini): usage read from :generateContent responses.
-                         Every wrapper prints, on exit, how many requests it metered and
-                         which ones it forwarded without metering, and why.
+                         Every wrapper prints, on exit, how many requests it metered, what
+                         they cost at list price, what the levers saved (or why nothing was
+                         saved), and which requests it forwarded without metering, and why.
   doctor [--port N]      Detect installed terminals and print the exact configuration for each.
   skill [--codex] [--project] [--force]
                          Install the "savings-mode" skill for Claude Code (~/.claude/skills;
@@ -172,10 +196,12 @@ Commands:
   The Spanish spellings --puerto, --proyecto and --forzar were removed in 0.5: they now
   fail with an error that names the English flag.
 Environment:
-  BIVELIO_SERVICE_KEY    Service key (bvk_…): OPTIONAL. Identifies your organization, collects its
-                         license (renewed by itself) and enables metering and seat identity.
-                         Without it the gateway runs in COMMUNITY mode: all local levers on,
-                         nothing sent to BiVelio.
+  BIVELIO_SERVICE_KEY    Service key (bvk_…): OPTIONAL. It only adds the cloud: it identifies your
+                         organization, collects its license (renewed by itself) and sends usage
+                         to your dashboard. With the free Measure license it switches no lever
+                         off; with a paid license the levers follow that license, as in 1.2.3
+                         (see BVSALA_GATEWAY_ELISION). Without it the gateway runs in COMMUNITY
+                         mode: free, metered on this machine, nothing sent to BiVelio.
   BIVELIO_LICENSE_KEY    License key (optional fallback): used only if savings.bivelio.com cannot be
                          reached at start; verified on this machine. Replace it every billing period.
   BVSALA_SEAT_ID         Stable seat identity per replica (optional).
@@ -190,23 +216,39 @@ Environment:
   BVSALA_GATEWAY_SHADOW  =1 enables the shadow lane for context elision (experimental):
                          computes what the elision policy would have saved WITHOUT touching
                          traffic and reports it separately (never counted as a measured saving).
-  BVSALA_GATEWAY_ELISION =0 turns OFF the provider-side levers, which are on by default. With
-                         no BiVelio keys (COMMUNITY mode) they are free and need no license.
-                         Only with an organization license (BIVELIO_SERVICE_KEY) does that
-                         license's feature list decide which ones apply (checked fail-closed),
-                         and =0 does not affect its status check:
+                         Every other lever keeps acting; to turn them ALL off, see the next one.
+  BVSALA_GATEWAY_OBSERVE_ONLY
+                         =1 puts the gateway in OBSERVE-ONLY mode, on any plan: requests are
+                         forwarded byte for byte (no lever, no coalescing, no usage injection),
+                         usage is still metered, and what the price levers would have saved is
+                         reported separately as an estimate. Off by default: with no keys, with
+                         the free Measure license and with a paid one alike, the levers act.
+  BVSALA_GATEWAY_ELISION =0 turns OFF every gateway lever (only cache TTL tuning is on by
+                         default). With no BiVelio keys (COMMUNITY mode) they are free and need
+                         no license, and the free Measure license applies the same levers as no
+                         key. With a Pro, Team or Enterprise license the gateway works as in
+                         1.2.3: each lever also needs its feature in your organization's license,
+                         checked fail-closed (with no service key, or while savings.bivelio.com
+                         cannot confirm it, requests travel untouched). A blocked or lapsed
+                         license stops the gateway: it answers 402.
+                         =0 does not affect the license status check:
                            · context_elision  — adjusts ONLY the context_management block
-                             of each /v1/messages; the provider does the trimming.
+                             of each /v1/messages; the provider does the trimming. Its dials
+                             are OFF unless you also set BVSALA_GATEWAY_DIALES_ELISION=1: they
+                             measured as a net loss.
                            · cache_ttl_tuning — lowers the cache-write TTL from 1h (2x the
-                             input price) to 5m (1.25x) while the session stays warm. It does
-                             NOT touch a single token the model reads: it changes the rate,
-                             not the content. API-key traffic only: a Claude Pro/Max
-                             subscription has no write surcharge and travels untouched. It
-                             only has something to lower when the client asks for the 1h
+                             input price) to 5m (1.25x) only on turns where a large part of
+                             the request is new (at least ${UMBRAL_TTL_PCT}% of the body: a
+                             session's first turn, a compaction); chained turns keep the 1h
+                             cache. It does NOT touch a single token the model reads: it
+                             changes the rate, not the content. API-key traffic only: a Claude
+                             Pro/Max subscription has no write surcharge and travels untouched.
+                             It only has something to lower when the client asks for the 1h
                              cache: Claude Code on an API key asks for 5m unless you set
-                             promptCacheTtl to 1h, and then the gateway only measures. In
-                             measured Claude Code traffic, 99.1% of turns chain within 5
-                             minutes, and at API list prices that surcharge was 8.0% of the cost.
+                             promptCacheTtl to 1h, and then the gateway only measures. On our
+                             own Claude Code traffic (one organization, a counterfactual
+                             replay, not an A/B) it left a net 2.49% of the list-price bill:
+                             savings.bivelio.com/en/benchmarks.
                          When in doubt, the request travels untouched. (Up to 0.4.13 the flag
                          was inverted: "=1 arms". In an A/B always pass it explicitly, =1 or
                          =0, so you do not depend on the installed version.)
@@ -215,8 +257,9 @@ Environment:
                          same input, output and cache-write rates; cache READS drop from
                          0.001 to 0.00025 per 1K tokens (catalog). The saving is the difference
                          of two prices over the same usage: measured without an A/B, and it
-                         counts as a measured saving. Free with no keys; with an organization
-                         license, only if it includes sibling_model_routing (fail-closed).
+                         counts as a measured saving. Free with no keys and with the free
+                         Measure license; with a paid license, only if it includes
+                         sibling_model_routing (fail-closed), as in 1.2.3.
                          It CHANGES the model you see in the response (/cost, /status), and
                          turning it on mid-thread pays ONE cold write of the prefix (each
                          model has its own cache): start it together with the terminal.
@@ -224,8 +267,8 @@ Environment:
   BVSALA_GATEWAY_EFFORT  =low|medium sets a per-turn effort ceiling (experimental):
                          appends a message with output_config.effort to each /v1/messages
                          without touching the root (does not reset the prefix cache). Free with
-                         no keys; with an organization license, only if it includes
-                         per_turn_effort (fail-closed). Only with
+                         no keys and with the free Measure license; with a paid license, only if
+                         it includes per_turn_effort (fail-closed), as in 1.2.3. Only with
                          claude-fable-5-1, claude-mythos-5-1, claude-opus-5-5 and claude-opus-5,
                          and only when the level is below the model's default (high; medium on
                          claude-opus-5-5): it never raises effort. Any other request travels
@@ -241,19 +284,22 @@ Environment:
                          was metered).
   CLAUDE_CODE_ENABLE_GATEWAY_MODEL_DISCOVERY=1  (Claude Code, API key only) your models in /model.
 
-The gateway is open core: it starts with no keys at all (COMMUNITY mode) and arms every local
-saving lever, with zero telemetry. With a license (service key or offline fallback) an invalid
-or expired key still fails closed, and if a live license lapses only NEW requests are refused
-(HTTP 402) until it is renewed — a request in flight is never interrupted. Metering is
-best-effort: with ingestion down, it forwards and warns. On a Claude or ChatGPT subscription
-there is no per-token invoice: that traffic is metered at list-price equivalent and no saving
-is credited on it.
+The gateway is open core: it starts with no keys at all (COMMUNITY mode), free, with zero telemetry.
+${PIE_DE_PALANCAS}
+With a license (service key or offline fallback) an invalid or expired key still fails closed,
+and if a live license lapses only NEW requests are refused (HTTP 402) until it is renewed — a
+request in flight is never interrupted. Metering is best-effort: with ingestion down, it forwards
+and warns. On a Claude or ChatGPT subscription there is no per-token invoice: that traffic is
+metered at list-price equivalent and no saving is credited on it.
 Your prompts, completions and provider keys never reach BiVelio: what it receives is per-request
 usage (token counts, cost, the model id and opaque ids); LICENSE-CLOUD.md §5 lists every field.
 More: savings.bivelio.com`);
 }
 
 if (decision.tipo === "ayuda") {
+  if (decision.desconocido !== undefined) {
+    console.error(`[bvsala] unknown command \`${decision.desconocido}\`. The commands are listed below.`);
+  }
   ayuda();
   process.exit(decision.salida);
 }
@@ -287,6 +333,8 @@ if (comando === "gateway" || comando === "doctor") {
   }
 }
 const effortEnv = process.env.BVSALA_GATEWAY_EFFORT;
+/** BVSALA_GATEWAY_OBSERVE_ONLY=1: paso limpio, en cualquier plan (servidor.ts `soloObservar`). */
+const soloObservar = process.env.BVSALA_GATEWAY_OBSERVE_ONLY === "1";
 const siblingModelEnv = process.env.BVSALA_GATEWAY_SIBLING_MODEL;
 
 if (comando === "mcp") {
@@ -594,12 +642,14 @@ try {
     // defecto.
     ...(process.env.BVSALA_GATEWAY_USAGE_INJECT === "1" ? { usageInject: true } : {}),
     ...(process.env.BVSALA_GATEWAY_SHADOW === "1" ? { sombra: true } : {}),
-    // S4a · el CANAL de entitlements, del que cuelgan las dos palancas. ARMADO
-    // POR DEFECTO: el ahorro en el terminal tiene que funcionar SOLO. El gate
-    // REAL son los features `context_elision` y `cache_ttl_tuning` en la licencia
-    // de la org (fail-closed). `BVSALA_GATEWAY_ELISION=0` sigue siendo el freno
-    // de emergencia que apaga las dos de golpe. `serviceAccountKey` es
-    // estructuralmente necesaria (identidad de org para el entitlement).
+    // El modo SOLO-OBSERVAR: paso limpio, en cualquier plan. No es
+    // BVSALA_GATEWAY_SHADOW (que solo estima la elisión con el resto actuando).
+    ...(soloObservar ? { soloObservar: true } : {}),
+    // S4a · las palancas, ARMADAS POR DEFECTO: el ahorro en el terminal tiene que
+    // funcionar SOLO. Sin claves y con Medir el servidor las concede localmente;
+    // con una licencia de pago, como en la 1.2.3, cada una pide su feature en la
+    // licencia de la org (fail-closed). `BVSALA_GATEWAY_ELISION=0` sigue siendo el
+    // freno de emergencia que las apaga todas de golpe.
     elision: elisionPedida !== "0",
     // S4a-B · los DIALES, APAGADOS desde el 2026-09-09. Hasta hoy iban en la
     // misma bandera que la rebaja de TTL, así que no se podía apagar la palanca
@@ -612,8 +662,9 @@ try {
     // limpia. Se encienden a mano y a sabiendas.
     ...(process.env.BVSALA_GATEWAY_DIALES_ELISION === "1" ? { dialesElision: true } : {}),
     // Palanca C · el MODELO HERMANO (decisión del dueño, 2026-09-09: «haz el C»).
-    // Opt-in explícito del cliente porque cambia el `model` de la respuesta; el
-    // feature `sibling_model_routing` de la licencia sigue verjando (fail-closed)
+    // Opt-in explícito del cliente porque cambia el `model` de la respuesta; sin
+    // claves y con Medir no pide ningún feature; con una licencia de pago, el
+    // feature `sibling_model_routing` sigue verjando (fail-closed, como en la 1.2.3)
     // y `BVSALA_GATEWAY_ELISION=0` la apaga con las demás. NO la arma el anillo 2:
     // el ahorro se mide sin contrafactual, no hay A/B que hacer.
     ...(siblingModelEnv === "1" ? { modeloHermano: true } : {}),
@@ -641,7 +692,11 @@ try {
 
 const upstreamEfectivo = upstreamPedido ?? envoltorio?.upstream ?? "https://api.anthropic.com";
 salida(`[bvsala gateway] v${BV_SALA_VERSION} listening on http://127.0.0.1:${arranque.puerto} → ${upstreamEfectivo}`);
-(licencia.lineIsWarning ? console.error : salida)(`[bvsala gateway] ${licencia.line}`);
+// Sin claves, la primera línea es la de textos-publicos.ts: la de license.ts
+// decía «every local saving lever on», y en el gateway va UNA por defecto.
+(licencia.lineIsWarning ? console.error : salida)(
+  `[bvsala gateway] ${licencia.source === "community" ? LINEA_MODO_COMUNITARIO : licencia.line}`,
+);
 for (const w of licencia.warnings) console.error(`[bvsala gateway] ${w}`);
 salida(
   serviceAccountKey
@@ -672,25 +727,35 @@ if (process.env.BVSALA_GATEWAY_USAGE_INJECT === "1") {
   // A2-29 · el open core rompió la suposición de antes (que la verja de
   // licencia garantizaba la clave). Sin ninguna clave (modo comunitario)
   // las palancas las concede este proceso, gratis: la línea no habla de
-  // licencias. Con clave de servicio, manda la licencia de la org. Solo una
-  // licencia offline SIN clave de servicio deja al gateway sin canal.
+  // licencias. Con la licencia Medir (1.2.4) las palancas son las mismas y
+  // también se conceden localmente, con o sin clave de servicio. Con una
+  // licencia de PAGO, como en la 1.2.3, manda la licencia de la org: solo una
+  // licencia de pago offline SIN clave de servicio deja al gateway sin canal.
   const comunidad = licencia.license === null;
-  const hayCanal = comunidad || serviceAccountKey !== undefined;
-  const estado = describirEstadoDeElision(
-    elisionPedida,
-    hayCanal,
-    process.env.BVSALA_GATEWAY_DIALES_ELISION === "1",
-    comunidad,
-  );
-  (estado.aviso ? console.error : salida)(`[bvsala gateway] ${estado.linea}`);
-  // Palanca C dicha en voz alta, por la misma razón: una bandera puesta en un
-  // terminal sin clave (o con el canal cerrado) es control en silencio.
-  const estadoHermano = describirEstadoDeHermano(siblingModelEnv, hayCanal, elisionPedida !== "0", comunidad);
-  (estadoHermano.aviso ? console.error : salida)(`[bvsala gateway] ${estadoHermano.linea}`);
-  // Palanca D dicha en voz alta por la misma razón que las otras: una palanca
-  // que se cree encendida y no lo está es la trampa muda que ya costó un A/B.
-  const estadoEsfuerzo = describirEstadoDeEsfuerzo(effortEnv, hayCanal, elisionPedida !== "0", comunidad);
-  (estadoEsfuerzo.aviso ? console.error : salida)(`[bvsala gateway] ${estadoEsfuerzo.linea}`);
+  const medir = licencia.license?.payload.plan === "measure";
+  const hayCanal = comunidad || medir || serviceAccountKey !== undefined;
+  if (soloObservar) {
+    // En modo solo-observar no actúa ninguna palanca (servidor.ts, `enMedicion`):
+    // una sola línea que lo dice, en vez de «TTL tuning ON» y «ARMED» encima.
+    salida(`[bvsala gateway] ${LINEA_PALANCAS_SOLO_OBSERVAR}`);
+  } else {
+    const estado = describirEstadoDeElision(
+      elisionPedida,
+      hayCanal,
+      process.env.BVSALA_GATEWAY_DIALES_ELISION === "1",
+      comunidad,
+      medir,
+    );
+    (estado.aviso ? console.error : salida)(`[bvsala gateway] ${estado.linea}`);
+    // Palanca C dicha en voz alta, por la misma razón: una bandera puesta en un
+    // terminal sin clave (o con el canal cerrado) es control en silencio.
+    const estadoHermano = describirEstadoDeHermano(siblingModelEnv, hayCanal, elisionPedida !== "0", comunidad, medir);
+    (estadoHermano.aviso ? console.error : salida)(`[bvsala gateway] ${estadoHermano.linea}`);
+    // Palanca D dicha en voz alta por la misma razón que las otras: una palanca
+    // que se cree encendida y no lo está es la trampa muda que ya costó un A/B.
+    const estadoEsfuerzo = describirEstadoDeEsfuerzo(effortEnv, hayCanal, elisionPedida !== "0", comunidad, medir);
+    (estadoEsfuerzo.aviso ? console.error : salida)(`[bvsala gateway] ${estadoEsfuerzo.linea}`);
+  }
   if (planAnillo2.linea) {
     (planAnillo2.aviso ? console.error : salida)(`[bvsala gateway] ${planAnillo2.linea}`);
   }
@@ -723,7 +788,7 @@ function imprimirResumenes(): void {
   resumido = true;
   const degradado = resumenDeDegradaciones(arranque.degradaciones());
   if (degradado) console.error(degradado);
-  console.error(resumenDeMedicion(arranque.medicion(), comando));
+  console.error(resumenDeMedicion(arranque.medicion(), comando, { logVisible: !silencioso, soloObservar }));
 }
 
 /** El terminal envuelto, mientras viva: las señales se deciden con él (A2-11). */

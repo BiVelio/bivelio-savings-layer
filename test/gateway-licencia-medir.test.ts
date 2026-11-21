@@ -7,13 +7,28 @@ import { oficialHaciaElMock } from "./helpers/gateway-oficial.js";
 import { testLicense } from "./helpers/test-license.js";
 
 /**
- * LA LICENCIA MEDIR EN LA PASARELA (`bvsala`), de punta a punta y sin red.
+ * LA LICENCIA MEDIR Y EL MODO SOLO-OBSERVAR EN LA PASARELA (`bvsala`), de punta a
+ * punta y sin red.
  *
- * Con TODO armado —el canal concede todas las features, el operador puso las
- * banderas del modelo hermano, del esfuerzo y de la coalescencia— una licencia
- * `measure` deja el cuerpo byte a byte como lo mandó el cliente, no coalesce dos
- * peticiones idénticas en vuelo (dos llamadas al upstream) y lo que el modelo
- * hermano habría ahorrado viaja a la ingesta como registro `shadow`.
+ * POR QUÉ CAMBIÓ ESTE FICHERO (1.2.4). Hasta la 1.2.3 fijaba, a propósito, que
+ * una licencia `measure` dejaba el cuerpo byte a byte, no coalescía y solo
+ * informaba el «habrías ahorrado» como sombra. Era el diseño del modelo cerrado
+ * anterior a la 1.0.0 (#417). Con el open core (#523) el modo comunitario —sin
+ * ninguna clave— ya aplicaba todas las palancas, así que la clave gratuita de la
+ * nube dejaba la pasarela PEOR que sin clave. Decisión del dueño (21-11-2026):
+ * Medir ahorra igual que el modo comunitario, y el paso limpio es una opción
+ * explícita (`BVSALA_GATEWAY_OBSERVE_ONLY=1` → `soloObservar`), en cualquier plan.
+ *
+ * Lo que fija ahora:
+ *   1. MEDIR = COMUNITARIO: con las mismas banderas del operador, el upstream
+ *      recibe exactamente los mismos bytes y las mismas llamadas que sin claves,
+ *      aunque la nube sirva `features: []` para la organización;
+ *   2. el modo solo-observar conserva, intacto, lo que antes hacía Medir: cuerpo
+ *      byte a byte, sin coalescencia, y el hipotético como registro `shadow`;
+ *   3. una licencia de PAGO sigue mandada por las features de su organización,
+ *      como en la 1.2.3 (sin clave de servicio, con la nube caída o con la fila
+ *      sin features, nada se reescribe): Medir no ha abierto nada que no
+ *      estuviera ya abierto sin clave, ni el pago ha cambiado.
  */
 
 const PETICION = {
@@ -61,14 +76,14 @@ function upstreamFalso(recibidos: string[], retrasoMs = 0, sse = SSE): Promise<n
   );
 }
 
-function plataformaFalsa(lotes: unknown[][]): Promise<number> {
+function plataformaFalsa(lotes: unknown[][], features: string[] = TODAS, reason?: string): Promise<number> {
   return escuchar(
     createServer(async (req, res) => {
       const chunks: Buffer[] = [];
       for await (const c of req) chunks.push(c as Buffer);
       if (req.url === "/api/org/entitlements") {
         res.writeHead(200, { "content-type": "application/json" });
-        res.end(JSON.stringify({ features: TODAS, refreshAfterSeconds: 300 }));
+        res.end(JSON.stringify({ features, refreshAfterSeconds: 300, ...(reason ? { reason } : {}) }));
         return;
       }
       if (chunks.length > 0) lotes.push(JSON.parse(Buffer.concat(chunks).toString("utf8")) as unknown[]);
@@ -78,11 +93,16 @@ function plataformaFalsa(lotes: unknown[][]): Promise<number> {
   );
 }
 
-async function gatewayMedir(
+/** Las banderas del operador, las mismas en todos los montajes de este fichero. */
+const banderas = (modeloHermano: boolean) => ({ elision: true, modeloHermano, esfuerzo: "low", coalescer: true, log: () => {} });
+
+/** Una pasarela con licencia (y clave de servicio). `soloObservar` es BVSALA_GATEWAY_OBSERVE_ONLY=1. */
+async function gatewayConLicencia(
   upstream: number,
   plataforma: number,
   plan = "measure",
   modeloHermano = true,
+  soloObservar = false,
 ): Promise<GatewayArrancado> {
   const g = await arrancarGateway({
     license: testLicense({ plan, features: plan === "measure" ? [] : TODAS }),
@@ -90,14 +110,27 @@ async function gatewayMedir(
     ...oficialHaciaElMock(upstream),
     serviceAccountKey: "bvk_test",
     meteringUrl: `http://127.0.0.1:${plataforma}/api/metering/usage`,
-    elision: true,
-    modeloHermano,
-    esfuerzo: "low",
-    coalescer: true,
-    log: () => {},
+    ...banderas(modeloHermano),
+    ...(soloObservar ? { soloObservar: true } : {}),
   });
   recursos.push(g);
   await new Promise((r) => setTimeout(r, 150)); // el canal asienta
+  return g;
+}
+
+/** Lo que hasta la 1.2.3 hacía la licencia Medir sola: ahora, Medir + solo-observar. */
+const gatewayMedir = (upstream: number, plataforma: number, plan = "measure", modeloHermano = true) =>
+  gatewayConLicencia(upstream, plataforma, plan, modeloHermano, plan === "measure");
+
+/** Sin ninguna clave: el modo comunitario, con las mismas banderas. */
+async function gatewayComunitario(upstream: number, modeloHermano = true, soloObservar = false): Promise<GatewayArrancado> {
+  const g = await arrancarGateway({
+    puerto: 0,
+    ...oficialHaciaElMock(upstream),
+    ...banderas(modeloHermano),
+    ...(soloObservar ? { soloObservar: true } : {}),
+  });
+  recursos.push(g);
   return g;
 }
 
@@ -132,7 +165,7 @@ async function esperar(cond: () => boolean, ms = 3000): Promise<void> {
   }
 }
 
-describe("pasarela con licencia Medir", () => {
+describe("pasarela en modo solo-observar (lo que hasta la 1.2.3 forzaba la licencia Medir)", () => {
   it("con todo armado, el cuerpo llega al upstream byte a byte y el hermano solo se informa como sombra", async () => {
     const recibidos: string[] = [];
     const lotes: unknown[][] = [];
@@ -215,5 +248,164 @@ describe("pasarela con licencia Medir", () => {
     await (await pedir(g.puerto)).text();
     expect(recibidos).toHaveLength(1);
     expect(recibidos[0]).not.toBe(CUERPO);
+  });
+});
+
+describe("pasarela con licencia Medir · ahorra igual que el modo comunitario", () => {
+  /** Una petición y dos idénticas a la vez; devuelve lo que vio el upstream. */
+  async function carga(g: GatewayArrancado, recibidos: string[]) {
+    await (await pedir(g.puerto)).text();
+    const trasUna = recibidos.length;
+    const otra = JSON.stringify({ ...PETICION, messages: [{ role: "user", content: "adiós" }] });
+    const [a, b] = await Promise.all([pedir(g.puerto, otra), pedir(g.puerto, otra)]);
+    await Promise.all([a.text(), b.text()]);
+    return { cuerpos: [...recibidos], enLasDosALaVez: recibidos.length - trasUna };
+  }
+
+  it("mismos bytes y mismas llamadas al upstream que SIN CLAVES, aunque la nube sirva features: []", async () => {
+    const vistoComunidad: string[] = [];
+    const comunidad = await carga(await gatewayComunitario(await upstreamFalso(vistoComunidad, 80, SSE_ESCRITURA_1H)), vistoComunidad);
+
+    const vistoMedir: string[] = [];
+    // La nube REAL sirve `features: []` a una org que solo tiene Medir.
+    const medir = await carga(
+      await gatewayConLicencia(await upstreamFalso(vistoMedir, 80, SSE_ESCRITURA_1H), await plataformaFalsa([], [])),
+      vistoMedir,
+    );
+
+    // El contador independiente es el upstream falso. Antes de la 1.2.4: con
+    // Medir 3 llamadas y el cuerpo intacto; sin claves, 2 y el cuerpo reescrito.
+    expect(comunidad.cuerpos).toHaveLength(2);
+    expect(comunidad.enLasDosALaVez).toBe(1);
+    expect(medir.cuerpos).toEqual(comunidad.cuerpos);
+    expect(medir.enLasDosALaVez).toBe(1);
+    // Y las palancas actuaron de verdad: la marca de 1h salió a 5 min.
+    expect(medir.cuerpos[0]).not.toBe(CUERPO);
+    expect(medir.cuerpos[0]).not.toContain('"ttl":"1h"');
+  });
+
+  it("con SOLO la licencia Medir pegada a mano (sin clave de servicio) también: igual que sin claves", async () => {
+    const vistoComunidad: string[] = [];
+    await (await pedir((await gatewayComunitario(await upstreamFalso(vistoComunidad, 0, SSE_ESCRITURA_1H))).puerto)).text();
+    const vistoMedir: string[] = [];
+    const g = await arrancarGateway({
+      license: testLicense({ plan: "measure", features: [] }),
+      puerto: 0,
+      ...oficialHaciaElMock(await upstreamFalso(vistoMedir, 0, SSE_ESCRITURA_1H)),
+      ...banderas(true),
+    });
+    recursos.push(g);
+    await (await pedir(g.puerto)).text();
+    expect(vistoMedir).toEqual(vistoComunidad);
+    expect(vistoMedir[0]).not.toBe(CUERPO);
+  });
+
+  it("el ahorro REAL viaja a la ingesta como medido (baseline > actual) y no hay ningún registro sombra", async () => {
+    const recibidos: string[] = [];
+    const lotes: unknown[][] = [];
+    // El proveedor factura lo que de verdad llegó: una escritura a 5 min (la capa rebajó la marca de 1h).
+    const sse5m = SSE_ESCRITURA_1H.replaceAll(
+      `"ephemeral_5m_input_tokens":0,"ephemeral_1h_input_tokens":${N_ESCRITA_1H}`,
+      `"ephemeral_5m_input_tokens":${N_ESCRITA_1H},"ephemeral_1h_input_tokens":0`,
+    );
+    const g = await gatewayConLicencia(await upstreamFalso(recibidos, 0, sse5m), await plataformaFalsa(lotes, []), "measure", false);
+    await (await pedir(g.puerto)).text();
+    expect(recibidos[0]).not.toContain('"ttl":"1h"');
+    const registros = await registrosDe(g, lotes, 1);
+    await new Promise((r) => setTimeout(r, 100));
+    expect(registros.filter((r) => r["basis"] === "shadow")).toHaveLength(0);
+    expect(registros).toHaveLength(1);
+    // La rebaja de TTL aplicada acredita su ahorro, como en cualquier otro plan.
+    expect(Number(registros[0]!["baselineCost"])).toBeGreaterThan(Number(registros[0]!["actualCost"]));
+    expect(() => parseUsageRecords(registros, "org")).not.toThrow();
+  });
+
+  it("el cartel de arranque dice lo que pasa ahora (palancas encendidas), no «SHADOW mode»", async () => {
+    const { AVISO_GATEWAY_MEDIR, AVISO_GATEWAY_SOLO_OBSERVAR } = await import("../gateway/servidor.js");
+    expect(AVISO_GATEWAY_MEDIR).toContain("the same levers as with no BiVelio keys apply");
+    // No todas las palancas van encendidas por defecto: el cartel no puede decirlo (revisión de #612).
+    expect(AVISO_GATEWAY_MEDIR).not.toMatch(/every (local )?(saving )?lever/i);
+    expect(AVISO_GATEWAY_MEDIR).toContain("BVSALA_GATEWAY_OBSERVE_ONLY=1");
+    expect(AVISO_GATEWAY_MEDIR).not.toMatch(/SHADOW|byte for byte|upgrade/);
+    expect(AVISO_GATEWAY_SOLO_OBSERVAR).toContain("OBSERVE-ONLY");
+    expect(AVISO_GATEWAY_SOLO_OBSERVAR).toContain("byte for byte");
+  });
+
+  it("el JSDoc publicado de createSavingsLayer (viaja en dist/index.d.ts) no dice «every local saving lever on»", async () => {
+    // Revisión de #612: no todas las palancas van encendidas por defecto, así que
+    // ningún texto que viaja al cliente puede afirmarlo.
+    const { readFileSync } = await import("node:fs");
+    const fuente = readFileSync(new URL("../src/pipeline/create.ts", import.meta.url), "utf8");
+    expect(fuente).toContain("COMMUNITY gate — free, zero telemetry, zero network.");
+    expect(fuente).not.toMatch(/every local saving lever on/);
+  });
+
+  it("una org Medir BLOQUEADA por el control plane se sigue cortando con 402 (el canal de org no se ha soltado)", async () => {
+    const recibidos: string[] = [];
+    const g = await gatewayConLicencia(await upstreamFalso(recibidos), await plataformaFalsa([], [], "license-revoked"));
+    const res = await pedir(g.puerto);
+    expect(res.status).toBe(402);
+    await res.text();
+    expect(recibidos).toHaveLength(0);
+  });
+});
+
+describe("pasarela · lo que NO cambia", () => {
+  it("opt-out del operador (BVSALA_GATEWAY_ELISION=0) con licencia de PAGO: nada se reescribe", async () => {
+    const recibidos: string[] = [];
+    const g = await arrancarGateway({
+      license: testLicense({ plan: "pro", features: TODAS }),
+      puerto: 0,
+      ...oficialHaciaElMock(await upstreamFalso(recibidos, 0, SSE_ESCRITURA_1H)),
+      ...banderas(true),
+      elision: false,
+      coalescer: false,
+    });
+    recursos.push(g);
+    await (await pedir(g.puerto)).text();
+    expect(recibidos).toEqual([CUERPO]);
+  });
+});
+
+describe("pasarela · una licencia de PAGO, como la 1.2.3 de pago (1.2.4)", () => {
+  // Decisión del dueño (21-11-2026): «con clave de pago, nada peor que la 1.2.3
+  // de pago». Una rama previa de la 1.2.4 daba aquí las palancas de sin claves
+  // («lo mismo que el modo comunitario»); medido con un proveedor falso cuya
+  // caché caduca, la rebaja de TTL sin el feature de la org encarecía las
+  // sesiones de pago con pausas de más de 5 min (+36,5 % a +51,1 % frente al 0 %
+  // de la 1.2.3). Estos dos casos vuelven a fijar lo de la 1.2.3: una
+  // organización de pago con la fila sin literales, o sin clave de servicio,
+  // reenvía byte a byte. Medir, en cambio, ahorra como sin claves (arriba).
+  it("licencia de PAGO sin las features en su organización: nada se reescribe, como la 1.2.3", async () => {
+    const recibidos: string[] = [];
+    const g = await gatewayConLicencia(await upstreamFalso(recibidos, 0, SSE_ESCRITURA_1H), await plataformaFalsa([], []), "pro");
+    await (await pedir(g.puerto)).text();
+    expect(recibidos).toEqual([CUERPO]);
+  });
+
+  it("licencia de PAGO sin clave de servicio: nada se reescribe, como la 1.2.3 (no hay org que consultar)", async () => {
+    const recibidos: string[] = [];
+    const g = await arrancarGateway({
+      license: testLicense({ plan: "pro", features: TODAS }),
+      puerto: 0,
+      ...oficialHaciaElMock(await upstreamFalso(recibidos, 0, SSE_ESCRITURA_1H)),
+      ...banderas(true),
+      coalescer: false,
+    });
+    recursos.push(g);
+    await (await pedir(g.puerto)).text();
+    expect(recibidos).toEqual([CUERPO]);
+  });
+
+  it.each([
+    ["sin claves", "comunidad"],
+    ["con licencia de pago", "pro"],
+  ])("el modo solo-observar vale en cualquier plan (%s): byte a byte y sin coalescer", async (_n, plan) => {
+    const recibidos: string[] = [];
+    const up = await upstreamFalso(recibidos, 80, SSE_ESCRITURA_1H);
+    const g = plan === "comunidad" ? await gatewayComunitario(up, true, true) : await gatewayConLicencia(up, await plataformaFalsa([]), plan, true, true);
+    const [a, b] = await Promise.all([pedir(g.puerto), pedir(g.puerto)]);
+    await Promise.all([a.text(), b.text()]);
+    expect(recibidos).toEqual([CUERPO, CUERPO]);
   });
 });

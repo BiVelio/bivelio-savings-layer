@@ -68,6 +68,9 @@ call.
   block or a code fence is never moved — that would corrupt the payload — and the
   request travels untouched. The `cache-prefix` trace reports what moved and why it
   abstained; it records counts and patterns, never your prompt text.
+- **It moves whole lines.** Put the per-request value on a line of its own. When it
+  shares its line with the rest of the prompt (a one-line `system`), nothing stable is
+  left to keep and the request travels untouched.
 - **Measured live, exploratory** (v2.3-r1 evidence, 20 requests per arm): 0 % → 95 %
   hit-rate, −82.76 % per request (claude-haiku-4-5, provider's counters;
   [`benchmarks/evidencia/cache-prefix-vivo-2026-11-15.json`](../../benchmarks/evidencia/cache-prefix-vivo-2026-11-15.json)).
@@ -76,7 +79,7 @@ call.
 const { report } = await layer.generate({
   model: "anthropic/claude-haiku-4-5",
   messages: [
-    { role: "system", content: "You are a support bot. Generated at 2026-11-15T10:00:00Z. Be brief." },
+    { role: "system", content: "You are a support bot.\nGenerated at 2026-11-15T10:00:00Z.\nBe brief." },
     { role: "user", content: "Where is my order?" },
   ],
   savings: { cachePrefix: true },

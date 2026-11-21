@@ -23,9 +23,11 @@ describe("bvsala · la decisión de arranque", () => {
     expect(decidirArranque(["-h"])).toEqual({ tipo: "ayuda", salida: 0 });
   });
 
-  it("un comando desconocido → ayuda con exit 1", () => {
-    expect(decidirArranque(["gatewya"])).toEqual({ tipo: "ayuda", salida: 1 });
-    expect(decidirArranque(["--port", "8402"])).toEqual({ tipo: "ayuda", salida: 1 });
+  it("un comando desconocido → ayuda con exit 1, y dice cuál no existe", () => {
+    expect(decidirArranque(["gatewya"])).toEqual({ tipo: "ayuda", salida: 1, desconocido: "gatewya" });
+    expect(decidirArranque(["--port", "8402"])).toEqual({ tipo: "ayuda", salida: 1, desconocido: "--port" });
+    // Solo el error lo lleva: pedir la ayuda no es un comando desconocido.
+    expect(decidirArranque(["--help"])).not.toHaveProperty("desconocido");
   });
 
   it("⛔ `gateway --help` y `doctor -h` → ayuda, NO arrancar (antes arrancaban el proxy / corrían el doctor)", () => {

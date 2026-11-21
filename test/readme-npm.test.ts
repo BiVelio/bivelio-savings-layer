@@ -75,7 +75,7 @@ describe("el README cabe entero en la página de npm", () => {
     expect(readme.indexOf("## Licensing & privacy") + legal.length).toBeLessThan(TECHO);
     // Lo que se perdía con el corte: la licencia, la privacidad y a quién escribir.
     expect(legal).toContain("**Apache-2.0**");
-    expect(legal).toContain("[LICENSE-CLOUD.md](./LICENSE-CLOUD.md) §5");
+    expect(legal).toContain(`[LICENSE-CLOUD.md](${REPO}LICENSE-CLOUD.md) §5`);
     expect(legal).toContain("https://savings.bivelio.com/privacy");
     for (const correo of ["support@bivelio.com", "privacy@bivelio.com", "team@bivelio.com"]) {
       expect(legal, correo).toContain(correo);
@@ -120,6 +120,15 @@ describe("los apartados que salieron del README siguen a un clic", () => {
     // GitHub, el mismo en las dos páginas.
     const relativos = destinos(readme).filter((d) => /^(?:\.\/)?docs\//.test(d));
     expect(relativos).toEqual([]);
+  });
+
+  it("⛔ el README no lleva NINGÚN enlace relativo: solo absolutos o anclas (#)", () => {
+    // La verificación final de la 1.2.4 encontró siete que se habían colado:
+    // ./LICENSE-CLOUD.md (seis) y ./NOTICE. npmjs.com no garantiza reescribirlos
+    // a GitHub, y son justo los términos que el cliente acepta.
+    const relativos = destinos(readme).filter((d) => !/^(?:[a-z]+:|#)/.test(d));
+    expect(relativos).toEqual([]);
+    for (const f of ["LICENSE-CLOUD.md", "NOTICE"]) expect(readme).toContain(`](${REPO}${f})`);
   });
 
   it("los enlaces relativos de las guías siguen funcionando desde su sitio nuevo", () => {

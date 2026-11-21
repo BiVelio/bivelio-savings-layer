@@ -27,13 +27,23 @@ import { describe, it, expect } from "vitest";
  * cuando más falta hace.
  */
 
-/** Features que el gateway gatea a sabiendas SIN venderlos en el plan PRO. */
-const EXENTOS: Record<string, string> = {
-  // Vive en la verificación offline del SDK (`pipeline.ts` lo exige en el
-  // token firmado), no en el gateway del terminal. Superficie distinta,
-  // decisión distinta: sigue siendo solo del anillo interno del dueño.
-  tool_result_elision: "supersesión en vivo del SDK, no del gateway",
-};
+/**
+ * Features que el gateway gatea a sabiendas SIN llevarlos en el plan PRO. Hoy,
+ * ninguno.
+ *
+ * Hasta la 1.2.3 aquí estaba `tool_result_elision` («solo del anillo interno
+ * del dueño»). Era justo la trampa que esta verja persigue, en el SDK: sin
+ * clave la palanca corría y con una licencia Pro o Team no. Desde la 1.2.4 una
+ * licencia viva de cualquier plan concede en el cliente lo mismo que no traer
+ * clave (`src/license/live-gate.ts`), y el gateway concede sus palancas
+ * localmente (`gateway/servidor.ts`), así que la lista firmada ya no apaga
+ * nada en un cliente ≥ 1.2.4.
+ *
+ * La verja sigue haciendo falta por los clientes YA INSTALADOS (≤ 1.2.3): esos
+ * siguen leyendo la fila de la organización, fail-closed. Un literal gateado
+ * que no esté en PRO_FEATURES los dejaría sin la palanca en silencio.
+ */
+const EXENTOS: Record<string, string> = {};
 
 const raiz = new URL("..", import.meta.url).pathname;
 
@@ -78,8 +88,8 @@ describe("toda palanca gateada es alcanzable por quien paga", () => {
     expect(
       enPro || exento,
       `El gateway decide sobre "${feature}" pero ninguna licencia PRO lo lleva. ` +
-        `El canal de entitlements es fail-closed: el cliente que paga se quedaría ` +
-        `sin la palanca EN SILENCIO. Añádelo a PRO_FEATURES (y a la migración de ` +
+        `Los clientes ≤ 1.2.3 leen esa lista fail-closed: el cliente que paga se ` +
+        `quedaría sin la palanca EN SILENCIO. Añádelo a PRO_FEATURES (y a la migración de ` +
         `relleno para las licencias ya emitidas) o decláralo en EXENTOS con el motivo.`,
     ).toBe(true);
   });

@@ -40,7 +40,7 @@ const provider = new OpenAICompatibleProvider({
 });
 
 // 2 · the layer, wrapped around it. OPEN CORE: nothing else is required —
-//     COMMUNITY mode (every local lever on, zero telemetry). The three lines
+//     COMMUNITY mode (free, zero telemetry). The three lines
 //     below read your keys from the environment: with none set they do nothing
 //     and nothing is sent to BiVelio; with them, usage reaches this dashboard.
 const layer = createSavingsLayer({
@@ -283,7 +283,7 @@ export async function InstallLicensePanel({ ctx }: { ctx: OrgContext }) {
           </p>
           <TrialKeyButton monthly={precioMensual} yearly={precioAnual} />
 
-          {/* La alternativa gratuita y sin tarjeta: la licencia Medir (modo sombra).
+          {/* La alternativa gratuita y sin tarjeta: la licencia Medir (ahorra igual que sin clave).
               No se le ofrece a quien ya paga. */}
           {ctx.medir !== "de-pago" ? (
             <div className="ins-measure">

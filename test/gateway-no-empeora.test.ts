@@ -145,11 +145,13 @@ function arrancarPlataforma(features: string[], lotes: unknown[][] = []): Promis
 
 async function gateway(
   upstream: number,
-  opciones: { plataforma?: number; lineas?: string[] } & Partial<OpcionesGateway> = {},
+  opciones: { plataforma?: number; lineas?: string[]; plan?: string } & Partial<OpcionesGateway> = {},
 ): Promise<GatewayArrancado> {
-  const { plataforma, lineas, ...resto } = opciones;
+  const { plataforma, lineas, plan, ...resto } = opciones;
   const g = await arrancarGateway({
-    license: testLicense(),
+    // Por defecto la licencia de test es "pro". `plan: "measure"` la acuña como la
+    // nube acuña Medir: sin features.
+    license: testLicense(plan === undefined ? {} : { plan, ...(plan === "measure" ? { features: [] } : {}) }),
     puerto: 0,
     ...oficialHaciaElMock(upstream),
     ...(plataforma !== undefined
@@ -394,6 +396,81 @@ const BANDERAS_LOCALES = { esfuerzo: "low", modeloHermano: true, dialesElision: 
  */
 const cuerpoDeClaudeCode = (model = "claude-fable-5"): Buffer => Buffer.from(JSON.stringify(peticionCompleta(model)), "utf8");
 
+describe("1 bis · con Medir, las mismas palancas que sin claves; con una licencia de PAGO, como la 1.2.3 de pago (1.2.4)", () => {
+  /**
+   * Decisiones del dueño (21-11-2026): Medir = sin clave; con clave de pago,
+   * nada peor que la 1.2.3 de pago.
+   *
+   *  · Medir: lo que el upstream recibe tiene que ser, byte a byte, lo que
+   *    recibe sin ninguna clave con las mismas banderas locales, haya o no
+   *    clave de servicio (la nube sirve `features: []` a Medir).
+   *  · De pago con la fila completa: lo mismo que sin claves.
+   *  · De pago sin clave de servicio, o con una fila sin features: byte a byte,
+   *    como en la 1.2.3. Una rama previa de la 1.2.4 les daba las palancas de
+   *    sin claves («la fila que tenga, haya o no clave de servicio»); la rebaja
+   *    de TTL sin `cache_ttl_tuning` encarecía las sesiones de pago con pausas
+   *    de más de 5 min (+36,5 % a +51,1 % medido frente al 0 % de la 1.2.3).
+   */
+  async function comunitario(upstream: number, banderas: Partial<OpcionesGateway>): Promise<GatewayArrancado> {
+    const g = await arrancarGateway({
+      puerto: 0,
+      ...oficialHaciaElMock(upstream),
+      log: () => {},
+      warn: () => {},
+      avisosDeNoMedido: false,
+      ...banderas,
+    });
+    recursos.push(g);
+    return g;
+  }
+  async function loQueLlega(arrancar: (u: number) => Promise<GatewayArrancado>): Promise<string> {
+    const recibidas: Recibida[] = [];
+    const upstream = await arrancarUpstream(recibidas);
+    const g = await arrancar(upstream);
+    await enviar(g.puerto, cuerpoDeClaudeCode(), CABECERAS_DEL_CLIENTE);
+    expect(recibidas).toHaveLength(1);
+    return recibidas[0]!.body.toString("utf8");
+  }
+
+  const CON_LICENCIA: [string, (u: number, b: Partial<OpcionesGateway>) => Promise<GatewayArrancado>][] = [
+    ["Medir sin clave de servicio", (u, b) => gateway(u, { plan: "measure", ...b })],
+    ["Medir con la fila que sirve la nube (features: [])", async (u, b) => gateway(u, { plan: "measure", plataforma: await arrancarPlataforma([]), ...b })],
+    ["de pago con la fila completa", async (u, b) => gateway(u, { plataforma: await arrancarPlataforma(TODAS), ...b })],
+  ];
+  const BANDERAS: [string, Partial<OpcionesGateway>][] = [
+    ["por defecto (solo la rebaja de TTL)", {}],
+    ["con las opcionales encendidas a mano", { ...BANDERAS_LOCALES }],
+    ["con BVSALA_GATEWAY_ELISION=0", { ...BANDERAS_LOCALES, elision: false }],
+  ];
+
+  for (const [queLicencia, conLicencia] of CON_LICENCIA) {
+    for (const [queBanderas, banderas] of BANDERAS) {
+      it(`${queLicencia} · ${queBanderas}: el upstream recibe lo mismo que sin claves`, async () => {
+        const sinClaves = await loQueLlega((u) => comunitario(u, banderas));
+        const licenciado = await loQueLlega((u) => conLicencia(u, banderas));
+        expect(licenciado).toBe(sinClaves);
+        // Y las opcionales siguen pidiendo su bandera: por defecto el modelo no cambia.
+        if (queBanderas.startsWith("por defecto")) expect(json(Buffer.from(licenciado)).model).toBe("claude-fable-5");
+        if (queBanderas.startsWith("con las opcionales")) expect(json(Buffer.from(licenciado)).model).toBe("claude-fable-5-1");
+        if (queBanderas.includes("=0")) expect(licenciado).toBe(cuerpoDeClaudeCode().toString("utf8"));
+      });
+    }
+  }
+
+  const PAGO_COMO_LA_123: [string, (u: number, b: Partial<OpcionesGateway>) => Promise<GatewayArrancado>][] = [
+    ["de pago sin clave de servicio", (u, b) => gateway(u, { ...b })],
+    ["de pago con una fila SIN features (licencia vieja sin relleno, Enterprise a mano)", async (u, b) => gateway(u, { plataforma: await arrancarPlataforma([]), ...b })],
+  ];
+  for (const [queLicencia, conLicencia] of PAGO_COMO_LA_123) {
+    for (const [queBanderas, banderas] of BANDERAS) {
+      it(`${queLicencia} · ${queBanderas}: el upstream recibe el cuerpo byte a byte, como en la 1.2.3`, async () => {
+        const licenciado = await loQueLlega((u) => conLicencia(u, banderas));
+        expect(licenciado).toBe(cuerpoDeClaudeCode().toString("utf8"));
+      });
+    }
+  }
+});
+
 describe("1 · sin palancas armadas, el gateway reenvía byte a byte", () => {
   /**
    * Cada caso trae su gemelo ARMADO, que solo cambia el factor que desarma. El
@@ -402,14 +479,29 @@ describe("1 · sin palancas armadas, el gateway reenvía byte a byte", () => {
    * y no sobre la verja de la reserialización.
    */
   const CASOS: { nombre: string; desarmado: (u: number) => Promise<GatewayArrancado>; armado: (u: number) => Promise<GatewayArrancado> }[] = [
+    // 1.2.4 · Con una licencia de PAGO, como la 1.2.3 de pago: sin clave de
+    // servicio, o con una fila sin los literales, no se arma nada (ver «1 bis»).
+    // Con Medir y sin claves, solo desarma lo que pide el operador: =0 o
+    // solo-observar. Estos casos cubren los dos de pago, =0 con y sin fila, y
+    // solo-observar.
     {
-      nombre: "sin canal de licencia (solo en proceso: `bvsala` no arranca sin BIVELIO_SERVICE_KEY)",
+      nombre: "licencia de pago sin canal (solo en proceso: `bvsala` no arranca sin BIVELIO_SERVICE_KEY)",
       desarmado: (u) => gateway(u, { ...BANDERAS_LOCALES }),
       armado: async (u) => gateway(u, { plataforma: await arrancarPlataforma(TODAS), ...BANDERAS_LOCALES }),
     },
     {
-      nombre: "con clave y una licencia sin features, con las banderas locales puestas",
+      nombre: "licencia de pago con clave y una fila sin features, con las banderas locales puestas",
       desarmado: async (u) => gateway(u, { plataforma: await arrancarPlataforma([]), ...BANDERAS_LOCALES }),
+      armado: async (u) => gateway(u, { plataforma: await arrancarPlataforma(TODAS), ...BANDERAS_LOCALES }),
+    },
+    {
+      nombre: "Medir sin clave de servicio y BVSALA_GATEWAY_ELISION=0",
+      desarmado: (u) => gateway(u, { plan: "measure", ...BANDERAS_LOCALES, elision: false }),
+      armado: (u) => gateway(u, { plan: "measure", ...BANDERAS_LOCALES }),
+    },
+    {
+      nombre: "con todas las banderas pero en solo-observar (BVSALA_GATEWAY_OBSERVE_ONLY=1)",
+      desarmado: async (u) => gateway(u, { plataforma: await arrancarPlataforma(TODAS), ...BANDERAS_LOCALES, soloObservar: true }),
       armado: async (u) => gateway(u, { plataforma: await arrancarPlataforma(TODAS), ...BANDERAS_LOCALES }),
     },
     {
@@ -945,7 +1037,8 @@ describe("4 · el vigía de punta a punta: una línea por sesión, un contador, 
     const recibidas: Recibida[] = [];
     const upstream = await arrancarUpstream(recibidas, () => ({ body: sse(USO_TTL_A_5M) }));
     const lineas: string[] = [];
-    const sinPalanca = await gateway(upstream, { plataforma: await arrancarPlataforma([]), lineas });
+    // «La palanca no estaba» = desarmada por el operador (1.2.4: la fila de la org ya no la apaga).
+    const sinPalanca = await gateway(upstream, { plataforma: await arrancarPlataforma([]), lineas, elision: false });
     await enviar(sinPalanca.puerto, JSON.stringify(peticionSimple("1h")), { "x-claude-code-session-id": "s1" });
     expect(sinPalanca.degradaciones().ttlAcortado).toBe(1);
     expect(lineas.filter((l) => l.includes('asked for ttl "1h"'))).toHaveLength(1);
@@ -963,7 +1056,8 @@ describe("4 · el vigía de punta a punta: una línea por sesión, un contador, 
     const recibidas: Recibida[] = [];
     const upstream = await arrancarUpstream(recibidas);
     const lineas: string[] = [];
-    const g = await gateway(upstream, { plataforma: await arrancarPlataforma([]), lineas });
+    // Palancas desarmadas (=0): aquí se prueba que el VIGÍA no toca nada.
+    const g = await gateway(upstream, { plataforma: await arrancarPlataforma([]), lineas, elision: false });
     const herramienta = (i: number, diferida: boolean) => ({
       name: `mcp__srv__t${i}`,
       description: "a tool",

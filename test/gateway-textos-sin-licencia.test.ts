@@ -34,9 +34,12 @@ describe.skipIf(process.platform === "win32")("A2-14/A2-23/A2-29 · sin clave, n
     try {
       await p.esperar(/per-turn effort: .*\n/);
       const texto = p.stdout() + p.stderr();
-      expect(texto).toContain("COMMUNITY MODE");
-      expect(texto).toContain("savings levers: ON (community mode: free, no key needed)");
-      expect(texto).toContain("BVSALA_GATEWAY_ELISION=0 turns them off");
+      expect(texto).toContain("COMMUNITY MODE (open core): no BiVelio keys set - free, zero telemetry, nothing sent to BiVelio");
+      // 1.2.4 · el cartel ya no dice que todo está encendido encima de tres OFF.
+      expect(texto).not.toMatch(/every local saving lever|savings levers: ON/);
+      expect(texto).toContain("savings levers (community mode: free, no key needed): cache TTL tuning is the only one ON by default");
+      expect(texto).toContain("on a Claude or ChatGPT subscription the default lever changes nothing and this run only measures");
+      expect(texto).toContain("BVSALA_GATEWAY_ELISION=0 turns it off");
       expect(texto).toMatch(/sibling model routing: ARMED \([^)]*community mode: free, no key needed\)/);
       expect(texto).toMatch(/per-turn effort: ARMED at "low" \(community mode: free, no key needed\)/);
       for (const re of VIEJAS) expect(texto, String(re)).not.toMatch(re);
@@ -54,21 +57,42 @@ describe.skipIf(process.platform === "win32")("A2-14/A2-23/A2-29 · sin clave, n
     caja.terminal("claude", "");
     const r = spawnSync(process.execPath, [BIN, "claude", "-p", "hola"], { env: caja.env(), encoding: "utf8", timeout: 20_000 });
     expect(r.status, r.stderr).toBe(0);
-    expect(r.stderr).toContain("savings levers: ON (community mode: free, no key needed)");
+    expect(r.stderr).toContain("savings levers (community mode: free, no key needed): cache TTL tuning is the only one ON by default");
+    expect(r.stderr).not.toMatch(/every local saving lever|savings levers: ON/);
+    // Con las tres líneas OFF debajo, la de arriba dice la variable que enciende cada una.
+    expect(r.stderr).toContain("opt-in: BVSALA_GATEWAY_SIBLING_MODEL=1, BVSALA_GATEWAY_EFFORT=low|medium");
     for (const re of VIEJAS) expect(r.stderr, String(re)).not.toMatch(re);
   });
 
-  it("`bvsala --help`: las palancas son gratis sin claves; solo con licencia de organización manda la suya", () => {
+  it("`bvsala --help`: las palancas son gratis sin claves y con Medir; con una licencia de pago, como en la 1.2.3", () => {
     const r = spawnSync(process.execPath, [BIN, "--help"], { encoding: "utf8", env: { PATH: process.env.PATH ?? "" } });
     expect(r.status).toBe(0);
     for (const re of [...VIEJAS, /only takes effect if your organization's licen[cs]e/i, /toward the fee/i, /commission/i]) {
       expect(r.stdout, String(re)).not.toMatch(re);
     }
-    expect(r.stdout).toMatch(/With\s+no BiVelio keys \(COMMUNITY mode\) they are free and need no license\./);
-    // Las dos palancas opt-in: gratis sin claves, la licencia de la org solo si la hay.
-    expect(r.stdout.match(/Free with\s+no keys; with an organization\s+license, only if it includes/g)).toHaveLength(2);
+    expect(r.stdout).toMatch(/With\s+no BiVelio keys \(COMMUNITY mode\) they are free and need\s+no license/);
+    // 1.2.4 · decisiones del dueño (21-11-2026): Medir = sin clave; con una licencia
+    // de pago, el gateway como en la 1.2.3 de pago (cada palanca pide su feature,
+    // fail-closed). Una rama previa decía «free on every plan» y concedía las
+    // palancas a cualquier licencia; con pago y la nube caída eso encarecía las
+    // sesiones con pausas largas. La ayuda dice ahora las dos cosas, sin pedir
+    // licencia a quien no tiene clave.
+    expect(r.stdout).not.toMatch(/Free on\s+every plan/);
+    const plano = r.stdout.replace(/\s+/g, " ");
+    for (const feature of ["sibling_model_routing", "per_turn_effort"]) {
+      expect(plano).toContain(
+        `Free with no keys and with the free Measure license; with a paid license, only if it includes ${feature} (fail-closed), as in 1.2.3.`,
+      );
+    }
+    expect(r.stdout).not.toMatch(/every local (saving )?lever|all local levers|arms every|org entitlements/);
+    expect(r.stdout).toMatch(/the free Measure license applies the same levers as no\s+key\. With a Pro, Team or Enterprise license the gateway works as in\s+1\.2\.3/);
+    expect(r.stdout).toMatch(/A blocked or lapsed\s+license stops the gateway: it answers 402\./);
     // La frase del 8,0 % no describe tráfico de suscripción como factura de API.
     expect(r.stdout).not.toContain("8.0% of the bill");
-    expect(r.stdout).toMatch(/at API list prices that surcharge was 8\.0% of the cost/);
+    // Verificación final de la 1.2.4: el 99,1 % y el 8,0 % no tenían fuente en el
+    // repositorio y describían una regla que el código no aplica («while the
+    // session stays warm»). La cifra que queda es la del replay publicado.
+    expect(r.stdout).not.toMatch(/surcharge was 8\.0% of the cost|99\.1% of turns|stays warm/);
+    expect(r.stdout).toMatch(/it left a net 2\.49% of the list-price bill/);
   });
 });

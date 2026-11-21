@@ -95,7 +95,7 @@ describe("sin clave, el gasto de Claude Code no aparece en el panel", () => {
   });
 
   it("el código sigue diciendo al salir cuántas peticiones midió en local (si esto cambia, hay que reescribir la tarjeta)", () => {
-    expect(readFileSync(join(RAIZ, "gateway", "bin.ts"), "utf8")).toContain("resumenDeMedicion(arranque.medicion(), comando)");
+    expect(readFileSync(join(RAIZ, "gateway", "bin.ts"), "utf8")).toContain("resumenDeMedicion(arranque.medicion(), comando,");
     expect(readFileSync(join(RAIZ, "gateway", "recuento.ts"), "utf8")).toContain("request(s) metered with the provider's usage");
   });
 
@@ -200,9 +200,11 @@ describe("el gateway y la CLI no atan las palancas a una licencia", () => {
   it("bin.ts pasa a las líneas de arranque si el gateway está en modo comunitario (ya no un `true` fijo)", () => {
     const bin = readFileSync(join(RAIZ, "gateway", "bin.ts"), "utf8");
     expect(bin).not.toContain("`hayClave` es true");
-    expect(bin).toMatch(/describirEstadoDeHermano\([^)]*comunidad\)/);
-    expect(bin).toMatch(/describirEstadoDeEsfuerzo\([^)]*comunidad\)/);
-    expect(bin).toMatch(/describirEstadoDeElision\([\s\S]*?comunidad,?\s*\)/);
+    // 1.2.4 · y si la licencia es Medir (mismas palancas que sin claves); con una
+    // licencia de pago las líneas son las de la 1.2.3 (decisión del dueño).
+    expect(bin).toMatch(/describirEstadoDeHermano\([^)]*comunidad, medir\)/);
+    expect(bin).toMatch(/describirEstadoDeEsfuerzo\([^)]*comunidad, medir\)/);
+    expect(bin).toMatch(/describirEstadoDeElision\([\s\S]*?comunidad,\s*medir,?\s*\)/);
   });
 
   it("gateway/tarifa.ts no describe el corpus de suscripción como una factura de API", () => {

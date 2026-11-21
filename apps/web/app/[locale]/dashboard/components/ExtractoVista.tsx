@@ -25,11 +25,14 @@ const TONO_DEL_ESTADO: Record<string, BadgeTone> = {
  *
  * `medir`: la organización solo tiene la licencia gratuita Measure — modo
  * sombra, ahorro ESTIMADO que nunca se factura ni entra en comisión alguna
- * (LICENSE-CLOUD §1). `ninguno`: sin plan vivo y sin Measure; la página no
+ * (LICENSE-CLOUD §1). `legado-fin`: la suscripción de la modalidad con
+ * comisión ya no está viva pero su período llega a este mes (cancelada a mitad
+ * de mes, aunque ya esté en Measure): este mes se cierra y se factura con
+ * comisión, y se dice. `ninguno`: sin plan vivo y sin Measure; la página no
  * puede confirmar la modalidad y lo dice con el aviso neutro, sin atribuir
  * nada a las condiciones publicadas (§6(b) solo da comisión al plan que la lleva).
  */
-export type RegimenDelExtracto = "fija" | "exenta" | "legado" | "medir" | "ninguno" | "indeterminado";
+export type RegimenDelExtracto = "fija" | "exenta" | "legado" | "legado-fin" | "medir" | "ninguno" | "indeterminado";
 
 /** Un período cerrado, con la clave i18n de su estado ya resuelta por la página. */
 export interface PeriodoCerradoVisible {
@@ -81,7 +84,7 @@ export async function ExtractoVista({
 
   // Un periodo sin tráfico medido no se pinta como una fila de ceros.
   const sinTrafico = e.requestsMedidas === 0 && e.baseMedidaEur === 0 && e.ahorroMedidoEur === 0;
-  const aplicaComision = regimen === "legado";
+  const aplicaComision = regimen === "legado" || regimen === "legado-fin";
 
   // LA SIMULACIÓN DE COMISIÓN, tal cual era: mismas cifras, mismas notas. Solo
   // cambia DÓNDE vive: dentro del histórico, rotulada como modalidad histórica.
@@ -283,7 +286,7 @@ export async function ExtractoVista({
                 ? t("extracto.regimenFijaTitulo")
                 : regimen === "exenta"
                   ? t("extracto.regimenExentaTitulo")
-                  : regimen === "legado"
+                  : regimen === "legado" || regimen === "legado-fin"
                     ? t("extracto.regimenLegadoTitulo")
                     : regimen === "medir"
                       ? t("extracto.regimenMedirTitulo")
@@ -297,11 +300,13 @@ export async function ExtractoVista({
                   ? t("extracto.regimenExentaBody")
                   : regimen === "legado"
                     ? t("extracto.regimenLegadoBody")
-                    : regimen === "medir"
-                      ? t("extracto.regimenMedirBody")
-                      : regimen === "indeterminado"
-                        ? t("extracto.regimenIndeterminadoBody")
-                        : t("extracto.regimenNingunoBody")}
+                    : regimen === "legado-fin"
+                      ? t("extracto.regimenLegadoFinBody")
+                      : regimen === "medir"
+                        ? t("extracto.regimenMedirBody")
+                        : regimen === "indeterminado"
+                          ? t("extracto.regimenIndeterminadoBody")
+                          : t("extracto.regimenNingunoBody")}
             </p>
           </div>
           <Link className="btn btn-ghost pcu-contrato-btn" href="/dashboard/account">
@@ -342,7 +347,7 @@ export async function ExtractoVista({
                 {t("extracto.simulacionTitulo")}
               </span>
               {/* «No se aplica» solo se afirma cuando se SABE (cuota fija o
-                  exenta). En Measure es una estimación que nunca se factura;
+                  exenta). En Measure es una simulación que nunca se factura;
                   sin poder confirmar la modalidad, puede aplicarse según el
                   contrato. */}
               <span className="pcu-sim-nota">
