@@ -644,42 +644,49 @@ export async function arrancarGateway(opts: OpcionesGateway): Promise<GatewayArr
         ...(opts.fetchImpl ? { fetchImpl: opts.fetchImpl } : {}),
         ...(opts.entitlementsTtlMs !== undefined ? { ttlMs: opts.entitlementsTtlMs } : {}),
         log,
+        // Con Medir (o sin licencia) las palancas no cuelgan de la lista: la línea
+        // de un canal cerrado no dice «savings features disabled».
+        palancasDependen: () => !comunidad && !esMedir(),
       })
     : comunidad
       ? new CanalComunitario()
       : null;
-  // UNA LICENCIA, DEL PLAN QUE SEA, CONCEDE LAS MISMAS PALANCAS QUE EL MODO
-  // COMUNITARIO (1.2.4).
+  // QUÉ PALANCAS CONCEDE CADA MODO (1.2.4, decisiones del dueño del 21-11-2026).
   //
-  // Regla del producto: las palancas son gratis para todos; la clave solo añade
-  // la nube. Hasta la 1.2.3 una organización con clave podía tener MENOS
-  // palancas que quien no ponía ninguna, y sin un solo error:
-  //  · Medir: la nube sirve `features: []` (y así debe seguir: los clientes
-  //    ≤ 1.2.3 las leen como sombra);
-  //  · de pago con una fila de licencia sin el literal (emitida antes de un
-  //    relleno, o Enterprise escrita a mano);
-  //  · de pago sin clave de servicio (no había canal: nada actuaba);
-  //  · cualquier caída o 401 de `/api/org/entitlements` (fail-closed a apagado).
-  // Ahora las palancas de la casa se conceden LOCALMENTE, como sin claves: ni
-  // más (las opcionales siguen pidiendo su bandera local, y
-  // `BVSALA_GATEWAY_ELISION=0` las sigue desarmando todas) ni menos.
+  //  · Sin clave y con una licencia Medir: las palancas de la casa se conceden
+  //    LOCALMENTE, como en el modo comunitario. Medir era sombra hasta la 1.2.3
+  //    (la nube le sirve `features: []`, y así debe seguir: los clientes ≤ 1.2.3
+  //    las leen como sombra); desde la 1.2.4 ahorra como sin clave.
+  //  · Con un plan de PAGO (Pro, Team, Enterprise): exactamente como la 1.2.3
+  //    de pago. Lo que diga el canal de la org, feature a feature y fail-closed;
+  //    sin clave de servicio no hay canal y no se arma nada. Con la nube caída,
+  //    un 401 o `features: []`, el gateway reenvía el cuerpo intacto. La regla
+  //    es «con clave de pago, nada peor que la 1.2.3 de pago»: conceder aquí la
+  //    rebaja de TTL sin el feature de la org encarecía las sesiones con pausas
+  //    de más de 5 min (+36,5 % a +51,1 % medido) frente al 0 % de la 1.2.3.
   //
-  // Lo que NO cambia:
+  // En los dos casos:
   //  · el canal de org se sigue consultando en cada pregunta, porque de él sale
   //    el `reason` con el que el control plane BLOQUEA una organización (y su
   //    refresco en segundo plano cuelga de `tiene`);
+  //  · las opcionales siguen pidiendo su bandera local, y
+  //    `BVSALA_GATEWAY_ELISION=0` las sigue desarmando todas;
   //  · una licencia caducada, revocada o bloqueada no llega aquí: la verja por
   //    petición (`veredicto`, abajo) responde 402 antes de cualquier palanca.
   const comunitario = new CanalComunitario();
   const canal: FuenteDeEntitlements = {
     tiene: (feature: string): boolean => {
-      canalDeOrg?.tiene(feature);
-      return comunitario.tiene();
+      if (comunidad || esMedir()) {
+        canalDeOrg?.tiene(feature);
+        return comunitario.tiene();
+      }
+      return canalDeOrg ? canalDeOrg.tiene(feature) : false;
     },
     blockReason: (): string | null => canalDeOrg?.blockReason() ?? null,
   };
-  // `BVSALA_GATEWAY_ELISION=0` desarma todas las palancas; es lo único que lo hace.
-  const palancasArmadas = (): boolean => opts.elision !== false;
+  // `BVSALA_GATEWAY_ELISION=0` desarma todas las palancas. Con un plan de pago
+  // sin clave de servicio tampoco se arma nada, como en la 1.2.3.
+  const palancasArmadas = (): boolean => (comunidad || esMedir() || canalDeOrg !== null) && opts.elision !== false;
 
   // ── La verja por petición y sus transiciones ────────────────────────────
   const veredicto = (): Verdict =>

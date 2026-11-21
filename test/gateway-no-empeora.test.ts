@@ -145,11 +145,13 @@ function arrancarPlataforma(features: string[], lotes: unknown[][] = []): Promis
 
 async function gateway(
   upstream: number,
-  opciones: { plataforma?: number; lineas?: string[] } & Partial<OpcionesGateway> = {},
+  opciones: { plataforma?: number; lineas?: string[]; plan?: string } & Partial<OpcionesGateway> = {},
 ): Promise<GatewayArrancado> {
-  const { plataforma, lineas, ...resto } = opciones;
+  const { plataforma, lineas, plan, ...resto } = opciones;
   const g = await arrancarGateway({
-    license: testLicense(),
+    // Por defecto la licencia de test es "pro". `plan: "measure"` la acuña como la
+    // nube acuña Medir: sin features.
+    license: testLicense(plan === undefined ? {} : { plan, ...(plan === "measure" ? { features: [] } : {}) }),
     puerto: 0,
     ...oficialHaciaElMock(upstream),
     ...(plataforma !== undefined
@@ -394,13 +396,20 @@ const BANDERAS_LOCALES = { esfuerzo: "low", modeloHermano: true, dialesElision: 
  */
 const cuerpoDeClaudeCode = (model = "claude-fable-5"): Buffer => Buffer.from(JSON.stringify(peticionCompleta(model)), "utf8");
 
-describe("1 bis · con licencia, las mismas palancas que sin claves (1.2.4)", () => {
+describe("1 bis · con Medir, las mismas palancas que sin claves; con una licencia de PAGO, como la 1.2.3 de pago (1.2.4)", () => {
   /**
-   * Regla del dueño: las palancas son gratis para todos; la clave solo añade la
-   * nube. Lo que el upstream recibe con una licencia tiene que ser, byte a
-   * byte, lo que recibe sin ninguna clave con las mismas banderas locales —
-   * tenga la organización la fila que tenga, haya o no clave de servicio, y
-   * esté o no disponible `/api/org/entitlements`.
+   * Decisiones del dueño (21-11-2026): Medir = sin clave; con clave de pago,
+   * nada peor que la 1.2.3 de pago.
+   *
+   *  · Medir: lo que el upstream recibe tiene que ser, byte a byte, lo que
+   *    recibe sin ninguna clave con las mismas banderas locales, haya o no
+   *    clave de servicio (la nube sirve `features: []` a Medir).
+   *  · De pago con la fila completa: lo mismo que sin claves.
+   *  · De pago sin clave de servicio, o con una fila sin features: byte a byte,
+   *    como en la 1.2.3. Una rama previa de la 1.2.4 les daba las palancas de
+   *    sin claves («la fila que tenga, haya o no clave de servicio»); la rebaja
+   *    de TTL sin `cache_ttl_tuning` encarecía las sesiones de pago con pausas
+   *    de más de 5 min (+36,5 % a +51,1 % medido frente al 0 % de la 1.2.3).
    */
   async function comunitario(upstream: number, banderas: Partial<OpcionesGateway>): Promise<GatewayArrancado> {
     const g = await arrancarGateway({
@@ -424,9 +433,9 @@ describe("1 bis · con licencia, las mismas palancas que sin claves (1.2.4)", ()
   }
 
   const CON_LICENCIA: [string, (u: number, b: Partial<OpcionesGateway>) => Promise<GatewayArrancado>][] = [
-    ["sin clave de servicio", (u, b) => gateway(u, { ...b })],
-    ["con una fila de licencia SIN features (licencia vieja sin relleno, Enterprise a mano)", async (u, b) => gateway(u, { plataforma: await arrancarPlataforma([]), ...b })],
-    ["con la fila completa", async (u, b) => gateway(u, { plataforma: await arrancarPlataforma(TODAS), ...b })],
+    ["Medir sin clave de servicio", (u, b) => gateway(u, { plan: "measure", ...b })],
+    ["Medir con la fila que sirve la nube (features: [])", async (u, b) => gateway(u, { plan: "measure", plataforma: await arrancarPlataforma([]), ...b })],
+    ["de pago con la fila completa", async (u, b) => gateway(u, { plataforma: await arrancarPlataforma(TODAS), ...b })],
   ];
   const BANDERAS: [string, Partial<OpcionesGateway>][] = [
     ["por defecto (solo la rebaja de TTL)", {}],
@@ -447,6 +456,19 @@ describe("1 bis · con licencia, las mismas palancas que sin claves (1.2.4)", ()
       });
     }
   }
+
+  const PAGO_COMO_LA_123: [string, (u: number, b: Partial<OpcionesGateway>) => Promise<GatewayArrancado>][] = [
+    ["de pago sin clave de servicio", (u, b) => gateway(u, { ...b })],
+    ["de pago con una fila SIN features (licencia vieja sin relleno, Enterprise a mano)", async (u, b) => gateway(u, { plataforma: await arrancarPlataforma([]), ...b })],
+  ];
+  for (const [queLicencia, conLicencia] of PAGO_COMO_LA_123) {
+    for (const [queBanderas, banderas] of BANDERAS) {
+      it(`${queLicencia} · ${queBanderas}: el upstream recibe el cuerpo byte a byte, como en la 1.2.3`, async () => {
+        const licenciado = await loQueLlega((u) => conLicencia(u, banderas));
+        expect(licenciado).toBe(cuerpoDeClaudeCode().toString("utf8"));
+      });
+    }
+  }
 });
 
 describe("1 · sin palancas armadas, el gateway reenvía byte a byte", () => {
@@ -457,15 +479,25 @@ describe("1 · sin palancas armadas, el gateway reenvía byte a byte", () => {
    * y no sobre la verja de la reserialización.
    */
   const CASOS: { nombre: string; desarmado: (u: number) => Promise<GatewayArrancado>; armado: (u: number) => Promise<GatewayArrancado> }[] = [
-    // 1.2.4 · Hasta la 1.2.3 había otras dos maneras de quedar desarmado, y las
-    // dos eran «una licencia da MENOS que no poner clave»: no tener clave de
-    // servicio, y una fila de licencia sin los literales. Ya no desarman (ver
-    // «1 bis», abajo). Lo que desarma es lo que el operador pide: =0 o
-    // solo-observar. Estos tres casos cubren =0 con y sin fila, y solo-observar.
+    // 1.2.4 · Con una licencia de PAGO, como la 1.2.3 de pago: sin clave de
+    // servicio, o con una fila sin los literales, no se arma nada (ver «1 bis»).
+    // Con Medir y sin claves, solo desarma lo que pide el operador: =0 o
+    // solo-observar. Estos casos cubren los dos de pago, =0 con y sin fila, y
+    // solo-observar.
     {
-      nombre: "sin clave de servicio y BVSALA_GATEWAY_ELISION=0",
-      desarmado: (u) => gateway(u, { ...BANDERAS_LOCALES, elision: false }),
-      armado: (u) => gateway(u, { ...BANDERAS_LOCALES }),
+      nombre: "licencia de pago sin canal (solo en proceso: `bvsala` no arranca sin BIVELIO_SERVICE_KEY)",
+      desarmado: (u) => gateway(u, { ...BANDERAS_LOCALES }),
+      armado: async (u) => gateway(u, { plataforma: await arrancarPlataforma(TODAS), ...BANDERAS_LOCALES }),
+    },
+    {
+      nombre: "licencia de pago con clave y una fila sin features, con las banderas locales puestas",
+      desarmado: async (u) => gateway(u, { plataforma: await arrancarPlataforma([]), ...BANDERAS_LOCALES }),
+      armado: async (u) => gateway(u, { plataforma: await arrancarPlataforma(TODAS), ...BANDERAS_LOCALES }),
+    },
+    {
+      nombre: "Medir sin clave de servicio y BVSALA_GATEWAY_ELISION=0",
+      desarmado: (u) => gateway(u, { plan: "measure", ...BANDERAS_LOCALES, elision: false }),
+      armado: (u) => gateway(u, { plan: "measure", ...BANDERAS_LOCALES }),
     },
     {
       nombre: "con todas las banderas pero en solo-observar (BVSALA_GATEWAY_OBSERVE_ONLY=1)",

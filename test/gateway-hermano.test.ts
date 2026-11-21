@@ -29,9 +29,11 @@ import { oficialHaciaElMock } from "./helpers/gateway-oficial.js";
  *     (any/tool, 400 en 5.1) también pasa intacto.
  *  2b. Un 400 del upstream tras la reescritura se REINTENTA una vez con el
  *     cuerpo y las cabeceras originales, y se mide lo que viajó.
- *  3. APAGADA por defecto; se enciende con la bandera local. Desde la 1.2.4 no
- *     pide ningún feature de la licencia: es gratis en cualquier plan, como
- *     sin claves. `BVSALA_GATEWAY_ELISION=0` la apaga con las demás.
+ *  3. APAGADA por defecto; se enciende con la bandera local. Sin claves y con
+ *     Medir basta la bandera (1.2.4). Con una licencia de PAGO, como en la
+ *     1.2.3: doble opt-in (bandera local + feature en la licencia de la org),
+ *     fail-closed por el mismo canal que S4a y A. `BVSALA_GATEWAY_ELISION=0` la
+ *     apaga con las demás.
  *  4. Contabilidad: baseline al precio del SOLICITADO, actual al SERVIDO,
  *     basis `measured`, y cero ahorro fuera de la lectura de caché.
  *  5. count_tokens se reescribe (el cliente estima contra lo que va a
@@ -249,11 +251,15 @@ describe("describirEstadoDeHermano — la palanca dicha en voz alta al arrancar"
     expect(armada.aviso).toBe(false);
     expect(armada.linea).toContain("ARMED");
     expect(armada.linea).toContain(`${SOLICITADO}→${SERVIDO}`);
-    // 1.2.4 · con licencia de organización la palanca es la misma que sin claves:
-    // la línea ya no la condiciona a la lista de features («ON if your
-    // organization's licence includes…; fail-closed»).
-    expect(armada.linea).toContain("free on every plan: a license only adds the cloud");
-    expect(armada.linea).not.toMatch(/licence includes|fail-closed/);
+    // 1.2.4 · con una licencia de PAGO, como en la 1.2.3: manda la licencia de la
+    // org (no «tu licencia» a secas). Decisión del dueño: con clave de pago, nada
+    // peor que la 1.2.3 de pago.
+    expect(armada.linea).toContain("your organization's licence includes sibling_model_routing");
+    expect(armada.linea).not.toContain("free on every plan");
+    // Con la licencia gratuita Medir, como sin claves.
+    const medir = describirEstadoDeHermano("1", true, true, false, true);
+    expect(medir.linea).toContain("free Measure license: the same levers as no key");
+    expect(medir.linea).not.toMatch(/licence includes|fail-closed/);
   });
 
   it("A2-14 · en modo comunitario es gratis y la línea no habla de ninguna licencia", () => {
@@ -412,13 +418,15 @@ async function pedir(puerto: number, cuerpo: string | Buffer, ruta = "/v1/messag
 }
 
 const CUERPO = JSON.stringify(PETICION);
-/**
- * Lo que la palanca A (rebaja de TTL, encendida por defecto en cualquier plan
- * desde la 1.2.4) hace con PETICION en un arranque en frío: 1h → 5m. Aquí se
- * prueba C; lo que C deja «intacto» es todo salvo eso.
- */
-const conRebajaA = <T>(o: T): T => JSON.parse(JSON.stringify(o).replace('"ttl":"1h"', '"ttl":"5m"')) as T;
 
+// 1.2.4 · `gatewayCon` arranca con la licencia de test (plan "pro"). Con una
+// licencia de PAGO el gateway vuelve a ser el de la 1.2.3 de pago (decisión del
+// dueño, 21-11-2026: «con clave de pago, nada peor que la 1.2.3 de pago»): cada
+// palanca pide su feature en la fila de la org, fail-closed. Una rama previa de
+// la 1.2.4 la concedía como sin claves, y la rebaja de TTL sin `cache_ttl_tuning`
+// encarecía las sesiones de pago con pausas de más de 5 min. Por eso estos casos
+// vuelven a esperar lo de la 1.2.3: sin `cache_ttl_tuning` en la fila, A no actúa
+// y lo que C no toca viaja byte a byte.
 describe("palanca C de punta a punta", () => {
   it("ENCENDIDA (bandera + feature): el upstream recibe fable-5-1 en /v1/messages y en count_tokens, resto intacto", async () => {
     const recibidas: Recibida[] = [];
@@ -442,34 +450,34 @@ describe("palanca C de punta a punta", () => {
       expect(json.model).toBe(SERVIDO);
       const { model: _a, ...resto } = json;
       const { model: _b, ...original } = PETICION;
-      // /v1/messages lleva además la rebaja de TTL (A, por defecto); count_tokens no.
-      expect(resto).toEqual(r.path === "/v1/messages" ? conRebajaA(original) : original);
+      // La fila solo trae sibling_model_routing: la rebaja de TTL (A) no actúa.
+      expect(resto).toEqual(original);
     }
     expect(recibidas[1]!.path).toBe("/v1/messages/count_tokens");
   });
 
-  it("APAGADA por defecto: sin la opción, el modelo no cambia (solo actúa la rebaja de TTL, que va por defecto)", async () => {
+  it("APAGADA por defecto: sin la opción, el cuerpo viaja byte a byte", async () => {
     const recibidas: Recibida[] = [];
     const upstream = await arrancarUpstreamFalso(recibidas);
     const plataforma = await arrancarPlataformaFalsa({ features: ["sibling_model_routing"] });
     const g = await gatewayCon({ upstream, plataforma, clave: "bvk_test", elision: true });
     await esperarCanal();
     await pedir(g.puerto, CUERPO);
-    expect(JSON.parse(recibidas[0]!.body)).toEqual(conRebajaA(PETICION));
-    expect(JSON.parse(recibidas[0]!.body).model).toBe(SOLICITADO);
+    expect(recibidas[0]!.body).toBe(CUERPO);
   });
 
-  it("1.2.4 · con la opción y una fila de licencia SIN el feature: se aplica igual (gratis en cualquier plan)", async () => {
-    // Hasta la 1.2.3 esto era «FAIL-CLOSED: intacto»: quien pagaba y tenía una
-    // fila sin el literal se quedaba sin la palanca que sin claves bastaba con
-    // encender. Ahora la bandera local basta, como sin claves.
+  it("licencia de PAGO · FAIL-CLOSED como la 1.2.3: con la opción pero sin el feature en la licencia, intacto", async () => {
     const recibidas: Recibida[] = [];
     const upstream = await arrancarUpstreamFalso(recibidas);
+    // Solo context_elision: sin `dialesElision` no reescribe nada. Con
+    // cache_ttl_tuning la palanca A rebajaría el TTL del prefijo nuevo y el
+    // cuerpo dejaría de ser byte-igual por A, no por C — que es lo que se prueba.
     const plataforma = await arrancarPlataformaFalsa({ features: ["context_elision"] });
     const g = await gatewayCon({ upstream, plataforma, clave: "bvk_test", elision: true, modeloHermano: true });
     await esperarCanal();
     await pedir(g.puerto, CUERPO);
-    expect(JSON.parse(recibidas[0]!.body).model).toBe(SERVIDO);
+    expect(recibidas[0]!.body).toBe(CUERPO);
+    expect(JSON.parse(recibidas[0]!.body).model).toBe(SOLICITADO);
   });
 
   it("BVSALA_GATEWAY_ELISION=0 (palancas desarmadas) apaga también C", async () => {
@@ -500,11 +508,8 @@ describe("palanca C de punta a punta", () => {
     // Y con la beta de contexto 1M: no se toca hasta validarla en mano.
     await pedir(g.puerto, CUERPO, "/v1/messages", { "anthropic-beta": "context-1m-2025-08-07" });
 
-    // «Intacto» para C: el modelo no cambia. La rebaja de TTL (A, por defecto)
-    // sigue su propia regla: actúa donde hay un prefijo nuevo que rebajar.
-    expect(recibidas.map((r) => r.body.replace('"ttl":"5m"', '"ttl":"1h"'))).toEqual([...variantes, comprimido.toString("utf8"), CUERPO]);
-    expect(recibidas.slice(0, 3).map((r) => JSON.parse(r.body).model)).toEqual([SERVIDO, "claude-fable-5[1m]", "claude-opus-4-8"]);
-    expect(JSON.parse(recibidas[4]!.body).model).toBe(SOLICITADO);
+    // Sin cache_ttl_tuning en la fila (licencia de pago, como la 1.2.3) A no actúa: byte a byte.
+    expect(recibidas.map((r) => r.body)).toEqual([...variantes, comprimido.toString("utf8"), CUERPO]);
   });
 
   it("MEDIDA: el lote lleva el modelo servido, baseline > actual por exactamente la lectura de caché, basis measured", async () => {

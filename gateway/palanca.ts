@@ -186,23 +186,26 @@ export function fusionarDiales(cm: unknown): { edits: unknown[] } & Record<strin
  * comunitario o el de la org (con clave de servicio). Solo falta con una
  * licencia offline sin clave de servicio. `comunidad` (A2-29): sin ninguna
  * clave de BiVelio las palancas son gratis y las concede este proceso
- * (CanalComunitario): la línea no habla de ninguna licencia. Con una licencia
- * de organización (1.2.4) las palancas son las MISMAS y también se conceden
- * localmente: la lista de features de la org ya no apaga ninguna, y el canal
- * solo sirve para el estado de la licencia. `bin.ts` pasa `hayCanal = true`.
+ * (CanalComunitario): la línea no habla de ninguna licencia. `medir` (1.2.4):
+ * con la licencia gratuita Medir las palancas son las MISMAS que sin claves y
+ * también se conceden localmente. Con una licencia de PAGO, como en la 1.2.3,
+ * manda la lista de features de esa licencia (fail-closed).
  */
 export function describirEstadoDeElision(
   bandera: string | undefined,
   hayCanal: boolean,
   dialesArmados = false,
   comunidad = false,
+  medir = false,
 ): { linea: string; aviso: boolean } {
   // 2026-09-09 · el cartel distingue las DOS cosas que antes confundía. La
   // bandera BVSALA_GATEWAY_ELISION abre el CANAL de entitlements, del que
   // cuelgan la rebaja de TTL (A, la que gana) y los diales (B, la que pierde).
   // Los diales tienen bandera propia y nacen apagados: decir "ARMADA" por
   // tener el canal abierto era mentirle al dueño cada mañana.
-  const cola = " (TTL tuning ON: the levers are free on every plan, a license only adds the cloud)";
+  const cola = medir
+    ? " (TTL tuning ON: the free Measure license applies the same levers as no key)"
+    : " (TTL tuning ON if your organization's licence includes cache_ttl_tuning; fail-closed)";
   const diales = dialesArmados
     ? " · context elision dials FORCED ON BY HAND (BVSALA_GATEWAY_DIALES_ELISION=1): they measure as a net loss, R=4.05 vs R*=0.0127"
     : " · context elision dials OFF (BVSALA_GATEWAY_DIALES_ELISION=1 turns them on)";

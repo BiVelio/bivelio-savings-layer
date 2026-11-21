@@ -406,7 +406,8 @@ describe("bvsala doctor — jamás contenido, solo rutas", () => {
       ["{ delimiter, join }", "node:path"],
       // 1.2.4 · las frases comunes del paquete: solo texto, y ese módulo no importa nada.
       // Verificación final de la 1.2.4: más la dependencia que trae la clave, partida con enLineas.
-      ["{ FRASE_DEPENDENCIA_GATEWAY, FRASE_PALANCAS_GATEWAY, LO_QUE_ANADE_LA_NUBE, enLineas }", "./textos-publicos.js"],
+      // 1.2.4 · más la frase de la clave de servicio: Medir = sin clave; pago, como la 1.2.3.
+      ["{ FRASE_CLAVE_DE_SERVICIO_Y_PALANCAS, FRASE_DEPENDENCIA_GATEWAY, FRASE_PALANCAS_GATEWAY, LO_QUE_ANADE_LA_NUBE, enLineas }", "./textos-publicos.js"],
     ]);
     expect(fuente).not.toMatch(/node:child_process|node:fs\/promises/);
     const textos = readFileSync(fileURLToPath(new URL("../gateway/textos-publicos.ts", import.meta.url)), "utf8");

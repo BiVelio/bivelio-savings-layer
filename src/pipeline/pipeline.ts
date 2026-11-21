@@ -408,7 +408,8 @@ function mensajeSinLicencia(): string {
     return (
       "BiVelio license required: none was configured. Pass { licenseKey } — the signed token " +
       "from your subscription, verified offline. This published package has no unlicensed mode. " +
-      "The free Measure license (no card) applies the same levers as no key and adds the cloud dashboard. " +
+      "The free Measure license (no card) applies the same levers as no key, except trimming of superseded " +
+      "tool results outside an Anthropic tool loop, and adds the cloud dashboard. " +
       "Copy your key and a ready-to-paste snippet at " +
       "https://savings.bivelio.com/dashboard/install (license status: none)"
     );
@@ -1842,12 +1843,18 @@ export class SavingsPipeline {
    *    proveedor cachea el historial entero: −85,2 % → −69,0 % en un agente de 60
    *    pasos), ni en proveedores que cachean solos (gpt-4o, gpt-5, Gemini,
    *    DeepSeek...): un muñón a mitad del historial rompe esa caché.
+   *    Decide el PROVEEDOR, no la familia del modelo: solo AnthropicProvider
+   *    declara `cachesWholePrompt`, y vale `false` sin `automaticCache`. Cualquier
+   *    otro proveedor (también Claude por OpenAICompatibleProvider, OpenRouter o
+   *    LiteLLM, que pueden cachear el prompt por su cuenta) no lo declara y no
+   *    recorta con clave, como la 1.2.3 de pago (verificación 4: un agente de 60
+   *    pasos con Sonnet por un endpoint compatible pasaba de 0 % a +12,7 %).
    */
   private elisionRompeLaCacheDelProveedor(modelo: string): string | null {
     if (!this.conLicencia()) return null;
     const tramo = tramoDeCache(modelo, this.config.compressionEconomics);
-    const proveedor = this.config.provider as { cacheaElPromptEntero?: boolean } | undefined;
-    if (this.config.cacheBreakpoints === "auto" || !(tramo.cacheWriteMultiplier > 1) || proveedor?.cacheaElPromptEntero === true) {
+    const proveedor = this.config.provider as { cachesWholePrompt?: boolean } | undefined;
+    if (this.config.cacheBreakpoints === "auto" || !(tramo.cacheWriteMultiplier > 1) || proveedor?.cachesWholePrompt !== false) {
       return "with a key, trimming of superseded tool results only acts inside a tool loop on Anthropic with the default cache placement (no automaticCache); elsewhere it stays off, as in 1.2.3";
     }
     return null;

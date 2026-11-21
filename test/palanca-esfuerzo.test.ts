@@ -192,9 +192,14 @@ describe("dicha en voz alta al arrancar", () => {
     expect(armada.linea).toContain("ARMED");
     // Tiene que decir la propiedad que justifica la palanca.
     expect(armada.linea).toContain("prefix cache");
-    // 1.2.4 · gratis en cualquier plan: ya no depende de la lista de features de la org.
-    expect(armada.linea).toContain("free on every plan: a license only adds the cloud");
-    expect(armada.linea).not.toMatch(/licence includes|fail-closed/);
+    // 1.2.4 · con una licencia de PAGO, como en la 1.2.3: manda la licencia de la
+    // org (decisión del dueño: con clave de pago, nada peor que la 1.2.3 de pago).
+    expect(armada.linea).toContain("ON if your organization's licence includes per_turn_effort; fail-closed");
+    expect(armada.linea).not.toContain("free on every plan");
+    // Con la licencia gratuita Medir, como sin claves.
+    const medir = describirEstadoDeEsfuerzo("low", true, true, false, true);
+    expect(medir.linea).toContain("free Measure license: the same levers as no key");
+    expect(medir.linea).not.toMatch(/licence includes|fail-closed/);
   });
 
   it("A2-14 · en modo comunitario es gratis y la línea no habla de ninguna licencia", () => {

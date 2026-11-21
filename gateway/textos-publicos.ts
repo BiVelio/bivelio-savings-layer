@@ -57,10 +57,22 @@ export const FRASE_LA_CLAVE_SOLO_ANADE =
   "A BiVelio key only adds the cloud: the free Measure license and a paid one apply the same levers as no key, " +
   "except trimming of superseded tool results, which with a key only acts inside a tool loop on Anthropic.";
 
-/** Lo mismo para el gateway (`--help`), que no tiene ese recorte: ahí la clave no apaga ninguna palanca. */
+/**
+ * Lo mismo para el gateway (`--help`), que no tiene ese recorte. Decisiones del
+ * dueño (21-11-2026): Medir = sin clave; con una licencia de pago, el gateway
+ * como en la 1.2.3 de pago (cada palanca pide su feature en la licencia de la
+ * org, fail-closed). Por eso aquí no se dice «switches no lever off» a secas.
+ */
 export const FRASE_LA_CLAVE_SOLO_ANADE_GATEWAY =
-  "A BiVelio key only adds the cloud and switches no lever off: the free Measure license applies the same levers " +
-  "as no key.";
+  "A BiVelio key adds the cloud. The free Measure license applies the same levers as no key; with a paid license " +
+  "the gateway works as in 1.2.3: each lever also needs your organization's license to include it, checked " +
+  "fail-closed.";
+
+/** `doctor` y la guía de terminales: qué hace la clave de servicio con las palancas del gateway. */
+export const FRASE_CLAVE_DE_SERVICIO_Y_PALANCAS =
+  "With the free Measure license it switches no lever off; with a paid license the levers follow that license, " +
+  "as in 1.2.3 (checked fail-closed: with no service key, or while savings.bivelio.com cannot confirm it, " +
+  "requests travel untouched).";
 
 /**
  * LA DEPENDENCIA QUE TRAE UNA CLAVE (verificación final de la 1.2.4, bloqueante 3).

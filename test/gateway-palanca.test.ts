@@ -523,9 +523,15 @@ describe("describirEstadoDeElision — el brazo dicho al arrancar", () => {
     const linea = describirEstadoDeElision(undefined, true).linea;
     expect(linea).toContain("BVSALA_GATEWAY_ELISION=0 turns the levers off");
     expect(linea).not.toContain("(=0 ");
-    // 1.2.4 · la rebaja de TTL ya no cuelga de la lista de features de la org.
-    expect(linea).toContain("TTL tuning ON: the levers are free on every plan, a license only adds the cloud");
-    expect(linea).not.toMatch(/licence includes|fail-closed/);
+    // 1.2.4 · con una licencia de PAGO, como en la 1.2.3: la rebaja de TTL cuelga
+    // de la licencia de la org (decisión del dueño: con clave de pago, nada peor
+    // que la 1.2.3 de pago).
+    expect(linea).toContain("your organization's licence includes cache_ttl_tuning");
+    expect(linea).not.toContain("free on every plan");
+    // Con la licencia gratuita Medir, como sin claves: no cuelga de ninguna lista.
+    const medir = describirEstadoDeElision(undefined, true, false, false, true).linea;
+    expect(medir).toContain("TTL tuning ON: the free Measure license applies the same levers as no key");
+    expect(medir).not.toMatch(/licence includes|fail-closed/);
   });
 
   it("A2-29 · en modo comunitario las palancas son gratis: ni «licence» ni «fail-closed», y dice cómo apagarlas", () => {
@@ -681,11 +687,16 @@ describe("la palanca de punta a punta", () => {
     expect(recibidas[0]!.headers["anthropic-beta"]).toBe("oauth-2025-04-20");
   });
 
-  // 1.2.4 · LAS PALANCAS SON GRATIS EN CUALQUIER PLAN. Hasta la 1.2.3 estos dos
-  // casos decían «intacto»: una fila de licencia sin el literal, o la plataforma
-  // caída, dejaban a quien paga con MENOS que quien no pone clave (sin clave, la
-  // bandera local basta). Ahora basta con la bandera también con licencia.
-  it("bandera local y una fila de licencia SIN el feature → los diales se aplican (como sin claves)", async () => {
+  // 1.2.4 · CON UNA LICENCIA DE PAGO, COMO LA 1.2.3 DE PAGO (decisión del dueño,
+  // 21-11-2026: «con clave de pago, nada peor que la 1.2.3 de pago»). Una rama
+  // previa de la 1.2.4 concedía aquí las palancas como sin claves; medido con un
+  // proveedor falso cuya caché caduca, eso encarecía las sesiones de pago con
+  // pausas de más de 5 min (+36,5 % a +51,1 % frente al 0 % de la 1.2.3). Estos
+  // tres casos vuelven a fijar lo de la 1.2.3: una fila sin el feature, la
+  // plataforma caída o una licencia sin clave de servicio → intacto. (`gatewayCon`
+  // usa la licencia de test, plan "pro".) Sin claves y con Medir, la bandera local
+  // basta: lo fijan gateway-licencia-medir y los casos comunitarios.
+  it("licencia de PAGO, bandera local y una fila SIN el feature → intacto, como la 1.2.3 (medio opt-in no basta)", async () => {
     const recibidas: Recibida[] = [];
     const upstream = await arrancarUpstreamFalso(recibidas);
     const plataforma = await arrancarPlataformaFalsa({ features: ["semantic_cache"] });
@@ -693,9 +704,8 @@ describe("la palanca de punta a punta", () => {
     await esperarCanal();
 
     await pedir(g.puerto, CUERPO);
-    const json = JSON.parse(recibidas[0]!.body);
-    expect(json.context_management.edits[0].trigger.value).toBe(DIAL_TRIGGER_INPUT_TOKENS);
-    expect(recibidas[0]!.headers["anthropic-beta"]).toBe(BETA_CONTEXT_MANAGEMENT);
+    expect(recibidas[0]!.body).toBe(CUERPO);
+    expect(recibidas[0]!.headers["anthropic-beta"]).toBeUndefined();
   });
 
   it("SIN la bandera local, con la fila que sea → intacto (las opcionales siguen pidiendo su opt-in)", async () => {
@@ -710,7 +720,7 @@ describe("la palanca de punta a punta", () => {
     expect(recibidas[0]!.headers["anthropic-beta"]).toBeUndefined();
   });
 
-  it("plataforma caída → las palancas siguen (no dependen de la nube) y el tráfico fluye", async () => {
+  it("licencia de PAGO y plataforma caída → FAIL-CLOSED como la 1.2.3: intacto y el tráfico fluye", async () => {
     const recibidas: Recibida[] = [];
     const upstream = await arrancarUpstreamFalso(recibidas);
     const plataforma = await arrancarPlataformaFalsa({ estado: 500 });
@@ -719,7 +729,8 @@ describe("la palanca de punta a punta", () => {
 
     const res = await pedir(g.puerto, CUERPO);
     expect(res.status).toBe(200);
-    expect(JSON.parse(recibidas[0]!.body).context_management.edits[0].trigger.value).toBe(DIAL_TRIGGER_INPUT_TOKENS);
+    expect(recibidas[0]!.body).toBe(CUERPO);
+    expect(recibidas[0]!.headers["anthropic-beta"]).toBeUndefined();
   });
 
   it("plataforma caída y BVSALA_GATEWAY_ELISION=0 → intacto", async () => {
@@ -773,12 +784,12 @@ describe("la palanca de punta a punta", () => {
     expect(recibidas[0]!.body).toBe(CUERPO);
   });
 
-  it("1.2.4 · licencia sin clave de servicio y con la bandera: los diales se aplican (antes no había canal)", async () => {
+  it("licencia de PAGO sin clave de servicio y con la bandera: la palanca ni se arma, como la 1.2.3 (no hay org que consultar)", async () => {
     const recibidas: Recibida[] = [];
     const upstream = await arrancarUpstreamFalso(recibidas);
     const g = await gatewayCon({ upstream, elision: true, dialesElision: true }); // sin clave
     await pedir(g.puerto, CUERPO);
-    expect(JSON.parse(recibidas[0]!.body).context_management.edits[0].trigger.value).toBe(DIAL_TRIGGER_INPUT_TOKENS);
+    expect(recibidas[0]!.body).toBe(CUERPO);
   });
 });
 

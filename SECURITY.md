@@ -179,13 +179,16 @@ your machine. It waits up to 10 seconds, or 3 seconds when a valid
 - Renewal: from 7 days before expiry, once an hour (30-second timeout). If it
   cannot be reached, the current license stays. A gateway that started with the
   fallback key checks right away.
-- Organization status (whether the control plane reports your organization as
-  blocked) is cached for up to 5 minutes and refreshed in the background when a
-  request arrives (10-second timeout). Since 1.2.4 the savings levers do not
-  depend on it: they are free on every plan and are granted on your machine,
-  exactly as with no key, so if the status cannot be fetched the levers keep
-  working and traffic keeps flowing. (Up to 1.2.3 a failed fetch switched the
-  levers off.) There is no retry timer: the gateway tries again with the first
+- Entitlements (which savings features your plan includes, and whether the
+  control plane reports your organization as blocked) are cached for up to 5
+  minutes and refreshed in the background when a request arrives (10-second
+  timeout). With a paid license the gateway works as in 1.2.3: if they cannot be
+  fetched, savings features switch off and traffic keeps flowing to your provider
+  unchanged, and the request that triggers the retry is still served without
+  savings features. With the free Measure license (since 1.2.4) the levers do not
+  depend on this fetch: they are granted on your machine, exactly as with no key,
+  so if the status cannot be fetched the levers keep working and traffic keeps
+  flowing. There is no retry timer: the gateway tries again with the first
   request that arrives more than 60 seconds later. A failed fetch never blocks
   your organization. Only an answer from the server can.
 - Usage reporting works as in the SDK.
