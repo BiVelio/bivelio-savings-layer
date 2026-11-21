@@ -138,10 +138,11 @@ does not start (it exits with code 1), the message says exactly what is missing:
 
 | Message | What is happening | Fix |
 |---|---|---|
-| `BIVELIO_SERVICE_KEY is not recognised` | the key was deleted, rotated or only half copied | create another one |
+| `BIVELIO_SERVICE_KEY does not look like a service key` | the value is not a `bvk_` key (a placeholder such as `bvk_…` pasted from an example, or the license key in the wrong variable) | paste the real key, or unset the keys and relaunch, free |
+| `BIVELIO_SERVICE_KEY is not recognised` | the key was deleted, rotated or only half copied | create another one, or unset the keys and relaunch, free |
 | `your organization has no active BiVelio license` | there is no subscription | subscribe in Account and start again, or unset the keys and relaunch, free |
 | `your BiVelio license expired on …` | the license expired and its grace period is over | renew in Account, or unset the keys and relaunch, free |
-| `could not collect your license from savings.bivelio.com` | savings.bivelio.com cannot be reached | check the connection; as a fallback, `BIVELIO_LICENSE_KEY` (verified offline and replaced by hand every period) |
+| `could not collect your license from savings.bivelio.com` | savings.bivelio.com cannot be reached | check the connection; as a fallback, `BIVELIO_LICENSE_KEY` (verified offline and replaced by hand every period); or unset the keys and relaunch, free |
 | an HTTP 402 in the terminal in the middle of a session | the license expired or was revoked with the session open | renew, or unset the keys and relaunch, free; the requests already in flight were not cut |
 
 If you run `bvsala gateway` as a service (launchd/systemd), a license failure
