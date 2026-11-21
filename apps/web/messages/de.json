@@ -195,6 +195,8 @@
       "missingFields": "Gib deine E-Mail und dein Passwort ein."
     },
     "signupMedir": "Oder starte gratis mit Measure: der kostenlose Cloud-Plan, ohne Karte, Schattenmodus, bis zu {seats} Sitze und {requests} Anfragen pro Tag. Er funktioniert mit der neuesten Version von @bivelio/savings-layer.",
+    "signupPlanPro": "Du hast {plan} gewählt — {price} pro Seat und Monat. Erstelle dein Konto, bestätige deine E-Mail, und du bezahlst im Dashboard über Stripe.",
+    "signupPlanTeam": "Du hast {plan} gewählt — {price} pro Monat, {seats} Seats inklusive. Erstelle dein Konto, bestätige deine E-Mail, und du bezahlst im Dashboard über Stripe.",
     "openSourceQuestion": "Du willst nur die Open-Source-Engine?",
     "openSourceLink": "Installiere sie ohne Konto",
     "showPassword": "Passwort anzeigen",

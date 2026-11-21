@@ -195,6 +195,8 @@
       "missingFields": "Masukkan email dan kata sandi Anda."
     },
     "signupMedir": "Atau mulai gratis dengan Measure: paket cloud gratis, tanpa kartu, mode bayangan, hingga {seats} kursi dan {requests} permintaan per hari. Berfungsi dengan versi terbaru @bivelio/savings-layer.",
+    "signupPlanPro": "Anda memilih {plan} — {price} per kursi per bulan. Buat akun Anda, konfirmasikan email Anda, lalu bayar di dasbor melalui Stripe.",
+    "signupPlanTeam": "Anda memilih {plan} — {price} per bulan, termasuk {seats} kursi. Buat akun Anda, konfirmasikan email Anda, lalu bayar di dasbor melalui Stripe.",
     "openSourceQuestion": "Hanya ingin mesin open source?",
     "openSourceLink": "Pasang tanpa akun",
     "showPassword": "Tampilkan kata sandi",
