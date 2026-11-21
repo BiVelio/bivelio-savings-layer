@@ -1234,7 +1234,7 @@
       "ctaStart": "Inizia con Measure",
       "ctaBench": "Vedi i risultati riproducibili",
       "panelAlt": "La dashboard di Savings con i dati del banco pubblico: il risparmio misurato e la sua ripartizione per modello.",
-      "panelCaption": "Dashboard dimostrativa con l'esecuzione {bateria} del banco pubblico: il {titular} vale per i quattro modelli insieme, senza il contrasto dei prezzi della cache. La ricevuta riguarda solo {modelo}.",
+      "panelCaption": "Dashboard dimostrativa con l'esecuzione {bateria} del banco pubblico: il {titular} vale per i quattro modelli insieme. La ricevuta riguarda solo {modelo}.",
       "medidoEnVivo": "Misurato dal vivo con il contatore di ogni fornitore",
       "note": "Si installa in pochi minuti. I tuoi messaggi non passano mai dai nostri server.",
       "proofTitle": "Misurato contro un provider reale",
@@ -1758,7 +1758,7 @@
     "title": "Il nostro banco di prova A/B, alla luce del sole.",
     "titleAccent": "Misuraci.",
     "titleMark": "Misuraci",
-    "lede": "Pubblichiamo ogni esecuzione: quattro batterie su dataset pubblici, {modelos} modelli, ed entrambi i bracci misurati con il contatore di utilizzo del fornitore stesso. Ogni cifra porta il suo n, il suo intervallo e la sua data. Anche ciò che non fa risparmiare è qui.",
+    "lede": "Pubblichiamo le esecuzioni elencate qui sotto: quattro batterie su dataset pubblici, {modelos} modelli, ed entrambi i bracci misurati con il contatore di utilizzo del fornitore stesso. Ogni cifra porta il suo n, il suo intervallo e la sua data. Anche ciò che non fa risparmiare è qui.",
     "stats": {
       "batteries": "batterie",
       "models": "modelli testati",
@@ -1779,7 +1779,7 @@
     },
     "weekly": {
       "title": "Banco settimanale dal vivo",
-      "intro": "Ogni settimana, e ogni volta che lo lanciamo a mano, un'esecuzione passa tutte le batterie su tutti i modelli: il braccio A va diretto al fornitore, il B passa per il livello costruito dal sorgente di main in quel momento. Non è una versione pubblicata: è ciò che sta per esserlo. L'esecuzione fallisce se si rompe una qualsiasi regola, e una cella che non si è potuta misurare dice perché.",
+      "intro": "Un'esecuzione passa tutte le batterie su tutti i modelli: il braccio A va diretto al fornitore, il B passa per il livello costruito dal sorgente di main in quel momento. Non è una versione pubblicata: è ciò che sta per esserlo. L'esecuzione fallisce se si rompe una qualsiasi regola, e una cella che non si è potuta misurare dice perché.",
       "meta": "Esecuzione del {fecha} · sorgente di main al commit {commit} (versione del pacchetto {version}) · spesa {gasto} su un tetto di {tope} · {medidas} celle misurate su {celdas}.",
       "verdictOk": "Verdetto: nessuna regressione.",
       "verdictFailed": "Verdetto: l'esecuzione è fallita (regole violate: {n}).",
