@@ -34,9 +34,12 @@ describe.skipIf(process.platform === "win32")("A2-14/A2-23/A2-29 · sin clave, n
     try {
       await p.esperar(/per-turn effort: .*\n/);
       const texto = p.stdout() + p.stderr();
-      expect(texto).toContain("COMMUNITY MODE");
-      expect(texto).toContain("savings levers: ON (community mode: free, no key needed)");
-      expect(texto).toContain("BVSALA_GATEWAY_ELISION=0 turns them off");
+      expect(texto).toContain("COMMUNITY MODE (open core): no BiVelio keys set - free, zero telemetry, nothing sent to BiVelio");
+      // 1.2.4 · el cartel ya no dice que todo está encendido encima de tres OFF.
+      expect(texto).not.toMatch(/every local saving lever|savings levers: ON/);
+      expect(texto).toContain("savings levers (community mode: free, no key needed): cache TTL tuning is the only one ON by default");
+      expect(texto).toContain("on a Claude or ChatGPT subscription this run only measures");
+      expect(texto).toContain("BVSALA_GATEWAY_ELISION=0 turns it off");
       expect(texto).toMatch(/sibling model routing: ARMED \([^)]*community mode: free, no key needed\)/);
       expect(texto).toMatch(/per-turn effort: ARMED at "low" \(community mode: free, no key needed\)/);
       for (const re of VIEJAS) expect(texto, String(re)).not.toMatch(re);
@@ -54,7 +57,10 @@ describe.skipIf(process.platform === "win32")("A2-14/A2-23/A2-29 · sin clave, n
     caja.terminal("claude", "");
     const r = spawnSync(process.execPath, [BIN, "claude", "-p", "hola"], { env: caja.env(), encoding: "utf8", timeout: 20_000 });
     expect(r.status, r.stderr).toBe(0);
-    expect(r.stderr).toContain("savings levers: ON (community mode: free, no key needed)");
+    expect(r.stderr).toContain("savings levers (community mode: free, no key needed): cache TTL tuning is the only one ON by default");
+    expect(r.stderr).not.toMatch(/every local saving lever|savings levers: ON/);
+    // Con las tres líneas OFF debajo, la de arriba dice la variable que enciende cada una.
+    expect(r.stderr).toContain("opt-in: BVSALA_GATEWAY_SIBLING_MODEL=1, BVSALA_GATEWAY_EFFORT=low|medium");
     for (const re of VIEJAS) expect(r.stderr, String(re)).not.toMatch(re);
   });
 
@@ -65,8 +71,11 @@ describe.skipIf(process.platform === "win32")("A2-14/A2-23/A2-29 · sin clave, n
       expect(r.stdout, String(re)).not.toMatch(re);
     }
     expect(r.stdout).toMatch(/With\s+no BiVelio keys \(COMMUNITY mode\) they are free and need no license\./);
-    // Las dos palancas opt-in: gratis sin claves, la licencia de la org solo si la hay.
-    expect(r.stdout.match(/Free with\s+no keys; with an organization\s+license, only if it includes/g)).toHaveLength(2);
+    // Las dos palancas opt-in: gratis sin claves y con la licencia gratuita Measure; las de pago las incluyen.
+    expect(r.stdout.match(/Free with\s+no keys and with the free\s+Measure license; a Pro or Team license\s+includes it/g)).toHaveLength(2);
+    // 1.2.4 · la clave solo añade la nube: ningún texto dice que una licencia decide qué palancas aplican.
+    expect(r.stdout).not.toMatch(/feature list decide|every local (saving )?lever|all local levers|arms every|org entitlements/);
+    expect(r.stdout).toMatch(/A BiVelio key only adds the cloud: the free Measure license applies\s+the same levers as no key/);
     // La frase del 8,0 % no describe tráfico de suscripción como factura de API.
     expect(r.stdout).not.toContain("8.0% of the bill");
     expect(r.stdout).toMatch(/at API list prices that surcharge was 8\.0% of the cost/);

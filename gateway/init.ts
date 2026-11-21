@@ -1,3 +1,10 @@
+import {
+  FRASE_LA_CLAVE_SOLO_ANADE,
+  FRASE_PALANCAS_SDK,
+  LO_QUE_ANADE_LA_NUBE,
+  OPCION_SDK_SOLO_OBSERVAR,
+  enLineas,
+} from "./textos-publicos.js";
 import { dirname, join, posix } from "node:path";
 
 import {
@@ -468,9 +475,9 @@ export function planear(
     {
       nombre: "BIVELIO_LICENSE_KEY",
       puesta: entorno.env("BIVELIO_LICENSE_KEY"),
-      para: "OPTIONAL (open core): without it the layer runs in COMMUNITY mode with every local lever on; a key adds cloud dashboard + team metering",
+      para: "OPTIONAL: the license of your Savings Cloud plan. Without it the layer runs free in COMMUNITY mode; a key only adds the cloud",
     },
-    { nombre: "BIVELIO_SERVICE_KEY", puesta: entorno.env("BIVELIO_SERVICE_KEY"), para: "OPTIONAL: seat metering, license auto-renewal and the cloud dashboard" },
+    { nombre: "BIVELIO_SERVICE_KEY", puesta: entorno.env("BIVELIO_SERVICE_KEY"), para: "OPTIONAL: sends usage to your cloud dashboard and renews the license by itself" },
   ];
   if (capa === "anthropic-sdk") {
     claves.push({
@@ -702,9 +709,14 @@ export function textoDelPlan(plan: Plan, cabecera: string, invocacion: string, o
   const ancho = Math.max(...plan.claves.map((k) => k.nombre.length));
   for (const k of plan.claves) out.push(`  ${k.nombre.padEnd(ancho)}  ${k.puesta ? "set    " : "not set"}  ${k.para}`);
   out.push(
-    "  OPEN CORE: no keys are required — without them the layer runs in COMMUNITY mode with every local lever on",
-    "  and nothing sent to BiVelio. The BiVelio keys (https://savings.bivelio.com/dashboard/install) add the cloud",
-    "  dashboard, team metering and license auto-renewal.",
+    "  OPEN CORE: no keys are required, and without them nothing is sent to BiVelio.",
+    ...enLineas(FRASE_PALANCAS_SDK, 112, "  "),
+    ...enLineas(
+      `The BiVelio keys (https://savings.bivelio.com/dashboard/install) add ${LO_QUE_ANADE_LA_NUBE}. ` +
+        `${FRASE_LA_CLAVE_SOLO_ANADE} To only observe, without changing any request: \`${OPCION_SDK_SOLO_OBSERVAR}: true\`.`,
+      112,
+      "  ",
+    ),
     `  ${plan.dondeVanLasClaves}`,
   );
 

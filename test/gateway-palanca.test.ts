@@ -530,9 +530,15 @@ describe("describirEstadoDeElision — el brazo dicho al arrancar", () => {
     for (const bandera of [undefined, "1"]) {
       const e = describirEstadoDeElision(bandera, true, false, true);
       expect(e.aviso).toBe(false);
-      expect(e.linea).toContain("savings levers: ON (community mode: free, no key needed)");
-      expect(e.linea).toContain("cache TTL tuning ON for Anthropic API-key traffic");
-      expect(e.linea).toContain("BVSALA_GATEWAY_ELISION=0");
+      // 1.2.4 · ya no dice «savings levers: ON» a secas: dice CUÁL actúa, cuándo, que
+      // con suscripción solo se mide, y la variable exacta de cada una de las demás.
+      expect(e.linea).not.toContain("savings levers: ON");
+      expect(e.linea).toContain("savings levers (community mode: free, no key needed)");
+      expect(e.linea).toContain("cache TTL tuning is the only one ON by default");
+      expect(e.linea).toContain("only acts on Anthropic API-key traffic that asks for the 1-hour cache");
+      expect(e.linea).toContain("on a Claude or ChatGPT subscription this run only measures");
+      expect(e.linea).toContain("BVSALA_GATEWAY_ELISION=0 turns it off");
+      expect(e.linea).toContain("opt-in: BVSALA_GATEWAY_SIBLING_MODEL=1, BVSALA_GATEWAY_EFFORT=low|medium");
       expect(e.linea).toContain("context elision dials OFF");
       expect(e.linea).not.toMatch(/licen[cs]e|fail-closed/i);
     }

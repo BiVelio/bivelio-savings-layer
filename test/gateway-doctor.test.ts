@@ -404,7 +404,11 @@ describe("bvsala doctor — jamás contenido, solo rutas", () => {
       ["{ existsSync }", "node:fs"],
       ["{ homedir }", "node:os"],
       ["{ delimiter, join }", "node:path"],
+      // 1.2.4 · las frases comunes del paquete: solo texto, y ese módulo no importa nada.
+      ["{ FRASE_PALANCAS_GATEWAY, LO_QUE_ANADE_LA_NUBE }", "./textos-publicos.js"],
     ]);
     expect(fuente).not.toMatch(/node:child_process|node:fs\/promises/);
+    const textos = readFileSync(fileURLToPath(new URL("../gateway/textos-publicos.ts", import.meta.url)), "utf8");
+    expect(textos).not.toMatch(/^import\s/m);
   });
 });

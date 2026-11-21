@@ -2,9 +2,11 @@ import { createServer, type Server, type ServerResponse } from "node:http";
 import { afterEach, beforeEach, describe, it, expect, vi, type MockInstance } from "vitest";
 
 import { arrancarGateway, type GatewayArrancado } from "../gateway/servidor.js";
-import { RecuentoDeMedicion, resumenDeMedicion } from "../gateway/recuento.js";
+import { RecuentoDeMedicion, dolares, fraseDeDinero, resumenDeMedicion, type CosteDeInforme } from "../gateway/recuento.js";
+import { costeMedido, informeMedido, informeCoalescido } from "../gateway/medidor.js";
 import { reiniciarAvisos } from "../src/util/warn-once.js";
 import { testLicense } from "./helpers/test-license.js";
+import { cajaLimpia, exigirBinCompilado, lanzar } from "./helpers/bvsala-proceso.js";
 
 /**
  * EL RECUENTO DE LO MEDIDO — lo que el envoltorio imprime al salir, porque su
@@ -15,8 +17,15 @@ import { testLicense } from "./helpers/test-license.js";
  *   · lo medido se cuenta con el contador del proveedor, y nada se estima;
  *   · cada «not metered» de la API se cuenta con su motivo;
  *   · la telemetría y las sondas que un terminal manda por el base URL no
- *     cuentan como «no medido», y un error del proveedor tampoco (no factura).
+ *     cuentan como «no medido», y un error del proveedor tampoco (no factura);
+ *   · 1.2.4 · la línea dice el DINERO: el gasto a precio de lista y el ahorro,
+ *     cada base por separado, sumados de los mismos informes que van al panel
+ *     — y si no hubo ahorro, por qué. Sin tocar nada del tráfico.
  */
+
+/** Un coste inventado, sin palanca: baseline == actual. */
+const SIN_AHORRO: CosteDeInforme = { actual: 0.25, netSavingsUsd: 0, basis: "measured" };
+const costeDe = (informe: unknown): CosteDeInforme => (informe as { cost: CosteDeInforme }).cost;
 
 describe("resumenDeMedicion — la línea de salida", () => {
   it("nada pasó por el gateway: lo dice, y dice dónde mirar", () => {
@@ -25,35 +34,138 @@ describe("resumenDeMedicion — la línea de salida", () => {
     expect(l).toContain("docs/terminales/");
   });
 
-  it("todo medido: solo la cuenta, sin cifra de dinero ni de ahorro", () => {
+  it("todo medido: la cuenta, el gasto a precio de lista, por qué no hubo ahorro y dónde está el detalle", () => {
     const r = new RecuentoDeMedicion();
-    r.medida();
-    r.medida();
+    r.medida(SIN_AHORRO);
+    r.medida(SIN_AHORRO);
     const l = resumenDeMedicion(r.estado(), "claude");
-    expect(l).toBe("[bvsala claude] metering in this run: 2 request(s) metered with the provider's usage.");
-    expect(l).not.toMatch(/\$|sav/i);
+    expect(l).toBe(
+      "[bvsala claude] metering in this run: 2 request(s) metered with the provider's usage · spent $0.5000 at list price · " +
+        "saved $0.00: no lever changed a request (cache TTL tuning only acts on Anthropic API-key traffic that asks for the " +
+        "1-hour cache; the opt-in levers are in `bvsala --help`). " +
+        "Per-request detail: run it again with BVSALA_GATEWAY_LOG=1 (one line per request, on stderr).",
+    );
+  });
+
+  it("con el log a la vista (`bvsala gateway`, o BVSALA_GATEWAY_LOG=1) el detalle está arriba, no en otra ejecución", () => {
+    const r = new RecuentoDeMedicion();
+    r.medida(SIN_AHORRO);
+    const l = resumenDeMedicion(r.estado(), "gateway", { logVisible: true });
+    expect(l).toContain("Per-request detail: the log lines above.");
+    expect(l).not.toContain("BVSALA_GATEWAY_LOG");
+  });
+
+  it("⛔ la rebaja de TTL que ahorró sale en dólares, con su base: el MISMO neto que lleva el informe", () => {
+    // Un informe de verdad: 100.000 tokens escritos en caché, rebajados de 1 h a 5 min.
+    const medido = costeMedido("claude-opus-5", { input_tokens: 100, output_tokens: 50, cache_creation_input_tokens: 100_000 })!;
+    const informe = informeMedido("r-1", "claude-opus-5", medido, undefined, null, { rebajadas: 2, yaEran5m: 0, herramientaDeServidor: false });
+    const coste = costeDe(informe);
+    expect(coste.netSavingsUsd).toBeGreaterThan(0);
+    const r = new RecuentoDeMedicion();
+    r.medida(coste);
+    r.medida(coste);
+    const e = r.estado();
+    expect(e.dinero.gastoUsd).toBeCloseTo(2 * coste.actual, 12);
+    expect(e.dinero.ahorroMedidoUsd).toBeCloseTo(2 * coste.netSavingsUsd, 12);
+    const l = resumenDeMedicion(e, "claude");
+    expect(l).toContain(`spent ${dolares(2 * coste.actual)} at list price · saved ${dolares(2 * coste.netSavingsUsd)} (measured)`);
+    expect(l).not.toContain("saved $0.00");
+  });
+
+  it("⛔ solo suscripción: equivalente a precio de lista, y $0 de ahorro porque ahí solo se mide", () => {
+    const medido = costeMedido("claude-opus-5", { input_tokens: 1000, output_tokens: 50, cache_creation_input_tokens: 100_000 })!;
+    // Con suscripción la rebaja no acredita nada aunque se hubiera aplicado: baseline == actual.
+    const informe = informeMedido("s-1", "claude-opus-5", medido, undefined, null, { rebajadas: 2, yaEran5m: 0, herramientaDeServidor: false }, null, true);
+    const r = new RecuentoDeMedicion();
+    r.medida(costeDe(informe), true);
+    const e = r.estado();
+    expect(e.dinero).toMatchObject({ ahorroMedidoUsd: 0, deSuscripcion: 1 });
+    const l = resumenDeMedicion(e, "claude");
+    expect(l).toContain(`spent ${dolares(medido.costeUsd)} at list-price equivalent (subscription traffic: there is no per-token invoice)`);
+    expect(l).toContain("saved $0.00: on a subscription the gateway only measures and changes nothing");
+    expect(l).not.toContain("cache TTL tuning only acts");
+  });
+
+  it("mezcla de suscripción y clave de API: lo dice, y el motivo del $0 es el de las palancas", () => {
+    const r = new RecuentoDeMedicion();
+    r.medida(SIN_AHORRO, true);
+    r.medida(SIN_AHORRO);
+    const l = resumenDeMedicion(r.estado(), "claude");
+    expect(l).toContain("spent $0.5000 at list price (1 request(s) on a subscription count at list-price equivalent)");
+    expect(l).toContain("saved $0.00: no lever changed a request");
+  });
+
+  it("⛔ si las palancas salieron caras (la entrada de 5 min caducó en una pausa) no se llama ahorro, y dice cómo apagarla", () => {
+    const r = new RecuentoDeMedicion();
+    r.medida({ actual: 2, netSavingsUsd: 0.1, basis: "measured" });
+    r.medida({ actual: 3, netSavingsUsd: -0.4, basis: "measured" });
+    const l = resumenDeMedicion(r.estado(), "claude");
+    expect(l).toContain("spent $5.00 at list price · the levers cost $0.3000 more than they saved (measured");
+    expect(l).toContain("BVSALA_GATEWAY_ELISION=0 turns cache TTL tuning off");
+    expect(l).not.toMatch(/ saved \$/);
+  });
+
+  it("las bases no se suman: medido, por referencia y estimado van cada uno con su nombre", () => {
+    const medido = costeMedido("claude-sonnet-4-6", { input_tokens: 1_000_000, output_tokens: 1000 })!;
+    const r = new RecuentoDeMedicion();
+    r.medida({ actual: 1, netSavingsUsd: 0.2, basis: "measured" });
+    // Una gemela sin referencia: estimada con el contador de su primaria.
+    const estimada = costeDe(informeCoalescido("g-1", "claude-sonnet-4-6", medido));
+    expect(estimada.basis).toBe("estimated");
+    r.replica(estimada);
+    r.replica({ actual: 0, netSavingsUsd: 0.05, basis: "reference" });
+    // El hipotético de la sombra no es dinero de la sesión.
+    r.replica({ actual: 0, netSavingsUsd: 99, basis: "shadow" });
+    const e = r.estado();
+    expect(e.dinero.gastoUsd).toBe(1);
+    expect(e.dinero.ahorroMedidoUsd).toBe(0.2);
+    expect(e.dinero.ahorroPorReferenciaUsd).toBe(0.05);
+    expect(e.dinero.ahorroEstimadoUsd).toBeCloseTo(medido.costeUsd, 12);
+    const frase = fraseDeDinero(e);
+    expect(frase).toContain("saved $0.2000 (measured)");
+    expect(frase).toContain("$0.0500 in duplicate calls avoided (by reference)");
+    expect(frase).toContain(`about ${dolares(medido.costeUsd)} in duplicate calls avoided (estimated, never added to the measured figure)`);
+    expect(frase).not.toContain("99");
+  });
+
+  it("sin nada medido no hay cifra de dinero ni puntero al detalle", () => {
+    const r = new RecuentoDeMedicion();
+    r.recibida();
+    r.noMedida("the provider reported no usage");
+    const l = resumenDeMedicion(r.estado(), "claude");
+    expect(l).not.toMatch(/\$|spent|saved|Per-request detail/);
+    expect(fraseDeDinero(r.estado())).toBe("");
+  });
+
+  it("dolares: céntimos desde 1 $, cuatro decimales por debajo, y el ruido de coma flotante es $0.00", () => {
+    expect(dolares(12.3456)).toBe("$12.35");
+    expect(dolares(0.01234)).toBe("$0.0123");
+    expect(dolares(1e-9)).toBe("$0.00");
+    expect(dolares(-0.5)).toBe("$0.5000");
   });
 
   it("parte sin medir: los motivos, de más a menos, y que nada se estima en su lugar", () => {
     const r = new RecuentoDeMedicion();
-    r.medida();
+    r.medida(SIN_AHORRO);
     r.noMedida("the request did not ask for usage (stream_options.include_usage)");
     r.noMedida('model "x" has no list price in the catalog');
     r.noMedida("the request did not ask for usage (stream_options.include_usage)");
     const l = resumenDeMedicion(r.estado(), "aider");
     expect(l).toContain("1 request(s) metered");
+    expect(l).toContain("spent $0.2500 at list price");
     expect(l).toContain("3 forwarded but NOT metered (nothing is estimated in their place)");
+    expect(l).toMatch(/docs\/terminales\/README\.md\. Per-request detail: /);
     expect(l.indexOf("2 × the request did not ask for usage")).toBeLessThan(l.indexOf('1 × model "x"'));
   });
 
   it("las réplicas coalescidas van aparte: no se llaman «medidas»", () => {
     const r = new RecuentoDeMedicion();
-    r.medida();
-    r.replica();
+    r.medida(SIN_AHORRO);
+    r.replica({ actual: 0, netSavingsUsd: 0.25, basis: "estimated" });
     const l = resumenDeMedicion(r.estado(), "claude");
     expect(l).toContain("1 request(s) metered with the provider's usage · 1 duplicate(s) answered with a replica");
     const solo = new RecuentoDeMedicion();
-    solo.replica();
+    solo.replica({ actual: 0, netSavingsUsd: 0.25, basis: "estimated" });
     expect(resumenDeMedicion(solo.estado(), "claude")).not.toContain("no inference request");
   });
 
@@ -147,7 +259,42 @@ async function montar() {
   return { gw, pedir };
 }
 
+const SIN_DINERO = { gastoUsd: 0, ahorroMedidoUsd: 0, ahorroPorReferenciaUsd: 0, ahorroEstimadoUsd: 0, deSuscripcion: 0 };
+
 describe("el gateway lleva el recuento de lo medido y lo que no", () => {
+  it("⛔ 1.2.4 · el recuento suma el dinero de los informes: el gasto es el de los contadores del proveedor, a precio de lista", async () => {
+    const { gw, pedir } = await montar();
+    await pedir("/v1/messages", { model: "claude-sonnet-4-6", max_tokens: 5, messages: [] });
+    await pedir("/v1/messages", { model: "claude-sonnet-4-6", max_tokens: 5, messages: [] });
+    await pedir("/v1/chat/completions", { model: "gpt-4o-mini", messages: [], stream: true, stream_options: { include_usage: true } });
+    const esperado =
+      2 * costeMedido("claude-sonnet-4-6", { input_tokens: 10, output_tokens: 2 })!.costeUsd +
+      costeMedido("gpt-4o-mini", { input_tokens: 5, output_tokens: 1 })!.costeUsd;
+    expect(esperado).toBeGreaterThan(0);
+    const e = gw.medicion();
+    expect(e.medidas).toBe(3);
+    expect(e.dinero.gastoUsd).toBeCloseTo(esperado, 12);
+    // El upstream es un servidor local, no el API del proveedor: se mide y no se acredita nada.
+    expect(e.dinero).toMatchObject({ ahorroMedidoUsd: 0, ahorroPorReferenciaUsd: 0, ahorroEstimadoUsd: 0, deSuscripcion: 0 });
+    const l = resumenDeMedicion(e, "claude");
+    expect(l).toContain(`3 request(s) metered with the provider's usage · spent ${dolares(esperado)} at list price · saved $0.00: no lever changed a request`);
+  });
+
+  it("⛔ 1.2.4 · el tráfico de suscripción (beta oauth-*) se cuenta como tal y el resumen dice que ahí solo se mide", async () => {
+    const { gw } = await montar();
+    await fetch(`http://127.0.0.1:${gw.puerto}/v1/messages`, {
+      method: "POST",
+      headers: { "content-type": "application/json", "anthropic-beta": "oauth-2025-04-20" },
+      body: JSON.stringify({ model: "claude-sonnet-4-6", max_tokens: 5, messages: [] }),
+    }).then((r) => r.text());
+    const e = gw.medicion();
+    expect(e.medidas).toBe(1);
+    expect(e.dinero.deSuscripcion).toBe(1);
+    expect(e.dinero.gastoUsd).toBeGreaterThan(0);
+    const l = resumenDeMedicion(e, "claude");
+    expect(l).toContain("at list-price equivalent (subscription traffic: there is no per-token invoice)");
+    expect(l).toContain("saved $0.00: on a subscription the gateway only measures and changes nothing");
+  });
   it("cuenta lo medido y cada «not metered» de la API con su motivo", async () => {
     const { gw, pedir } = await montar();
     await pedir("/v1/messages", { model: "claude-sonnet-4-6", max_tokens: 5, messages: [] });
@@ -172,7 +319,7 @@ describe("el gateway lleva el recuento de lo medido y lo que no", () => {
     const { gw, pedir } = await montar();
     await pedir("/api/event_logging/batch", { events: [] });
     await pedir("/v1/error", { model: "claude-sonnet-4-6" });
-    expect(gw.medicion()).toEqual({ recibidas: 0, sinContador: 0, medidas: 0, replicas: 0, noMedidas: {} });
+    expect(gw.medicion()).toEqual({ recibidas: 0, sinContador: 0, medidas: 0, replicas: 0, noMedidas: {}, dinero: SIN_DINERO });
     expect(resumenDeMedicion(gw.medicion(), "claude")).toContain("no inference request went through the gateway");
   });
 
@@ -189,7 +336,9 @@ describe("el gateway lleva el recuento de lo medido y lo que no", () => {
       await fetch(`http://127.0.0.1:${gw.puerto}/v1/messages`, { method: "POST", body: JSON.stringify({ model: "claude-sonnet-4-6", messages: [] }) }).then((r) => r.text());
     }
     const e = gw.medicion();
-    expect(e).toEqual({ recibidas: 2, sinContador: 2, medidas: 0, replicas: 0, noMedidas: {} });
+    expect(e).toEqual({ recibidas: 2, sinContador: 2, medidas: 0, replicas: 0, noMedidas: {}, dinero: SIN_DINERO });
+    // Nada se midió: ni una cifra de dinero.
+    expect(resumenDeMedicion(e, "claude")).not.toMatch(/\$|spent|saved/);
     const l = resumenDeMedicion(e, "claude");
     expect(l).not.toContain("no inference request went through");
     expect(l).toContain("2 inference request(s) went through the gateway");
@@ -217,4 +366,71 @@ describe("el gateway lleva el recuento de lo medido y lo que no", () => {
     await pedir("/v1/embeddings", { model: "text-embedding-3-small", input: "x" });
     expect(gw.medicion().noMedidas).toEqual({ "no usage dialect for this route": 1 });
   });
+});
+
+// ── De punta a punta: lo que ve quien sale de `bvsala claude` ───────────────
+
+describe.skipIf(process.platform === "win32")("1.2.4 · `bvsala claude` enseña el dinero al salir (bin compilado, sin claves)", () => {
+  /** Un «claude» falso: manda `n` peticiones al base URL que le dio el envoltorio y sale. */
+  const claudeFalso = (n: number, cabeceras: Record<string, string>): string => `
+    const base = process.env.ANTHROPIC_BASE_URL;
+    (async () => {
+      for (let i = 0; i < ${n}; i++) {
+        const r = await fetch(base + "/v1/messages", {
+          method: "POST",
+          headers: ${JSON.stringify({ "content-type": "application/json", ...cabeceras })},
+          body: JSON.stringify({ model: "claude-sonnet-4-6", max_tokens: 5, messages: [{ role: "user", content: "hola " + i }] }),
+        });
+        await r.text();
+      }
+    })().catch((e) => { console.error(String(e)); process.exit(3); });
+  `;
+
+  async function correr(n: number, cabeceras: Record<string, string>, extra: Record<string, string> = {}) {
+    exigirBinCompilado();
+    const upstream = await servidor((_path, _cuerpo, res) => {
+      res.writeHead(200, { "content-type": "application/json" });
+      res.end(JSON.stringify({ id: "m", type: "message", model: "claude-sonnet-4-6", usage: { input_tokens: 2000, output_tokens: 300 } }));
+    });
+    const caja = cajaLimpia();
+    caja.terminal("claude", claudeFalso(n, cabeceras));
+    const p = lanzar(["claude"], caja.env({ BVSALA_GATEWAY_UPSTREAM: `http://127.0.0.1:${upstream}`, ...extra }));
+    try {
+      const fin = await p.salida;
+      return { codigo: fin.code, stdout: p.stdout(), stderr: p.stderr() };
+    } finally {
+      p.matar();
+      caja.limpiar();
+    }
+  }
+
+  const unitario = costeMedido("claude-sonnet-4-6", { input_tokens: 2000, output_tokens: 300 })!.costeUsd;
+
+  it("con clave de API: cuántas midió, cuánto costaron a precio de lista, por qué no hubo ahorro y dónde está el detalle", async () => {
+    const r = await correr(3, { "x-api-key": "clave-inventada-de-prueba" });
+    expect(r.codigo, r.stderr).toBe(0);
+    const linea = r.stderr.split("\n").find((l) => l.startsWith("[bvsala claude] metering in this run:"));
+    expect(linea, r.stderr).toBeDefined();
+    expect(linea).toContain("3 inference request(s) went through the gateway · 3 request(s) metered with the provider's usage");
+    expect(linea).toContain(`spent ${dolares(3 * unitario)} at list price`);
+    expect(linea).toContain("saved $0.00: no lever changed a request");
+    expect(linea).toContain("Per-request detail: run it again with BVSALA_GATEWAY_LOG=1");
+    // El stdout es del terminal envuelto: ni una línea nuestra.
+    expect(r.stdout).toBe("");
+  }, 30_000);
+
+  it("con suscripción (beta oauth-*): equivalente a precio de lista, y dice que ahí solo mide", async () => {
+    const r = await correr(2, { authorization: "Bearer credencial-inventada", "anthropic-beta": "oauth-2025-04-20" });
+    expect(r.codigo, r.stderr).toBe(0);
+    expect(r.stderr).toContain(`spent ${dolares(2 * unitario)} at list-price equivalent (subscription traffic: there is no per-token invoice)`);
+    expect(r.stderr).toContain("saved $0.00: on a subscription the gateway only measures and changes nothing");
+  }, 30_000);
+
+  it("con BVSALA_GATEWAY_LOG=1 el detalle ya está arriba: la línea no manda a repetir la ejecución", async () => {
+    const r = await correr(1, { "x-api-key": "clave-inventada-de-prueba" }, { BVSALA_GATEWAY_LOG: "1" });
+    expect(r.codigo, r.stderr).toBe(0);
+    expect(r.stderr).toMatch(/\[gateway\] POST \/v1\/messages .*claude-sonnet-4-6 · \$/);
+    expect(r.stderr).toContain("Per-request detail: the log lines above.");
+    expect(r.stderr).not.toContain("run it again with BVSALA_GATEWAY_LOG=1");
+  }, 30_000);
 });
