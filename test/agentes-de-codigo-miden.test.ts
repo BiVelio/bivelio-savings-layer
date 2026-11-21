@@ -130,6 +130,21 @@ describe("A2-9 · lo que viaja DENTRO del paquete npm dice lo mismo que el READM
     expect(guia).toContain("con API key pide la de cinco minutos salvo que pongas `promptCacheTtl` a `1h`");
   });
 
+  it("la guía de Claude Code no se contradice con su log: el «(1h …)» es parte de cache↑, y con API key pide 5 min", () => {
+    // Arriba decía que con API key Claude Code pide la caché de 5 min y abajo que
+    // «Claude Code escribe caché a 1 h», con un ejemplo imposible: cache↑0 (1h 49268).
+    // En gateway/servidor.ts el paréntesis es la parte de 1 h DENTRO del total escrito.
+    const crudo = leer("docs/terminales/claude-code.md");
+    const guia = plano(crudo);
+    expect(guia).not.toMatch(/Claude Code escribe caché a 1 h/);
+    const ejemplos = [...crudo.matchAll(/cache↑(\d+)(?: \(1h (\d+)\))?/g)];
+    expect(ejemplos.length).toBeGreaterThan(0);
+    for (const [texto, total, unaHora] of ejemplos) {
+      if (unaHora !== undefined) expect(Number(unaHora), texto).toBeLessThanOrEqual(Number(total));
+    }
+    expect(leer("gateway/servidor.ts")).toContain("cache↑${medido.tokens.cacheEscrita}`");
+  });
+
   it("la guía general de terminales pone la condición junto a «la palanca por defecto»", () => {
     const guia = plano(leer("docs/terminales/README.md"));
     expect(guia).toMatch(/palanca por defecto[^]*?Solo tiene algo que rebajar cuando el cliente paga por token y pide la caché de una hora/);

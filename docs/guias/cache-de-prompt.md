@@ -68,8 +68,8 @@ call.
   block or a code fence is never moved — that would corrupt the payload — and the
   request travels untouched. The `cache-prefix` trace reports what moved and why it
   abstained; it records counts and patterns, never your prompt text.
-- **Measured live** (v2.3-r1 evidence): 0 % → 95 % hit-rate, −82.76 % per request
-  (claude-haiku-4-5, provider's counters;
+- **Measured live, exploratory** (v2.3-r1 evidence, 20 requests per arm): 0 % → 95 %
+  hit-rate, −82.76 % per request (claude-haiku-4-5, provider's counters;
   [`benchmarks/evidencia/cache-prefix-vivo-2026-11-15.json`](../../benchmarks/evidencia/cache-prefix-vivo-2026-11-15.json)).
 
 ```ts
