@@ -21,9 +21,10 @@ without one.
    Services, as published, solely for your own internal business purposes, and only
    for the number of seats covered by your subscription. The Cloud Services are
    licensed, not sold. Under a Measure license the Software applies its saving
-   levers exactly as it does with no key, the dashboard shows your savings, and
-   usage recorded under a Measure license is never billed and never part of any
-   commission.
+   levers as it does with no key, except that trimming of superseded tool results
+   only acts inside a tool loop on Anthropic models; the dashboard shows your
+   savings, and usage recorded under a Measure license is never billed and never
+   part of any commission.
 
 2. LICENSE KEY; FAIL-CLOSED CLOUD. The Cloud Services require a valid, active
    License Key. Expiry, non-payment, revocation, suspension, or termination of your

@@ -53,7 +53,7 @@ describe("el README que viaja a npm dice lo mismo que el código", () => {
     // 21-11-2026— y la sombra es el modo solo-observar, opcional y en cualquier
     // plan. El README tiene que decir las dos cosas, y que Medir nunca comisiona.)
     expect(readme).toMatch(/free\s+\*\*Measure\*\* license/);
-    expect(readme).toMatch(/applies the same levers as with no key, and your\s+dashboard shows the real savings/);
+    expect(readme).toMatch(/applies the same levers as with no key, except that\s+trimming of superseded tool results only acts inside a tool loop on Anthropic, and your\s+dashboard shows the real savings/);
     expect(readme).not.toMatch(/runs the layer in\s+\*\*shadow mode\*\*/);
     expect(readme).toMatch(/\*\*observe-only mode\*\*/);
     expect(readme).toContain("observeOnly: true");

@@ -35,9 +35,9 @@ npx @bivelio/savings-layer claude    # or meter Claude Code through the local ga
   telemetry, and nothing is sent to BiVelio.
 - **The cloud is the optional part.** A BiVelio key adds the team dashboard, shared
   measurement, seats and license management: free on Measure, a fixed subscription on
-  Pro and Team, and never a commission on what you save. A key only adds the cloud: it
-  switches no lever off, though it does tie the layer to savings.bivelio.com (see
-  [Community vs Cloud](#community-vs-cloud)). Prices below.
+  Pro and Team, and never a commission on what you save. A key only adds the cloud
+  (with one exception for trimming of superseded tool results), and it ties the layer
+  to savings.bivelio.com (see [Community vs Cloud](#community-vs-cloud)). Prices below.
 - **The evidence is public.** [The paper](https://savings.bivelio.com/paper) (v2.3-r1,
   revised after an external pre-publication review) gives the method, the results and
   every limitation; the artifacts are in
@@ -166,8 +166,8 @@ reports, is at **[savings.bivelio.com/en/benchmarks](https://savings.bivelio.com
 | Team dashboard, shared measurement, seats and license management | — | ✅ |
 | Anything sent to BiVelio | **Nothing** | Per-request usage only (counts, cost, model id, opaque ids — [LICENSE-CLOUD.md](https://github.com/BiVelio/bivelio-savings-layer/blob/main/LICENSE-CLOUD.md) §5), never prompts or keys |
 
-Both columns run the same levers. A BiVelio key only adds the cloud and switches no lever off: the free Measure license applies the same levers as no key.
-One safeguard kept from 1.2.3 depends on a key: with one, trimming of superseded tool results stays off on a provider the layer does not recognise (one that may cache the whole prompt by itself, such as DeepSeek or Qwen). With no key it runs there, as in 1.2.3: on a long agent loop, compare with `savings: { elision: false }`.
+Both columns run the same levers. A BiVelio key only adds the cloud: the free Measure license and a paid one apply the same levers as no key, except trimming of superseded tool results, which with a key only acts inside a tool loop on Anthropic.
+With a key, that trimming acts on Anthropic models with the default cache placement, never with `cacheBreakpoints: "auto"` or `AnthropicProvider({ automaticCache: true })`, and only on results after your last user message; everywhere else it stays off, as in 1.2.3 with a paid key. With no key that trimming runs as in 1.2.3: on a long agent loop on gpt-5, Gemini, DeepSeek or Qwen, or with `cacheBreakpoints: "auto"` or `automaticCache`, compare with `savings: { elision: false }`.
 One dependency comes with a key, the free Measure key included: with `licenseServerUrl` set (as in the recipe your dashboard and `init` print), a layer that goes 72 hours without an answer from savings.bivelio.com fails closed with `LicenseError` on every call until it gets one or you remove the key. With no key there is no such dependency.
 What the gateway needs instead, and every timeout: [SECURITY.md, Availability](https://github.com/BiVelio/bivelio-savings-layer/blob/main/SECURITY.md#availability-what-happens-if-our-servers-do-not-respond).
 BiVelio hosts no cache. Want several machines to share one? Give the layer a store you
@@ -190,9 +190,10 @@ save (see [LICENSE-CLOUD.md](https://github.com/BiVelio/bivelio-savings-layer/bl
 
 The cloud subscription is a fixed fee, paid whether or not you save: **Pro
 €15 / seat / month** or **€150 / seat / year**; **Team €129 / month with 10 seats included** (**€12 per extra seat**; **€1,290 / year, €120 per extra seat**), EUR, VAT not included. **No commission on your savings — you keep every euro you save.** No trial. The free
-**Measure** license (no card) is the free cloud plan: the layer saves exactly as
-it does with no key, and your dashboard shows the real savings. It is never
-billed and never part of any commission.
+**Measure** license (no card) is the free cloud plan: the layer applies the same
+levers as with no key, except that trimming of superseded tool results only acts
+inside a tool loop on Anthropic, and your dashboard shows the real savings. It is
+never billed and never part of any commission.
 
 **Legacy plans, closed to new customers.** An earlier modality charged a lower per-seat fee plus a tiered commission on measured savings only: the first month carries no commission, and the commission runs from **10 % down to 4 %** by volume — keeping you **at least 90 % of every euro saved**, never from estimates, and shadow-mode usage was never part of any commission. It is closed to new customers; a subscription already on it keeps it unchanged. Your
 prompts, completions and provider keys never reach BiVelio: a cloud key sends
@@ -211,7 +212,8 @@ your savings. The prices are above, in [LICENSE-CLOUD.md](https://github.com/BiV
 the Published Pricing it refers to,
 **[savings.bivelio.com/pricing](https://savings.bivelio.com/pricing)**. No trial. There is one free license,
 **Measure** — no card, one organization per verified account, up to 5 seats and 20,000
-requests a day: the layer applies the same levers as with no key, and your
+requests a day: the layer applies the same levers as with no key, except that
+trimming of superseded tool results only acts inside a tool loop on Anthropic, and your
 dashboard shows the real savings — never billed, never part of any commission. What a paid
 plan adds is the cloud beyond those limits (more seats, more volume, the team dashboard),
 not the saving. This is new in 1.2.4: up to 1.2.3 a Measure key ran the layer in shadow

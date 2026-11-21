@@ -1,6 +1,6 @@
 # Changelog
 
-## 1.2.4 — 2026-11-21 — the free Measure plan saves, paid plans carry every lever, honest texts
+## 1.2.4 — 2026-11-21 — the free Measure plan saves, paid plans trim Anthropic tool loops, honest texts
 
 ### Changed: what you will notice after upgrading
 
@@ -10,28 +10,31 @@
   saved less than setting none. From 1.2.4 a layer or a gateway with a Measure
   license does exactly what it does with no key: same calls, same request bodies,
   same savings in the report (with one exception, below: with any license, trimming
-  of superseded tool results stays off on a provider the layer does not recognise,
-  as in 1.2.3). If you run Measure today, your traffic starts being cached,
-  deduplicated, trimmed and cache-marked as soon as you upgrade, and the usage sent
-  to your dashboard carries real savings instead of `shadow` records. Measure usage
-  is still never billed. To keep only watching, opt in on any plan:
-  `observeOnly: true` in the SDK, or `BVSALA_GATEWAY_OBSERVE_ONLY=1` in the gateway.
+  of superseded tool results only acts inside a tool loop on Anthropic). If you run
+  Measure today, your traffic starts being cached, deduplicated, trimmed and
+  cache-marked as soon as you upgrade, and the usage sent to your dashboard carries
+  real savings instead of `shadow` records. Measure usage is still never billed. To
+  keep only watching, opt in on any plan: `observeOnly: true` in the SDK, or
+  `BVSALA_GATEWAY_OBSERVE_ONLY=1` in the gateway.
   In observe-only mode `report.measure.wouldHaveSaved` is reported as before, and
   submitting a batch throws an `Error`, because a batch is itself a lever. Where a
   keyless lever costs more than not using the layer (a system prompt that changes
   on every request, for example: +21 % on Anthropic, as in 1.2.3 with no key), a
   Measure layer now does too; `observeOnly: true` keeps the 1.2.3 behaviour.
-- **Pro, Team and Enterprise licenses carry every lever the open core has.** A paid
-  license had one lever fewer than no key: trimming of superseded tool results
-  (an old tool result is replaced by a stub when a newer call re-reads the same
-  resource) asked for a feature that no issued license carried. A live license of
-  any plan now grants in the SDK everything the keyless mode grants, so that
-  trimming runs by default with Pro and Team too. It is decided in the client, so it
-  works with the license you already have. Opt out per request with
-  `savings: { elision: false }`. Trimming steps aside where it would break a prompt
-  cache the provider is already reading and, with a license, on a provider the
-  layer does not recognise, as in 1.2.3 (see below). An expired, revoked or invalid
-  license still fails closed, as before.
+- **Pro, Team and Enterprise licenses trim superseded tool results inside an
+  Anthropic tool loop.** Up to 1.2.3 a paid license did not trim them at all:
+  trimming of superseded tool results (an old tool result is replaced by a stub
+  when a newer call re-reads the same resource) asked for a feature that no issued
+  license carried. With a live license of any plan, Measure included, the SDK now
+  trims them on Anthropic models with the default cache placement, and only results
+  from the tool loop in progress (after your last user message), which that
+  placement never marks for caching (`elision` trace `partial` when it keeps an
+  older one). With a key it stays off with `cacheBreakpoints: "auto"`, with
+  `AnthropicProvider({ automaticCache: true })` and on every other provider, as in
+  1.2.3 (`elision` trace `skipped`). It is decided in the client, so it works with
+  the license you already have. Opt out per request with
+  `savings: { elision: false }`. An expired, revoked or invalid license still fails
+  closed, as before.
 - **The gateway's levers no longer depend on your organization's feature list.**
   With a license of any plan, `bvsala` applies the same levers as with no keys: cache
   TTL tuning by default, and sibling model routing, per-turn effort and the context
@@ -41,27 +44,17 @@
   `BVSALA_GATEWAY_ELISION=0` still turns them all off, and a blocked, expired or
   revoked license still answers 402. The startup lines say "free on every plan"
   instead of "ON if your organization's licence includes …; fail-closed".
-- **Tool-result elision no longer replaces an old result where that would break a
-  prompt cache the provider is already reading.** Replacing an old tool result
-  with a stub changes the middle of the history, so everything after it is billed
-  again at full price. Elision now leaves the history untouched, and the `elision`
-  trace says why, on models that cache the whole prompt automatically and bill
-  cached input at 10–25 % (gpt-5, gpt-4.1 and the o series), on Gemini, and with
-  `cacheBreakpoints: "auto"` on Anthropic, which places cache points inside the
-  history. With the default placement on Anthropic it only replaces results from
-  the tool loop in progress (after your last user message), never the ones already
-  in the history the layer marks for caching (`elision` trace `partial`). With a
-  license, on a provider the layer does not recognise, elision stays off, as in
-  1.2.3. Measured with a fake provider, cost against not using the layer, 1.2.3 →
-  1.2.4 with no key: a 60-step agent loop on gpt-5, +12.2 % → 0 %; on Gemini 2.5
-  Flash, +11.9 % → 0 %; on Anthropic with `"auto"`, −71.5 % → −84.4 %; a 12-turn
-  support chat on Claude Sonnet 4.5 that re-reads the same file every turn,
-  −30.1 % → −67.2 %. With Pro, which did not elide in 1.2.3, no load costs more than
-  in 1.2.3, and agent loops on Anthropic go from 0 % to −71.6 % and on gpt-4o from
-  0 % to −58.7 %. Other providers that cache the whole prompt automatically
-  (DeepSeek and Qwen, for example) still elide with no key, as in 1.2.3: on a
-  60-step agent loop that costs +166 % (DeepSeek) and +13 % (Qwen) against not
-  using the layer in both versions, so set `savings: { elision: false }` there.
+- **With no key, trimming of superseded tool results works exactly as in 1.2.3.**
+  Replacing an old tool result with a stub changes the middle of the history, so on
+  a provider that caches the whole prompt by itself everything after it is billed
+  again. Measured with a fake provider, cost against not using the layer, the same
+  in 1.2.3 and 1.2.4 with no key: on a 60-step agent loop, gpt-5 +12.2 %, Gemini 2.5
+  Flash +11.9 %, DeepSeek +166 % and Qwen +13 %; on Anthropic with
+  `cacheBreakpoints: "auto"`, −71.5 % against −84.4 % with trimming off, and with
+  `AnthropicProvider({ automaticCache: true })`, −69.0 % against −85.2 %. Set
+  `savings: { elision: false }` there. With a key it only acts inside a tool loop on
+  Anthropic (see above): agent loops on Anthropic go from 0 % to −71.6 % with Pro,
+  and every other load we measured trims nothing, as in 1.2.3 with a paid key.
 - **`bvsala` shows the money when it exits.** The exit summary of the terminal
   wrappers adds the spend at list price and the saving by basis (measured, by
   reference, estimated). When nothing was saved it says why: on a subscription no
@@ -125,8 +118,9 @@
 - **Terminal guides in English.** The per-terminal guides in `docs/terminales`
   (shipped in the package) are in English, with the real log lines.
 - **`LICENSE-CLOUD.md` §1 and `NOTICE`.** §1 now says that under a Measure license
-  the software applies its saving levers exactly as with no key and that Measure
-  usage is never billed and never part of any commission; "shared caches" is
+  the software applies its saving levers as with no key, except that trimming of
+  superseded tool results only acts inside a tool loop on Anthropic models, and that
+  Measure usage is never billed and never part of any commission; "shared caches" is
   removed from the list of Cloud Services in both files.
 - **`SECURITY.md`, Availability.** The gateway section says that the levers do not
   depend on the entitlements fetch.
