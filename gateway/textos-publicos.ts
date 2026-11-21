@@ -70,7 +70,7 @@ export const LINEA_MODO_COMUNITARIO =
 export const LINEA_PALANCAS_SIN_CLAVE =
   "savings levers (community mode: free, no key needed): cache TTL tuning is the only one ON by default and it " +
   "only acts on Anthropic API-key traffic that asks for the 1-hour cache - on a Claude or ChatGPT subscription " +
-  "this run only measures · BVSALA_GATEWAY_ELISION=0 turns it off · opt-in: BVSALA_GATEWAY_SIBLING_MODEL=1, " +
+  "the default lever changes nothing and this run only measures · BVSALA_GATEWAY_ELISION=0 turns it off · opt-in: BVSALA_GATEWAY_SIBLING_MODEL=1, " +
   "BVSALA_GATEWAY_EFFORT=low|medium";
 
 /**

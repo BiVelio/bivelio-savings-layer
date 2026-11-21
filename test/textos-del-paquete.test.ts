@@ -94,7 +94,7 @@ describe("m17 · una sola frase sobre qué palancas van encendidas, igual en tod
       "install it and it saves where your traffic repeats (identical or simultaneous requests) and, on Anthropic, " +
         "where your system prompt is long and stable; traffic that never repeats saves about 0 % by default.",
     );
-    expect(readme).toMatch(/a high `temperature`, or questions about "my", "price" or "today" without a `context\.sessionId`/);
+    expect(readme).toMatch(/a high `temperature`, questions with freshness words \("today", "price"\), or personal wording \("my"\) without a `context\.sessionId`/);
   });
 });
 
@@ -143,10 +143,12 @@ describe("m03 · BiVelio no aloja ninguna caché: fuera «shared caches», y la 
     expect(readme).toContain("| Team dashboard, shared measurement, seats and license management | — | ✅ |");
   });
 
-  it("compartir caché entre máquinas es gratis y con un almacén del cliente (Redis o su PostgreSQL)", () => {
+  it("compartir caché entre máquinas es gratis y con un almacén del cliente (por ejemplo Redis); PostgreSQL aún no está en npm", () => {
     expect(readme).toContain("BiVelio hosts no cache.");
-    expect(readme).toMatch(/Give the layer a store you run through the `exactCache` option — any key-value store your instances share, such as Redis, or your own PostgreSQL: it is free, needs no key, and the cached answers stay in your infrastructure, never in BiVelio's/);
-    expect(readme).toContain("| One cache for several machines, in a store you run (Redis, PostgreSQL) | ✅ | ✅ |");
+    expect(readme).toMatch(/Give the layer a store you run through the `exactCache` option: you implement three methods \(`get`, `set`, `delete`\) over any key-value store your instances share, such as Redis\. It is free, needs no key, and the cached answers stay in your infrastructure, never in BiVelio's\./);
+    expect(readme).toContain("A PostgreSQL adapter is a release candidate and is not on npm yet.");
+    expect(readme).toContain("| One cache for several machines, in a store you run (for example Redis) | ✅ | ✅ |");
+    expect(readme).not.toMatch(/own PostgreSQL/);
     expect(pypi).toContain("BiVelio hosts no cache.");
   });
 });
@@ -183,7 +185,7 @@ describe("Claude Code: el paquete dice que el gateway MIDE, no promete ahorro", 
   it("el README, PyPI y la guía de Claude Code dicen cuándo actúa la única palanca de por defecto", () => {
     expect(readme).toMatch(/With a coding agent, the local gateway measures your spend/);
     expect(pypi).toContain("by default only one acts: cache TTL tuning, which saves only when your client pays per token and asks for the one-hour cache");
-    expect(pypi).toContain("OpenAI traffic is measured and never changed.");
+    expect(pypi).toContain("OpenAI traffic is measured when the request reports usage, and by default it is never changed.");
     const claude = plano(leer("docs/terminales/claude-code.md"));
     expect(claude).toMatch(/By default the gateway \*\*measures\*\* there/);
     expect(claude).toContain("with a claude.ai login, or on an API key with the five-minute cache, that is $0.00 and the line says why");
@@ -212,7 +214,7 @@ describe("Claude Code: el paquete dice que el gateway MIDE, no promete ahorro", 
 describe("el cartel de arranque (grupo 1) dice la verdad en una línea", () => {
   it("qué actúa por defecto, que con suscripción solo mide, y la variable exacta de cada una de las demás", () => {
     expect(LINEA_PALANCAS_SIN_CLAVE).toContain("cache TTL tuning is the only one ON by default");
-    expect(LINEA_PALANCAS_SIN_CLAVE).toContain("on a Claude or ChatGPT subscription this run only measures");
+    expect(LINEA_PALANCAS_SIN_CLAVE).toContain("on a Claude or ChatGPT subscription the default lever changes nothing and this run only measures");
     expect(LINEA_PALANCAS_SIN_CLAVE).toContain("BVSALA_GATEWAY_ELISION=0 turns it off");
     expect(LINEA_PALANCAS_SIN_CLAVE).toContain("BVSALA_GATEWAY_SIBLING_MODEL=1");
     // Los niveles que el cartel anuncia son los que la palanca acepta.
@@ -311,8 +313,15 @@ describe.skipIf(process.platform === "win32")("`bvsala --help` (grupo 3), ejecut
   });
 
   it("dice que con suscripción solo mide, que los diales van apagados y qué imprime al salir", () => {
-    expect(ayuda).toContain("On a Claude or ChatGPT subscription it only measures.");
+    expect(ayuda).toContain("On a Claude or ChatGPT subscription, with the defaults, it only measures.");
     expect(ayuda).toContain("Its dials are OFF unless you also set BVSALA_GATEWAY_DIALES_ELISION=1");
     expect(ayuda).toContain("what they cost at list price, what the levers saved (or why nothing was saved)");
+  });
+});
+
+describe("los nombres de solo observar que cita el paquete existen en el código (revisión de #613)", () => {
+  it("⛔ `observeOnly` (SDK) y `BVSALA_GATEWAY_OBSERVE_ONLY` (gateway) están en src/ y gateway/: este PR no puede publicarse sin el de Measure", () => {
+    expect(leer("src/pipeline/config.ts")).toMatch(/observeOnly\??:/);
+    expect(leer("gateway/bin.ts")).toContain("BVSALA_GATEWAY_OBSERVE_ONLY");
   });
 });

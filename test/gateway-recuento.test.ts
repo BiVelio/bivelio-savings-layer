@@ -41,8 +41,9 @@ describe("resumenDeMedicion — la línea de salida", () => {
     const l = resumenDeMedicion(r.estado(), "claude");
     expect(l).toBe(
       "[bvsala claude] metering in this run: 2 request(s) metered with the provider's usage · spent $0.5000 at list price · " +
-        "saved $0.00: no lever changed a request (cache TTL tuning only acts on Anthropic API-key traffic that asks for the " +
-        "1-hour cache; the opt-in levers are in `bvsala --help`). " +
+        "saved $0.00: nothing was credited (cache TTL tuning is credited only on Anthropic API-key traffic sent to the " +
+        "official API that asks for the 1-hour cache; an opt-in lever or a proxy upstream can change a request without a " +
+        "credited saving; the gateway's levers act on Anthropic /v1/messages only; see `bvsala --help`). " +
         "Per-request detail: run it again with BVSALA_GATEWAY_LOG=1 (one line per request, on stderr).",
     );
   });
@@ -82,7 +83,7 @@ describe("resumenDeMedicion — la línea de salida", () => {
     expect(e.dinero).toMatchObject({ ahorroMedidoUsd: 0, deSuscripcion: 1 });
     const l = resumenDeMedicion(e, "claude");
     expect(l).toContain(`spent ${dolares(medido.costeUsd)} at list-price equivalent (subscription traffic: there is no per-token invoice)`);
-    expect(l).toContain("saved $0.00: on a subscription the gateway only measures and changes nothing");
+    expect(l).toContain("saved $0.00: no saving is credited on a subscription (there is no per-token invoice)");
     expect(l).not.toContain("cache TTL tuning only acts");
   });
 
@@ -92,7 +93,7 @@ describe("resumenDeMedicion — la línea de salida", () => {
     r.medida(SIN_AHORRO);
     const l = resumenDeMedicion(r.estado(), "claude");
     expect(l).toContain("spent $0.5000 at list price (1 request(s) on a subscription count at list-price equivalent)");
-    expect(l).toContain("saved $0.00: no lever changed a request");
+    expect(l).toContain("saved $0.00: nothing was credited");
   });
 
   it("⛔ si las palancas salieron caras (la entrada de 5 min caducó en una pausa) no se llama ahorro, y dice cómo apagarla", () => {
@@ -277,7 +278,7 @@ describe("el gateway lleva el recuento de lo medido y lo que no", () => {
     // El upstream es un servidor local, no el API del proveedor: se mide y no se acredita nada.
     expect(e.dinero).toMatchObject({ ahorroMedidoUsd: 0, ahorroPorReferenciaUsd: 0, ahorroEstimadoUsd: 0, deSuscripcion: 0 });
     const l = resumenDeMedicion(e, "claude");
-    expect(l).toContain(`3 request(s) metered with the provider's usage · spent ${dolares(esperado)} at list price · saved $0.00: no lever changed a request`);
+    expect(l).toContain(`3 request(s) metered with the provider's usage · spent ${dolares(esperado)} at list price · saved $0.00: nothing was credited`);
   });
 
   it("⛔ 1.2.4 · el tráfico de suscripción (beta oauth-*) se cuenta como tal y el resumen dice que ahí solo se mide", async () => {
@@ -293,7 +294,7 @@ describe("el gateway lleva el recuento de lo medido y lo que no", () => {
     expect(e.dinero.gastoUsd).toBeGreaterThan(0);
     const l = resumenDeMedicion(e, "claude");
     expect(l).toContain("at list-price equivalent (subscription traffic: there is no per-token invoice)");
-    expect(l).toContain("saved $0.00: on a subscription the gateway only measures and changes nothing");
+    expect(l).toContain("saved $0.00: no saving is credited on a subscription (there is no per-token invoice)");
   });
   it("cuenta lo medido y cada «not metered» de la API con su motivo", async () => {
     const { gw, pedir } = await montar();
@@ -413,7 +414,7 @@ describe.skipIf(process.platform === "win32")("1.2.4 · `bvsala claude` enseña 
     expect(linea, r.stderr).toBeDefined();
     expect(linea).toContain("3 inference request(s) went through the gateway · 3 request(s) metered with the provider's usage");
     expect(linea).toContain(`spent ${dolares(3 * unitario)} at list price`);
-    expect(linea).toContain("saved $0.00: no lever changed a request");
+    expect(linea).toContain("saved $0.00: nothing was credited");
     expect(linea).toContain("Per-request detail: run it again with BVSALA_GATEWAY_LOG=1");
     // El stdout es del terminal envuelto: ni una línea nuestra.
     expect(r.stdout).toBe("");
@@ -423,7 +424,7 @@ describe.skipIf(process.platform === "win32")("1.2.4 · `bvsala claude` enseña 
     const r = await correr(2, { authorization: "Bearer credencial-inventada", "anthropic-beta": "oauth-2025-04-20" });
     expect(r.codigo, r.stderr).toBe(0);
     expect(r.stderr).toContain(`spent ${dolares(2 * unitario)} at list-price equivalent (subscription traffic: there is no per-token invoice)`);
-    expect(r.stderr).toContain("saved $0.00: on a subscription the gateway only measures and changes nothing");
+    expect(r.stderr).toContain("saved $0.00: no saving is credited on a subscription (there is no per-token invoice)");
   }, 30_000);
 
   it("con BVSALA_GATEWAY_LOG=1 el detalle ya está arriba: la línea no manda a repetir la ejecución", async () => {
@@ -433,4 +434,14 @@ describe.skipIf(process.platform === "win32")("1.2.4 · `bvsala claude` enseña 
     expect(r.stderr).toContain("Per-request detail: the log lines above.");
     expect(r.stderr).not.toContain("run it again with BVSALA_GATEWAY_LOG=1");
   }, 30_000);
+});
+
+describe("el $0 habla de lo acreditado, no de lo cambiado (revisión de #613)", () => {
+  it("⛔ ninguna frase del resumen afirma que ninguna palanca cambió una petición", async () => {
+    const { readFileSync } = await import("node:fs");
+    const fuente = readFileSync(new URL("../gateway/recuento.ts", import.meta.url), "utf8");
+    expect(fuente).not.toMatch(/no lever changed a request|only measures and changes nothing/);
+    expect(fuente).toContain("nothing was credited");
+    expect(fuente).toContain("no saving is credited on a subscription");
+  });
 });

@@ -38,7 +38,7 @@ describe.skipIf(process.platform === "win32")("A2-14/A2-23/A2-29 · sin clave, n
       // 1.2.4 · el cartel ya no dice que todo está encendido encima de tres OFF.
       expect(texto).not.toMatch(/every local saving lever|savings levers: ON/);
       expect(texto).toContain("savings levers (community mode: free, no key needed): cache TTL tuning is the only one ON by default");
-      expect(texto).toContain("on a Claude or ChatGPT subscription this run only measures");
+      expect(texto).toContain("on a Claude or ChatGPT subscription the default lever changes nothing and this run only measures");
       expect(texto).toContain("BVSALA_GATEWAY_ELISION=0 turns it off");
       expect(texto).toMatch(/sibling model routing: ARMED \([^)]*community mode: free, no key needed\)/);
       expect(texto).toMatch(/per-turn effort: ARMED at "low" \(community mode: free, no key needed\)/);

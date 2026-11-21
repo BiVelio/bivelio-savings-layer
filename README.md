@@ -63,9 +63,9 @@ Every gateway lever is free, with no key; one is on by default (cache TTL tuning
 
 How much it saves depends on your traffic. Identical or simultaneous requests are not
 paid twice, and a long, stable system prompt on Anthropic is billed at the cached rate.
-Requests that are all different, a high `temperature`, or questions about "my", "price"
-or "today" without a `context.sessionId` are never answered from the cache: about 0 %
-by default.
+Requests that are all different, a high `temperature`, questions with freshness words
+("today", "price"), or personal wording ("my") without a `context.sessionId` are never
+answered from the cache: about 0 % by default.
 
 It is not a promise you take on faith: every saving is split into four ledgers
 (`avoided_calls`, `eliminated_tokens`, `compressed_tokens`, `provider_cached_tokens`)
@@ -153,17 +153,17 @@ reports, is at **[savings.bivelio.com/en/benchmarks](https://savings.bivelio.com
 | Exact + semantic cache, deduplication of identical requests | ✅ | ✅ |
 | Model cascade, sibling routing, prompt-cache placement | ✅ | ✅ |
 | Opt-in tool-output compaction, output contracts, four savings ledgers | ✅ | ✅ |
-| One cache for several machines, in a store you run (Redis, PostgreSQL) | ✅ | ✅ |
+| One cache for several machines, in a store you run (for example Redis) | ✅ | ✅ |
 | Gateway + `bvsala` CLI + MCP server | ✅ | ✅ |
 | Team dashboard, shared measurement, seats and license management | — | ✅ |
 | Anything sent to BiVelio | **Nothing** | Per-request usage only (counts, cost, model id, opaque ids — [LICENSE-CLOUD.md](./LICENSE-CLOUD.md) §5), never prompts or keys |
 
 Both columns run the same levers. A BiVelio key only adds the cloud and switches no lever off: the free Measure license applies the same levers as no key.
 BiVelio hosts no cache. Want several machines to share one? Give the layer a store you
-run through the `exactCache` option — any key-value store your instances share, such as
-Redis, or your own PostgreSQL: it is free, needs no key, and the cached answers stay in
-your infrastructure, never in BiVelio's
-([guide](https://github.com/BiVelio/bivelio-savings-layer/blob/main/docs/guias/persistencia.md)).
+run through the `exactCache` option: you implement three methods (`get`, `set`,
+`delete`) over any key-value store your instances share, such as Redis. It is free,
+needs no key, and the cached answers stay in your infrastructure, never in BiVelio's.
+A PostgreSQL adapter is a release candidate and is not on npm yet.
 
 A license key that **is** configured but invalid or expired still fails closed with
 `LicenseError` — only its absence is a working product.

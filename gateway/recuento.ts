@@ -184,8 +184,8 @@ export function fraseDeDinero(e: EstadoDeMedicion): string {
   if (d.ahorroMedidoUsd >= CASI_CERO) partes.push(`saved ${dolares(d.ahorroMedidoUsd)} (measured)`);
   else if (d.ahorroMedidoUsd <= -CASI_CERO) {
     partes.push(
-      `the levers cost ${dolares(d.ahorroMedidoUsd)} more than they saved (measured: a 5-minute cache entry expired ` +
-        "during a pause and was rewritten; BVSALA_GATEWAY_ELISION=0 turns cache TTL tuning off)",
+      `the levers cost ${dolares(d.ahorroMedidoUsd)} more than they saved (measured; usually a 5-minute cache entry ` +
+        "that expired during a pause and was rewritten; BVSALA_GATEWAY_ELISION=0 turns cache TTL tuning off)",
     );
   }
   if (d.ahorroPorReferenciaUsd >= CASI_CERO) {
@@ -197,9 +197,12 @@ export function fraseDeDinero(e: EstadoDeMedicion): string {
   if (partes.length === 0) {
     partes.push(
       todoSuscripcion
-        ? "saved $0.00: on a subscription the gateway only measures and changes nothing"
-        : "saved $0.00: no lever changed a request (cache TTL tuning only acts on Anthropic API-key traffic " +
-            "that asks for the 1-hour cache; the opt-in levers are in `bvsala --help`)",
+        ? "saved $0.00: no saving is credited on a subscription (there is no per-token invoice); " +
+            "with the defaults the gateway changes nothing there"
+        : "saved $0.00: nothing was credited (cache TTL tuning is credited only on Anthropic API-key traffic " +
+            "sent to the official API that asks for the 1-hour cache; an opt-in lever or a proxy upstream can " +
+            "change a request without a credited saving; the gateway's levers act on Anthropic /v1/messages only; " +
+            "see `bvsala --help`)",
     );
   }
   return `${gasto} · ${partes.join(" · ")}`;

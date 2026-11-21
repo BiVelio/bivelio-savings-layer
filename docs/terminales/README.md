@@ -90,9 +90,10 @@ write over the TUI, so when it finishes it prints a line like these to stderr:
 The money is the sum of the same per-request reports your dashboard would
 receive: `spent` is the provider's own usage at list price, and the saving is
 shown by basis (`measured`, `by reference`, `estimated`), never added into one
-figure. When nothing was saved the line says why: on a Claude or ChatGPT
-subscription the gateway only measures, and on an API key the default lever
-(cache TTL tuning) only acts when the client asks for the one-hour cache. If
+figure. When nothing was credited the line says why: on a Claude or ChatGPT
+subscription no saving is credited and, with the defaults, the gateway changes
+nothing; on an API key the default lever (cache TTL tuning) is credited only
+when the client asks for the one-hour cache from the official API. If
 that lever cost more than it saved (a five-minute entry expired during a long
 pause and was rewritten), the line says so too, with the variable that turns it
 off. The figures above are made up.
@@ -120,7 +121,7 @@ On startup it prints, among others, these lines:
 [bvsala gateway] v1.2.x listening on http://127.0.0.1:8402 → https://api.anthropic.com
 [bvsala gateway] COMMUNITY MODE (open core): no BiVelio keys set - free, zero telemetry, nothing sent to BiVelio
 [bvsala gateway] metering: LOCAL ONLY (community mode, no BiVelio service key): every request is measured on this machine with the provider's usage and nothing is sent to BiVelio · per-request reports with x-bvsala-report
-[bvsala gateway] savings levers (community mode: free, no key needed): cache TTL tuning is the only one ON by default and it only acts on Anthropic API-key traffic that asks for the 1-hour cache - on a Claude or ChatGPT subscription this run only measures · BVSALA_GATEWAY_ELISION=0 turns it off · opt-in: BVSALA_GATEWAY_SIBLING_MODEL=1, BVSALA_GATEWAY_EFFORT=low|medium · context elision dials OFF
+[bvsala gateway] savings levers (community mode: free, no key needed): cache TTL tuning is the only one ON by default and it only acts on Anthropic API-key traffic that asks for the 1-hour cache - on a Claude or ChatGPT subscription the default lever changes nothing and this run only measures · BVSALA_GATEWAY_ELISION=0 turns it off · opt-in: BVSALA_GATEWAY_SIBLING_MODEL=1, BVSALA_GATEWAY_EFFORT=low|medium · context elision dials OFF
 ```
 
 With `BIVELIO_SERVICE_KEY` the license is collected automatically (a `license:

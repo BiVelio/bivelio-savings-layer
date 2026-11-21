@@ -117,7 +117,7 @@ Commands:
                          Works out of the box, free, with no keys and zero telemetry (COMMUNITY
                          mode): it meters every request, and one lever is on by default (cache
                          TTL tuning; the others are opt-in, see Environment). On a Claude or
-                         ChatGPT subscription it only measures. BIVELIO_SERVICE_KEY only adds the
+                         ChatGPT subscription, with the defaults, it only measures. BIVELIO_SERVICE_KEY only adds the
                          cloud: ${LO_QUE_ANADE_LA_NUBE}.
                          --upstream openai | anthropic | gemini | deepseek | qwen | glm |
                          moonshot | minimax | openrouter | ollama | vllm | lmstudio | an

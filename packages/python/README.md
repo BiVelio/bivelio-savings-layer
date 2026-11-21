@@ -38,7 +38,8 @@ This package measures. The saving levers of the TypeScript SDK do not run in
 Python; the gateway's own levers apply to Anthropic `/v1/messages` traffic, free
 and with no key, and by default only one acts: cache TTL tuning, which saves
 only when your client pays per token and asks for the one-hour cache. OpenAI
-traffic is measured and never changed. In the TypeScript SDK:
+traffic is measured when the request reports usage, and by default it is never
+changed. In the TypeScript SDK:
 Every lever is included and free, with no key. On by default: exact cache, deduplication, local resolvers, prompt-cache placement, trimming of superseded tool results and compact serialization of the structured data you pass. The rest you switch on, one line each.
 
 A BiVelio key only adds the cloud and switches no lever off: the free Measure license applies the same levers as no key.
