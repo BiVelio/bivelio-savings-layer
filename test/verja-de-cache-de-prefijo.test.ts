@@ -159,184 +159,247 @@ describe("la verja mide antes de juzgar", () => {
 });
 
 /**
- * EL PREFIJO QUE CAMBIA EN CADA PETICIÓN (fecha y hora, UUID, epoch en el `system`).
+ * LA CABECERA QUE NO VUELVE (herramientas + `system`, sin historial).
  *
- * La huella lleva el texto del prefijo, así que cada petición trae una huella
- * nueva y la exploración volvía a empezar en 0/8: 60 de 60 peticiones marcadas,
- * 0 lecturas, +21,6 % de factura frente a no llevar capa (medido con un
- * proveedor falso contra la 1.2.3). La clase —la huella sin el texto— es lo que
- * acota ese experimento.
+ * Un `system` con la hora de cada petición (o un UUID v7, o un id de petición)
+ * da una huella nueva en cada llamada: en la 1.2.3 se marcaban 60 de 60 y no se
+ * leía ninguna (+21,6 % de factura). La 1.2.4 lo adivinaba con un detector de
+ * «contenido mutable» y fallaba en los dos sentidos. Aquí no se adivina: se mira
+ * si la cabecera VUELVE antes de que caduque su entrada de caché. Reloj
+ * inyectado: el TTL se prueba sin esperar cinco minutos.
  */
-describe("un prefijo que cambia en cada petición deja de marcarse", () => {
+describe("la verja mira si la cabecera vuelve antes de caducar", () => {
   const ENTRADA = { totalTokens: T, stablePrefixTokens: P, tier: ANTHROPIC_CACHE_TIER };
-  const CLASE = "modelo+herramientas+cabecera";
+  const CLASE = "modelo+herramientas+fija";
+  const MIN = 60_000;
 
-  /** Manda `n` peticiones con una huella distinta cada una; el proveedor solo escribe. */
-  function mandarDistintas(verja: VerjaDeCacheDePrefijo, n: number, desde = 0, conClase = true): boolean[] {
-    const clase = conClase ? CLASE : undefined;
-    const marcas: boolean[] = [];
-    for (let i = desde; i < desde + n; i++) {
-      const d = verja.decidir(`fecha-${i}`, ENTRADA, clase);
-      marcas.push(d.marcar);
-      if (d.marcar) verja.registrar(`fecha-${i}`, { cacheWriteInputTokens: P }, clase);
-    }
-    return marcas;
+  function conReloj(opts: ConstructorParameters<typeof VerjaDeCacheDePrefijo>[0] = {}) {
+    let t = Date.UTC(2026, 10, 21, 10);
+    const verja = new VerjaDeCacheDePrefijo({ ...opts, ahora: () => t });
+    return { verja, pasar: (ms: number) => void (t += ms) };
   }
 
-  it("de 60 peticiones marca 8 y no 60: el fallo medido", () => {
-    const verja = new VerjaDeCacheDePrefijo();
-    const marcas = mandarDistintas(verja, 60);
-    expect(marcas.slice(0, 8)).toEqual(Array(8).fill(true));
-    expect(marcas.slice(8)).toEqual(Array(52).fill(false));
-    // El sobrecoste es el de UNA exploración, no un 25 % del prefijo para siempre.
-    const prima = marcas.filter(Boolean).length * 0.25 * P;
-    expect(prima).toBeCloseTo(verja.costeDeExploracion(P, ANTHROPIC_CACHE_TIER), 6);
-  });
+  /** Una petición: observa su cabecera, decide y, si marcó, apunta lo que contestó el proveedor. */
+  function peticion(verja: VerjaDeCacheDePrefijo, cabecera: string, prefijo = cabecera, leido = 0): boolean {
+    const vistazo = verja.observarCabecera({ clase: CLASE, huella: cabecera });
+    const d = verja.decidir(prefijo, ENTRADA, vistazo);
+    if (d.marcar) verja.registrar(prefijo, leido > 0 ? { cachedInputTokens: leido } : { cacheWriteInputTokens: P });
+    return d.marcar;
+  }
 
-  it("la razón dice qué pasa y qué hará la capa", () => {
-    const verja = new VerjaDeCacheDePrefijo();
-    mandarDistintas(verja, 8);
-    const d = verja.decidir("fecha-nueva", ENTRADA, CLASE);
+  it("una cabecera nueva en cada petición: marca como la 1.2.3 hasta que las primeras caducan sin volver, y luego deja de marcar", () => {
+    const { verja, pasar } = conReloj();
+    const marcas: boolean[] = [];
+    for (let i = 0; i < 600; i++) {
+      marcas.push(peticion(verja, `hora-${i}`));
+      pasar(2000);
+    }
+    // 5 min a 2 s por petición: la petición 150 (contando desde 0) llega justo
+    // cuando la 0 caduca sin haber vuelto; en la 165 ya hay 16 maduras de un
+    // solo uso (todas) y la clase es volátil.
+    const primeraSinMarcar = marcas.indexOf(false);
+    expect(primeraSinMarcar).toBe(150 + 15);
+    expect(marcas.slice(0, primeraSinMarcar).every(Boolean)).toBe(true);
+    expect(marcas.slice(primeraSinMarcar).some(Boolean)).toBe(false);
+    expect(verja.estadoDeCabeceras(CLASE)!.volatil).toBe(true);
+    // La razón dice lo que pasa, con la proporción medida.
+    const v = verja.observarCabecera({ clase: CLASE, huella: "otra-nueva" });
+    const d = verja.decidir("otra-nueva", ENTRADA, v);
     expect(d.marcar).toBe(false);
-    expect(d.observada).toBe(0);
-    expect(d.razon).toMatch(/differs on every request/);
-    expect(d.razon).toMatch(/re-probing in 63 requests/);
+    expect(d.razon).toMatch(/not seen before: 100\.0% of the last 32 system prompts of this shape were never sent again/);
   });
 
-  it("sin clase decide como siempre: cada huella nueva explora (la llave estable del catálogo de herramientas)", () => {
-    // Quien llama sin clase usa llaves que NO llevan el texto del prefijo; para
-    // ellas el comportamiento no cambia.
-    const verja = new VerjaDeCacheDePrefijo();
-    expect(mandarDistintas(verja, 60, 0, false)).toEqual(Array(60).fill(true));
+  it("mientras ninguna ha podido caducar (sin reloj que avance) decide exactamente como la 1.2.3", () => {
+    const { verja } = conReloj();
+    const marcas = Array.from({ length: 5000 }, (_, i) => peticion(verja, `id-${i}`));
+    expect(marcas.every(Boolean)).toBe(true);
+    expect(verja.estadoDeCabeceras(CLASE)!.volatil).toBe(false);
   });
 
-  it("vuelve a probar de vez en cuando, cada vez más espaciado", () => {
-    const verja = new VerjaDeCacheDePrefijo();
-    const marcas = mandarDistintas(verja, 2000);
-    const donde = marcas.flatMap((m, i) => (m ? [i] : []));
-    // 8 de exploración; 64 sin marcar y 8 de reintento; 128 y 8; 256 y 8; 512 y 8; 1024…
-    const esperado = [
-      ...Array.from({ length: 8 }, (_, k) => k),
-      ...Array.from({ length: 8 }, (_, k) => 8 + 64 + k),
-      ...Array.from({ length: 8 }, (_, k) => 80 + 128 + k),
-      ...Array.from({ length: 8 }, (_, k) => 216 + 256 + k),
-      ...Array.from({ length: 8 }, (_, k) => 480 + 512 + k),
-    ];
-    expect(donde).toEqual(esperado);
-    // 40 marcas de 2000: un 2 % de las peticiones paga la prima, no el 100 %.
-    expect(donde.length).toBe(40);
-  });
-
-  it("el intervalo de reintento tiene techo: a la larga, 8 marcas por cada 1024 sin marcar", () => {
-    const verja = new VerjaDeCacheDePrefijo();
-    mandarDistintas(verja, 5000);
-    expect(verja.estadoDeLaClase(CLASE)!.intervalo).toBe(1024);
-    const marcas = mandarDistintas(verja, 1032 * 3, 5000);
-    expect(marcas.filter(Boolean).length).toBe(24);
-  });
-
-  it("un prefijo que SÍ se repite se marca desde su segunda petición, aunque su clase esté apagada", () => {
-    const verja = new VerjaDeCacheDePrefijo();
-    mandarDistintas(verja, 20);
-    // Primera vez: huella nunca vista en una clase apagada. No se marca.
-    expect(verja.decidir("estable", ENTRADA, CLASE).marcar).toBe(false);
-    // Segunda: verla repetirse es la prueba que faltaba, y es gratis.
-    const d = verja.decidir("estable", ENTRADA, CLASE);
-    expect(d.marcar).toBe(true);
-    expect(d.razon).toMatch(/sent before/);
-    verja.registrar("estable", { cacheWriteInputTokens: P }, CLASE);
-    // A partir de aquí decide con su propio contador, como cualquier prefijo.
-    for (let i = 0; i < 30; i++) {
-      expect(verja.decidir("estable", ENTRADA, CLASE).marcar).toBe(true);
-      verja.registrar("estable", { cachedInputTokens: P }, CLASE);
+  it("sin cabecera (la llave estable del catálogo de herramientas) decide como siempre", () => {
+    const { verja, pasar } = conReloj();
+    for (let i = 0; i < 600; i++) {
+      expect(verja.decidir(`h-${i}`, ENTRADA).marcar).toBe(true);
+      verja.registrar(`h-${i}`, { cacheWriteInputTokens: P });
+      pasar(2000);
     }
-    expect(verja.estado("estable")!.tokensLeidos).toBe(30 * P);
   });
 
-  it("un prefijo estable con mucho tráfico no tapa al que cambia en la misma clase", () => {
-    const verja = new VerjaDeCacheDePrefijo();
-    // 200 peticiones del estable: 1 escritura y 199 lecturas.
-    for (let i = 0; i < 200; i++) {
-      expect(verja.decidir("estable", ENTRADA, CLASE).marcar).toBe(true);
-      verja.registrar("estable", i === 0 ? { cacheWriteInputTokens: P } : { cachedInputTokens: P }, CLASE);
-    }
-    // Y ahora, en la misma clase, un system con fecha: se apaga igual de pronto.
-    // (8 escrituras sin lectura contra la única lectura que el estable aportó
-    // a la clase antes de dejar de contar: 1/10 < 21,7 %.)
-    const marcas = mandarDistintas(verja, 60);
-    expect(marcas.filter(Boolean).length).toBeLessThanOrEqual(8);
-    expect(marcas.slice(8)).toEqual(Array(52).fill(false));
-    // El estable sigue marcando y leyendo.
-    expect(verja.decidir("estable", ENTRADA, CLASE).marcar).toBe(true);
-  });
-
-  it("muchos prefijos estables distintos (un system por cliente) no apagan la clase", () => {
-    const verja = new VerjaDeCacheDePrefijo();
-    for (let c = 0; c < 200; c++) {
-      for (let i = 0; i < 5; i++) {
-        expect(verja.decidir(`cliente-${c}`, ENTRADA, CLASE).marcar).toBe(true);
-        verja.registrar(`cliente-${c}`, i === 0 ? { cacheWriteInputTokens: P } : { cachedInputTokens: P }, CLASE);
+  it("FALSO POSITIVO de la 1.2.4: 20 chats a la vez con su UUID de sesión en el system nunca dejan de marcarse", () => {
+    const { verja, pasar } = conReloj();
+    for (let turno = 0; turno < 30; turno++) {
+      for (let chat = 0; chat < 20; chat++) {
+        // El historial estrena huella de prefijo en cada turno; la cabecera, no.
+        const marcada = peticion(verja, `sesion-${chat}`, `sesion-${chat}|turno-${turno}`, turno > 0 ? P : 0);
+        expect(marcada).toBe(true);
+        pasar(3000);
       }
     }
+    const e = verja.estadoDeCabeceras(CLASE)!;
+    expect(e.volatil).toBe(false);
+    expect(e.repetidas).toBe(20);
   });
 
-  it("un historial que crece (huella nueva en cada paso, pero el paso lee lo anterior) sigue marcándose", () => {
-    const verja = new VerjaDeCacheDePrefijo();
-    const H = "modelo+herramientas+historial";
-    for (let paso = 0; paso < 200; paso++) {
-      const d = verja.decidir(`paso-${paso}`, ENTRADA, H);
-      expect(d.marcar).toBe(true);
-      // Cada paso lee el prefijo del anterior y escribe solo lo nuevo.
-      verja.registrar(`paso-${paso}`, paso === 0 ? { cacheWriteInputTokens: P } : { cachedInputTokens: P, cacheWriteInputTokens: 300 }, H);
+  it("FALSO POSITIVO de la 1.2.4: la fecha del día (y un número de cliente estable) se repiten y no cuentan como un solo uso", () => {
+    const { verja, pasar } = conReloj();
+    for (let i = 0; i < 400; i++) {
+      // Una escritura y, desde ahí, lecturas: la verja por huella de la 1.2.3 sigue encendida.
+      expect(peticion(verja, "Today is Sat, 21 Nov 2026", "fecha", i > 0 ? P : 0)).toBe(true);
+      const cuenta = `Customer account ${1734567890 + (i % 10)}`;
+      expect(peticion(verja, cuenta, cuenta, i >= 10 ? P : 0)).toBe(true);
+      pasar(5000);
     }
+    expect(verja.estadoDeCabeceras(CLASE)!.unSoloUso).toBe(0);
   });
 
-  it("si en un reintento las huellas nuevas vuelven a leerse, la clase se enciende otra vez", () => {
-    const verja = new VerjaDeCacheDePrefijo();
-    const H = "modelo+herramientas+historial";
-    // Una racha en la que nada se lee (p. ej. turnos separados más que el TTL).
-    for (let i = 0; i < 8 + 64; i++) {
-      const d = verja.decidir(`frio-${i}`, ENTRADA, H);
-      if (d.marcar) verja.registrar(`frio-${i}`, { cacheWriteInputTokens: P }, H);
+  it("MUCHAS conversaciones a la vez no se confunden con un solo uso: 1.500 sesiones que llegan de golpe tras un rato tranquilo", () => {
+    // Con «N peticiones sin volver» (N = 1.024) este caso se tomaba por un solo
+    // uso y la factura pasaba de −27,4 % a −16,1 % (medido con un proveedor
+    // falso). Con el TTL no puede: todas vuelven antes de caducar.
+    const { verja, pasar } = conReloj();
+    for (let s = 0; s < 12; s++) {
+      pasar(30_000);
+      peticion(verja, `tranquila-${s}`);
+      peticion(verja, `tranquila-${s}`, `tranquila-${s}|2`);
     }
-    // Toca reintento, y ahora cada paso lee el anterior.
-    for (let i = 0; i < 8; i++) {
-      const d = verja.decidir(`templado-${i}`, ENTRADA, H);
-      expect(d.marcar).toBe(true);
-      // La primera es de reintento; en cuanto la clase supera el equilibrio
-      // las siguientes ya son exploración normal.
-      if (i === 0) expect(d.razon).toMatch(/re-probing/);
-      verja.registrar(`templado-${i}`, { cachedInputTokens: P, cacheWriteInputTokens: 300 }, H);
+    const marcas: boolean[] = [];
+    for (let turno = 0; turno < 2; turno++) {
+      for (let s = 0; s < 1500; s++) {
+        marcas.push(peticion(verja, `sesion-${s}`, `sesion-${s}|${turno}`));
+        pasar(100);
+      }
     }
-    for (let i = 0; i < 100; i++) {
-      const d = verja.decidir(`caliente-${i}`, ENTRADA, H);
-      expect(d.marcar).toBe(true);
-      verja.registrar(`caliente-${i}`, { cachedInputTokens: P, cacheWriteInputTokens: 300 }, H);
+    expect(marcas.every(Boolean)).toBe(true);
+    expect(verja.estadoDeCabeceras(CLASE)).toMatchObject({ unSoloUso: 0, volatil: false });
+  });
+
+  it("una cabecera que vuelve justo antes de caducar se repite; justo después, no", () => {
+    const { verja, pasar } = conReloj({ minimoDeMaduras: 1, memoriaDeMaduras: 1 });
+    peticion(verja, "a");
+    pasar(5 * MIN - 1);
+    peticion(verja, "a");
+    expect(verja.estadoDeCabeceras(CLASE)).toMatchObject({ seRepiten: 1, unSoloUso: 0, volatil: false });
+    peticion(verja, "b");
+    pasar(5 * MIN);
+    peticion(verja, "b");
+    expect(verja.estadoDeCabeceras(CLASE)).toMatchObject({ seRepiten: 0, unSoloUso: 1, volatil: true });
+  });
+
+  it("una petición que escribe a 1 h tarda una hora en contar como de un solo uso", () => {
+    const { verja, pasar } = conReloj({ minimoDeMaduras: 1 });
+    verja.observarCabecera({ clase: CLASE, huella: "larga" }).conTtl(60 * MIN);
+    pasar(30 * MIN);
+    verja.observarCabecera({ clase: CLASE, huella: "otra" });
+    expect(verja.estadoDeCabeceras(CLASE)!.unSoloUso).toBe(0);
+    pasar(29 * MIN);
+    // A los 59 min «larga» vuelve: se repite (con 5 min habría contado como perdida).
+    verja.observarCabecera({ clase: CLASE, huella: "larga" });
+    expect(verja.estadoDeCabeceras(CLASE)).toMatchObject({ seRepiten: 1 });
+  });
+
+  it("en modo volátil una cabecera ya vista se marca como en la 1.2.3, y lee", () => {
+    const { verja, pasar } = conReloj();
+    for (let i = 0; i < 200; i++) {
+      peticion(verja, `hora-${i}`);
+      pasar(2000);
     }
-    // Y el siguiente apagón, si llega, vuelve a empezar por el intervalo corto.
-    expect(verja.estadoDeLaClase(H)!.intervalo).toBe(64);
+    expect(verja.estadoDeCabeceras(CLASE)!.volatil).toBe(true);
+    // Primera vez: nunca vista en una clase volátil. No se marca.
+    expect(peticion(verja, "estable")).toBe(false);
+    pasar(2000);
+    // Segunda: verla volver es la prueba, y es gratis.
+    expect(peticion(verja, "estable")).toBe(true);
+    for (let i = 0; i < 20; i++) {
+      pasar(2000);
+      expect(peticion(verja, "estable", "estable", P)).toBe(true);
+    }
+    expect(verja.estado("estable")!.tokensLeidos).toBe(20 * P);
+  });
+
+  it("sale del modo volátil en cuanto vuelven a llegar cabeceras que se repiten", () => {
+    const { verja, pasar } = conReloj();
+    for (let i = 0; i < 200; i++) {
+      peticion(verja, `hora-${i}`);
+      pasar(2000);
+    }
+    expect(verja.estadoDeCabeceras(CLASE)!.volatil).toBe(true);
+    // Diez sesiones nuevas, cada una con su cabecera estable, a 2 s entre peticiones.
+    const marcas: boolean[] = [];
+    for (let turno = 0; turno < 3; turno++) {
+      for (let s = 0; s < 10; s++) {
+        marcas.push(peticion(verja, `sesion-${s}`, `sesion-${s}|${turno}`));
+        pasar(2000);
+      }
+    }
+    expect(verja.estadoDeCabeceras(CLASE)!.volatil).toBe(false);
+    // Del turno 2 en adelante todas marcan; las primeras del turno 1 no.
+    expect(marcas.slice(10)).toEqual(Array(20).fill(true));
+    // Y una sesión nueva vuelve a marcarse desde su primera petición.
+    expect(peticion(verja, "sesion-nueva")).toBe(true);
+  });
+
+  it("evidencia fuerte: con menos de 16 maduras, o con menos del 90 % de un solo uso, no entra en modo volátil", () => {
+    const { verja, pasar } = conReloj();
+    // 15 de un solo uso: aún no.
+    for (let i = 0; i < 15; i++) peticion(verja, `x-${i}`);
+    pasar(5 * MIN);
+    expect(peticion(verja, "y-0")).toBe(true);
+    expect(verja.estadoDeCabeceras(CLASE)).toMatchObject({ unSoloUso: 15, volatil: false });
+    // 4 de cada 32 se repiten (87,5 % de un solo uso): tampoco.
+    const { verja: v2, pasar: p2 } = conReloj();
+    for (let i = 0; i < 32; i++) {
+      peticion(v2, i % 8 === 0 ? `r-${i}` : `u-${i}`);
+      if (i % 8 === 0) peticion(v2, `r-${i}`);
+    }
+    p2(5 * MIN);
+    expect(peticion(v2, "nueva")).toBe(true);
+    expect(v2.estadoDeCabeceras(CLASE)).toMatchObject({ unSoloUso: 28, seRepiten: 4, volatil: false });
   });
 
   it("una clase no apaga a otra", () => {
-    const verja = new VerjaDeCacheDePrefijo();
-    mandarDistintas(verja, 60);
-    expect(verja.decidir("otra-huella", ENTRADA, "otro-modelo").marcar).toBe(true);
+    const { verja, pasar } = conReloj();
+    for (let i = 0; i < 200; i++) {
+      peticion(verja, `hora-${i}`);
+      pasar(2000);
+    }
+    const v = verja.observarCabecera({ clase: "otro-modelo", huella: "nueva" });
+    expect(verja.decidir("nueva", ENTRADA, v).marcar).toBe(true);
   });
 
-  it("un proveedor que no reporta tokens de caché no dice nada de la clase", () => {
-    // Sin escritura no hay prima que evitar: esas respuestas no cuentan.
-    const verja = new VerjaDeCacheDePrefijo();
-    for (let i = 0; i < 60; i++) {
-      expect(verja.decidir(`mudo-${i}`, ENTRADA, CLASE).marcar).toBe(true);
-      verja.registrar(`mudo-${i}`, {}, CLASE);
+  it("OpenAI (sin prima de escritura): la clase volátil no cambia nada", () => {
+    const { verja, pasar } = conReloj();
+    const SIN_PRIMA = { totalTokens: T, stablePrefixTokens: P, tier: OPENAI_CACHE_TIER };
+    for (let i = 0; i < 400; i++) {
+      const v = verja.observarCabecera({ clase: CLASE, huella: `hora-${i}` });
+      expect(verja.decidir(`hora-${i}`, SIN_PRIMA, v).marcar).toBe(true);
+      pasar(2000);
     }
-    expect(verja.estadoDeLaClase(CLASE)).toBeUndefined();
+  });
+
+  it("un torrente de cabeceras de un solo uso no echa de la memoria a las que vuelven", () => {
+    // 512 recordadas como mucho; llegan 300 cabeceras nuevas por TTL y 2.000 en total.
+    const { verja, pasar } = conReloj({ maxHuellas: 512 });
+    peticion(verja, "estable");
+    pasar(1000);
+    peticion(verja, "estable", "estable", P);
+    for (let i = 0; i < 2000; i++) {
+      peticion(verja, `hora-${i}`);
+      pasar(1000);
+      if (i % 100 === 0) peticion(verja, "estable", "estable", P);
+    }
+    expect(verja.estadoDeCabeceras(CLASE)!.volatil).toBe(true);
+    // Sigue recordada (vista), así que se marca aunque la clase sea volátil.
+    expect(peticion(verja, "estable", "estable", P)).toBe(true);
   });
 
   it("la memoria no crece con el número de peticiones", () => {
-    // Antes: una entrada por petición, para siempre.
-    const verja = new VerjaDeCacheDePrefijo({ maxHuellas: 100 });
-    mandarDistintas(verja, 5000);
-    expect(verja.huellasRecordadas).toBeLessThanOrEqual(200);
+    const { verja, pasar } = conReloj({ maxHuellas: 100 });
+    for (let i = 0; i < 5000; i++) {
+      peticion(verja, `hora-${i}`);
+      pasar(i % 2 === 0 ? 0 : 1000);
+    }
+    expect(verja.huellasRecordadas).toBeLessThanOrEqual(100);
+    const e = verja.estadoDeCabeceras(CLASE)!;
+    expect(e.pendientes + e.repetidas).toBeLessThanOrEqual(200);
   });
 });

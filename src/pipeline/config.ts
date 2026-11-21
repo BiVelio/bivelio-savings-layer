@@ -123,11 +123,12 @@ export interface SavingsLayerConfig {
    *
    * `"fixed"`: one breakpoint at the end of the system header and one at the
    * end of the history before the last user message, subject to the measured
-   * hit-rate gate. Nothing else. The gate's exploration is bounded per prefix
-   * AND per kind of prefix: when the prefix differs on every request (a
-   * timestamp or UUID in the system prompt) it stops marking after the first 8
-   * marked requests, marks a prefix again from the second time it is sent, and
-   * re-probes at growing intervals.
+   * hit-rate gate. Nothing else. The gate also watches whether each system
+   * header (tools + system prompt) is sent again before its cache entry
+   * expires; when at least 90 % of the recent headers of a model and tool set
+   * expired unused (a timestamp or request ID in the system prompt), it stops
+   * marking headers it has not seen before, and marks them again as soon as
+   * headers come back.
    *
    * `"auto"`: the layer watches, per model, tool set and system header, how
    * often your traffic re-sends each part of the prompt and how long after.
