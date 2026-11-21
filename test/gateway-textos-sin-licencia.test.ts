@@ -52,6 +52,18 @@ describe.skipIf(process.platform === "win32")("A2-14/A2-23/A2-29 · sin clave, n
     }
   });
 
+  it("la pista de arranque para Claude Code a mano lleva ENABLE_TOOL_SEARCH=true, como docs/terminales/claude-code.md", async () => {
+    caja = cajaLimpia();
+    const p = lanzar(["gateway", "--port", "0"], caja.env());
+    try {
+      await p.esperar(/point your terminal at it.*\n/);
+      const linea = (p.stdout() + p.stderr()).split("\n").find((l) => l.includes("point your terminal at it"))!;
+      expect(linea).toMatch(/ENABLE_TOOL_SEARCH=true ANTHROPIC_BASE_URL=http:\/\/127\.0\.0\.1:\d+ claude/);
+    } finally {
+      p.matar();
+    }
+  });
+
   it("`bvsala claude` sin claves dice lo mismo (por stderr)", () => {
     caja = cajaLimpia();
     caja.terminal("claude", "");
