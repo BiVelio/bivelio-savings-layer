@@ -1,6 +1,6 @@
 # Changelog
 
-## 1.2.4 — 2026-11-21 — the free Measure plan saves, paid plans trim Anthropic tool loops, honest texts
+## 1.2.4 — 2026-11-21 — the free Measure plan saves exactly like no key, paid plans trim Anthropic tool loops, honest texts
 
 ### Changed: what you will notice after upgrading
 
@@ -9,8 +9,7 @@
   provider untouched and nothing was served from cache, so setting the free key
   saved less than setting none. From 1.2.4 a layer or a gateway with a Measure
   license does exactly what it does with no key: same calls, same request bodies,
-  same savings in the report (with one exception, below: with any license, trimming
-  of superseded tool results only acts inside a tool loop on Anthropic). If you run
+  same savings in the report, trimming of superseded tool results included. If you run
   Measure today, your traffic starts being cached, deduplicated, trimmed and
   cache-marked as soon as you upgrade, and the usage sent to your dashboard carries
   real savings instead of `shadow` records. Measure usage is still never billed. To
@@ -25,14 +24,19 @@
   Anthropic tool loop.** Up to 1.2.3 a paid license did not trim them at all:
   trimming of superseded tool results (an old tool result is replaced by a stub
   when a newer call re-reads the same resource) asked for a feature that no issued
-  license carried. With a live license of any plan, Measure included, the SDK now
+  license carried. With a live paid license (Pro, Team or Enterprise) the SDK now
   trims them with `AnthropicProvider` and the default cache placement, and only
   results from the tool loop in progress (after your last user message), which that
   placement never marks for caching (`elision` trace `partial` when it keeps an
-  older one). With a key it stays off with `cacheBreakpoints: "auto"` and with any
-  provider other than `AnthropicProvider` without `automaticCache` (Claude through
-  an OpenAI-compatible endpoint such as OpenRouter or LiteLLM included), as in 1.2.3
-  (`elision` trace `skipped`). It is decided in the client, so it works with the
+  older one). With a paid license it stays off with `cacheBreakpoints: "auto"` and
+  with any provider other than `AnthropicProvider` without `automaticCache` (Claude
+  through an OpenAI-compatible endpoint such as OpenRouter or LiteLLM included), as
+  in 1.2.3 (`elision` trace `skipped`). This is the only lever a paid license
+  applies differently from no key in the SDK. The free Measure license has no such
+  exception and trims exactly as with no key, so a Measure layer never costs more
+  than a layer with no key (with the exception, a chat with tool calls and 6-minute
+  pauses on Sonnet cost +21.9 % against not using the layer under Measure; with no
+  key it saves 73 %). It is decided in the client, so it works with the
   license you already have. Opt out per request with
   `savings: { elision: false }`. An expired, revoked or invalid license still fails
   closed, as before.
@@ -48,7 +52,8 @@
   The startup lines say "free Measure license: the same levers as no key" with
   Measure, and "ON if your organization's licence includes …; fail-closed" with a
   paid license, as in 1.2.3.
-- **With no key, trimming of superseded tool results works exactly as in 1.2.3.**
+- **With no key and with Measure, trimming of superseded tool results works exactly
+  as in 1.2.3.**
   Replacing an old tool result with a stub changes the middle of the history, so on
   a provider that caches the whole prompt by itself everything after it is billed
   again. Measured with a fake provider, cost against not using the layer, the same
@@ -58,9 +63,10 @@
   `AnthropicProvider({ automaticCache: true })`, −69.0 % against −85.2 %, and in a
   chat that re-reads the same tool output on every user turn (a 12-turn support chat
   on Sonnet 4.5), −30.1 % against −67.2 % with trimming off. Set
-  `savings: { elision: false }` there. With a key it only acts inside a tool loop on
-  Anthropic (see above): agent loops on Anthropic go from 0 % to −71.6 % with Pro,
-  and every other load we measured trims nothing, as in 1.2.3 with a paid key.
+  `savings: { elision: false }` there. With a paid license it only acts inside a
+  tool loop on Anthropic (see above): agent loops on Anthropic go from 0 % to
+  −71.6 % with Pro, and every other load we measured trims nothing, as in 1.2.3
+  with a paid key.
 - **`bvsala` shows the money when it exits.** The exit summary of the terminal
   wrappers adds the spend at list price and the saving by basis (measured, by
   reference, estimated). When nothing was saved it says why: on a subscription no
@@ -73,9 +79,18 @@
   API-key traffic asking for the 1-hour cache, that on a Claude or ChatGPT
   subscription the run only measures, and the variable for each opt-in lever.
   `--help`, `bvsala doctor` and `bvsala init` say what a BiVelio key adds: the
-  cloud, with the same levers as no key under the free Measure license (in the SDK,
-  with the trimming exception above), and in the gateway a paid license works as in
-  1.2.3.
+  cloud, with exactly the same levers as no key under the free Measure license; a
+  paid license keeps the trimming exception above in the SDK, and in the gateway
+  works as in 1.2.3. The manual Claude Code line that the gateway prints at startup
+  and `bvsala doctor` now starts with `ENABLE_TOOL_SEARCH=true`, as the Claude Code
+  guide says.
+- **`bvsala init` describes what a framework adapter does.** For the Vercel AI SDK,
+  Mastra, LangChain and Anthropic SDK stacks it no longer lists prompt-cache
+  placement, trimming and compact serialization as on by default, or
+  `observeOnly: true` as the way to only observe: the adapters never rewrite what
+  your framework sends and have no observe-only mode. It says what they do: exact
+  repeats, identical requests already in flight (not in Mastra) and the questions
+  the layer computes locally.
 - **`bvsala doctor` checks each terminal against its own route.** Gemini CLI, Cursor,
   Aider, DeepSeek and Ollama name the log line of their own protocol
   (`:generateContent`, `/v1/chat/completions`, …) instead of inheriting the
@@ -93,6 +108,32 @@
 
 ### Fixed
 
+- **LangChain.js with a model string such as `"openai:gpt-4o-mini"` saves.** That
+  form (the one in the README and in `bvsala init`) goes through the OpenAI
+  Responses API, whose message carries no `finish_reason` (`@langchain/openai`
+  1.6) or reports it as `"completed"` (1.8). The adapter did not read it as a
+  finished answer, so no answer was replayable: an exact repeat and two identical
+  requests in flight each reached the provider twice. It now reads the Responses
+  `status` (`completed` is a finished answer, or a tool call; `incomplete` because
+  of `max_output_tokens` is a truncated one), and an answer that carries the
+  provider's own tool outputs (web search, code interpreter) is never replayed. A
+  `ChatOpenAI` instance on Chat Completions already worked. 1.2.3 had the same bug.
+- **The Python client no longer says the gateway needs a key.** When no gateway
+  answered, it said the gateway "needs BIVELIO_SERVICE_KEY"; it starts with no key,
+  free, in COMMUNITY mode, and the message now says so. `python -m bvsala status`
+  prints `metering: off` without asking for a service key.
+- **A key that is set but wrong says how to keep running free.** When the gateway
+  does not start because `BIVELIO_SERVICE_KEY` is malformed or not recognised, or
+  `BIVELIO_LICENSE_KEY` does not verify, the message adds, after the fix, that
+  unsetting both keys and relaunching runs the gateway free in COMMUNITY mode. A
+  service key that is not plain ASCII (the `bvk_…` placeholder of an example) is
+  reported as malformed instead of as a network error. A leftover message that said
+  the gateway does not start without a subscription and a service key is gone.
+- **Example blocks that are pasted whole start free.** The optional key lines in
+  the README and in the terminal guides (`export BIVELIO_SERVICE_KEY=bvk_…`, its
+  PowerShell form and `export BIVELIO_LICENSE_KEY=…`) are commented out and marked
+  OPTIONAL; pasted as written, the placeholder became the key and the gateway
+  exited with code 1.
 - **With the free Measure license, a failed entitlements fetch or a deleted service
   key no longer says "savings features disabled".** With Measure the gateway's
   levers keep working in both cases, and the lines say what is actually lost (the
@@ -128,11 +169,11 @@
 - **Terminal guides in English.** The per-terminal guides in `docs/terminales`
   (shipped in the package) are in English, with the real log lines.
 - **`LICENSE-CLOUD.md` §1 and `NOTICE`.** §1 now says that under a Measure license
-  the software applies its saving levers as with no key, except that trimming of
-  superseded tool results only acts inside a tool loop on Anthropic through
-  `AnthropicProvider`, and that
-  Measure usage is never billed and never part of any commission; "shared caches" is
-  removed from the list of Cloud Services in both files.
+  the software applies exactly the same saving levers as with no key, and that
+  Measure usage is never billed and never part of any commission; under a paid
+  license, trimming of superseded tool results only acts inside a tool loop on
+  Anthropic through `AnthropicProvider`. "Shared caches" is removed from the list of
+  Cloud Services in both files.
 - **`SECURITY.md`, Availability.** The gateway section says that with the free
   Measure license the levers do not depend on the entitlements fetch, and that with
   a paid license a failed fetch switches them off, as in 1.2.3.
@@ -146,7 +187,10 @@
   Anthropic's cache pricing. `--help` and the terminal guide describe cache TTL tuning
   as the code runs it: only on turns where a large part of the request is new, never
   on chained turns. A license that is expired, revoked or missing now says, in the SDK
-  and in the gateway, that removing the key keeps the layer running free.
+  and in the gateway, that removing the key keeps the layer running free. The
+  terminal guide says when cache TTL tuning is armed: by default with no key and
+  with Measure, and with a paid license only if that license includes it
+  (fail-closed).
 
 ## 1.2.3 — 2026-11-21 — fixes from the pre-launch audit
 
