@@ -132,10 +132,9 @@ export interface OpcionesDeVerja {
    */
   exploracion?: number;
   /**
-   * Cuántas huellas (y cuántas clases) se recuerdan como mucho. Con un prefijo
-   * que cambia en cada petición el mapa crecía una entrada por llamada, sin
-   * techo. Al llenarse se olvida la que lleva más tiempo sin usarse; olvidar
-   * una huella apagada solo permite volver a explorarla, con el coste de arriba.
+   * Cuántas huellas de CABECERA se recuerdan como mucho por clase (pendientes y
+   * repetidas). Al llenarse se olvida la que lleva más tiempo sin usarse. El
+   * registro de prefijos (`estado`) no tiene tope, como en la 1.2.3.
    */
   maxHuellas?: number;
   /** El reloj, en milisegundos. Inyectable para probar el TTL sin esperar. */
@@ -288,7 +287,7 @@ export class VerjaDeCacheDePrefijo {
     return this.estados.get(huella);
   }
 
-  /** Cuántas huellas de prefijo recuerda. Acotado por `maxHuellas`. */
+  /** Cuántas huellas de prefijo recuerda (sin tope, como en la 1.2.3). */
   get huellasRecordadas(): number {
     return this.estados.size;
   }
@@ -511,11 +510,11 @@ export class VerjaDeCacheDePrefijo {
     st.marcadas += 1;
     st.tokensLeidos += Math.max(0, usage.cachedInputTokens ?? 0);
     st.tokensEscritos += Math.max(0, usage.cacheWriteInputTokens ?? 0);
-    // Reinsertar deja la huella como la más reciente: se olvida la que lleva
-    // más tiempo sin usarse, no la que más tráfico tiene.
-    this.estados.delete(huella);
+    // Sin tope, como en la 1.2.3: olvidar un prefijo ya apagado lo vuelve a
+    // explorar y paga otra vez la prima (medido en la verificación 3: +17,65 %
+    // → +18,31 % con 4.100 prefijos sueltos). Un tope que no olvide los
+    // prefijos en exploración ni los apagados queda para la 1.2.5.
     this.estados.set(huella, st);
-    podar(this.estados, this.maxHuellas);
   }
 }
 

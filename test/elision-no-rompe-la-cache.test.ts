@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
-import { KEEP_TOOL_RESULTS, MUNON_ELISION } from "../src/pipeline/elision.js";
+import { MUNON_ELISION, seleccionarSupersesion } from "../src/pipeline/elision.js";
 import { AnthropicProvider } from "../src/providers/anthropic.js";
 import { OpenAICompatibleProvider } from "../src/providers/openai-compatible.js";
 import { createSavingsLayer } from "../src/pipeline/create.js";
@@ -9,24 +9,32 @@ import type { ChatMessage, SavingsRequest } from "../src/contracts/types.js";
 import { signLicense, testPayload, TEST_KEYS } from "./helpers/test-license.js";
 
 /**
- * EL RECORTE DE RESULTADOS DE HERRAMIENTAS NO PUEDE ROMPER UNA CACHÉ QUE EL
- * PROVEEDOR YA ESTÁ LEYENDO.
+ * EL RECORTE DE RESULTADOS DE HERRAMIENTAS SUSTITUIDOS EN LA 1.2.4, POR CLAVE.
  *
- * El recorte cambia por un muñón un tool_result VIEJO, a mitad del historial.
- * Con caché automática de TODO el prompt (gpt-5, gpt-4.1, serie o: la lectura
- * cuesta el 10-25 %) o con puntos de caché dentro del historial
- * (`cacheBreakpoints: "auto"` en Anthropic), todo lo que va detrás de ese
- * mensaje se vuelve a cobrar entero. Medido con un proveedor falso, agente de
- * 60 pasos: con Pro en la 1.2.4, gpt-5 pasaba de 0 % a +12,2 % frente a no
- * llevar capa, y "auto" en Anthropic de −84,4 % a −71,5 %.
+ * Regla del dueño (21-11-2026): sin clave ninguna carga puede costar más que con
+ * la 1.2.3; con clave de pago, ninguna más que con la 1.2.3 de pago (que no
+ * recortaba: a su token le faltaba `tool_result_elision`).
  *
- * Aquí se fija, con el gate REAL de una licencia Pro y un proveedor falso en
- * proceso que guarda cada cuerpo:
- *   · gpt-5 y "auto" en Anthropic: el historial que sale es el de la petición
- *     anterior más lo nuevo (lo que la caché del proveedor puede leer), sin un
- *     solo muñón, y la traza dice por qué;
- *   · gpt-5 no cuesta más que sin capa con la caché automática de OpenAI;
- *   · gpt-4o-mini y Anthropic por defecto recortan como en la 1.2.4.
+ *  · SIN CLAVE el recorte es EXACTAMENTE el de la 1.2.3, sin ninguna guarda
+ *    nueva. Las guardas de la verificación 2 (no recortar en gpt-5, gpt-4.1, la
+ *    serie o, Gemini ni con `cacheBreakpoints: "auto"`, y E1: no recortar lo
+ *    anterior al último turno del usuario) mejoraban unas cargas y empeoraban
+ *    otras frente a la 1.2.3 (verificación 3, proveedor falso, coste con capa
+ *    frente a sin capa): chat con herramientas y turnos a 6 min en Sonnet
+ *    −73,7 % → −53,5 %; gpt-5 y Gemini con turnos a 12 min −36,8 % → 0 %;
+ *    "auto" con turnos a 70 min −73,5 % → −56,9 %. Así que se quitan, y con ellas
+ *    sus mejoras: gpt-5 en un agente de 60 pasos sigue en +12,2 %, como en la
+ *    1.2.3 (salida: `savings: { elision: false }`).
+ *  · CON CLAVE (Measure, Pro, Team, Enterprise) solo recorta dentro del bucle de
+ *    herramientas en Anthropic con la colocación fija, nunca con
+ *    `AnthropicProvider({ automaticCache: true })` ni con "auto", y solo los
+ *    resultados posteriores al último turno del usuario (E1). En el resto no
+ *    recorta, como la 1.2.3 de pago. Medido: agentes de Anthropic con Pro 0 % →
+ *    −71,6 %; con automaticCache, recortar llevaba un agente de 60 pasos de
+ *    −85,2 % a −69,0 %, y gpt-4o con una relectura tardía de 0 % a +1,8 %.
+ *
+ * Aquí se fija con el gate REAL de la licencia y proveedores falsos en proceso
+ * que guardan cada cuerpo.
  */
 
 const PRO = ["semantic_cache", "learned_thresholds", "dashboards", "long_context_compression", "context_elision", "cache_ttl_tuning", "sibling_model_routing", "per_turn_effort", "priority_support"];
@@ -93,132 +101,16 @@ function openaiFalso() {
   return { cuerpos, fetchImpl, coste: () => pleno + 0.1 * leido, sinCache: () => pleno + leido };
 }
 
-/** Anthropic falso que solo guarda los cuerpos. */
-function anthropicFalso() {
-  const cuerpos: Record<string, unknown>[] = [];
-  const fetchImpl = (async (_url: string, init: RequestInit) => {
-    cuerpos.push(JSON.parse(String(init.body)) as Record<string, unknown>);
-    return new Response(
-      JSON.stringify({ id: "msg_falso", type: "message", role: "assistant", content: [{ type: "text", text: "Next." }], stop_reason: "end_turn", usage: { input_tokens: 100, output_tokens: 5, cache_read_input_tokens: 0, cache_creation_input_tokens: 0 } }),
-      { status: 200, headers: { "content-type": "application/json" } },
-    );
-  }) as unknown as typeof fetch;
-  return { cuerpos, fetchImpl };
-}
-
-const munones = (cuerpos: Record<string, unknown>[]): number => cuerpos.reduce((n, b) => n + (JSON.stringify(b).split(MUNON_ELISION).length - 1), 0);
-
-/** ¿Cada cuerpo empieza por los mensajes del anterior, sin tocar ninguno? */
-function historialSoloCrece(cuerpos: Record<string, unknown>[]): boolean {
-  for (let k = 1; k < cuerpos.length; k++) {
-    const antes = cuerpos[k - 1]!["messages"] as unknown[];
-    const ahora = cuerpos[k]!["messages"] as unknown[];
-    for (let i = 0; i < antes.length; i++) if (JSON.stringify(antes[i]) !== JSON.stringify(ahora[i])) return false;
-  }
-  return true;
-}
-
-let devOpenGuardado: string | undefined;
-beforeEach(() => {
-  reiniciarAvisos();
-  // Que decida el gate REAL de la licencia (ver licencia-con-todas-las-palancas).
-  devOpenGuardado = process.env.BVSALA_DEV_OPEN;
-  delete process.env.BVSALA_DEV_OPEN;
-});
-afterEach(() => {
-  if (devOpenGuardado !== undefined) process.env.BVSALA_DEV_OPEN = devOpenGuardado;
-});
-
-async function agenteOpenAI(modelo: string, config: Record<string, unknown>) {
-  const f = openaiFalso();
-  const capa = createSavingsLayer({
-    provider: new OpenAICompatibleProvider({ baseUrl: "https://api.openai.com/v1", apiKey: "clave-inventada", fetchImpl: f.fetchImpl }),
-    silenceWarnings: true,
-    ...config,
-  });
-  const razones: string[] = [];
-  for (const messages of pasos(30)) {
-    const r = await capa.generate({ model: modelo, messages, tools: HERRAMIENTAS, temperature: 0 } as SavingsRequest);
-    const t = r.report.traces.find((x) => x.stage === "elision");
-    if (t) razones.push(`${t.outcome}: ${String(t.detail?.["reason"] ?? "")}`);
-  }
-  await capa.close();
-  return { ...f, razones };
-}
-
-describe("el recorte no rompe la caché automática de gpt-5", () => {
-  it("Pro con gpt-5 en un bucle de agente no cuesta más que sin capa: el historial solo crece y no hay muñones", async () => {
-    const a = await agenteOpenAI("openai/gpt-5", licenciaPro());
-    expect(a.cuerpos.length).toBe(30);
-    expect(munones(a.cuerpos)).toBe(0);
-    expect(historialSoloCrece(a.cuerpos)).toBe(true);
-    // Lo que se manda es lo que mandaría la app sin capa (el historial entero,
-    // que solo crece), así que la caché automática lo lee casi todo: la entrada
-    // cuesta como sin capa con caché, no más. Con el recorte (1.2.4) cada muñón
-    // nuevo a mitad del historial volvía a cobrar entero todo lo de detrás.
-    expect(a.coste()).toBeLessThan(0.2 * a.sinCache());
-    expect(a.razones.some((r) => /skipped: this model caches the whole prompt automatically/.test(r))).toBe(true);
-  });
-
-  it("también sin clave, y con gpt-4.1 y la serie o", async () => {
-    for (const modelo of ["openai/gpt-5", "openai/gpt-4.1", "openai/o3", "openai/gpt-5-mini"]) {
-      const a = await agenteOpenAI(modelo, {});
-      expect(munones(a.cuerpos)).toBe(0);
-      expect(historialSoloCrece(a.cuerpos)).toBe(true);
-    }
-  });
-
-  it("gpt-4o-mini sigue recortando como en la 1.2.4 (cobra la lectura al 50 %)", async () => {
-    const a = await agenteOpenAI("openai/gpt-4o-mini", licenciaPro());
-    expect(munones(a.cuerpos)).toBeGreaterThan(0);
-    // Pasados KEEP_TOOL_RESULTS pasos ya hay lecturas sustituidas que recortar.
-    expect(a.razones.filter((r) => r.startsWith("applied")).length).toBeGreaterThan(30 - KEEP_TOOL_RESULTS - 6);
-  });
-});
-
-describe('el recorte no rompe los puntos de caché de cacheBreakpoints: "auto" en Anthropic', () => {
-  async function agenteAnthropic(config: Record<string, unknown>) {
-    const f = anthropicFalso();
-    const capa = createSavingsLayer({ provider: new AnthropicProvider({ apiKey: "clave-inventada", fetchImpl: f.fetchImpl }), silenceWarnings: true, ...config });
-    for (const messages of pasos(30)) await capa.generate({ model: "anthropic/claude-sonnet-4-5", messages, tools: HERRAMIENTAS, temperature: 0 } as SavingsRequest);
-    await capa.close();
-    return f;
-  }
-
-  it('auto en Anthropic no pierde lecturas por el recorte: ningún muñón, el historial solo crece', async () => {
-    const a = await agenteAnthropic({ ...licenciaPro(), cacheBreakpoints: "auto" });
-    expect(a.cuerpos.length).toBe(30);
-    expect(munones(a.cuerpos)).toBe(0);
-    const sinCacheControl = a.cuerpos.map((b) => JSON.parse(JSON.stringify(b).replace(/,"cache_control":\{[^}]*\}/g, "")) as Record<string, unknown>);
-    expect(historialSoloCrece(sinCacheControl)).toBe(true);
-  });
-
-  it("con la colocación por defecto (sin puntos en el historial) sigue recortando", async () => {
-    const a = await agenteAnthropic(licenciaPro());
-    expect(munones(a.cuerpos)).toBeGreaterThan(0);
-  });
-});
-
 /**
- * VERIFICACIÓN 2 DE LA 1.2.4: CON LICENCIA, NINGUNA CARGA CUESTA MÁS QUE EN LA 1.2.3.
- *
- * En la 1.2.3 una licencia de pago no recortaba (le faltaba el literal). En la
- * 1.2.4 toda licencia recorta, y eso rompía cachés que la 1.2.3 de pago no
- * rompía (proveedor falso; coste con capa frente a sin capa, 1.2.3 → 1.2.4):
- *   · Anthropic con la colocación por defecto, conversación de 12 turnos que
- *     vuelve a leer el mismo fichero: el recorte de un resultado ANTERIOR al
- *     último turno del usuario dejaba la marca en el `system` el resto de la
- *     conversación. Sonnet −67,2 % → −30,1 %. Ahora solo se recortan los del
- *     bucle en curso (E1).
- *   · Gemini (lectura al 10 %, sin prima de escritura): 0 % → +11,9 % en un
- *     agente de 60 pasos. Ahora no recorta (E2), con licencia y sin ella.
- *   · DeepSeek (proveedor que la capa no reconoce): 0 % → +13,7 %. Con licencia
- *     ya no recorta, como en la 1.2.3 (E3). Sin clave, como en la 1.2.3.
+ * Anthropic falso con la caché de prompt (reglas públicas): lee el prefijo más
+ * largo ya escrito en un punto marcado. Con `reloj`, cada entrada caduca a los
+ * 5 min de su última escritura o lectura; sin él, no caduca.
  */
-
-/** Anthropic falso con la caché de prompt (reglas públicas, sin TTL): lee el prefijo más largo ya escrito en un punto marcado. */
-function anthropicConCache() {
-  const escrito = new Set<string>();
+function anthropicConCache(reloj?: () => number) {
+  const TTL = 5 * 60_000;
+  const ahora = reloj ?? (() => 0);
+  const caduca = new Map<string, number>();
+  const vivo = (clave: string): boolean => (caduca.get(clave) ?? -Infinity) > ahora() || (reloj == null && caduca.has(clave));
   const cuerpos: Record<string, unknown>[] = [];
   const porPeticion: { total: number; leidos: number; escritos: number }[] = [];
   const tok = (s: string): number => Math.ceil(s.length / 4);
@@ -251,15 +143,16 @@ function anthropicConCache() {
     let escritos = 0;
     for (const p of puntos) {
       for (let j = p; j >= Math.max(0, p - 20); j--) {
-        if (pref[j]!.tokens >= 1024 && escrito.has(pref[j]!.clave)) {
+        if (pref[j]!.tokens >= 1024 && vivo(pref[j]!.clave)) {
           leidos = Math.max(leidos, pref[j]!.tokens);
+          caduca.set(pref[j]!.clave, ahora() + TTL);
           break;
         }
       }
     }
     const ultimo = puntos.at(-1);
     if (ultimo != null && pref[ultimo]!.tokens >= 1024 && pref[ultimo]!.tokens > leidos) escritos = pref[ultimo]!.tokens - leidos;
-    for (const p of puntos) if (pref[p]!.tokens >= 1024) escrito.add(pref[p]!.clave);
+    for (const p of puntos) if (pref[p]!.tokens >= 1024) caduca.set(pref[p]!.clave, ahora() + TTL);
     porPeticion.push({ total, leidos, escritos });
     const usage = { input_tokens: total - leidos - escritos, output_tokens: 5, cache_read_input_tokens: leidos, cache_creation_input_tokens: escritos };
     return new Response(
@@ -273,6 +166,204 @@ function anthropicConCache() {
   return { cuerpos, porPeticion, fetchImpl, coste, sinCapa: () => suma("total") };
 }
 
+const munonesDe = (b: Record<string, unknown>): number => JSON.stringify(b).split(MUNON_ELISION).length - 1;
+const munones = (cuerpos: Record<string, unknown>[]): number => cuerpos.reduce((n, b) => n + munonesDe(b), 0);
+
+/** ¿Cada cuerpo empieza por los mensajes del anterior, sin tocar ninguno? */
+function historialSoloCrece(cuerpos: Record<string, unknown>[]): boolean {
+  for (let k = 1; k < cuerpos.length; k++) {
+    const antes = cuerpos[k - 1]!["messages"] as unknown[];
+    const ahora = cuerpos[k]!["messages"] as unknown[];
+    for (let i = 0; i < antes.length; i++) if (JSON.stringify(antes[i]) !== JSON.stringify(ahora[i])) return false;
+  }
+  return true;
+}
+
+const sinCacheControl = (cuerpos: Record<string, unknown>[]): Record<string, unknown>[] =>
+  cuerpos.map((b) => JSON.parse(JSON.stringify(b).replace(/,"cache_control":\{[^}]*\}/g, "")) as Record<string, unknown>);
+
+let devOpenGuardado: string | undefined;
+beforeEach(() => {
+  reiniciarAvisos();
+  // Que decida el gate REAL de la licencia (ver licencia-con-todas-las-palancas).
+  devOpenGuardado = process.env.BVSALA_DEV_OPEN;
+  delete process.env.BVSALA_DEV_OPEN;
+});
+afterEach(() => {
+  if (devOpenGuardado !== undefined) process.env.BVSALA_DEV_OPEN = devOpenGuardado;
+});
+
+/**
+ * Corre una lista de peticiones y apunta, por petición, los muñones que salen,
+ * los que pondría la regla de la 1.2.3 (recortar TODO lo que selecciona
+ * `seleccionarSupersesion`, sin guardas) y la traza de la etapa.
+ */
+async function correr(
+  proveedor: (fetchImpl: typeof fetch) => AnthropicProvider | OpenAICompatibleProvider,
+  f: { fetchImpl: typeof fetch; cuerpos: Record<string, unknown>[] },
+  modelo: string,
+  peticiones: (() => ChatMessage[])[] | ChatMessage[][],
+  config: Record<string, unknown>,
+  extra: Partial<SavingsRequest> = {},
+  antesDeCada?: (k: number) => void,
+) {
+  const capa = createSavingsLayer({ provider: proveedor(f.fetchImpl), silenceWarnings: true, ...config });
+  const trazas: string[] = [];
+  const comoLa123: number[] = [];
+  for (let k = 0; k < peticiones.length; k++) {
+    antesDeCada?.(k);
+    const p = peticiones[k]!;
+    const messages = typeof p === "function" ? p() : p;
+    comoLa123.push(seleccionarSupersesion(messages).indices.length);
+    const r = await capa.generate({ model: modelo, messages, tools: HERRAMIENTAS, temperature: 0, ...extra } as SavingsRequest);
+    const t = r.report.traces.find((x) => x.stage === "elision");
+    trazas.push(t ? `${t.outcome}: ${String(t.detail?.["reason"] ?? "")}` : "");
+  }
+  await capa.close();
+  return { trazas, comoLa123, porCuerpo: f.cuerpos.map(munonesDe) };
+}
+
+const openai = (fetchImpl: typeof fetch) => new OpenAICompatibleProvider({ baseUrl: "https://api.openai.com/v1", apiKey: "clave-inventada", fetchImpl });
+const anthropic = (fetchImpl: typeof fetch) => new AnthropicProvider({ apiKey: "clave-inventada", fetchImpl });
+const anthropicAuto = (fetchImpl: typeof fetch) => new AnthropicProvider({ apiKey: "clave-inventada", fetchImpl, automaticCache: true });
+
+/** Ningún motivo de las guardas: la etapa recorta o no hay nada que recortar, como en la 1.2.3. */
+const sinGuardas = (trazas: string[]): boolean => trazas.every((t) => t === "" || t.startsWith("applied") || /no old\/large tool_result/.test(t));
+
+describe("sin clave, el recorte es exactamente el de la 1.2.3", () => {
+  it("gpt-5, agente de 30 pasos: recorta todo lo sustituido, como la 1.2.3 (y cuesta más que no recortar: +12,2 % frente a sin capa en 60 pasos, medido)", async () => {
+    const f = openaiFalso();
+    const a = await correr(openai, f, "openai/gpt-5", pasos(30), {});
+    expect(a.porCuerpo).toEqual(a.comoLa123);
+    expect(munones(f.cuerpos)).toBeGreaterThan(0);
+    expect(sinGuardas(a.trazas)).toBe(true);
+    // El precio de la 1.2.3, que se mantiene: cada muñón nuevo a mitad del
+    // historial vuelve a cobrar entero lo que va detrás.
+    const g = openaiFalso();
+    await correr(openai, g, "openai/gpt-5", pasos(30), {}, { savings: { elision: false } });
+    expect(f.coste()).toBeGreaterThan(g.coste());
+  });
+
+  it("también gpt-4.1, la serie o, gpt-4o, Gemini y DeepSeek: el mismo recorte que la 1.2.3", async () => {
+    for (const modelo of ["openai/gpt-4.1", "openai/o3", "openai/gpt-5-mini", "openai/gpt-4o-mini", "google/gemini-2.5-flash", "deepseek/deepseek-chat"]) {
+      const f = openaiFalso();
+      const a = await correr(openai, f, modelo, pasos(30), {});
+      expect(a.porCuerpo).toEqual(a.comoLa123);
+      expect(munones(f.cuerpos)).toBeGreaterThan(0);
+      expect(sinGuardas(a.trazas)).toBe(true);
+    }
+  });
+
+  it('cacheBreakpoints: "auto" en Anthropic: recorta como la 1.2.3', async () => {
+    const f = anthropicConCache();
+    const a = await correr(anthropic, f, "anthropic/claude-sonnet-4-5", pasos(30), { cacheBreakpoints: "auto" });
+    expect(a.porCuerpo).toEqual(a.comoLa123);
+    expect(munones(f.cuerpos)).toBeGreaterThan(0);
+    expect(sinGuardas(a.trazas)).toBe(true);
+  });
+
+  it("soporte de 12 turnos con Sonnet: recorta también lo anterior al último turno del usuario, como la 1.2.3 (sin E1)", async () => {
+    const f = anthropicConCache();
+    const a = await correr(anthropic, f, "anthropic/claude-sonnet-4-5", soporte12(), {});
+    expect(a.porCuerpo).toEqual(a.comoLa123);
+    expect(munones(f.cuerpos)).toBeGreaterThan(0);
+    expect(a.trazas.some((t) => t.startsWith("partial"))).toBe(false);
+    expect(sinGuardas(a.trazas)).toBe(true);
+  });
+
+  it("chat con herramientas y turnos a 6 min (la caché ya caducó): recortar sale más barato que no recortar, como en la 1.2.3", async () => {
+    // Con E1 sin clave (candidata de la verificación 3) los resultados viejos
+    // viajaban enteros: −73,7 % → −53,5 % frente a sin capa en Sonnet y Haiku.
+    for (const modelo of ["anthropic/claude-sonnet-4-5", "anthropic/claude-haiku-4-5"]) {
+      const chat = chatConHueco(6 * 60_000);
+      const f = anthropicConCache(chat.reloj);
+      const a = await correr(anthropic, f, modelo, chat.peticiones, {}, {}, chat.antesDeCada);
+      expect(a.porCuerpo).toEqual(a.comoLa123);
+      expect(munones(f.cuerpos)).toBeGreaterThan(0);
+      expect(a.trazas.some((t) => t.startsWith("partial"))).toBe(false);
+
+      const chat2 = chatConHueco(6 * 60_000);
+      const g = anthropicConCache(chat2.reloj);
+      await correr(anthropic, g, modelo, chat2.peticiones, {}, { savings: { elision: false } }, chat2.antesDeCada);
+      expect(f.coste()).toBeLessThan(0.8 * g.coste());
+    }
+  });
+});
+
+describe("con clave, el recorte solo actúa dentro del bucle de herramientas en Anthropic con la colocación fija", () => {
+  it("Pro, agente de Anthropic (Sonnet y Haiku): recorta igual que sin clave, byte a byte, y la factura baja (0 % → −71,6 % medido)", async () => {
+    for (const modelo of ["anthropic/claude-sonnet-4-5", "anthropic/claude-haiku-4-5"]) {
+      const pro = anthropicConCache();
+      await correr(anthropic, pro, modelo, pasos(30), licenciaPro());
+      const libre = anthropicConCache();
+      await correr(anthropic, libre, modelo, pasos(30), {});
+      const apagado = anthropicConCache();
+      await correr(anthropic, apagado, modelo, pasos(30), licenciaPro(), { savings: { elision: false } });
+      expect(munones(pro.cuerpos)).toBeGreaterThan(0);
+      expect(pro.cuerpos).toEqual(libre.cuerpos);
+      // Con el recorte apagado es la 1.2.3 de pago.
+      expect(pro.coste()).toBeLessThan(0.8 * apagado.coste());
+    }
+  });
+
+  it("Pro con AnthropicProvider({ automaticCache: true }): no recorta (el proveedor cachea el historial entero: −85,2 % → −69,0 % si recortara)", async () => {
+    const f = anthropicConCache();
+    const a = await correr(anthropicAuto, f, "anthropic/claude-sonnet-4-5", pasos(30), licenciaPro());
+    expect(f.cuerpos.length).toBe(30);
+    expect(munones(f.cuerpos)).toBe(0);
+    expect(historialSoloCrece(sinCacheControl(f.cuerpos))).toBe(true);
+    expect(a.trazas.some((t) => t.startsWith("skipped") && /no automaticCache/.test(t))).toBe(true);
+  });
+
+  it("sin clave, automaticCache recorta como la 1.2.3", async () => {
+    const f = anthropicConCache();
+    const a = await correr(anthropicAuto, f, "anthropic/claude-sonnet-4-5", pasos(30), {});
+    expect(a.porCuerpo).toEqual(a.comoLa123);
+    expect(munones(f.cuerpos)).toBeGreaterThan(0);
+  });
+
+  it('Pro con cacheBreakpoints: "auto": no recorta (el colocador marca dentro del historial)', async () => {
+    const f = anthropicConCache();
+    const a = await correr(anthropic, f, "anthropic/claude-sonnet-4-5", pasos(30), { ...licenciaPro(), cacheBreakpoints: "auto" });
+    expect(munones(f.cuerpos)).toBe(0);
+    expect(historialSoloCrece(sinCacheControl(f.cuerpos))).toBe(true);
+    expect(a.trazas.some((t) => t.startsWith("skipped"))).toBe(true);
+  });
+
+  it("Pro en gpt-4o, gpt-4o-mini, gpt-5, Gemini y DeepSeek: no recorta, el historial solo crece (como la 1.2.3 de pago)", async () => {
+    for (const modelo of ["openai/gpt-4o", "openai/gpt-4o-mini", "openai/gpt-5", "google/gemini-2.5-flash", "gemini-2.5-flash", "google/gemini-2.5-pro", "deepseek/deepseek-chat"]) {
+      const f = openaiFalso();
+      const a = await correr(openai, f, modelo, pasos(60), licenciaPro());
+      expect(f.cuerpos.length).toBe(60);
+      expect(munones(f.cuerpos)).toBe(0);
+      // Lo que sale es lo que mandaría la app sin capa (el historial entero, que
+      // solo crece): la caché automática del proveedor lo lee igual que sin capa.
+      expect(historialSoloCrece(f.cuerpos)).toBe(true);
+      expect(f.coste()).toBeLessThan(0.2 * f.sinCache());
+      expect(a.trazas.some((t) => t.startsWith("skipped") && /only acts inside a tool loop on Anthropic/.test(t))).toBe(true);
+    }
+  });
+
+  it("Pro en soporte de 12 turnos con Sonnet y Haiku: conserva las lecturas del historial (E1) y cuesta lo mismo que con el recorte apagado", async () => {
+    for (const modelo of ["anthropic/claude-sonnet-4-5", "anthropic/claude-haiku-4-5"]) {
+      const pro = anthropicConCache();
+      const a = await correr(anthropic, pro, modelo, soporte12(), licenciaPro());
+      const apagado = anthropicConCache();
+      await correr(anthropic, apagado, modelo, soporte12(), licenciaPro(), { savings: { elision: false } });
+      expect(pro.cuerpos.length).toBe(24);
+      // Ningún muñón en el historial marcado: los resultados viejos están todos
+      // delante del último turno del usuario, y ahí no se recortan con clave.
+      expect(munones(pro.cuerpos)).toBe(0);
+      expect(a.trazas.some((t) => t.startsWith("partial"))).toBe(true);
+      // El historial marcado se sigue leyendo: las últimas peticiones leen casi todo.
+      for (const p of pro.porPeticion.slice(-4)) expect(p.leidos).toBeGreaterThan(0.8 * p.total);
+      // El dinero: lo mismo que con el recorte apagado (lo que hacía la 1.2.3 de pago).
+      expect(Math.round(pro.coste())).toBe(Math.round(apagado.coste()));
+      expect(pro.coste()).toBeLessThan(0.6 * pro.sinCapa());
+    }
+  });
+});
+
 const POLITICAS = (n: number): string =>
   Array.from({ length: n }, (_, i) => `Policy ${i}: orders of kind ${i} ship within ${i + 1} days and may be returned within thirty days.`).join(" ");
 const configuracion = (version: number): string =>
@@ -284,133 +375,50 @@ const registroDeBuild = (t: number): string =>
  * Soporte de 12 turnos: en cada turno el usuario pega un registro largo y el
  * asistente vuelve a leer el MISMO fichero pequeño. Las lecturas viejas quedan
  * sustituidas y DELANTE del último turno del usuario: en el historial marcado.
+ * 24 peticiones, construidas en orden (cada una es una foto del historial).
  */
-async function soporte12(modelo: string, config: Record<string, unknown>) {
-  const f = anthropicConCache();
-  const capa = createSavingsLayer({ provider: new AnthropicProvider({ apiKey: "clave-inventada", fetchImpl: f.fetchImpl }), silenceWarnings: true, ...config });
+function soporte12(): ChatMessage[][] {
   const hist: ChatMessage[] = [{ role: "system", content: "You are a coding assistant for an invented repository. " + POLITICAS(40) }];
-  const elision: string[] = [];
-  const pedir = async (): Promise<void> => {
-    const r = await capa.generate({ model: modelo, messages: [...hist], tools: HERRAMIENTAS, temperature: 0 } as SavingsRequest);
-    for (const t of r.report.traces) if (t.stage === "elision") elision.push(t.outcome);
-  };
+  const peticiones: ChatMessage[][] = [];
   for (let t = 0, id = 0; t < 12; t++) {
     hist.push({ role: "user", content: `Turn ${t + 1}: please check the config again and tell me what changed. ${registroDeBuild(t)}` });
-    await pedir();
+    peticiones.push([...hist]);
     id++;
     hist.push({ role: "assistant", content: "", toolCalls: [{ id: `call_${id}`, name: "read_file", arguments: JSON.stringify({ path: "src/config.ts" }) }] });
     hist.push({ role: "tool", toolCallId: `call_${id}`, name: "read_file", content: configuracion(1 + (t >> 1)) });
-    await pedir();
+    peticiones.push([...hist]);
     hist.push({ role: "assistant", content: `Summary of turn ${t + 1}: the config looks the same as before, version ${1 + (t >> 1)}.` });
   }
-  await capa.close();
-  return { ...f, elision };
+  return peticiones;
 }
 
-describe("verificación 2: con licencia el recorte no cuesta más que la 1.2.3", () => {
-  it("Pro en soporte de 12 turnos con Sonnet conserva las lecturas del historial", async () => {
-    const pro = await soporte12("anthropic/claude-sonnet-4-5", licenciaPro());
-    const conElisionApagada = await (async () => {
-      const f = anthropicConCache();
-      const capa = createSavingsLayer({ provider: new AnthropicProvider({ apiKey: "clave-inventada", fetchImpl: f.fetchImpl }), silenceWarnings: true, ...licenciaPro() });
-      const hist: ChatMessage[] = [{ role: "system", content: "You are a coding assistant for an invented repository. " + POLITICAS(40) }];
-      for (let t = 0, id = 0; t < 12; t++) {
-        hist.push({ role: "user", content: `Turn ${t + 1}: please check the config again and tell me what changed. ${registroDeBuild(t)}` });
-        await capa.generate({ model: "anthropic/claude-sonnet-4-5", messages: [...hist], tools: HERRAMIENTAS, temperature: 0, savings: { elision: false } } as SavingsRequest);
-        id++;
-        hist.push({ role: "assistant", content: "", toolCalls: [{ id: `call_${id}`, name: "read_file", arguments: JSON.stringify({ path: "src/config.ts" }) }] });
-        hist.push({ role: "tool", toolCallId: `call_${id}`, name: "read_file", content: configuracion(1 + (t >> 1)) });
-        await capa.generate({ model: "anthropic/claude-sonnet-4-5", messages: [...hist], tools: HERRAMIENTAS, temperature: 0, savings: { elision: false } } as SavingsRequest);
-        hist.push({ role: "assistant", content: `Summary of turn ${t + 1}: the config looks the same as before, version ${1 + (t >> 1)}.` });
-      }
-      await capa.close();
-      return f;
-    })();
-    expect(pro.cuerpos.length).toBe(24);
-    // Ningún muñón en el historial marcado: los resultados viejos están todos
-    // delante del último turno del usuario, y ahí no se recortan.
-    expect(munones(pro.cuerpos)).toBe(0);
-    expect(pro.elision).toContain("partial");
-    // El historial marcado se sigue leyendo: desde el segundo turno lo leído
-    // crece con la conversación y las últimas peticiones leen casi todo (con el
-    // fallo, tras el primer recorte solo se marcaba el `system`).
-    const leidos = pro.porPeticion.map((p) => p.leidos);
-    for (let k = 5; k < leidos.length; k++) expect(leidos[k]).toBeGreaterThanOrEqual(leidos[k - 1]!);
-    for (const p of pro.porPeticion.slice(-4)) expect(p.leidos).toBeGreaterThan(0.8 * p.total);
-    // El dinero: lo mismo que con el recorte apagado (lo que hacía la 1.2.3 de
-    // pago), y muy por debajo de no llevar capa (−67 % medido con el banco).
-    expect(Math.round(pro.coste())).toBe(Math.round(conElisionApagada.coste()));
-    expect(pro.coste()).toBeLessThan(0.45 * pro.sinCapa());
-  });
-
-  it("también sin clave y con Haiku 4.5: el historial marcado no pierde lecturas", async () => {
-    for (const [modelo, config] of [
-      ["anthropic/claude-sonnet-4-5", {}],
-      ["anthropic/claude-haiku-4-5", licenciaPro()],
-    ] as const) {
-      const a = await soporte12(modelo, config);
-      expect(munones(a.cuerpos)).toBe(0);
-      expect(a.coste()).toBeLessThan(0.6 * a.sinCapa());
+/**
+ * Chat con herramientas de 10 turnos que vuelve a leer los mismos tres ficheros
+ * en cada turno, con `hueco` ms entre turnos del usuario y 3 s entre pasos (la
+ * carga «hueco/chat-herramientas-10» de la verificación 3).
+ */
+function chatConHueco(hueco: number) {
+  let t = 0;
+  const ficheros = ["server", "store", "router"];
+  const hist: ChatMessage[] = [{ role: "system", content: "You are a coding assistant for an invented repository. " + POLITICAS(10) }];
+  const peticiones: ChatMessage[][] = [];
+  const instantes: number[] = [];
+  for (let turno = 0, id = 0; turno < 10; turno++) {
+    if (turno > 0) t += hueco;
+    hist.push({ role: "user", content: `Turn ${turno + 1}: please check the handlers again and tell me what changed. ${"Context line. ".repeat(20)}` });
+    for (const nombre of ficheros) {
+      peticiones.push([...hist]);
+      instantes.push(t);
+      t += 3000;
+      id++;
+      hist.push({ role: "assistant", content: "", toolCalls: [{ id: `call_${id}`, name: "read_file", arguments: JSON.stringify({ path: `src/${nombre}.ts` }) }] });
+      hist.push({ role: "tool", toolCallId: `call_${id}`, name: "read_file", content: fichero(nombre, 1 + (turno >> 1)) });
     }
-  });
-
-  it("Pro en Gemini y DeepSeek, agente de 60 pasos, no cuesta más que sin capa: ni un muñón y el historial solo crece", async () => {
-    for (const [modelo, motivo] of [
-      ["google/gemini-2.5-flash", /bills cached input at 25% or less/],
-      ["gemini-2.5-flash", /bills cached input at 25% or less/],
-      ["google/gemini-2.5-pro", /bills cached input at 25% or less/],
-      ["deepseek/deepseek-chat", /unrecognised provider/],
-    ] as const) {
-      const f = openaiFalso();
-      const capa = createSavingsLayer({
-        provider: new OpenAICompatibleProvider({ baseUrl: "https://api.openai.com/v1", apiKey: "clave-inventada", fetchImpl: f.fetchImpl }),
-        silenceWarnings: true,
-        ...licenciaPro(),
-      });
-      const razones: string[] = [];
-      for (const messages of pasos(60)) {
-        const r = await capa.generate({ model: modelo, messages, tools: HERRAMIENTAS, temperature: 0 } as SavingsRequest);
-        const t = r.report.traces.find((x) => x.stage === "elision");
-        if (t) razones.push(`${t.outcome}: ${String(t.detail?.["reason"] ?? "")}`);
-      }
-      await capa.close();
-      expect(f.cuerpos.length).toBe(60);
-      expect(munones(f.cuerpos)).toBe(0);
-      // Lo que sale es lo que mandaría la app sin capa (el historial entero, que
-      // solo crece): la caché automática del proveedor lo lee igual que sin capa.
-      expect(historialSoloCrece(f.cuerpos)).toBe(true);
-      expect(f.coste()).toBeLessThan(0.2 * f.sinCache());
-      expect(razones.some((r) => r.startsWith("skipped") && motivo.test(r))).toBe(true);
-    }
-  });
-
-  it("Gemini sin clave tampoco recorta (antes: +11,9 % en el agente)", async () => {
-    const a = await agenteOpenAI("google/gemini-2.5-flash", {});
-    expect(munones(a.cuerpos)).toBe(0);
-    expect(historialSoloCrece(a.cuerpos)).toBe(true);
-  });
-
-  it("gpt-4o-mini y los agentes de Anthropic siguen recortando, con Pro y sin clave", async () => {
-    for (const config of [licenciaPro(), {}]) {
-      const mini = await agenteOpenAI("openai/gpt-4o-mini", config);
-      expect(munones(mini.cuerpos)).toBeGreaterThan(0);
-      for (const modelo of ["anthropic/claude-sonnet-4-5", "anthropic/claude-haiku-4-5"]) {
-        const agente = async (elision: boolean) => {
-          const f = anthropicConCache();
-          const capa = createSavingsLayer({ provider: new AnthropicProvider({ apiKey: "clave-inventada", fetchImpl: f.fetchImpl }), silenceWarnings: true, ...config });
-          for (const messages of pasos(30)) {
-            await capa.generate({ model: modelo, messages, tools: HERRAMIENTAS, temperature: 0, ...(elision ? {} : { savings: { elision: false } }) } as SavingsRequest);
-          }
-          await capa.close();
-          return f;
-        };
-        const con = await agente(true);
-        const sin = await agente(false);
-        // En un bucle de agente los resultados viejos van DETRÁS del último
-        // turno del usuario: el recorte sigue actuando y la factura baja.
-        expect(munones(con.cuerpos)).toBeGreaterThan(0);
-        expect(con.coste()).toBeLessThan(0.8 * sin.coste());
-      }
-    }
-  });
-});
+    peticiones.push([...hist]);
+    instantes.push(t);
+    t += 3000;
+    hist.push({ role: "assistant", content: `Summary of turn ${turno + 1}: the handlers look the same as before, version ${1 + (turno >> 1)}.` });
+  }
+  let ahora = 0;
+  return { peticiones, reloj: () => ahora, antesDeCada: (k: number) => void (ahora = instantes[k]!) };
+}

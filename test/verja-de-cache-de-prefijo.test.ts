@@ -412,14 +412,33 @@ describe("la verja mira si la cabecera vuelve antes de caducar", () => {
     expect(peticion(verja, "estable", "estable", P)).toBe(true);
   });
 
-  it("la memoria no crece con el número de peticiones", () => {
+  // Limitado a `estadoDeCabeceras` en la 1.2.4: el tope del registro de
+  // prefijos (`huellasRecordadas`) se quitó porque olvidaba prefijos ya apagados
+  // y los volvía a explorar (verificación 3: +17,65 % → +18,31 % frente a la
+  // 1.2.3). Ese registro vuelve a no tener tope, como en la 1.2.3; un tope que no
+  // olvide prefijos en exploración ni apagados queda para la 1.2.5.
+  it("la memoria de cabeceras no crece con el número de peticiones", () => {
     const { verja, pasar } = conReloj({ maxHuellas: 100 });
     for (let i = 0; i < 5000; i++) {
       peticion(verja, `hora-${i}`);
       pasar(i % 2 === 0 ? 0 : 1000);
     }
-    expect(verja.huellasRecordadas).toBeLessThanOrEqual(100);
     const e = verja.estadoDeCabeceras(CLASE)!;
     expect(e.pendientes + e.repetidas).toBeLessThanOrEqual(200);
+  });
+
+  it("1.2.4 como la 1.2.3: un prefijo apagado sigue apagado tras 5.000 prefijos nuevos (el registro no olvida)", () => {
+    const { verja, pasar } = conReloj({ exploracion: 1, maxHuellas: 100 });
+    // Se apaga: se marcó una vez y no leyó nada.
+    expect(peticion(verja, "documento")).toBe(true);
+    expect(peticion(verja, "documento")).toBe(false);
+    for (let i = 0; i < 5000; i++) {
+      peticion(verja, `suelta-${i}`);
+      pasar(1000);
+    }
+    // Con el tope de la 1.2.4 candidata se olvidaba y volvía a pagar la prima.
+    expect(peticion(verja, "documento")).toBe(false);
+    expect(verja.estado("documento")!.marcadas).toBe(1);
+    expect(verja.huellasRecordadas).toBe(5001);
   });
 });
