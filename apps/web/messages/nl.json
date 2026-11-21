@@ -195,7 +195,7 @@
       "network": "Geen verbinding. Controleer je netwerk en probeer het opnieuw.",
       "missingFields": "Vul je e-mailadres en wachtwoord in."
     },
-    "signupMedir": "Of start gratis met Measure: het gratis cloud-plan voor kleine teams, zonder kaart, tot {seats} seats en {requests} verzoeken per dag, met dezelfde hendels als zonder sleutel en je echte besparing in het dashboard. Het bespaart vanaf @bivelio/savings-layer {saves}; oudere versies kijken alleen mee.",
+    "signupMedir": "Of start gratis met Measure: het gratis cloud-plan voor kleine teams, zonder kaart, tot {seats} seats en {requests} verzoeken per dag, met dezelfde hendels als zonder sleutel (met één uitzondering voor het inkorten van toolresultaten, zie de README) en je echte besparing in het dashboard. Het bespaart vanaf @bivelio/savings-layer {saves}; oudere versies kijken alleen mee.",
     "signupPlanPro": "Je hebt {plan} gekozen — {price} per seat per maand. Maak je account aan, bevestig je e-mailadres en je betaalt in je dashboard via Stripe.",
     "signupPlanTeam": "Je hebt {plan} gekozen — {price} per maand, inclusief {seats} seats. Maak je account aan, bevestig je e-mailadres en je betaalt in je dashboard via Stripe.",
     "openSourceQuestion": "Wil je alleen de open-source-engine?",
@@ -1362,7 +1362,7 @@
         "medir": {
           "name": "Measure",
           "price": "Gratis",
-          "body": "Gratis, zonder kaart. Het gratis CLOUD-plan voor kleine teams: één organisatie, tot {seats} seats en {requests} verzoeken per dag. Dezelfde hendels als open core zonder sleutel, plus het dashboard met je echte besparing; nooit onderdeel van een commissie. Het bespaart vanaf @bivelio/savings-layer {saves}; versies vanaf {version} tot vóór {saves} kijken alleen mee.",
+          "body": "Gratis, zonder kaart. Het gratis CLOUD-plan voor kleine teams: één organisatie, tot {seats} seats en {requests} verzoeken per dag. Dezelfde hendels als open core zonder sleutel (met één uitzondering voor het inkorten van toolresultaten, zie de README), plus het dashboard met je echte besparing; nooit onderdeel van een commissie. Het bespaart vanaf @bivelio/savings-layer {saves}; versies vanaf {version} tot vóór {saves} kijken alleen mee.",
           "cta": "Gratis beginnen →"
         },
         "pro": {
@@ -1640,7 +1640,7 @@
         },
         {
           "q": "Wat is het verschil tussen Measure en Community?",
-          "a": "Community is de open-source-engine op je eigen infrastructuur: geen account, geen BiVelio-sleutel en standaard geen telemetrie. Measure is het gratis Savings Cloud-plan voor kleine teams: het vraagt een account, past dezelfde hendels toe als Community en voegt het dashboard toe met je echte besparing. Met oudere versies van het pakket kijkt het alleen mee; op de prijspagina staat vanaf welke versie het bespaart."
+          "a": "Community is de open-source-engine op je eigen infrastructuur: geen account, geen BiVelio-sleutel en standaard geen telemetrie. Measure is het gratis Savings Cloud-plan voor kleine teams: het vraagt een account, past dezelfde hendels toe als Community (met één uitzondering voor het inkorten van toolresultaten, zie de README) en voegt het dashboard toe met je echte besparing. Met oudere versies van het pakket kijkt het alleen mee; op de prijspagina staat vanaf welke versie het bespaart."
         },
         {
           "q": "Werkt het met een abonnement zoals ChatGPT Plus?",
@@ -1664,7 +1664,7 @@
       "title": "Eerst meten.",
       "titleAccent": "Daarna beslissen.",
       "titleMark": "beslissen",
-      "sub": "Measure is gratis en vraagt geen kaart: dezelfde hendels als de open-source-engine, plus het dashboard met wat je met je eigen verkeer echt bespaart. De engine is open source en de code is voor iedereen te zien.",
+      "sub": "Measure is gratis en vraagt geen kaart: dezelfde hendels als de open-source-engine (met één uitzondering voor het inkorten van toolresultaten, zie de README), plus het dashboard met wat je met je eigen verkeer echt bespaart. De engine is open source en de code is voor iedereen te zien.",
       "repo": "Repository bekijken"
     },
     "layer": {
@@ -2287,7 +2287,7 @@
       "intro": "Vier plannen, van klein naar groot. Pro en Team betaal je per seat en hebben geen commissie.",
       "medir": {
         "name": "Measure",
-        "body": "<b>Gratis, zonder kaart.</b> Het gratis CLOUD-plan voor kleine teams: één organisatie, tot <b>{seats} seats</b> en <b>{requests} verzoeken per dag</b>. Het past dezelfde hendels toe als open core zonder sleutel en voegt het dashboard toe met je echte besparing, gemeten met de teller van je provider; het draagt nooit een commissie. Het bespaart vanaf <b>@bivelio/savings-layer {saves}</b>. Versies vanaf {version} tot vóór {saves} kijken met een Measure-sleutel alleen mee: schaduwmodus, geen hendel toegepast, en het dashboard toont wat er bespaard zou zijn. De hendels zelf hebben geen plan nodig: open core draait zonder sleutel."
+        "body": "<b>Gratis, zonder kaart.</b> Het gratis CLOUD-plan voor kleine teams: één organisatie, tot <b>{seats} seats</b> en <b>{requests} verzoeken per dag</b>. Het past dezelfde hendels toe als open core zonder sleutel, behalve dat het inkorten van achterhaalde toolresultaten alleen binnen een toollus op Anthropic werkt, en voegt het dashboard toe met je echte besparing, gemeten en geschat apart; het draagt nooit een commissie. Het bespaart vanaf <b>@bivelio/savings-layer {saves}</b>. Versies vanaf {version} tot vóór {saves} kijken met een Measure-sleutel alleen mee: schaduwmodus, geen hendel toegepast, en het dashboard toont wat er bespaard zou zijn. De hendels zelf hebben geen plan nodig: open core draait zonder sleutel."
       },
       "pro": {
         "name": "Pro",
@@ -2402,7 +2402,7 @@
       "provider": "Het tarief dekt niet het verbruik bij je LLM-provider: dat blijf je zelf betalen, tegen hun voorwaarden. Bedragen exclusief btw.",
       "medir": {
         "unit": "Het gratis cloudplan, voor kleine teams.",
-        "summary": "Het dashboard met wat je echt bespaart, en dezelfde hendels als zonder sleutel. Bespaart vanaf @bivelio/savings-layer {saves}; oudere versies kijken alleen mee.",
+        "summary": "Het dashboard met wat je echt bespaart, en dezelfde hendels als zonder sleutel (met één uitzondering voor het inkorten van toolresultaten, zie de README). Bespaart vanaf @bivelio/savings-layer {saves}; oudere versies kijken alleen mee.",
         "cta": "Starten met Measure",
         "version": "Werkt met de nieuwste versie van @bivelio/savings-layer."
       },

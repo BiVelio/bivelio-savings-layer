@@ -195,7 +195,7 @@
       "network": "Sem ligação. Verifica a tua rede e tenta de novo.",
       "missingFields": "Escreve o teu email e a palavra-passe."
     },
-    "signupMedir": "Ou comece grátis com o Measure: o plano de nuvem gratuito para equipas pequenas, sem cartão, até {seats} lugares e {requests} pedidos por dia, com as mesmas alavancas que sem chave e a sua poupança real no painel. Poupa com @bivelio/savings-layer {saves} ou posterior; as versões anteriores só observam.",
+    "signupMedir": "Ou comece grátis com o Measure: o plano de nuvem gratuito para equipas pequenas, sem cartão, até {seats} lugares e {requests} pedidos por dia, com as mesmas alavancas que sem chave (com uma exceção no corte de resultados de ferramentas, descrita no README) e a sua poupança real no painel. Poupa com @bivelio/savings-layer {saves} ou posterior; as versões anteriores só observam.",
     "signupPlanPro": "Escolheste {plan} — {price} por lugar e mês. Cria a tua conta, confirma o teu e-mail e pagas no painel, através da Stripe.",
     "signupPlanTeam": "Escolheste {plan} — {price} por mês, com {seats} lugares incluídos. Cria a tua conta, confirma o teu e-mail e pagas no painel, através da Stripe.",
     "openSourceQuestion": "Só queres o motor open source?",
@@ -1362,7 +1362,7 @@
         "medir": {
           "name": "Measure",
           "price": "Grátis",
-          "body": "Grátis, sem cartão. O plano NUVEM gratuito, para equipas pequenas: uma organização, até {seats} lugares e {requests} pedidos por dia. As mesmas alavancas que o open core sem chave, mais o painel com a tua poupança real; nunca entra em nenhuma comissão. Poupa com @bivelio/savings-layer {saves} ou posterior; as versões desde a {version} até antes da {saves} só observam.",
+          "body": "Grátis, sem cartão. O plano NUVEM gratuito, para equipas pequenas: uma organização, até {seats} lugares e {requests} pedidos por dia. As mesmas alavancas que o open core sem chave (com uma exceção no corte de resultados de ferramentas, descrita no README), mais o painel com a tua poupança real; nunca entra em nenhuma comissão. Poupa com @bivelio/savings-layer {saves} ou posterior; as versões desde a {version} até antes da {saves} só observam.",
           "cta": "Começar grátis →"
         },
         "pro": {
@@ -1640,7 +1640,7 @@
         },
         {
           "q": "Qual é a diferença entre o Measure e o Community?",
-          "a": "O Community é o motor open source na tua infraestrutura: sem conta, sem chave da BiVelio e sem telemetria por defeito. O Measure é o plano gratuito do Savings Cloud para equipas pequenas: precisa de conta, aplica as mesmas alavancas que o Community e acrescenta o painel com a tua poupança real. Com versões antigas do pacote só observa; a página de preços diz a partir de que versão poupa."
+          "a": "O Community é o motor open source na tua infraestrutura: sem conta, sem chave da BiVelio e sem telemetria por defeito. O Measure é o plano gratuito do Savings Cloud para equipas pequenas: precisa de conta, aplica as mesmas alavancas que o Community (com uma exceção no corte de resultados de ferramentas, descrita no README) e acrescenta o painel com a tua poupança real. Com versões antigas do pacote só observa; a página de preços diz a partir de que versão poupa."
         },
         {
           "q": "Serve para uma subscrição como o ChatGPT Plus?",
@@ -1664,7 +1664,7 @@
       "title": "Mede primeiro.",
       "titleAccent": "Decide depois.",
       "titleMark": "depois",
-      "sub": "O Measure é gratuito e não pede cartão: as mesmas alavancas que o motor open source, mais o painel com o que poupas de verdade com o teu próprio tráfego. O motor é open source e o seu código está à vista.",
+      "sub": "O Measure é gratuito e não pede cartão: as mesmas alavancas que o motor open source (com uma exceção no corte de resultados de ferramentas, descrita no README), mais o painel com o que poupas de verdade com o teu próprio tráfego. O motor é open source e o seu código está à vista.",
       "repo": "Ver o repositório"
     },
     "layer": {
@@ -2287,7 +2287,7 @@
       "intro": "Quatro planos, do menor para o maior. Pro e Team pagam-se por assento e não têm comissão.",
       "medir": {
         "name": "Measure",
-        "body": "<b>Grátis, sem cartão.</b> O plano NUVEM gratuito, para equipas pequenas: uma organização, até <b>{seats} lugares</b> e <b>{requests} pedidos por dia</b>. Aplica as mesmas alavancas que o open core sem chave e acrescenta o painel com a tua poupança real, medida com o contador do teu fornecedor; nunca leva comissão. Poupa com <b>@bivelio/savings-layer {saves} ou posterior</b>. As versões desde a {version} até antes da {saves} só observam com uma chave Measure: modo sombra, nenhuma alavanca aplicada, e o painel mostra quanto se teria poupado. As alavancas em si não precisam de plano nenhum: o open core corre sem chave."
+        "body": "<b>Grátis, sem cartão.</b> O plano NUVEM gratuito, para equipas pequenas: uma organização, até <b>{seats} lugares</b> e <b>{requests} pedidos por dia</b>. Aplica as mesmas alavancas que o open core sem chave, exceto que o corte de resultados de ferramentas já substituídos só atua dentro de um ciclo de ferramentas na Anthropic, e acrescenta o painel com a tua poupança real, com o medido e o estimado em separado; nunca leva comissão. Poupa com <b>@bivelio/savings-layer {saves} ou posterior</b>. As versões desde a {version} até antes da {saves} só observam com uma chave Measure: modo sombra, nenhuma alavanca aplicada, e o painel mostra quanto se teria poupado. As alavancas em si não precisam de plano nenhum: o open core corre sem chave."
       },
       "pro": {
         "name": "Pro",
@@ -2402,7 +2402,7 @@
       "provider": "A mensalidade não inclui o consumo do teu fornecedor de LLM: continuas a pagá-lo tu, nas condições dele. Valores sem IVA.",
       "medir": {
         "unit": "O plano gratuito da nuvem, para equipas pequenas.",
-        "summary": "O painel com o que poupas de verdade, e as mesmas alavancas que sem chave. Poupa com @bivelio/savings-layer {saves} ou posterior; as versões anteriores só observam.",
+        "summary": "O painel com o que poupas de verdade, e as mesmas alavancas que sem chave (com uma exceção no corte de resultados de ferramentas, descrita no README). Poupa com @bivelio/savings-layer {saves} ou posterior; as versões anteriores só observam.",
         "cta": "Começar com o Measure",
         "version": "Funciona com a versão mais recente de @bivelio/savings-layer."
       },

@@ -195,7 +195,7 @@
       "network": "No connection. Check your network and try again.",
       "missingFields": "Enter your email and password."
     },
-    "signupMedir": "Or start free with Measure: the free cloud plan for small teams, no card, up to {seats} seats and {requests} requests a day, with the same levers as with no key and your real savings in the dashboard. It saves with @bivelio/savings-layer {saves} or later; older versions only observe.",
+    "signupMedir": "Or start free with Measure: the free cloud plan for small teams, no card, up to {seats} seats and {requests} requests a day, with the same levers as with no key (one exception for tool-result trimming, see the README) and your real savings in the dashboard. It saves with @bivelio/savings-layer {saves} or later; older versions only observe.",
     "signupPlanPro": "You chose {plan} — {price} per seat per month. Create your account, confirm your email, and you'll pay in your dashboard through Stripe.",
     "signupPlanTeam": "You chose {plan} — {price} per month, {seats} seats included. Create your account, confirm your email, and you'll pay in your dashboard through Stripe.",
     "openSourceQuestion": "Only want the open-source engine?",
@@ -1362,7 +1362,7 @@
         "medir": {
           "name": "Measure",
           "price": "Free",
-          "body": "Free, no card. The free CLOUD plan, for small teams: one organization, up to {seats} seats and {requests} requests a day. The same levers as the open core with no key, plus the dashboard with your real savings; never part of any commission. It saves with @bivelio/savings-layer {saves} or later; versions from {version} up to before {saves} only observe.",
+          "body": "Free, no card. The free CLOUD plan, for small teams: one organization, up to {seats} seats and {requests} requests a day. The same levers as the open core with no key (one exception for tool-result trimming, see the README), plus the dashboard with your real savings; never part of any commission. It saves with @bivelio/savings-layer {saves} or later; versions from {version} up to before {saves} only observe.",
           "cta": "Start free →"
         },
         "pro": {
@@ -1640,7 +1640,7 @@
         },
         {
           "q": "How are Measure and Community different?",
-          "a": "Community is the open-source engine on your infrastructure: no account, no BiVelio key and no telemetry by default. Measure is the free Savings Cloud plan for small teams: it needs an account, applies the same levers as Community and adds the dashboard with your real savings. Older versions of the package only observe with it; the pricing page says from which version it saves."
+          "a": "Community is the open-source engine on your infrastructure: no account, no BiVelio key and no telemetry by default. Measure is the free Savings Cloud plan for small teams: it needs an account, applies the same levers as Community (one exception for tool-result trimming, see the README) and adds the dashboard with your real savings. Older versions of the package only observe with it; the pricing page says from which version it saves."
         },
         {
           "q": "Does it work with a subscription like ChatGPT Plus?",
@@ -1664,7 +1664,7 @@
       "title": "Measure first.",
       "titleAccent": "Decide later.",
       "titleMark": "later",
-      "sub": "Measure is free and asks for no card: the same levers as the open-source engine, plus the dashboard with what you really save on your own traffic. The engine is open source, and its code is in plain sight.",
+      "sub": "Measure is free and asks for no card: the same levers as the open-source engine (one exception for tool-result trimming, see the README), plus the dashboard with what you really save on your own traffic. The engine is open source, and its code is in plain sight.",
       "repo": "View the repository"
     },
     "layer": {
@@ -2287,7 +2287,7 @@
       "intro": "Four plans, from smallest to largest. Pro and Team are paid per seat and carry no commission.",
       "medir": {
         "name": "Measure",
-        "body": "<b>Free, no card.</b> The free CLOUD plan, for small teams: one organization, up to <b>{seats} seats</b> and <b>{requests} requests a day</b>. It applies the same levers as the open core with no key and adds the dashboard with your real savings, measured with your provider's own counter; it never carries a commission. It saves with <b>@bivelio/savings-layer {saves} or later</b>. Versions from {version} up to before {saves} only observe with a Measure key: shadow mode, no lever applied, and the dashboard shows what would have been saved. The levers themselves need no plan: open core runs without a key."
+        "body": "<b>Free, no card.</b> The free CLOUD plan, for small teams: one organization, up to <b>{seats} seats</b> and <b>{requests} requests a day</b>. It applies the same levers as the open core with no key, except that trimming of superseded tool results only acts inside a tool loop on Anthropic, and adds the dashboard with your real savings, measured and estimated kept apart; it never carries a commission. It saves with <b>@bivelio/savings-layer {saves} or later</b>. Versions from {version} up to before {saves} only observe with a Measure key: shadow mode, no lever applied, and the dashboard shows what would have been saved. The levers themselves need no plan: open core runs without a key."
       },
       "pro": {
         "name": "Pro",
@@ -2402,7 +2402,7 @@
       "provider": "The fee does not include your LLM provider's usage: you keep paying that yourself, on their terms. Amounts exclude VAT.",
       "medir": {
         "unit": "The free cloud plan, for small teams.",
-        "summary": "The dashboard with what you really save, and the same levers as with no key. Saves with @bivelio/savings-layer {saves} or later; older versions only observe.",
+        "summary": "The dashboard with what you really save, and the same levers as with no key (one exception for tool-result trimming, see the README). Saves with @bivelio/savings-layer {saves} or later; older versions only observe.",
         "cta": "Start with Measure",
         "version": "Works with the latest version of @bivelio/savings-layer."
       },

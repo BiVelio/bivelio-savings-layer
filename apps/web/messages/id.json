@@ -195,7 +195,7 @@
       "network": "Tidak ada koneksi. Periksa jaringan Anda dan coba lagi.",
       "missingFields": "Masukkan email dan kata sandi Anda."
     },
-    "signupMedir": "Atau mulai gratis dengan Measure: paket cloud gratis untuk tim kecil, tanpa kartu, hingga {seats} kursi dan {requests} permintaan per hari, dengan tuas yang sama seperti tanpa kunci dan penghematan nyata Anda di dasbor. Berhemat dengan @bivelio/savings-layer {saves} atau lebih baru; versi lama hanya mengamati.",
+    "signupMedir": "Atau mulai gratis dengan Measure: paket cloud gratis untuk tim kecil, tanpa kartu, hingga {seats} kursi dan {requests} permintaan per hari, dengan tuas yang sama seperti tanpa kunci (dengan satu pengecualian untuk pemangkasan hasil alat, lihat README) dan penghematan nyata Anda di dasbor. Berhemat dengan @bivelio/savings-layer {saves} atau lebih baru; versi lama hanya mengamati.",
     "signupPlanPro": "Anda memilih {plan} — {price} per kursi per bulan. Buat akun Anda, konfirmasikan email Anda, lalu bayar di dasbor melalui Stripe.",
     "signupPlanTeam": "Anda memilih {plan} — {price} per bulan, termasuk {seats} kursi. Buat akun Anda, konfirmasikan email Anda, lalu bayar di dasbor melalui Stripe.",
     "openSourceQuestion": "Hanya ingin mesin open source?",
@@ -1362,7 +1362,7 @@
         "medir": {
           "name": "Measure",
           "price": "Gratis",
-          "body": "Gratis, tanpa kartu. Paket CLOUD gratis untuk tim kecil: satu organisasi, hingga {seats} kursi dan {requests} permintaan per hari. Tuas yang sama seperti open core tanpa kunci, ditambah dasbor dengan penghematan nyata Anda; tidak pernah dikenai komisi. Berhemat dengan @bivelio/savings-layer {saves} atau lebih baru; versi sejak {version} hingga sebelum {saves} hanya mengamati.",
+          "body": "Gratis, tanpa kartu. Paket CLOUD gratis untuk tim kecil: satu organisasi, hingga {seats} kursi dan {requests} permintaan per hari. Tuas yang sama seperti open core tanpa kunci (dengan satu pengecualian untuk pemangkasan hasil alat, lihat README), ditambah dasbor dengan penghematan nyata Anda; tidak pernah dikenai komisi. Berhemat dengan @bivelio/savings-layer {saves} atau lebih baru; versi sejak {version} hingga sebelum {saves} hanya mengamati.",
           "cta": "Mulai gratis →"
         },
         "pro": {
@@ -1640,7 +1640,7 @@
         },
         {
           "q": "Apa bedanya Measure dan Community?",
-          "a": "Community adalah mesin open source di infrastruktur Anda: tanpa akun, tanpa kunci BiVelio, dan tanpa telemetri secara bawaan. Measure adalah paket gratis Savings Cloud untuk tim kecil: butuh akun, menerapkan tuas yang sama seperti Community, dan menambahkan dasbor dengan penghematan nyata Anda. Dengan versi paket yang lama ia hanya mengamati; halaman harga menyebutkan sejak versi mana ia berhemat."
+          "a": "Community adalah mesin open source di infrastruktur Anda: tanpa akun, tanpa kunci BiVelio, dan tanpa telemetri secara bawaan. Measure adalah paket gratis Savings Cloud untuk tim kecil: butuh akun, menerapkan tuas yang sama seperti Community (dengan satu pengecualian untuk pemangkasan hasil alat, lihat README), dan menambahkan dasbor dengan penghematan nyata Anda. Dengan versi paket yang lama ia hanya mengamati; halaman harga menyebutkan sejak versi mana ia berhemat."
         },
         {
           "q": "Apakah berguna untuk langganan seperti ChatGPT Plus?",
@@ -1664,7 +1664,7 @@
       "title": "Ukur dulu.",
       "titleAccent": "Putuskan kemudian.",
       "titleMark": "kemudian",
-      "sub": "Measure gratis dan tidak meminta kartu: tuas yang sama seperti mesin open source, ditambah dasbor dengan penghematan nyata pada trafik Anda sendiri. Mesinnya open source dan kodenya terbuka untuk dilihat.",
+      "sub": "Measure gratis dan tidak meminta kartu: tuas yang sama seperti mesin open source (dengan satu pengecualian untuk pemangkasan hasil alat, lihat README), ditambah dasbor dengan penghematan nyata pada trafik Anda sendiri. Mesinnya open source dan kodenya terbuka untuk dilihat.",
       "repo": "Lihat repositori"
     },
     "layer": {
@@ -2287,7 +2287,7 @@
       "intro": "Empat paket, dari yang terkecil hingga terbesar. Pro dan Team dibayar per kursi dan tidak dikenai komisi.",
       "medir": {
         "name": "Measure",
-        "body": "<b>Gratis, tanpa kartu.</b> Paket CLOUD gratis untuk tim kecil: satu organisasi, hingga <b>{seats} kursi</b> dan <b>{requests} permintaan per hari</b>. Paket ini menerapkan tuas yang sama seperti open core tanpa kunci dan menambahkan dasbor dengan penghematan nyata Anda, diukur dengan penghitung penyedia Anda; tidak pernah membawa komisi. Berhemat dengan <b>@bivelio/savings-layer {saves} atau lebih baru</b>. Versi sejak {version} hingga sebelum {saves} hanya mengamati dengan kunci Measure: mode bayangan, tidak ada tuas yang diterapkan, dan dasbor menunjukkan berapa yang akan dihemat. Tuasnya sendiri tidak butuh paket apa pun: open core berjalan tanpa kunci."
+        "body": "<b>Gratis, tanpa kartu.</b> Paket CLOUD gratis untuk tim kecil: satu organisasi, hingga <b>{seats} kursi</b> dan <b>{requests} permintaan per hari</b>. Paket ini menerapkan tuas yang sama seperti open core tanpa kunci, kecuali pemangkasan hasil alat yang sudah tergantikan hanya bekerja di dalam loop alat di Anthropic, dan menambahkan dasbor dengan penghematan nyata Anda, yang terukur dan yang diperkirakan dipisahkan; tidak pernah membawa komisi. Berhemat dengan <b>@bivelio/savings-layer {saves} atau lebih baru</b>. Versi sejak {version} hingga sebelum {saves} hanya mengamati dengan kunci Measure: mode bayangan, tidak ada tuas yang diterapkan, dan dasbor menunjukkan berapa yang akan dihemat. Tuasnya sendiri tidak butuh paket apa pun: open core berjalan tanpa kunci."
       },
       "pro": {
         "name": "Pro",
@@ -2402,7 +2402,7 @@
       "provider": "Tarif tidak mencakup pemakaian di penyedia LLM Anda: itu tetap Anda bayar sendiri, sesuai ketentuan mereka. Jumlah belum termasuk PPN.",
       "medir": {
         "unit": "Paket cloud gratis, untuk tim kecil.",
-        "summary": "Dasbor dengan penghematan Anda yang sebenarnya, dan tuas yang sama seperti tanpa kunci. Berhemat dengan @bivelio/savings-layer {saves} atau lebih baru; versi lama hanya mengamati.",
+        "summary": "Dasbor dengan penghematan Anda yang sebenarnya, dan tuas yang sama seperti tanpa kunci (dengan satu pengecualian untuk pemangkasan hasil alat, lihat README). Berhemat dengan @bivelio/savings-layer {saves} atau lebih baru; versi lama hanya mengamati.",
         "cta": "Mulai dengan Measure",
         "version": "Berfungsi dengan versi terbaru @bivelio/savings-layer."
       },

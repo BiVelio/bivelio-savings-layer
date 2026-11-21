@@ -195,7 +195,7 @@
       "network": "Nessuna connessione. Controlla la rete e riprova.",
       "missingFields": "Inserisci email e password."
     },
-    "signupMedir": "Oppure parti gratis con Measure: il piano cloud gratuito per team piccoli, senza carta, fino a {seats} postazioni e {requests} richieste al giorno, con le stesse leve che senza chiave e il tuo risparmio reale nella dashboard. Risparmia con @bivelio/savings-layer {saves} o successivo; le versioni precedenti osservano soltanto.",
+    "signupMedir": "Oppure parti gratis con Measure: il piano cloud gratuito per team piccoli, senza carta, fino a {seats} postazioni e {requests} richieste al giorno, con le stesse leve che senza chiave (con un'eccezione per il taglio dei risultati degli strumenti, vedi il README) e il tuo risparmio reale nella dashboard. Risparmia con @bivelio/savings-layer {saves} o successivo; le versioni precedenti osservano soltanto.",
     "signupPlanPro": "Hai scelto {plan} — {price} per postazione al mese. Crea il tuo account, conferma la tua email e pagherai nella dashboard tramite Stripe.",
     "signupPlanTeam": "Hai scelto {plan} — {price} al mese, {seats} postazioni incluse. Crea il tuo account, conferma la tua email e pagherai nella dashboard tramite Stripe.",
     "openSourceQuestion": "Vuoi solo il motore open source?",
@@ -1362,7 +1362,7 @@
         "medir": {
           "name": "Measure",
           "price": "Gratis",
-          "body": "Gratis, senza carta. Il piano CLOUD gratuito, per team piccoli: un'organizzazione, fino a {seats} postazioni e {requests} richieste al giorno. Le stesse leve dell'open core senza chiave, più la dashboard con il tuo risparmio reale; mai soggetto a commissioni. Risparmia con @bivelio/savings-layer {saves} o successivo; le versioni dalla {version} fino a prima della {saves} osservano soltanto.",
+          "body": "Gratis, senza carta. Il piano CLOUD gratuito, per team piccoli: un'organizzazione, fino a {seats} postazioni e {requests} richieste al giorno. Le stesse leve dell'open core senza chiave (con un'eccezione per il taglio dei risultati degli strumenti, vedi il README), più la dashboard con il tuo risparmio reale; mai soggetto a commissioni. Risparmia con @bivelio/savings-layer {saves} o successivo; le versioni dalla {version} fino a prima della {saves} osservano soltanto.",
           "cta": "Inizia gratis →"
         },
         "pro": {
@@ -1640,7 +1640,7 @@
         },
         {
           "q": "Che differenza c’è tra Measure e Community?",
-          "a": "Community è il motore open source sulla tua infrastruttura: niente account, niente chiave BiVelio e nessuna telemetria di default. Measure è il piano gratuito di Savings Cloud per team piccoli: richiede un account, applica le stesse leve di Community e aggiunge la dashboard con il tuo risparmio reale. Con versioni vecchie del pacchetto osserva soltanto; la pagina dei prezzi dice da quale versione risparmia."
+          "a": "Community è il motore open source sulla tua infrastruttura: niente account, niente chiave BiVelio e nessuna telemetria di default. Measure è il piano gratuito di Savings Cloud per team piccoli: richiede un account, applica le stesse leve di Community (con un'eccezione per il taglio dei risultati degli strumenti, vedi il README) e aggiunge la dashboard con il tuo risparmio reale. Con versioni vecchie del pacchetto osserva soltanto; la pagina dei prezzi dice da quale versione risparmia."
         },
         {
           "q": "Serve per un abbonamento come ChatGPT Plus?",
@@ -1664,7 +1664,7 @@
       "title": "Prima misura.",
       "titleAccent": "Poi decidi.",
       "titleMark": "decidi",
-      "sub": "Measure è gratuito e non chiede la carta: le stesse leve del motore open source, più la dashboard con ciò che risparmi davvero sul tuo traffico. Il motore è open source e il suo codice è sotto gli occhi di tutti.",
+      "sub": "Measure è gratuito e non chiede la carta: le stesse leve del motore open source (con un'eccezione per il taglio dei risultati degli strumenti, vedi il README), più la dashboard con ciò che risparmi davvero sul tuo traffico. Il motore è open source e il suo codice è sotto gli occhi di tutti.",
       "repo": "Vedi il repository"
     },
     "layer": {
@@ -2287,7 +2287,7 @@
       "intro": "Quattro piani, dal più piccolo al più grande. Pro e Team si pagano per postazione e non prevedono commissioni.",
       "medir": {
         "name": "Measure",
-        "body": "<b>Gratis, senza carta.</b> Il piano CLOUD gratuito, per team piccoli: un'organizzazione, fino a <b>{seats} postazioni</b> e <b>{requests} richieste al giorno</b>. Applica le stesse leve dell'open core senza chiave e aggiunge la dashboard con il tuo risparmio reale, misurato con il contatore del tuo provider; non porta mai commissioni. Risparmia con <b>@bivelio/savings-layer {saves} o successivo</b>. Le versioni dalla {version} fino a prima della {saves} osservano soltanto con una chiave Measure: modalità ombra, nessuna leva applicata, e la dashboard mostra quanto si sarebbe risparmiato. Le leve in sé non richiedono alcun piano: l'open core gira senza chiave."
+        "body": "<b>Gratis, senza carta.</b> Il piano CLOUD gratuito, per team piccoli: un'organizzazione, fino a <b>{seats} postazioni</b> e <b>{requests} richieste al giorno</b>. Applica le stesse leve dell'open core senza chiave, salvo che il taglio dei risultati degli strumenti già superati agisce solo dentro un ciclo di strumenti su Anthropic, e aggiunge la dashboard con il tuo risparmio reale, con il misurato e lo stimato separati; non porta mai commissioni. Risparmia con <b>@bivelio/savings-layer {saves} o successivo</b>. Le versioni dalla {version} fino a prima della {saves} osservano soltanto con una chiave Measure: modalità ombra, nessuna leva applicata, e la dashboard mostra quanto si sarebbe risparmiato. Le leve in sé non richiedono alcun piano: l'open core gira senza chiave."
       },
       "pro": {
         "name": "Pro",
@@ -2402,7 +2402,7 @@
       "provider": "Il canone non include il consumo del tuo provider LLM: continui a pagarlo tu, alle sue condizioni. Importi IVA esclusa.",
       "medir": {
         "unit": "Il piano cloud gratuito, per team piccoli.",
-        "summary": "La dashboard con ciò che risparmi davvero, e le stesse leve che senza chiave. Risparmia con @bivelio/savings-layer {saves} o successivo; le versioni precedenti osservano soltanto.",
+        "summary": "La dashboard con ciò che risparmi davvero, e le stesse leve che senza chiave (con un'eccezione per il taglio dei risultati degli strumenti, vedi il README). Risparmia con @bivelio/savings-layer {saves} o successivo; le versioni precedenti osservano soltanto.",
         "cta": "Inizia con Measure",
         "version": "Funziona con l'ultima versione di @bivelio/savings-layer."
       },

@@ -158,7 +158,7 @@ describe("Measure con la 1.2.4: ahorra, y las versiones anteriores solo observan
     }
     expect(en["pricingPage.cards.medir.unit"]).toBe("The free cloud plan, for small teams.");
     expect(en["pricingPage.cards.medir.summary"]).toBe(
-      "The dashboard with what you really save, and the same levers as with no key. Saves with @bivelio/savings-layer {saves} or later; older versions only observe.",
+      "The dashboard with what you really save, and the same levers as with no key (one exception for tool-result trimming, see the README). Saves with @bivelio/savings-layer {saves} or later; older versions only observe.",
     );
     // Las condiciones sí nombran la sombra: es lo que hacen las versiones anteriores.
     expect(en["pricingPage.plans.medir.body"]).toContain("only observe with a Measure key: shadow mode");
@@ -510,5 +510,91 @@ describe("verificación final de la 1.2.4 (#614): lo que quedaba en la web", () 
   it("de: «Seats» en todo lo público, como en las tarjetas; ningún «Sitz»/«Sitze»", () => {
     expect(publicas(cargar("de")).filter(([, v]) => /\bSitze?\b/.test(v)).map(([k]) => k)).toEqual([]);
     expect(cargar("de")["pricingPage.plans.medir.body"]).toContain("<b>{seats} Seats</b>");
+  });
+});
+
+/**
+ * LA EXCEPCIÓN DEL RECORTE (comportamiento final de la 1.2.4, CHANGELOG y README
+ * de release/1.2.4): con cualquier clave, Measure incluida, el recorte de
+ * resultados de herramientas sustituidos solo actúa dentro de un bucle de
+ * herramientas en Anthropic; sin clave, como en la 1.2.3. Por eso ningún texto
+ * público dice «las mismas palancas que sin clave» a secas: donde Measure se
+ * ofrece va la forma corta («una excepción para el recorte, ver el README») y
+ * en sus condiciones de /pricing, la excepción entera, como el README y el
+ * panel de la 1.2.4. Las condiciones tampoco dicen que el ahorro real se mida
+ * todo «con el contador del proveedor»: el panel enseña lo medido y lo estimado
+ * aparte (dashboard.measurePlan.card.realContext).
+ */
+describe("la excepción del recorte de resultados de herramientas (1.2.4)", () => {
+  /** La forma corta, la misma en las cinco claves que ofrecen Measure. */
+  const CORTA: Record<Loc, string> = {
+    ca: "(amb una excepció en el retall de resultats d'eines, explicada al README)",
+    de: "(mit einer Ausnahme beim Kürzen von Tool-Ergebnissen, siehe README)",
+    en: "(one exception for tool-result trimming, see the README)",
+    es: "(con una excepción en el recorte de resultados de herramientas, explicada en el README)",
+    fr: "(avec une exception pour l'élagage des résultats d'outils, voir le README)",
+    id: "(dengan satu pengecualian untuk pemangkasan hasil alat, lihat README)",
+    it: "(con un'eccezione per il taglio dei risultati degli strumenti, vedi il README)",
+    nl: "(met één uitzondering voor het inkorten van toolresultaten, zie de README)",
+    pl: "(z jednym wyjątkiem dotyczącym przycinania wyników narzędzi, opisanym w README)",
+    pt: "(com uma exceção no corte de resultados de ferramentas, descrita no README)",
+    tr: "(tek istisna araç sonuçlarının kırpılmasında, bkz. README)",
+    vi: "(có một ngoại lệ về việc cắt bớt kết quả công cụ, xem README)",
+  };
+  /** La excepción entera, en las condiciones de /pricing (las palabras del panel de la 1.2.4). */
+  const ENTERA: Record<Loc, RegExp> = {
+    ca: /només actua dins d'un bucle d'eines a Anthropic/,
+    de: /ausschließlich innerhalb einer Tool-Schleife auf Anthropic/,
+    en: /except that trimming of superseded tool results only acts inside a tool loop on Anthropic/,
+    es: /salvo que el recorte de resultados de herramientas ya sustituidos solo actúa dentro de un bucle de herramientas en Anthropic/,
+    fr: /n'agit qu'à l'intérieur d'une boucle d'outils sur Anthropic/,
+    id: /hanya bekerja di dalam loop alat di Anthropic/,
+    it: /agisce solo dentro un ciclo di strumenti su Anthropic/,
+    nl: /alleen binnen een toollus op Anthropic werkt/,
+    pl: /działa tylko wewnątrz pętli narzędzi na Anthropic/,
+    pt: /só atua dentro de um ciclo de ferramentas na Anthropic/,
+    tr: /yalnızca Anthropic'teki bir araç döngüsü içinde çalışır/,
+    vi: /chỉ hoạt động bên trong một vòng lặp công cụ trên Anthropic/,
+  };
+  const OFRECEN = [
+    "auth.signupMedir",
+    "landing.pricing.plans.medir.body",
+    "landing.faq.items.2.a",
+    "landing.closing.sub",
+    "pricingPage.cards.medir.summary",
+  ] as const;
+
+  for (const loc of LOCALES) {
+    it(`${loc}: donde se ofrece Measure, «las mismas palancas» llevan la excepción; en las condiciones, entera`, () => {
+      const d = cargar(loc);
+      for (const k of OFRECEN) expect(d[k], `${loc} ${k}`).toContain(CORTA[loc]);
+      expect(d["pricingPage.plans.medir.body"], loc).toMatch(ENTERA[loc]);
+      // Sigue formateando (ICU) con los apóstrofos de la excepción.
+      const t = createTranslator({ locale: loc, messages: crudo(loc), onError: (e) => { throw e; } });
+      const alta = (t as unknown as (k: string, p: object) => string)("auth.signupMedir", { seats: 5, requests: "20.000", saves: VERSION_MEDIR_AHORRA });
+      expect(alta).toContain("README");
+    });
+  }
+
+  it("en/es: ningún texto público dice «the same levers» / «las mismas palancas» sin la excepción", () => {
+    const en = cargar("en");
+    const es = cargar("es");
+    expect(publicas(en).filter(([, v]) => /same levers/i.test(v) && !/exception|except that/i.test(v)).map(([k]) => k)).toEqual([]);
+    expect(publicas(es).filter(([, v]) => /mismas palancas/i.test(v) && !/excepción|salvo que/i.test(v)).map(([k]) => k)).toEqual([]);
+    expect(publicas(en).filter(([, v]) => /exactly the same levers|8 (of|out of) 60/i.test(v)).map(([k]) => k)).toEqual([]);
+  });
+
+  it("vi: «cùng các» (las mismas), no «đúng các» (exactamente las) donde se ofrece Measure", () => {
+    const vi = cargar("vi");
+    for (const k of [...OFRECEN, "pricingPage.plans.medir.body"]) expect(vi[k], k).not.toMatch(/đúng các đòn bẩy/i);
+  });
+
+  it("en/es: las condiciones dan el ahorro real con lo medido y lo estimado aparte, no todo «con el contador del proveedor»", () => {
+    const en = cargar("en")["pricingPage.plans.medir.body"]!;
+    const es = cargar("es")["pricingPage.plans.medir.body"]!;
+    expect(en).toContain("your real savings, measured and estimated kept apart;");
+    expect(en).not.toContain("measured with your provider's own counter");
+    expect(es).toContain("tu ahorro real, con lo medido y lo estimado por separado;");
+    expect(es).not.toContain("medido con el contador de tu proveedor");
   });
 });

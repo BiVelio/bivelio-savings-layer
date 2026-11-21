@@ -195,7 +195,7 @@
       "network": "Keine Verbindung. Prüf dein Netzwerk und versuch es noch mal.",
       "missingFields": "Gib deine E-Mail und dein Passwort ein."
     },
-    "signupMedir": "Oder starte gratis mit Measure: der kostenlose Cloud-Plan für kleine Teams, ohne Karte, bis zu {seats} Seats und {requests} Anfragen pro Tag, mit denselben Hebeln wie ohne Schlüssel und deiner echten Ersparnis im Dashboard. Er spart ab @bivelio/savings-layer {saves}; ältere Versionen beobachten nur.",
+    "signupMedir": "Oder starte gratis mit Measure: der kostenlose Cloud-Plan für kleine Teams, ohne Karte, bis zu {seats} Seats und {requests} Anfragen pro Tag, mit denselben Hebeln wie ohne Schlüssel (mit einer Ausnahme beim Kürzen von Tool-Ergebnissen, siehe README) und deiner echten Ersparnis im Dashboard. Er spart ab @bivelio/savings-layer {saves}; ältere Versionen beobachten nur.",
     "signupPlanPro": "Du hast {plan} gewählt — {price} pro Seat und Monat. Erstelle dein Konto, bestätige deine E-Mail, und du bezahlst im Dashboard über Stripe.",
     "signupPlanTeam": "Du hast {plan} gewählt — {price} pro Monat, {seats} Seats inklusive. Erstelle dein Konto, bestätige deine E-Mail, und du bezahlst im Dashboard über Stripe.",
     "openSourceQuestion": "Du willst nur die Open-Source-Engine?",
@@ -1362,7 +1362,7 @@
         "medir": {
           "name": "Measure",
           "price": "Kostenlos",
-          "body": "Kostenlos, ohne Karte. Der kostenlose CLOUD-Plan für kleine Teams: eine Organisation, bis zu {seats} Seats und {requests} Anfragen pro Tag. Dieselben Hebel wie Open Core ohne Schlüssel, dazu das Dashboard mit deiner echten Ersparnis; nie Teil einer Provision. Er spart ab @bivelio/savings-layer {saves}; Versionen ab {version} und vor {saves} beobachten nur.",
+          "body": "Kostenlos, ohne Karte. Der kostenlose CLOUD-Plan für kleine Teams: eine Organisation, bis zu {seats} Seats und {requests} Anfragen pro Tag. Dieselben Hebel wie Open Core ohne Schlüssel (mit einer Ausnahme beim Kürzen von Tool-Ergebnissen, siehe README), dazu das Dashboard mit deiner echten Ersparnis; nie Teil einer Provision. Er spart ab @bivelio/savings-layer {saves}; Versionen ab {version} und vor {saves} beobachten nur.",
           "cta": "Kostenlos starten →"
         },
         "pro": {
@@ -1640,7 +1640,7 @@
         },
         {
           "q": "Worin unterscheiden sich Measure und Community?",
-          "a": "Community ist die Open-Source-Engine auf deiner Infrastruktur: kein Konto, kein BiVelio-Schlüssel und standardmäßig keine Telemetrie. Measure ist der kostenlose Savings-Cloud-Plan für kleine Teams: Er braucht ein Konto, wendet dieselben Hebel an wie Community und ergänzt das Dashboard mit deiner echten Ersparnis. Mit älteren Versionen des Pakets beobachtet er nur; ab welcher Version er spart, steht auf der Preisseite."
+          "a": "Community ist die Open-Source-Engine auf deiner Infrastruktur: kein Konto, kein BiVelio-Schlüssel und standardmäßig keine Telemetrie. Measure ist der kostenlose Savings-Cloud-Plan für kleine Teams: Er braucht ein Konto, wendet dieselben Hebel an wie Community (mit einer Ausnahme beim Kürzen von Tool-Ergebnissen, siehe README) und ergänzt das Dashboard mit deiner echten Ersparnis. Mit älteren Versionen des Pakets beobachtet er nur; ab welcher Version er spart, steht auf der Preisseite."
         },
         {
           "q": "Hilft es bei einem Abo wie ChatGPT Plus?",
@@ -1664,7 +1664,7 @@
       "title": "Erst messen.",
       "titleAccent": "Dann entscheiden.",
       "titleMark": "entscheiden",
-      "sub": "Measure ist kostenlos und verlangt keine Karte: dieselben Hebel wie die Open-Source-Engine, dazu das Dashboard mit dem, was du mit deinem eigenen Traffic wirklich sparst. Die Engine ist Open Source, ihr Code liegt offen.",
+      "sub": "Measure ist kostenlos und verlangt keine Karte: dieselben Hebel wie die Open-Source-Engine (mit einer Ausnahme beim Kürzen von Tool-Ergebnissen, siehe README), dazu das Dashboard mit dem, was du mit deinem eigenen Traffic wirklich sparst. Die Engine ist Open Source, ihr Code liegt offen.",
       "repo": "Repository ansehen"
     },
     "layer": {
@@ -2287,7 +2287,7 @@
       "intro": "Vier Pläne, vom kleinsten zum größten. Pro und Team werden pro Seat bezahlt und tragen keine Provision.",
       "medir": {
         "name": "Measure",
-        "body": "<b>Kostenlos, ohne Karte.</b> Der kostenlose CLOUD-Plan für kleine Teams: eine Organisation, bis zu <b>{seats} Seats</b> und <b>{requests} Anfragen pro Tag</b>. Er wendet dieselben Hebel an wie Open Core ohne Schlüssel und ergänzt das Dashboard mit deiner echten Ersparnis, gemessen mit dem Zähler deines Anbieters; er trägt nie eine Provision. Er spart ab <b>@bivelio/savings-layer {saves}</b>. Versionen ab {version} und vor {saves} beobachten mit einem Measure-Schlüssel nur: Schattenmodus, kein Hebel angewendet, und das Dashboard zeigt, was gespart worden wäre. Die Hebel selbst brauchen keinen Plan: Open Core läuft ohne Schlüssel."
+        "body": "<b>Kostenlos, ohne Karte.</b> Der kostenlose CLOUD-Plan für kleine Teams: eine Organisation, bis zu <b>{seats} Seats</b> und <b>{requests} Anfragen pro Tag</b>. Er wendet dieselben Hebel an wie Open Core ohne Schlüssel, nur dass die Kürzung überholter Tool-Ergebnisse ausschließlich innerhalb einer Tool-Schleife auf Anthropic wirkt, und ergänzt das Dashboard mit deiner echten Ersparnis, Gemessenes und Geschätztes getrennt; er trägt nie eine Provision. Er spart ab <b>@bivelio/savings-layer {saves}</b>. Versionen ab {version} und vor {saves} beobachten mit einem Measure-Schlüssel nur: Schattenmodus, kein Hebel angewendet, und das Dashboard zeigt, was gespart worden wäre. Die Hebel selbst brauchen keinen Plan: Open Core läuft ohne Schlüssel."
       },
       "pro": {
         "name": "Pro",
@@ -2402,7 +2402,7 @@
       "provider": "Die Gebühr deckt nicht den Verbrauch bei deinem LLM-Anbieter: Den zahlst du weiterhin selbst, zu dessen Bedingungen. Beträge ohne MwSt.",
       "medir": {
         "unit": "Der kostenlose Cloud-Plan für kleine Teams.",
-        "summary": "Das Dashboard mit dem, was du wirklich sparst, und dieselben Hebel wie ohne Schlüssel. Spart ab @bivelio/savings-layer {saves}; ältere Versionen beobachten nur.",
+        "summary": "Das Dashboard mit dem, was du wirklich sparst, und dieselben Hebel wie ohne Schlüssel (mit einer Ausnahme beim Kürzen von Tool-Ergebnissen, siehe README). Spart ab @bivelio/savings-layer {saves}; ältere Versionen beobachten nur.",
         "cta": "Mit Measure starten",
         "version": "Funktioniert mit der neuesten Version von @bivelio/savings-layer."
       },

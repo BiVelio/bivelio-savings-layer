@@ -195,7 +195,7 @@
       "network": "Sense connexió. Comprova la xarxa i torna-ho a intentar.",
       "missingFields": "Escriu el teu correu i la contrasenya."
     },
-    "signupMedir": "O comença gratis amb Measure: el pla de núvol gratuït per a equips petits, sense targeta, fins a {seats} seients i {requests} peticions al dia, amb les mateixes palanques que sense clau i el teu estalvi real al tauler. Estalvia amb @bivelio/savings-layer {saves} o posterior; les versions anteriors només observen.",
+    "signupMedir": "O comença gratis amb Measure: el pla de núvol gratuït per a equips petits, sense targeta, fins a {seats} seients i {requests} peticions al dia, amb les mateixes palanques que sense clau (amb una excepció en el retall de resultats d'eines, explicada al README) i el teu estalvi real al tauler. Estalvia amb @bivelio/savings-layer {saves} o posterior; les versions anteriors només observen.",
     "signupPlanPro": "Has triat {plan} — {price} per seient i mes. Crea el compte, confirma el correu i pagaràs des del panell, amb Stripe.",
     "signupPlanTeam": "Has triat {plan} — {price} al mes, amb {seats} seients inclosos. Crea el compte, confirma el correu i pagaràs des del panell, amb Stripe.",
     "openSourceQuestion": "Només vols el motor open source?",
@@ -1362,7 +1362,7 @@
         "medir": {
           "name": "Measure",
           "price": "Gratis",
-          "body": "Gratis, sense targeta. El pla de NÚVOL gratuït, per a equips petits: una organització, fins a {seats} seients i {requests} peticions al dia. Les mateixes palanques que l'open core sense clau, més el tauler amb el teu estalvi real; mai no entra en cap comissió. Estalvia amb @bivelio/savings-layer {saves} o posterior; les versions des de la {version} fins abans de la {saves} només observen.",
+          "body": "Gratis, sense targeta. El pla de NÚVOL gratuït, per a equips petits: una organització, fins a {seats} seients i {requests} peticions al dia. Les mateixes palanques que l'open core sense clau (amb una excepció en el retall de resultats d'eines, explicada al README), més el tauler amb el teu estalvi real; mai no entra en cap comissió. Estalvia amb @bivelio/savings-layer {saves} o posterior; les versions des de la {version} fins abans de la {saves} només observen.",
           "cta": "Comença gratis →"
         },
         "pro": {
@@ -1640,7 +1640,7 @@
         },
         {
           "q": "En què es diferencien Measure i Community?",
-          "a": "Community és el motor open source a la teva infraestructura: sense compte, sense clau de BiVelio i sense telemetria per defecte. Measure és el pla gratuït de Savings Cloud per a equips petits: necessita compte, aplica les mateixes palanques que Community i hi afegeix el tauler amb el teu estalvi real. Amb versions antigues del paquet només observa; la pàgina de preus diu des de quina versió estalvia."
+          "a": "Community és el motor open source a la teva infraestructura: sense compte, sense clau de BiVelio i sense telemetria per defecte. Measure és el pla gratuït de Savings Cloud per a equips petits: necessita compte, aplica les mateixes palanques que Community (amb una excepció en el retall de resultats d'eines, explicada al README) i hi afegeix el tauler amb el teu estalvi real. Amb versions antigues del paquet només observa; la pàgina de preus diu des de quina versió estalvia."
         },
         {
           "q": "Serveix per a una subscripció com ChatGPT Plus?",
@@ -1664,7 +1664,7 @@
       "title": "Mesura primer.",
       "titleAccent": "Decideix després.",
       "titleMark": "després",
-      "sub": "Measure és gratuït i no demana targeta: les mateixes palanques que el motor open source, més el tauler amb el que estalvies de veritat amb el teu propi trànsit. El motor és open source i el seu codi és a la vista.",
+      "sub": "Measure és gratuït i no demana targeta: les mateixes palanques que el motor open source (amb una excepció en el retall de resultats d'eines, explicada al README), més el tauler amb el que estalvies de veritat amb el teu propi trànsit. El motor és open source i el seu codi és a la vista.",
       "repo": "Veure el repositori"
     },
     "layer": {
@@ -2287,7 +2287,7 @@
       "intro": "Quatre plans, de menys a més. Pro i Team es paguen per seient i no porten comissió.",
       "medir": {
         "name": "Measure",
-        "body": "<b>Gratis, sense targeta.</b> El pla de NÚVOL gratuït, per a equips petits: una organització, fins a <b>{seats} seients</b> i <b>{requests} peticions al dia</b>. Aplica les mateixes palanques que l'open core sense clau i hi afegeix el tauler amb el teu estalvi real, mesurat amb el comptador del teu proveïdor; mai no porta comissió. Estalvia amb <b>@bivelio/savings-layer {saves} o posterior</b>. Les versions des de la {version} fins abans de la {saves} només observen amb una clau de Measure: mode ombra, cap palanca aplicada, i el tauler mostra què s'hauria estalviat. Les palanques en si no necessiten cap pla: l'open core corre sense clau."
+        "body": "<b>Gratis, sense targeta.</b> El pla de NÚVOL gratuït, per a equips petits: una organització, fins a <b>{seats} seients</b> i <b>{requests} peticions al dia</b>. Aplica les mateixes palanques que l'open core sense clau, excepte que el retall de resultats d'eines ja substituïts només actua dins d'un bucle d'eines a Anthropic, i hi afegeix el tauler amb el teu estalvi real, amb el que s'ha mesurat i el que s'ha estimat per separat; mai no porta comissió. Estalvia amb <b>@bivelio/savings-layer {saves} o posterior</b>. Les versions des de la {version} fins abans de la {saves} només observen amb una clau de Measure: mode ombra, cap palanca aplicada, i el tauler mostra què s'hauria estalviat. Les palanques en si no necessiten cap pla: l'open core corre sense clau."
       },
       "pro": {
         "name": "Pro",
@@ -2402,7 +2402,7 @@
       "provider": "La quota no inclou el consum del teu proveïdor de LLM: el continues pagant tu, amb les seves condicions. Imports sense IVA.",
       "medir": {
         "unit": "El pla gratuït del núvol, per a equips petits.",
-        "summary": "El tauler amb el que estalvies de veritat, i les mateixes palanques que sense clau. Estalvia amb @bivelio/savings-layer {saves} o posterior; les versions anteriors només observen.",
+        "summary": "El tauler amb el que estalvies de veritat, i les mateixes palanques que sense clau (amb una excepció en el retall de resultats d'eines, explicada al README). Estalvia amb @bivelio/savings-layer {saves} o posterior; les versions anteriors només observen.",
         "cta": "Comença amb Measure",
         "version": "Funciona amb la darrera versió de @bivelio/savings-layer."
       },
