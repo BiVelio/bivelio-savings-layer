@@ -412,16 +412,8 @@ describe("banco público: el banco semanal en vivo (su propia sección)", () => 
 
   it("Gemini: el primer semanal con Gemini nativo re-mide en Flash lo que su resumen cuenta; Pro, sin medir por cuota", () => {
     const t = traductor("es");
-    // La tirada del 2026-10-01 (5bec174): la primera con Gemini nativo, y la
-    // última publicada que pudo medir Gemini. La de la 1.2.3 (2026-11-20) es
-    // más reciente, pero no midió ningún modelo de Gemini (crédito de prepago
-    // agotado, cuota diaria): no puede re-medir nada de esa familia.
-    const ultima = BANCO.semanales.find((s) => s.ruta === "docs/benchmarks/2026-10-01/banco-semanal-5bec174.json")!;
-    expect(ultima).toBeDefined();
-    const masReciente = BANCO.semanales[0]!;
-    if (masReciente.ruta !== ultima.ruta) {
-      for (const c of masReciente.celdas.filter((x) => x.modelo.startsWith("google/"))) expect(c.estado, `${c.bateria} ${c.modelo}`).not.toBe("medida");
-    }
+    const ultima = BANCO.semanales[0]!;
+    expect(ultima.ruta).toBe("docs/benchmarks/2026-10-01/banco-semanal-5bec174.json");
     const j = crudo(ultima.ruta);
     const celda = (b: string, m: string) => j.resultados.find((x: J) => x.bateria === b && x.modelo === m);
     const FLASH = "google/gemini-3.8-flash";
