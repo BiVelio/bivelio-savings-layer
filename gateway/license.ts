@@ -314,6 +314,13 @@ export interface FailureContext {
   graceDays?: number;
   cause?: string;
   keyLooksLikeLicense?: boolean;
+  /**
+   * BIVELIO_SERVICE_KEY está puesta. Solo entonces «quita BIVELIO_LICENSE_KEY y
+   * el gateway recoge la licencia online» es verdad: sin clave de servicio no
+   * hay nada que recoger, y quitarla deja el gateway en modo comunitario (e2e
+   * del 22-11). Sin el dato, el texto no lo afirma.
+   */
+  serviceKeySet?: boolean;
 }
 
 /** UTC YYYY-MM-DD. */
@@ -393,13 +400,18 @@ export function startupFailureMessage(code: StartupFailureCode, ctx: FailureCont
         return (
           "BIVELIO_LICENSE_KEY is not a license key: a license key has three dot-separated parts and several " +
           "hundred characters. Did you paste the bvk_ service key by mistake? That one goes in " +
-          `BIVELIO_SERVICE_KEY; the license key is the other value on ${INSTALL_URL}. Or unset ` +
-          `BIVELIO_LICENSE_KEY: the gateway collects the license online by itself. ${SALIDA_GRATUITA}`
+          `BIVELIO_SERVICE_KEY; the license key is the other value on ${INSTALL_URL}.` +
+          (ctx.serviceKeySet === true
+            ? " Or unset BIVELIO_LICENSE_KEY: with your service key the gateway collects the license online by itself."
+            : "") +
+          ` ${SALIDA_GRATUITA}`
         );
       }
       return (
         `BIVELIO_LICENSE_KEY does not verify against this build's BiVelio key (${reason}). Copy the WHOLE key ` +
-        `again from ${INSTALL_URL}, or unset BIVELIO_LICENSE_KEY to collect it online; if it persists, update ` +
+        `again from ${INSTALL_URL}` +
+        (ctx.serviceKeySet === true ? ", or unset BIVELIO_LICENSE_KEY to collect it online with your service key" : "") +
+        "; if it persists, update " +
         `@bivelio/savings-layer or write to support@bivelio.com. ${SALIDA_GRATUITA}`
       );
     }
@@ -435,6 +447,41 @@ export function licenseLine(
     return `license: ${plan}, IN GRACE: expired on ${e}, keeps working until ${g}. Renew at ${ACCOUNT_URL} (${origen})`;
   }
   return `license: ${plan}, active until ${e} (+${d} ${d === 1 ? "day" : "days"} grace), ${origen}`;
+}
+
+/**
+ * Los marcadores de ejemplo que se escriben donde va una clave de servicio. Las
+ * claves reales son `bvk_` + base64url (apps/web/app/api/service-accounts:
+ * `randomBytes(24).toString("base64url")`): un carácter fuera de ese alfabeto
+ * (`.`, `<`, `>`, `{`, `$`, `*`…) solo sale de un ejemplo. Y dentro del
+ * alfabeto, las palabras de relleno de siempre, comparadas ENTERAS (sin
+ * mayúsculas, `_` ni `-`): una clave aleatoria de 32 caracteres no coincide con
+ * una palabra completa. Las cortas de las pruebas (`bvk_test`, `bvk_x`) siguen
+ * siendo claves.
+ */
+const PALABRAS_DE_MARCADOR: ReadonlySet<string> = new Set([
+  "key",
+  "yourkey",
+  "yourkeyhere",
+  "yourservicekey",
+  "yourservicekeyhere",
+  "yourbvkkey",
+  "yourbiveliokey",
+  "yourbivelioservicekey",
+  "servicekey",
+  "placeholder",
+  "changeme",
+  "replaceme",
+  "example",
+  "redacted",
+]);
+
+/** ¿Es `key` (ya empieza por `bvk_` y es ASCII visible) un marcador de ejemplo y no una clave? */
+export function esMarcadorDeClave(key: string): boolean {
+  const cuerpo = key.slice("bvk_".length);
+  if (!/^[A-Za-z0-9_-]+$/.test(cuerpo)) return true;
+  const palabra = cuerpo.toLowerCase().replace(/[_-]/g, "");
+  return /^x{2,}$/.test(palabra) || PALABRAS_DE_MARCADOR.has(palabra);
 }
 
 const fallo = (code: StartupFailureCode, ctx?: FailureContext): StartupResult => ({
@@ -483,7 +530,12 @@ export async function resolveStartupLicense(input: StartupInput): Promise<Startu
         };
       }
       if (c.shape !== "empty") {
-        return fallo("license-invalid", { tokenSource: "BIVELIO_LICENSE_KEY", shape: c.shape, reason: c.reason });
+        return fallo("license-invalid", {
+          tokenSource: "BIVELIO_LICENSE_KEY",
+          shape: c.shape,
+          reason: c.reason,
+          serviceKeySet: false,
+        });
       }
       // `BIVELIO_LICENSE_KEY` vacío tras normalizar: comunidad, igual que no tenerlo.
     }
@@ -499,8 +551,10 @@ export async function resolveStartupLicense(input: StartupInput): Promise<Startu
   }
   // Solo ASCII visible: un marcador pegado de un ejemplo (`bvk_…`) no es una
   // clave, y como cabecera HTTP fallaba como «network error: Cannot convert
-  // argument to a ByteString…» y mandaba a revisar la conexión.
-  if (!key.startsWith("bvk_") || !/^[\x21-\x7e]+$/.test(key)) {
+  // argument to a ByteString…» y mandaba a revisar la conexión. Y tampoco un
+  // marcador ASCII (`bvk_...`, `bvk_<your key>`, `bvk_xxx`, `bvk_YOUR_KEY`):
+  // pasaba el filtro y viajaba a savings.bivelio.com (e2e del 22-11).
+  if (!key.startsWith("bvk_") || !/^[\x21-\x7e]+$/.test(key) || esMarcadorDeClave(key)) {
     return fallo("service-key-malformed", {
       keyLooksLikeLicense: licenseKeyShape(normalizeLicenseKey(key)) === "token",
     });
@@ -513,7 +567,12 @@ export async function resolveStartupLicense(input: StartupInput): Promise<Startu
     const c = verifyGatewayLicense(input.licenseKey, publicKey);
     if (c.ok) offline = c.license;
     else if (c.shape !== "empty") {
-      return fallo("license-invalid", { tokenSource: "BIVELIO_LICENSE_KEY", shape: c.shape, reason: c.reason });
+      return fallo("license-invalid", {
+        tokenSource: "BIVELIO_LICENSE_KEY",
+        shape: c.shape,
+        reason: c.reason,
+        serviceKeySet: true,
+      });
     }
   }
   const offlineConcede = offline !== null && concede(licenseState(offline.payload, now()));
