@@ -86,6 +86,17 @@ def test_otro_proveedor_que_el_del_gateway_se_niega(fake_gateway):
     assert original.llamadas == []
 
 
+def test_otro_proveedor_da_la_orden_que_funciona_tras_pip(fake_gateway):
+    # E2E 1.2.4: decía `bvsala gateway --upstream …`, que tras `pip install` no
+    # está en el PATH (es el binario del paquete de npm). La del README, con npx.
+    fake_gateway.upstream = "https://api.anthropic.com"
+    with pytest.raises(GatewayMismatch) as e:
+        Gateway(fake_gateway.url).wrap(OpenAI("https://api.openai.com/v1/"))
+    m = str(e.value)
+    assert "`npx @bivelio/savings-layer gateway --upstream https://api.openai.com --port <free port>`" in m
+    assert "`bvsala gateway" not in m
+
+
 def test_un_cliente_que_ya_apunta_al_gateway_solo_pide_informe(fake_gateway):
     fake_gateway.upstream = "https://otra-cosa.example"
     copia = Gateway(fake_gateway.url).wrap(OpenAI(f"{fake_gateway.url}/v1/"))
@@ -170,7 +181,12 @@ def test_sdk_anthropic_de_verdad(fake_gateway):
     r = fake_gateway.received[-1]
     assert r["path"] == "/v1/messages"
     assert r["headers"]["x-bvsala-report"] == "1"
-    assert r["headers"]["x-api-key"] == "test-anthropic-key"
+    # La credencial del cliente viaja al gateway, que la reenvía; el paquete no
+    # la toca. Cómo la manda depende del SDK: anthropic 1.x en `x-api-key`;
+    # 2.x en `Authorization: Bearer` (E2E 1.2.4: con 2.12.0 esto fallaba con
+    # KeyError). Exactamente una de las dos formas, con la clave exacta.
+    credencial = (r["headers"].get("x-api-key"), r["headers"].get("authorization"))
+    assert credencial in {("test-anthropic-key", None), (None, "Bearer test-anthropic-key")}, credencial
     assert gw.report(msg).response_id == msg.id
 
     with client.messages.stream(model="claude-haiku-4-5", max_tokens=16, messages=[{"role": "user", "content": "Hi"}]) as s:

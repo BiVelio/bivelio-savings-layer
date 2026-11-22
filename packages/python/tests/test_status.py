@@ -52,6 +52,18 @@ def test_sin_gateway_no_hay_camino_alternativo():
     assert "--upstream openai" in str(e.value)
 
 
+# E2E 1.2.4: los mensajes mandaban a quien instaló con pip a ejecutar
+# `bvsala gateway`, que no está en su PATH (es el binario del paquete de npm):
+# «command not found». La orden que funciona es la del README, con npx.
+def test_sin_gateway_da_la_orden_que_funciona_tras_pip():
+    with pytest.raises(GatewayUnavailable) as e:
+        Gateway("http://127.0.0.1:9").status()
+    m = str(e.value)
+    assert "`npx @bivelio/savings-layer gateway` (Anthropic, port 8402)" in m
+    assert "`npx @bivelio/savings-layer gateway --upstream openai --port 8403`" in m
+    assert "`bvsala gateway" not in m
+
+
 @pytest.mark.parametrize("cuerpo, codigo", [({"error": "not found"}, 404), ({"hola": 1}, 200), ({"schema": "otro/9"}, 200)])
 def test_un_gateway_viejo_o_ajeno_se_dice(fake_gateway, cuerpo, codigo):
     fake_gateway.status_body = cuerpo
