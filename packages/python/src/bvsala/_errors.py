@@ -11,12 +11,16 @@ class GatewayUnavailable(BvsalaError):
     """No bvsala gateway with local reports answered at the configured URL.
 
     The client never falls back to calling the provider directly: without the
-    gateway there is no license check and no measurement, so it refuses instead.
+    gateway nothing is measured, so it refuses instead.
     """
 
 
 class LicenseInactive(BvsalaError):
-    """The gateway is running but its BiVelio license does not serve new requests."""
+    """The gateway is running but its BiVelio license does not serve new requests.
+
+    Only a gateway started with a BiVelio key has a license that can stop
+    serving; with no key (COMMUNITY mode) it always serves.
+    """
 
     def __init__(self, state: str, message: str) -> None:
         super().__init__(message)

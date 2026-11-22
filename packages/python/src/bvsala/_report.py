@@ -95,7 +95,8 @@ class Report:
     cost: Optional[Cost]
     tokens: Optional[Tokens]
     calls: Optional[Calls]
-    #: The full ``SavingsReport`` as the gateway queued it for your dashboard (camelCase keys).
+    #: The full ``SavingsReport`` the gateway recorded (camelCase keys); with a
+    #: BiVelio key, the same one your dashboard receives.
     raw_report: Optional[Mapping[str, Any]] = field(default=None, repr=False)
 
     @property
@@ -193,13 +194,21 @@ class GatewayStatus:
     license_state: str
     license_plan: Optional[str]
     license_expires_at: Optional[str]
-    #: False when the gateway has no service key: then nothing is measured or recorded.
+    #: Whether the gateway measures requests with the provider's usage counter.
+    #: Gateways 1.2.3 and later always say True, with or without a BiVelio key:
+    #: with none (COMMUNITY mode) they measure on this machine, and a key only
+    #: adds sending the usage to your dashboard. Older gateways said False when
+    #: they had no service key.
     metering: bool
     raw: Mapping[str, Any] = field(default_factory=dict, repr=False)
 
     @property
     def serving(self) -> bool:
-        """Whether the license serves new requests (active, or in its grace period)."""
+        """Whether the gateway serves new requests: license active, or in its grace period.
+
+        A gateway with no BiVelio key (COMMUNITY mode) reports an active
+        ``community`` license and always serves.
+        """
         return self.license_state in ("active", "grace")
 
 

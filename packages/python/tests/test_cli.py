@@ -82,3 +82,22 @@ def test_ningun_mensaje_del_cliente_pide_una_clave_para_el_gateway():
         texto = py.read_text(encoding="utf-8")
         assert "needs BIVELIO_SERVICE_KEY" not in texto, py.name
         assert "no BIVELIO_SERVICE_KEY" not in texto, py.name
+
+
+# E2E 1.2.4: las docstrings seguían en la 1.2.2. `help(bvsala)` decía que el
+# gateway «holds the BiVelio license» y que el informe era el de «your
+# dashboard», y `GatewayStatus.metering`, que sin clave de servicio «nothing is
+# measured or recorded». Sin clave el gateway mide en local; la clave añade la nube.
+def test_la_ayuda_dice_que_sin_clave_se_mide():
+    import pathlib
+
+    import bvsala
+
+    raiz = pathlib.Path(bvsala.__file__).parent
+    fuentes = "".join(py.read_text(encoding="utf-8") for py in sorted(raiz.glob("*.py")))
+    for vieja in ("nothing is measured or recorded", "holds the BiVelio license", "recorded for your dashboard",
+                  "queued it for your dashboard", "no license check"):
+        assert vieja not in fuentes, vieja
+    doc = " ".join((bvsala.__doc__ or "").split())
+    assert "It needs no key: with none it runs free in COMMUNITY mode and measures on your machine" in doc
+    assert "npx @bivelio/savings-layer gateway" in doc
