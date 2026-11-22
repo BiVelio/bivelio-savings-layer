@@ -470,6 +470,8 @@ describe("⛔ nada de lo que viaja en el tarball vuelve a «solo cuentas y coste
     expect(plano(licencia)).toContain(
       "the BiVelio dashboard, cloud metering, organization entitlements, license management and support (the \"Cloud Services\")",
     );
-    expect(plano(leer("../NOTICE"))).toContain("(dashboard, metering, organization entitlements, license management)");
+    // «cloud metering», como LICENSE-CLOUD.md: medir en local es gratis y sin
+    // clave (prueba de extremo a extremo del tarball 1.2.4).
+    expect(plano(leer("../NOTICE"))).toContain("(dashboard, cloud metering, organization entitlements, license management)");
   });
 });

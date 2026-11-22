@@ -157,13 +157,11 @@ beforeAll(() => {
   // 1) El fragmento del README, EJECUTADO. Los `import` se izan (dentro de un
   //    bloque son un error de sintaxis) y el resto va en un try/catch, que es lo
   //    único que hay que añadirle para poder mirar el error que recibe el cliente.
-  const imports: string[] = [
-    'import { writeFileSync } from "node:fs";',
-    // El bloque del README no repite el import (el test de fragmentos lo concatena
-    // con el bloque «Wrap the call», que sí lo trae): aquí se inyecta, como haría
-    // quien pega los dos bloques en orden.
-    'import { createSavingsLayer, OpenAICompatibleProvider } from "@bivelio/savings-layer";',
-  ];
+  //    El bloque trae su propio `import` y aquí NO se le inyecta ninguno: hasta la
+  //    1.2.4 se le añadía, y por eso nadie vio que, pegado solo, daba
+  //    `ReferenceError: OpenAICompatibleProvider is not defined` (prueba de
+  //    extremo a extremo del tarball 1.2.4). Sin su import, el hijo muere aquí.
+  const imports: string[] = ['import { writeFileSync } from "node:fs";'];
   const cuerpo = bloqueDelReadme()
     .split("\n")
     .filter((linea) => {

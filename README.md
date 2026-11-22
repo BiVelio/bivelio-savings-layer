@@ -26,10 +26,17 @@ npm i @bivelio/savings-layer         # the SDK, in your TypeScript/JavaScript ap
 npx @bivelio/savings-layer claude    # or meter Claude Code through the local gateway (also codex, gemini, qwen, aider)
 ```
 
+On AI SDK 5, LangChain 0.3 or Mastra < 1.68, npm stops with `ERESOLVE`: add
+`--legacy-peer-deps` (the SDK and the gateway work there; that framework's adapter does not).
+
 - **Free, with no key.** The open core is the whole savings layer, Apache-2.0. The SDK:
-  install it and it saves where your traffic repeats (identical or simultaneous requests)
-  and, on Anthropic, where your system prompt is long and stable; traffic that never
-  repeats saves about 0 % by default. With a coding agent, the local gateway measures
+  install it and it saves where your traffic repeats (identical requests, or simultaneous
+  ones when the first is not streamed) and, on Anthropic, where your system prompt is long
+  and stable; traffic that never repeats saves about 0 % by default. One exception costs
+  more: on Anthropic, a long system prompt that changes on every request (a timestamp, a
+  user id) costs about 20 % more than no layer. Keep the system prompt identical and put
+  what changes in the user message, or pass `maxCacheBreakpoints: 0` to
+  `AnthropicProvider`. With a coding agent, the local gateway measures
   your spend on your machine, request by request; its cache-write TTL lever saves only
   when your client pays per token and asks for the one-hour cache. No key, no signup, no
   telemetry, and nothing is sent to BiVelio.
@@ -63,11 +70,12 @@ tool-output and context compaction, the model cascade, the cacheable-prefix reor
 compressor: compaction is a lossless rewrite of JSON tool outputs that runs only when you
 switch it on, and no compression figure is published. In the local gateway, every gateway lever is free, with no key; one is on by default (cache TTL tuning) and the others you switch on.
 
-How much it saves depends on your traffic. Identical or simultaneous requests are not
-paid twice, and a long, stable system prompt on Anthropic is billed at the cached rate.
+How much it saves depends on your traffic. Identical requests are not paid twice, and
+neither are simultaneous ones unless the first is streamed (then each one is paid). A
+long, stable system prompt on Anthropic is billed at the cached rate.
 Requests that are all different, a high `temperature`, questions with freshness words
 ("today", "price"), or personal wording ("my") without a `context.sessionId` are never
-answered from the cache: about 0 % by default.
+answered from the cache: about 0 % by default (the Anthropic case above costs more).
 
 It is not a promise you take on faith: every saving is split into four ledgers
 (`avoided_calls`, `eliminated_tokens`, `compressed_tokens`, `provider_cached_tokens`)
@@ -84,7 +92,7 @@ cloud key sends are in [LICENSE-CLOUD.md](https://github.com/BiVelio/bivelio-sav
   41 points of which are a descriptive contrast of Anthropic's cache pricing, not an
   isolated effect of the layer), with bootstrap intervals; the equal-family means
   (22.88 % / 70.71 %) are reported separately, as they should be. Traffic that never
-  repeats saves about 0 %.
+  repeats saves about 0 %, except the Anthropic case above, which costs more.
 - **Exploratory live A/B (20 requests per arm)** on the provider's own counters
   (`claude-haiku-4-5`), with the opt-in `savings.cachePrefix: true` against the layer
   itself without that option — not against calling the provider directly: the
@@ -103,9 +111,12 @@ arXiv-ready LaTeX in [`docs/paper/main.tex`](https://github.com/BiVelio/bivelio-
 ### Install anywhere, in 60 seconds
 
 ```shell
-# 1 · Any OpenAI SDK, any language — point it at the local gateway (Python, Node, Cursor, Aider, Cline, OpenWebUI…)
-npx @bivelio/savings-layer gateway --upstream openai --port 8403     # or: deepseek | qwen | glm | moonshot | gemini | ollama | vllm | lmstudio
+# 1 · Any OpenAI SDK, any language — point it at the local gateway (Python, Node, Cursor, Aider, OpenWebUI…)
+npx @bivelio/savings-layer gateway --upstream openai --port 8403     # or: deepseek | moonshot | minimax | ollama | vllm | lmstudio
 #    python: OpenAI(base_url="http://127.0.0.1:8403/v1")
+#    qwen | glm | gemini | openrouter: their own path instead of /v1 (the gateway keeps the path):
+#    http://127.0.0.1:8403/compatible-mode/v1 | /api/paas/v4 | /v1beta/openai | /api/v1
+#    Cline uses the Anthropic gateway (:8402): `bvsala doctor` prints its setup.
 
 # 2 · Coding agents, one command, zero configuration
 npx @bivelio/savings-layer claude      # Claude Code through the gateway
@@ -123,9 +134,9 @@ npm i @bivelio/savings-layer
 ```
 
 ```ts
-// The imports come from the "Wrap the call" block below; this block compiles
-// together with it (the repo test concatenates every README block into one
-// program, as if you pasted them in order).
+// ESM only: put it in a "type": "module" project or a .mts file.
+import { createSavingsLayer, OpenAICompatibleProvider } from "@bivelio/savings-layer";
+
 const provider = new OpenAICompatibleProvider({
   baseUrl: "https://api.openai.com/v1",
   apiKey: process.env.OPENAI_API_KEY,
@@ -477,7 +488,7 @@ const { text, report } = await layer.generate({
 
 console.log(text);                    // "8"  (computed locally — no LLM call)
 console.log(report.calls.avoidedLlm); // → 1: a whole call you never paid for
-console.log(report.cost.netSavingsRatio); // → 0..1 ratio of the baseline you did not pay (1 here)
+console.log(report.cost.netSavingsRatio); // → share of the baseline you did not pay (1 here; below 0 if the layer cost more)
 console.log(report.cost.netSavingsUsd);   // → the same saving in USD (baselineEstimate − actual)
 console.log(report.cost.basis);       // → "estimated": nothing ran, so there is no provider counter
 ```
@@ -613,7 +624,9 @@ a request declared `deferrable`, the answer is produced exactly as `generate()` 
 and arrives as a single `text` event. Breaking out of the loop while the provider is
 still writing cancels its request, and nothing is cached or recorded; once its answer
 is complete, or when it arrives in one piece, nothing is cancelled.
-`await stream.result` tells you which happened.
+`await stream.result` tells you which happened. A stream joins an identical `generate()`
+already in flight, but nothing joins a stream: an identical request started while it runs
+is paid again. Once it has finished, a repeat is served from the exact cache.
 
 </details>
 
@@ -627,8 +640,8 @@ point, from a subpath of this same package. The four adapters behave alike:
 
 - **They answer without calling the model when they can** — a computed answer (the
   arithmetic above, when the request is that bare question), an exact repeat of a request that already ran, an identical
-  request already in flight — and otherwise let your framework make exactly the call
-  it was going to make. They never rewrite what your framework sends.
+  request already in flight (not in Mastra, nor when that one is a stream) — and otherwise
+  let your framework make exactly the call it was going to make. They never rewrite what your framework sends.
 - **Tools are treated as having side effects** unless you list them in
   `readOnlyTools`: a request that offers any other tool is never answered from a
   cache, because the action has to run.
@@ -905,7 +918,7 @@ Each one, in full, on GitHub:
   with dynamic hostnames**, so each replica counts as what it is:
 
 ```bash
-BVSALA_SEAT_ID=worker-03   # stable per replica; [A-Za-z0-9._:/-], max 128 chars
+export BVSALA_SEAT_ID=worker-03   # stable per replica; [A-Za-z0-9._:/-], max 128 chars
 ```
 
 </details>

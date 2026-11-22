@@ -176,8 +176,10 @@ export interface SavingsToggles {
   exactCache?: boolean;
   /**
    * OPT-IN. Reuse the answer to an earlier, reworded version of this request.
-   * Needs a semantic cache on the layer (`createSavingsLayer({ semanticCache })`)
-   * and a license that includes it.
+   * Needs a semantic cache store on the layer
+   * (`createSavingsLayer({ semanticCacheStore })`), and that store serves only once
+   * it is calibrated on your traffic (without `calibration` it runs in shadow).
+   * Free, with no key.
    *
    * - `true` and `"safe-only"` are the same setting: single-shot requests only.
    * - `"include-agentic"` also admits agentic requests: those that declare tools
