@@ -5,6 +5,7 @@ import { afterEach, beforeEach, describe, expect, it, vi, type MockInstance } fr
 
 import { CABECERA_ID_DE_PETICION, CABECERA_PIDE_INFORME, type InformeLocal } from "../gateway/informes-locales.js";
 import { MOTIVO_CORTE_DEL_PROVEEDOR, arrancarGateway, type GatewayArrancado } from "../gateway/servidor.js";
+import { costeMedido } from "../gateway/medidor.js";
 import { resumenDeMedicion } from "../gateway/recuento.js";
 import { reiniciarAvisos } from "../src/util/warn-once.js";
 
@@ -214,5 +215,80 @@ describe("e2e 22-11 · un corte a mitad de stream deja la línea y el motivo doc
   it("el motivo es, letra por letra, la primera fila de la tabla de docs/terminales/README.md", () => {
     const guia = readFileSync(fileURLToPath(new URL("../docs/terminales/README.md", import.meta.url)), "utf8");
     expect(guia).toContain(`| \`${MOTIVO_CORTE_DEL_PROVEEDOR}\` |`);
+  });
+});
+
+/**
+ * REVISIÓN DEL PR #617 · UN CORTE DESPUÉS DEL USAGE FINAL SE MIDE. Un proxy
+ * HTTP/1.1 defectuoso entrega el SSE ENTERO (message_delta con su usage y
+ * message_stop) y cierra el socket sin el trozo final del chunked: undici lanza
+ * «terminated». El proveedor facturó la respuesta entera, pero la rama del corte
+ * no la medía y decía en log, informe y resumen «cut the answer before its final
+ * usage», que es falso. Ahora se mide como la rama del cliente que cierra tras el
+ * usage final (las mismas llamadas, sin rebaja), y el motivo del corte queda
+ * solo para cuando no se leyó ningún usage final (el bloque de arriba).
+ */
+describe("revisión #617 · el proveedor corta DESPUÉS del usage final: se mide con su usage", () => {
+  const ev = (tipo: string, datos: unknown) => `event: ${tipo}\ndata: ${JSON.stringify(datos)}\n\n`;
+  const USO = { input_tokens: 12, output_tokens: 7 };
+  const SSE_COMPLETO =
+    INICIO_SSE +
+    ev("content_block_start", { type: "content_block_start", index: 0, content_block: { type: "text", text: "" } }) +
+    ev("content_block_delta", { type: "content_block_delta", index: 0, delta: { type: "text_delta", text: "hola" } }) +
+    ev("content_block_stop", { type: "content_block_stop", index: 0 }) +
+    ev("message_delta", { type: "message_delta", delta: { stop_reason: "end_turn" }, usage: USO }) +
+    ev("message_stop", { type: "message_stop" });
+
+  /** Todo el SSE, usage final incluido, y el socket destruido sin el trozo final del chunked. */
+  function upstreamCompletoYReset(): Promise<number> {
+    return new Promise((resolve) => {
+      const s = createServer((req, res) => {
+        req.resume();
+        req.on("end", () => {
+          res.writeHead(200, { "content-type": "text/event-stream" });
+          res.write(SSE_COMPLETO);
+          setTimeout(() => res.destroy(), 30);
+        });
+      });
+      recursos.push(s);
+      s.listen(0, "127.0.0.1", () => resolve((s.address() as { port: number }).port));
+    });
+  }
+
+  it("⛔ se mide con el usage del proveedor; ni «not metered» ni el motivo del corte en log, informe o resumen", async () => {
+    const upstream = await upstreamCompletoYReset();
+    const lineas: string[] = [];
+    const gw = await arrancarGateway({ puerto: 0, upstream: `http://127.0.0.1:${upstream}`, log: (l) => lineas.push(l) });
+    recursos.push(gw);
+    const r = await fetch(`http://127.0.0.1:${gw.puerto}/v1/messages`, {
+      method: "POST",
+      headers: { "content-type": "application/json", [CABECERA_PIDE_INFORME]: "1" },
+      body: JSON.stringify({ model: "claude-sonnet-4-6", max_tokens: 50, stream: true, messages: [] }),
+    });
+    expect(r.status).toBe(200);
+    const id = r.headers.get(CABECERA_ID_DE_PETICION);
+    expect(id).not.toBeNull();
+    // El cliente sigue viendo el corte de transporte, como lo vería sin gateway.
+    await expect(r.text()).rejects.toThrow();
+
+    const informe = (await (
+      await fetch(`http://127.0.0.1:${gw.puerto}/_bvsala/v1/reports/${id}?wait_ms=2000`)
+    ).json()) as InformeLocal;
+    expect(informe.status, JSON.stringify(informe)).toBe("metered");
+    expect(informe.reason).toBeNull();
+    const esperado = costeMedido("claude-sonnet-4-6", USO)!.costeUsd;
+    expect(esperado).toBeGreaterThan(0);
+    expect(informe.report!.cost.actual).toBeCloseTo(esperado, 12);
+
+    const e = gw.medicion();
+    expect(e.medidas).toBe(1);
+    expect(e.noMedidas).toEqual({});
+    expect(e.dinero.gastoUsd).toBeCloseTo(esperado, 12);
+    const todo = lineas.join("\n");
+    expect(todo).not.toContain("not metered");
+    expect(todo).not.toContain(MOTIVO_CORTE_DEL_PROVEEDOR);
+    expect(todo).toContain("→ 200 (stream) · the provider closed the connection after the final usage; metered anyway · detail: ");
+    expect(todo).toMatch(/\[gateway\] POST \/v1\/messages +· claude-sonnet-4-6 · \$[\d.]+ \(in 12, .*out 7\)/);
+    expect(resumenDeMedicion(e, "gateway")).not.toContain(MOTIVO_CORTE_DEL_PROVEEDOR);
   });
 });

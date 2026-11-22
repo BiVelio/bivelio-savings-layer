@@ -86,8 +86,9 @@ export interface OpcionesDeResumen {
    */
   soloObservar?: boolean;
   /**
-   * `BVSALA_GATEWAY_ELISION=0`: el freno de emergencia apagó todas las
-   * palancas, así que el «saved $0.00» lo explica ESO y no la regla de la
+   * `BVSALA_GATEWAY_ELISION=0`: el freno de emergencia apagó las palancas de
+   * ahorro (TTL, hermano, esfuerzo, diales; la coalescencia no cuelga de él),
+   * así que el «saved $0.00» lo explica ESO y no la regla de la
    * rebaja de TTL (e2e del 22-11: una petición que cumplía todas las
    * condiciones de esa regla leía que no las cumplía).
    */
@@ -220,15 +221,20 @@ export function fraseDeDinero(e: EstadoDeMedicion, opciones?: OpcionesDeResumen)
         ? "saved $0.00: observe-only mode (BVSALA_GATEWAY_OBSERVE_ONLY=1) applies no lever; what they would have " +
             "saved is in the per-request `measure (shadow)` lines, never counted as a saving"
         : opciones?.palancasApagadas
-        ? "saved $0.00: every gateway lever is off (BVSALA_GATEWAY_ELISION=0); unset it to let the levers act"
+        ? // Lo que =0 desarma (servidor.ts, `palancasArmadas`), como la línea de
+          // arranque: la coalescencia NO cuelga de ese interruptor y puede estar ON.
+          "saved $0.00: the savings levers are off (BVSALA_GATEWAY_ELISION=0: no cache TTL tuning, sibling model, " +
+            "effort ceiling or context elision dials); unset it to let them act"
         : todoSuscripcion
         ? "saved $0.00: no saving is credited on a subscription (there is no per-token invoice); " +
             "with the defaults the gateway changes nothing there"
-        : "saved $0.00: nothing was credited (cache TTL tuning is credited only on API-key /v1/messages traffic " +
-            "that asks for the 1-hour cache and goes to the provider's own API - Anthropic's, or DeepSeek's " +
-            "Anthropic-compatible one with --upstream deepseek; an opt-in lever or a proxy upstream can " +
-            "change a request without a credited saving; the gateway's levers act on /v1/messages (the Anthropic " +
-            "protocol) only; see `bvsala --help`)",
+        : // DeepSeek, igual que docs/terminales/deepseek.md: su endpoint Anthropic
+          // devuelve cache_creation_input_tokens 0 y allí no se acredita nada.
+          "saved $0.00: nothing was credited (cache TTL tuning is credited only on API-key /v1/messages traffic " +
+            "that asks for the 1-hour cache and goes to Anthropic's own API - DeepSeek's Anthropic-compatible " +
+            "endpoint reports no cache writes, so nothing is credited there; an opt-in lever or a proxy upstream " +
+            "can change a request without a credited saving; the gateway's levers act on /v1/messages (the " +
+            "Anthropic protocol) only; see `bvsala --help`)",
     );
   }
   return `${gasto} · ${partes.join(" · ")}`;
