@@ -2,6 +2,7 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 
+import { PREFIJO_OPENAI_POR_UPSTREAM } from "../gateway/doctor.js";
 import { UPSTREAM_ALIASES, urlHaciaElUpstream } from "../gateway/upstream.js";
 import { createSavingsLayer } from "../src/pipeline/create.js";
 import { AnthropicProvider } from "../src/providers/anthropic.js";
@@ -32,19 +33,20 @@ const leer = (ruta: string): string => readFileSync(join(RAIZ, ruta), "utf8");
 const plano = (s: string): string => s.replace(/\s+/g, " ");
 const readme = leer("README.md");
 
-/** El prefijo de ruta de la API compatible con OpenAI de cada alias que NO usa `/v1`. */
-const RUTA_PROPIA: Readonly<Record<string, string>> = {
-  qwen: "/compatible-mode/v1",
-  glm: "/api/paas/v4",
-  gemini: "/v1beta/openai",
-  openrouter: "/api/v1",
-};
+/**
+ * El prefijo de ruta de la API compatible con OpenAI de cada alias que NO usa `/v1`
+ * (deepseek: ninguno). Sale de la misma tabla que usan `bvsala doctor` y las guías,
+ * para que el README no pueda decir otra cosa.
+ */
+const RUTA_PROPIA: Readonly<Record<string, string>> = Object.fromEntries(
+  PREFIJO_OPENAI_POR_UPSTREAM.filter(([, prefijo]) => prefijo !== "/v1"),
+);
 
 describe("la receta «Any OpenAI SDK» del README da la ruta que cada upstream necesita", () => {
   const lineas = readme.split("\n");
   const arranque = lineas.find((l) => l.includes("gateway --upstream openai --port 8403") && l.includes("# or:"));
   const conV1 = (arranque ?? "").split("# or:")[1]?.split("|").map((a) => a.trim()) ?? [];
-  const i = lineas.findIndex((l) => /^#\s+qwen \| glm \| gemini \| openrouter:/.test(l));
+  const i = lineas.findIndex((l) => /^#\s+deepseek \| qwen \| glm \| gemini \| openrouter:/.test(l));
   const nombrados = (lineas[i] ?? "").replace(/^#\s+/, "").split(":")[0]!.split("|").map((a) => a.trim());
   const rutas = (lineas[i + 1] ?? "")
     .replace(/^#\s+/, "")
@@ -70,7 +72,7 @@ describe("la receta «Any OpenAI SDK» del README da la ruta que cada upstream n
       const origen = UPSTREAM_ALIASES[alias]!;
       expect(urlHaciaElUpstream(`${ruta}/chat/completions`, origen)?.href, alias).toBe(`${origen}${ruta}/chat/completions`);
     }
-    // Y por eso `/v1` no valía para los cuatro: el origen no lleva prefijo.
+    // Y por eso `/v1` no valía para ellos: el origen no lleva prefijo.
     for (const alias of Object.keys(RUTA_PROPIA)) {
       expect(urlHaciaElUpstream("/v1/chat/completions", UPSTREAM_ALIASES[alias]!)?.href).toBe(`${UPSTREAM_ALIASES[alias]}/v1/chat/completions`);
     }
