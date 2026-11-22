@@ -171,6 +171,29 @@ export const LINEA_PALANCAS_SOLO_OBSERVAR =
   "`measure (shadow)` lines, never counted as a saving. Unset the variable to save.";
 
 /**
+ * La línea de `BVSALA_GATEWAY_COALESCE=1` al arrancar (e2e del 22-11: era la
+ * única opción sin línea). En solo-observar la coalescencia no actúa
+ * (servidor.ts, `coalescible` exige `!enMedicion`), y la línea lo dice.
+ */
+export function lineaDeCoalescencia(soloObservar: boolean): string {
+  return soloObservar
+    ? "duplicate-request coalescing: OFF in observe-only mode (BVSALA_GATEWAY_COALESCE=1 is ignored: every request " +
+        "travels as sent)"
+    : "duplicate-request coalescing: ON (BVSALA_GATEWAY_COALESCE=1, experimental) - a request identical to one " +
+        "still in flight (messages, chat/completions, responses, embeddings) gets that request's answer instead of " +
+        "a second upstream call; its log line says COALESCED (call avoided)";
+}
+
+/**
+ * `BVSALA_GATEWAY_SHADOW=1` sin clave de servicio: el carril sombra solo existe
+ * con emisor (servidor.ts, `carrilSombra`), así que se ignora. Hasta la 1.2.4
+ * no lo decía nada (e2e del 22-11). No cambia ninguna palanca.
+ */
+export const LINEA_SOMBRA_SIN_CLAVE =
+  "shadow lane: ignored - BVSALA_GATEWAY_SHADOW=1 needs BIVELIO_SERVICE_KEY (its estimates only go to the cloud " +
+  "dashboard); nothing else changes";
+
+/**
  * Parte una frase en líneas de `ancho` columnas como mucho, con `sangria`
  * delante de cada una: para imprimir las frases de arriba en la ayuda, en
  * `doctor` y en `init` sin reescribirlas a mano en cada sitio.

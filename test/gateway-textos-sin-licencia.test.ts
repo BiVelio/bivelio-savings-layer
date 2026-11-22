@@ -52,6 +52,68 @@ describe.skipIf(process.platform === "win32")("A2-14/A2-23/A2-29 · sin clave, n
     }
   });
 
+  // E2E DEL 22-11 · el arranque sin claves decía dos «COMMUNITY MODE (open
+  // core)» con textos distintos (el aviso del servidor y el cartel de bin.ts),
+  // BVSALA_GATEWAY_COALESCE=1 no tenía línea y BVSALA_GATEWAY_SHADOW=1 sin clave
+  // no hacía nada sin decirlo. Ninguna palanca cambia: solo el cartel.
+  it("⛔ el cartel sin claves dice COMMUNITY MODE UNA vez, la línea de la guía", async () => {
+    caja = cajaLimpia();
+    const p = lanzar(["gateway", "--port", "0"], caja.env());
+    try {
+      await p.esperar(/point your terminal at it.*\n/);
+      const texto = p.stdout() + p.stderr();
+      const comunitarias = texto.split("\n").filter((l) => l.includes("COMMUNITY MODE"));
+      expect(comunitarias, texto).toEqual([
+        "[bvsala gateway] COMMUNITY MODE (open core): no BiVelio keys set - free, zero telemetry, nothing sent to BiVelio",
+      ]);
+      // Lo que decía la otra línea sigue dicho en la de metering.
+      expect(texto).toContain("metering: LOCAL ONLY (community mode, no BiVelio service key): every request is measured on this machine");
+      expect(texto).not.toMatch(/coalescing|shadow lane/);
+    } finally {
+      p.matar();
+    }
+  });
+
+  it("⛔ BVSALA_GATEWAY_COALESCE=1 tiene su línea de arranque; en solo-observar dice que no actúa", async () => {
+    caja = cajaLimpia();
+    const p = lanzar(["gateway", "--port", "0"], caja.env({ BVSALA_GATEWAY_COALESCE: "1" }));
+    try {
+      await p.esperar(/point your terminal at it.*\n/);
+      expect(p.stdout()).toContain(
+        "[bvsala gateway] duplicate-request coalescing: ON (BVSALA_GATEWAY_COALESCE=1, experimental) - a request identical " +
+          "to one still in flight (messages, chat/completions, responses, embeddings) gets that request's answer instead " +
+          "of a second upstream call; its log line says COALESCED (call avoided)",
+      );
+    } finally {
+      p.matar();
+    }
+    const q = lanzar(["gateway", "--port", "0"], caja.env({ BVSALA_GATEWAY_COALESCE: "1", BVSALA_GATEWAY_OBSERVE_ONLY: "1" }));
+    try {
+      await q.esperar(/point your terminal at it.*\n/);
+      const texto = q.stdout() + q.stderr();
+      expect(texto).toContain("duplicate-request coalescing: OFF in observe-only mode (BVSALA_GATEWAY_COALESCE=1 is ignored");
+      expect(texto).not.toContain("duplicate-request coalescing: ON");
+    } finally {
+      q.matar();
+    }
+  });
+
+  it("⛔ BVSALA_GATEWAY_SHADOW=1 sin clave: una línea que dice que se ignora y por qué", async () => {
+    caja = cajaLimpia();
+    const p = lanzar(["gateway", "--port", "0"], caja.env({ BVSALA_GATEWAY_SHADOW: "1" }));
+    try {
+      await p.esperar(/point your terminal at it.*\n/);
+      expect(p.stderr()).toContain(
+        "[bvsala gateway] shadow lane: ignored - BVSALA_GATEWAY_SHADOW=1 needs BIVELIO_SERVICE_KEY (its estimates only go " +
+          "to the cloud dashboard); nothing else changes",
+      );
+      // Las palancas, como sin la variable.
+      expect(p.stdout()).toContain("savings levers (community mode: free, no key needed): cache TTL tuning is the only one ON by default");
+    } finally {
+      p.matar();
+    }
+  });
+
   it("la pista de arranque para Claude Code a mano lleva ENABLE_TOOL_SEARCH=true, como docs/terminales/claude-code.md", async () => {
     caja = cajaLimpia();
     const p = lanzar(["gateway", "--port", "0"], caja.env());

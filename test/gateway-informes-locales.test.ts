@@ -364,6 +364,40 @@ describe("con la cabecera: el informe del panel, de vuelta al cliente", () => {
     expect(ia.cuerpo.report!.calls.avoidedLlm).toBe(0);
     expect(ib.cuerpo.report!.calls.avoidedLlm).toBe(1);
   });
+
+  // E2E DEL 22-11 · con BVSALA_GATEWAY_COALESCE=1 las dos respuestas llevan el
+  // MISMO id del proveedor, y el índice por id de respuesta apuntaba a la
+  // última en escribir (la gemela): `gw.report(resp)` en Python, que busca por
+  // ese id, devolvía «call avoided» para las dos y `totals()` sumaba 0 $ de
+  // gasto real con una llamada que el proveedor sí cobró. El índice sigue en la
+  // PRIMARIA, la petición que de verdad llamó al proveedor.
+  it.each([
+    ["con clave de servicio", {}],
+    ["en modo comunitario (sin claves)", { license: undefined, serviceAccountKey: undefined, meteringUrl: undefined }],
+  ] as const)("⛔ coalescidas, %s: buscar por id de respuesta da la PRIMARIA (medida, con su gasto), no la gemela", async (_, extra) => {
+    const up = await upstreamFalso(json({ ...CHAT_JSON, id: "chatcmpl-gemelas-2" }, 300));
+    const { gw } = await gateway(up.puerto, { coalescer: true, ...extra });
+    const cuerpo = { model: MODELO_OPENAI, messages: [{ role: "user", content: "igual" }] };
+    const [a, b] = await Promise.all([
+      pedir(gw, "/v1/chat/completions", cuerpo, CON_INFORME),
+      new Promise<Response>((res) => setTimeout(() => res(pedir(gw, "/v1/chat/completions", cuerpo, CON_INFORME)), 50)),
+    ]);
+    await Promise.all([a.text(), b.text()]);
+    expect(up.recibidas).toHaveLength(1);
+    const ida = a.headers.get(CABECERA_ID_DE_PETICION)!;
+    const idb = b.headers.get(CABECERA_ID_DE_PETICION)!;
+    // Las dos cerradas antes de buscar por id de respuesta.
+    await informe(gw, `/_bvsala/v1/reports/${ida}?wait_ms=2000`);
+    const gemela = await informe(gw, `/_bvsala/v1/reports/${idb}?wait_ms=2000`);
+    expect(gemela.cuerpo.report!.calls.avoidedLlm).toBe(1);
+
+    const porRespuesta = await informe(gw, `/_bvsala/v1/reports?response_id=chatcmpl-gemelas-2&wait_ms=2000`);
+    expect(porRespuesta.status).toBe(200);
+    expect(porRespuesta.cuerpo.requestId).toBe(ida);
+    expect(porRespuesta.cuerpo.status).toBe("metered");
+    expect(porRespuesta.cuerpo.report!.calls.avoidedLlm).toBe(0);
+    expect(porRespuesta.cuerpo.report!.cost.actual).toBeGreaterThan(0);
+  });
 });
 
 describe("las rutas locales", () => {
@@ -489,6 +523,34 @@ describe("el buzón, en unidad", () => {
     b.abrir("a", "/");
     t += 60 * 60 * 1000 + 1;
     expect(b.porPeticion("a")).toBeUndefined();
+  });
+
+  it("⛔ una réplica no pisa el índice de su primaria; sin primaria indexada, sí entra (e2e del 22-11)", () => {
+    const b = new BuzonDeInformes();
+    b.abrir("primaria", "/v1/messages");
+    b.abrir("gemela", "/v1/messages");
+    b.anotarRespuesta("primaria", "msg_1");
+    b.anotarRespuesta("gemela", "msg_1", { replica: true });
+    expect(b.porRespuesta("msg_1")!.requestId).toBe("primaria");
+    // La gemela guarda su id de respuesta y sigue alcanzable por su id de petición.
+    expect(b.porPeticion("gemela")!.responseId).toBe("msg_1");
+    // La primaria no pidió informe (no está en el buzón): la gemela es lo único que hay.
+    b.abrir("sola", "/v1/messages");
+    b.anotarRespuesta("sola", "msg_2", { replica: true });
+    expect(b.porRespuesta("msg_2")!.requestId).toBe("sola");
+    // La primaria ya salió del buzón: una réplica posterior puede ocupar el índice.
+    const c = new BuzonDeInformes({ capacidad: 2 });
+    c.abrir("p", "/");
+    c.anotarRespuesta("p", "msg_3");
+    c.abrir("x", "/");
+    c.abrir("g", "/");
+    expect(c.porPeticion("p")).toBeUndefined();
+    c.anotarRespuesta("g", "msg_3", { replica: true });
+    expect(c.porRespuesta("msg_3")!.requestId).toBe("g");
+    // Una petición que SÍ viajó (sin `replica`) indexa como siempre: la última que viajó.
+    b.abrir("otra", "/v1/messages");
+    b.anotarRespuesta("otra", "msg_1");
+    expect(b.porRespuesta("msg_1")!.requestId).toBe("otra");
   });
 
   it("el id de respuesta: el primero manda y solo con forma segura", () => {

@@ -1,7 +1,10 @@
+import { readFileSync } from "node:fs";
 import { createServer, request as peticionHttp, type Server } from "node:http";
+import { fileURLToPath } from "node:url";
 import { afterEach, beforeEach, describe, expect, it, vi, type MockInstance } from "vitest";
 
-import { arrancarGateway, type GatewayArrancado } from "../gateway/servidor.js";
+import { CABECERA_ID_DE_PETICION, CABECERA_PIDE_INFORME, type InformeLocal } from "../gateway/informes-locales.js";
+import { MOTIVO_CORTE_DEL_PROVEEDOR, arrancarGateway, type GatewayArrancado } from "../gateway/servidor.js";
 import { resumenDeMedicion } from "../gateway/recuento.js";
 import { reiniciarAvisos } from "../src/util/warn-once.js";
 
@@ -92,7 +95,8 @@ describe("un corte del proveedor a mitad de respuesta llega al cliente como cort
     });
     expect(r.status).toBe(200);
     await expect(r.text()).rejects.toThrow();
-    expect(lineas.join("\n")).toContain("error while serving");
+    // e2e del 22-11: la línea es la de la tabla de docs/terminales/README.md, no «error while serving».
+    expect(lineas.join("\n")).toContain(`→ 200 (stream) · not metered: ${MOTIVO_CORTE_DEL_PROVEEDOR}`);
   });
 
   it("⛔ JSON sin stream cortado a medias: tampoco llega como un 200 completo", async () => {
@@ -124,5 +128,91 @@ describe("un corte del proveedor a mitad de respuesta llega al cliente como cort
     expect(e.medidas).toBe(0);
     expect(e.noMedidas).toEqual({ "the provider cut the answer before its final usage": 1 });
     expect(resumenDeMedicion(e, "claude")).not.toContain("no inference request went through");
+  });
+});
+
+/**
+ * E2E DEL 22-11 · EL CORTE DICE LO QUE PROMETE LA GUÍA. Un upstream que manda
+ * `message_start` y unos cuantos deltas y destruye el socket: el log decía
+ * «→ error while serving: TypeError: terminated · cause: SocketError: other side
+ * closed» y el informe local «no usage was read from the provider's answer
+ * (HTTP 200)», mientras docs/terminales/README.md promete la línea
+ * «· not metered: the provider cut the answer before its final usage» y el MISMO
+ * motivo en el informe. La causa de undici sigue en la línea, como campo aparte.
+ */
+describe("e2e 22-11 · un corte a mitad de stream deja la línea y el motivo documentados", () => {
+  const DELTA = (texto: string) =>
+    `event: content_block_delta\ndata: ${JSON.stringify({ type: "content_block_delta", index: 0, delta: { type: "text_delta", text: texto } })}\n\n`;
+
+  /** message_start, tres deltas, y el socket destruido sin message_delta ni message_stop. */
+  function upstreamQueCortaTrasDeltas(): Promise<number> {
+    return new Promise((resolve) => {
+      const s = createServer((req, res) => {
+        req.resume();
+        req.on("end", () => {
+          res.writeHead(200, { "content-type": "text/event-stream" });
+          res.write(INICIO_SSE);
+          let n = 0;
+          const t = setInterval(() => {
+            n += 1;
+            res.write(DELTA(`trozo ${n} `));
+            if (n === 3) {
+              clearInterval(t);
+              setTimeout(() => res.destroy(), 20);
+            }
+          }, 10);
+        });
+      });
+      recursos.push(s);
+      s.listen(0, "127.0.0.1", () => resolve((s.address() as { port: number }).port));
+    });
+  }
+
+  it("⛔ log «→ 200 (stream) · not metered: <motivo> · detail: <causa>», informe con el mismo motivo y el resumen igual", async () => {
+    const upstream = await upstreamQueCortaTrasDeltas();
+    const lineas: string[] = [];
+    const gw = await arrancarGateway({ puerto: 0, upstream: `http://127.0.0.1:${upstream}`, log: (l) => lineas.push(l) });
+    recursos.push(gw);
+    const r = await fetch(`http://127.0.0.1:${gw.puerto}/v1/messages`, {
+      method: "POST",
+      headers: { "content-type": "application/json", [CABECERA_PIDE_INFORME]: "1" },
+      body: JSON.stringify({ model: "claude-sonnet-4-6", max_tokens: 50, stream: true, messages: [] }),
+    });
+    expect(r.status).toBe(200);
+    const id = r.headers.get(CABECERA_ID_DE_PETICION);
+    expect(id).not.toBeNull();
+    // El cliente ve el corte (no un 200 completo): como sin gateway.
+    await expect(r.text()).rejects.toThrow();
+
+    const linea = lineas.find((l) => l.includes("not metered"));
+    expect(linea, lineas.join("\n")).toBeDefined();
+    expect(linea!.startsWith(`[gateway] POST /v1/messages → 200 (stream) · not metered: ${MOTIVO_CORTE_DEL_PROVEEDOR} · detail: `)).toBe(true);
+    // La causa de undici, como campo extra (no dentro del motivo).
+    expect(linea).toMatch(/· detail: .*terminated|· detail: .*closed|· detail: .*socket/i);
+    expect(lineas.join("\n")).not.toContain("error while serving");
+
+    const informe = (await (
+      await fetch(`http://127.0.0.1:${gw.puerto}/_bvsala/v1/reports/${id}?wait_ms=2000`)
+    ).json()) as InformeLocal;
+    expect(informe.status).toBe("not_metered");
+    expect(informe.reason).toBe(MOTIVO_CORTE_DEL_PROVEEDOR);
+    expect(informe.reason).not.toMatch(/no usage was read/);
+
+    const e = gw.medicion();
+    expect(e.noMedidas).toEqual({ [MOTIVO_CORTE_DEL_PROVEEDOR]: 1 });
+    expect(resumenDeMedicion(e, "gateway")).toContain(`1 × ${MOTIVO_CORTE_DEL_PROVEEDOR}`);
+  });
+
+  it("JSON (stream:false) cortado a medias: la misma línea, sin «(stream)»", async () => {
+    const { gw, lineas } = await montar();
+    await pedirCrudo(gw.puerto, "json");
+    const linea = lineas.find((l) => l.includes("not metered"));
+    expect(linea, lineas.join("\n")).toBeDefined();
+    expect(linea!.startsWith(`[gateway] POST /v1/messages → 200 · not metered: ${MOTIVO_CORTE_DEL_PROVEEDOR} · detail: `)).toBe(true);
+  });
+
+  it("el motivo es, letra por letra, la primera fila de la tabla de docs/terminales/README.md", () => {
+    const guia = readFileSync(fileURLToPath(new URL("../docs/terminales/README.md", import.meta.url)), "utf8");
+    expect(guia).toContain(`| \`${MOTIVO_CORTE_DEL_PROVEEDOR}\` |`);
   });
 });

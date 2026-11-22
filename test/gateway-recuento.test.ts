@@ -41,9 +41,12 @@ describe("resumenDeMedicion — la línea de salida", () => {
     const l = resumenDeMedicion(r.estado(), "claude");
     expect(l).toBe(
       "[bvsala claude] metering in this run: 2 request(s) metered with the provider's usage · spent $0.5000 at list price · " +
-        "saved $0.00: nothing was credited (cache TTL tuning is credited only on Anthropic API-key traffic sent to the " +
-        "official API that asks for the 1-hour cache; an opt-in lever or a proxy upstream can change a request without a " +
-        "credited saving; the gateway's levers act on Anthropic /v1/messages only; see `bvsala --help`). " +
+        // e2e del 22-11: con --upstream deepseek la rebaja SÍ se acredita (api.deepseek.com es un origen
+        // oficial): el texto lo dice, en vez de afirmar «solo en la API oficial de Anthropic».
+        "saved $0.00: nothing was credited (cache TTL tuning is credited only on API-key /v1/messages traffic that " +
+        "asks for the 1-hour cache and goes to the provider's own API - Anthropic's, or DeepSeek's Anthropic-compatible " +
+        "one with --upstream deepseek; an opt-in lever or a proxy upstream can change a request without a credited " +
+        "saving; the gateway's levers act on /v1/messages (the Anthropic protocol) only; see `bvsala --help`). " +
         "Per-request detail: run it again with BVSALA_GATEWAY_LOG=1 (one line per request, on stderr).",
     );
   });
@@ -59,6 +62,41 @@ describe("resumenDeMedicion — la línea de salida", () => {
     expect(l).not.toContain("cache TTL tuning is credited only");
     // Sin el modo, el motivo de siempre.
     expect(resumenDeMedicion(r.estado(), "claude")).toContain("cache TTL tuning is credited only");
+  });
+
+  it("⛔ con BVSALA_GATEWAY_ELISION=0 el $0 lo explica el freno, no la regla de la rebaja de TTL (e2e del 22-11)", () => {
+    const r = new RecuentoDeMedicion();
+    r.medida(SIN_AHORRO);
+    const l = resumenDeMedicion(r.estado(), "gateway", { palancasApagadas: true, logVisible: true });
+    expect(l).toContain("saved $0.00: every gateway lever is off (BVSALA_GATEWAY_ELISION=0); unset it to let the levers act");
+    expect(l).not.toContain("cache TTL tuning is credited only");
+    // Un ahorro que sí hubo (una réplica por referencia) se dice igual: el freno no lo tapa.
+    r.replica({ actual: 0, netSavingsUsd: 0.05, basis: "reference" });
+    const conReplica = resumenDeMedicion(r.estado(), "gateway", { palancasApagadas: true });
+    expect(conReplica).toContain("$0.0500 in duplicate calls avoided (by reference)");
+    expect(conReplica).not.toContain("saved $0.00");
+  });
+
+  it("⛔ el texto del $0 dice la verdad sobre DeepSeek: la rebaja de TTL se acredita en su origen oficial (e2e del 22-11)", async () => {
+    const { esUpstreamOficial, rutaReescrita } = await import("../gateway/upstream.js");
+    // `--upstream deepseek` es un origen oficial y el cliente sigue mandando /v1/messages (la ruta que mira la palanca).
+    expect(esUpstreamOficial("https://api.deepseek.com")).toBe(true);
+    expect(rutaReescrita("https://api.deepseek.com", "/v1/messages")).toBe("/anthropic/v1/messages");
+    // Con escrituras de caché en el usage, la rebaja acredita ahorro `measured` también en deepseek-flash.
+    const medido = costeMedido("deepseek-flash", { input_tokens: 331, output_tokens: 10, cache_creation_input_tokens: 100_000 })!;
+    const rebaja = { rebajadas: 1, yaEran5m: 0, herramientaDeServidor: false };
+    const oficial = costeDe(informeMedido("d-1", "deepseek-flash", medido, undefined, null, rebaja, null, false, false));
+    expect(oficial.basis).toBe("measured");
+    expect(oficial.netSavingsUsd).toBeGreaterThan(0);
+    // Detrás de un proxy (origen no oficial), nada.
+    const proxy = costeDe(informeMedido("d-2", "deepseek-flash", medido, undefined, null, rebaja, null, false, true));
+    expect(proxy.netSavingsUsd).toBe(0);
+    // Y el motivo del $0 ya no afirma «solo Anthropic».
+    const r = new RecuentoDeMedicion();
+    r.medida(SIN_AHORRO);
+    const l = resumenDeMedicion(r.estado(), "gateway");
+    expect(l).toContain("Anthropic's, or DeepSeek's Anthropic-compatible one with --upstream deepseek");
+    expect(l).not.toContain("only on Anthropic API-key traffic");
   });
 
   it("con el log a la vista (`bvsala gateway`, o BVSALA_GATEWAY_LOG=1) el detalle está arriba, no en otra ejecución", () => {
@@ -151,11 +189,27 @@ describe("resumenDeMedicion — la línea de salida", () => {
     expect(fraseDeDinero(r.estado())).toBe("");
   });
 
-  it("dolares: céntimos desde 1 $, cuatro decimales por debajo, y el ruido de coma flotante es $0.00", () => {
+  it("dolares: céntimos desde 1 $, cuatro decimales desde 1 céntimo, seis por debajo, y el ruido de coma flotante es $0.00", () => {
     expect(dolares(12.3456)).toBe("$12.35");
     expect(dolares(0.01234)).toBe("$0.0123");
     expect(dolares(1e-9)).toBe("$0.00");
     expect(dolares(-0.5)).toBe("$0.5000");
+    // e2e del 22-11: 0,000044 $ salía «$0.0000». Ahora con la precisión de la línea por petición.
+    expect(dolares(0.000044)).toBe("$0.000044");
+    expect(dolares(0.0003)).toBe("$0.000300");
+    expect(dolares(0.009999)).toBe("$0.009999");
+    expect(dolares(6e-7)).toBe("$0.000001");
+    expect(dolares(-0.000022)).toBe("$0.000022");
+  });
+
+  it("⛔ un gasto pequeño no sale «$0.0000» en el resumen (e2e del 22-11)", () => {
+    const r = new RecuentoDeMedicion();
+    r.medida({ actual: 0.000022, netSavingsUsd: 0, basis: "measured" });
+    r.medida({ actual: 0.000022, netSavingsUsd: 0, basis: "measured" });
+    r.replica({ actual: 0, netSavingsUsd: 0.0000098, basis: "reference" });
+    const l = resumenDeMedicion(r.estado(), "gateway");
+    expect(l).toContain("spent $0.000044 at list price · $0.000010 in duplicate calls avoided (by reference)");
+    expect(l).not.toContain("$0.0000 ");
   });
 
   it("parte sin medir: los motivos, de más a menos, y que nada se estima en su lugar", () => {
@@ -464,6 +518,13 @@ describe.skipIf(process.platform === "win32")("1.2.4 · `bvsala claude` enseña 
     const r = await correr(2, { "x-api-key": "clave-inventada-de-prueba" }, { BVSALA_GATEWAY_OBSERVE_ONLY: "1" });
     expect(r.codigo, r.stderr).toBe(0);
     expect(r.stderr).toContain("saved $0.00: observe-only mode (BVSALA_GATEWAY_OBSERVE_ONLY=1) applies no lever");
+    expect(r.stderr).not.toContain("cache TTL tuning is credited only");
+  }, 30_000);
+
+  it("⛔ con BVSALA_GATEWAY_ELISION=0 el resumen culpa al freno, no a la regla de la rebaja (e2e del 22-11)", async () => {
+    const r = await correr(2, { "x-api-key": "clave-inventada-de-prueba" }, { BVSALA_GATEWAY_ELISION: "0" });
+    expect(r.codigo, r.stderr).toBe(0);
+    expect(r.stderr).toContain("saved $0.00: every gateway lever is off (BVSALA_GATEWAY_ELISION=0); unset it to let the levers act");
     expect(r.stderr).not.toContain("cache TTL tuning is credited only");
   }, 30_000);
 

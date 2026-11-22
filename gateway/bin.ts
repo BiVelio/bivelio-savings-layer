@@ -36,9 +36,11 @@ import {
   FRASE_PALANCAS_GATEWAY,
   LINEA_MODO_COMUNITARIO,
   LINEA_PALANCAS_SOLO_OBSERVAR,
+  LINEA_SOMBRA_SIN_CLAVE,
   LO_QUE_ANADE_LA_NUBE,
   VARIABLE_GATEWAY_SOLO_OBSERVAR,
   enLineas,
+  lineaDeCoalescencia,
 } from "./textos-publicos.js";
 import { leerEnrolamiento, planDeAnillo2 } from "./anillo2.js";
 import { flagDeUpstream, resolverUpstream } from "./upstream.js";
@@ -612,6 +614,10 @@ try {
     // Callado también en los avisos de «no medido»: un console.warn se pinta
     // encima del TUI igual que el log.
     ...(silencioso ? { log: () => {}, avisosDeNoMedido: false } : esEnvoltorio ? { log: salida } : {}),
+    // El cartel comunitario lo imprime bin.ts (LINEA_MODO_COMUNITARIO, abajo):
+    // el aviso del servidor salía además y el arranque decía dos veces
+    // «COMMUNITY MODE (open core)» con dos textos distintos (e2e del 22-11).
+    avisoComunitario: false,
     // La licencia ya verificada, y la base del control plane para el canal, las
     // revocaciones y el renovador. Un arranque OFFLINE pide recogida inmediata.
     // Sin licencia (modo comunitario) no se pasa nada: arrancarGateway lo arma.
@@ -721,6 +727,17 @@ if (process.env.BVSALA_GATEWAY_USAGE_INJECT === "1") {
       "stream_options get include_usage; their last chunk has an empty choices list.",
   );
 }
+if (process.env.BVSALA_GATEWAY_COALESCE === "1") {
+  // Como las demás opciones: una bandera puesta tiene que verse al arrancar, no
+  // solo cuando llega el primer duplicado (e2e del 22-11). En solo-observar la
+  // coalescencia no actúa (servidor.ts, `enMedicion`), y se dice.
+  salida(`[bvsala gateway] ${lineaDeCoalescencia(soloObservar)}`);
+}
+if (process.env.BVSALA_GATEWAY_SHADOW === "1" && !serviceAccountKey) {
+  // El carril sombra solo existe con emisor (servidor.ts, `carrilSombra`): sin
+  // clave de servicio se ignora. No cambia nada; solo deja de ser mudo.
+  console.error(`[bvsala gateway] ${LINEA_SOMBRA_SIN_CLAVE}`);
+}
 {
   // El brazo del A/B (anillo 2) dicho en voz alta al arrancar: un día entero de
   // «palanca» corrió sin clave en un terminal viejo y fue control en silencio.
@@ -788,7 +805,13 @@ function imprimirResumenes(): void {
   resumido = true;
   const degradado = resumenDeDegradaciones(arranque.degradaciones());
   if (degradado) console.error(degradado);
-  console.error(resumenDeMedicion(arranque.medicion(), comando, { logVisible: !silencioso, soloObservar }));
+  console.error(
+    resumenDeMedicion(arranque.medicion(), comando, {
+      logVisible: !silencioso,
+      soloObservar,
+      palancasApagadas: elisionPedida === "0",
+    }),
+  );
 }
 
 /** El terminal envuelto, mientras viva: las señales se deciden con él (A2-11). */

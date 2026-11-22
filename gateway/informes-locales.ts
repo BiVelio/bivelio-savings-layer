@@ -124,14 +124,26 @@ export class BuzonDeInformes {
     this.avisar();
   }
 
-  /** El id de la respuesta del proveedor. El primero manda: un stream no cambia de id. */
-  anotarRespuesta(requestId: string, responseId: string | null | undefined): void {
+  /**
+   * El id de la respuesta del proveedor. El primero manda: un stream no cambia de id.
+   *
+   * `replica`: la petición es una gemela coalescida que recibió la respuesta de
+   * otra (la PRIMARIA, la que de verdad llamó al proveedor) y comparte su id.
+   * El índice por id de respuesta sigue apuntando a la primaria: hasta la 1.2.4
+   * mandaba la última en escribir, la gemela pisaba a su primaria y buscar por
+   * id de respuesta devolvía «call avoided» para las dos —un `totals()` con 0 $
+   * de gasto real mientras el proveedor sí cobró su llamada (e2e del 22-11).
+   * La gemela sigue alcanzable por su id de petición (`x-bvsala-request-id`),
+   * y solo entra en el índice si su primaria no está en él (no pidió informe,
+   * o ya salió del buzón).
+   */
+  anotarRespuesta(requestId: string, responseId: string | null | undefined, opciones: { replica?: boolean } = {}): void {
     const e = this.entradas.get(requestId);
     if (!e || e.informe.responseId !== null || !responseId || !ID_SEGURO.test(responseId)) return;
     e.informe.responseId = responseId;
-    // Una gemela coalescida comparte id de respuesta con su primaria: el índice
-    // apunta a la ÚLTIMA, y la primaria sigue alcanzable por su id de petición.
-    this.porRespuestaId.set(responseId, requestId);
+    const indexada = this.porRespuestaId.get(responseId);
+    const otraViva = indexada !== undefined && this.entradas.has(indexada);
+    if (!(opciones.replica === true && otraViva)) this.porRespuestaId.set(responseId, requestId);
     this.avisar();
   }
 

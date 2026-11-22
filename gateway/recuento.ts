@@ -85,6 +85,13 @@ export interface OpcionesDeResumen {
    * de la 1.2.4: la línea daba un motivo falso a una sesión que sí pedía 1 h).
    */
   soloObservar?: boolean;
+  /**
+   * `BVSALA_GATEWAY_ELISION=0`: el freno de emergencia apagó todas las
+   * palancas, así que el «saved $0.00» lo explica ESO y no la regla de la
+   * rebaja de TTL (e2e del 22-11: una petición que cumplía todas las
+   * condiciones de esa regla leía que no las cumplía).
+   */
+  palancasApagadas?: boolean;
 }
 
 /** Tope de motivos distintos que se guardan: un motivo lleva el id del modelo. */
@@ -165,11 +172,18 @@ export class RecuentoDeMedicion {
 /** Por debajo de esto una suma de dólares es ruido de coma flotante, no dinero. */
 const CASI_CERO = 5e-7;
 
-/** Un importe para leer de un vistazo: céntimos desde 1 $, cuatro decimales por debajo. */
+/**
+ * Un importe para leer de un vistazo: céntimos desde 1 $, cuatro decimales
+ * desde 1 céntimo, y por debajo seis, los mismos que la línea de cada petición
+ * (`$0.000022`). Con cuatro, un gasto de 0,000044 $ salía «$0.0000» (e2e del
+ * 22-11). Por debajo de CASI_CERO es ruido de coma flotante: «$0.00».
+ */
 export function dolares(usd: number): string {
   const abs = Math.abs(usd);
   if (abs < CASI_CERO) return "$0.00";
-  return `$${abs >= 1 ? abs.toFixed(2) : abs.toFixed(4)}`;
+  if (abs >= 1) return `$${abs.toFixed(2)}`;
+  if (abs >= 0.01) return `$${abs.toFixed(4)}`;
+  return `$${Math.max(abs, 1e-6).toFixed(6)}`;
 }
 
 /**
@@ -205,13 +219,16 @@ export function fraseDeDinero(e: EstadoDeMedicion, opciones?: OpcionesDeResumen)
       opciones?.soloObservar
         ? "saved $0.00: observe-only mode (BVSALA_GATEWAY_OBSERVE_ONLY=1) applies no lever; what they would have " +
             "saved is in the per-request `measure (shadow)` lines, never counted as a saving"
+        : opciones?.palancasApagadas
+        ? "saved $0.00: every gateway lever is off (BVSALA_GATEWAY_ELISION=0); unset it to let the levers act"
         : todoSuscripcion
         ? "saved $0.00: no saving is credited on a subscription (there is no per-token invoice); " +
             "with the defaults the gateway changes nothing there"
-        : "saved $0.00: nothing was credited (cache TTL tuning is credited only on Anthropic API-key traffic " +
-            "sent to the official API that asks for the 1-hour cache; an opt-in lever or a proxy upstream can " +
-            "change a request without a credited saving; the gateway's levers act on Anthropic /v1/messages only; " +
-            "see `bvsala --help`)",
+        : "saved $0.00: nothing was credited (cache TTL tuning is credited only on API-key /v1/messages traffic " +
+            "that asks for the 1-hour cache and goes to the provider's own API - Anthropic's, or DeepSeek's " +
+            "Anthropic-compatible one with --upstream deepseek; an opt-in lever or a proxy upstream can " +
+            "change a request without a credited saving; the gateway's levers act on /v1/messages (the Anthropic " +
+            "protocol) only; see `bvsala --help`)",
     );
   }
   return `${gasto} · ${partes.join(" · ")}`;
