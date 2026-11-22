@@ -24,5 +24,12 @@ claude
   catalog prices them at PEAK, the conservative side: off-peak is half).
 - `deepseek-chat` (the classic alias) has no row of its own: it is forwarded and
   the log says "not metered". Use `deepseek-flash`.
+- Cache TTL tuning, the gateway's default lever, has nothing to save here:
+  DeepSeek's Anthropic endpoint ignores `cache_control` and reports
+  `cache_creation_input_tokens` as 0 (its
+  [Anthropic API guide](https://api-docs.deepseek.com/guides/anthropic_api),
+  read on 2026-11-22), so there is no cache-write premium to lower and no saving
+  is credited on this traffic. DeepSeek caches on its own: its cache hits show
+  up as `cache↓` in the log line and are metered at $0.003/1M.
 - The quality of the model is your business: the gateway does not route by
   quality, it only meters what you send it.
