@@ -122,7 +122,8 @@
 - **The Python client no longer says the gateway needs a key.** When no gateway
   answered, it said the gateway "needs BIVELIO_SERVICE_KEY"; it starts with no key,
   free, in COMMUNITY mode, and the message now says so. `python -m bvsala status`
-  prints `metering: off` without asking for a service key.
+  no longer adds `(no BIVELIO_SERVICE_KEY)`: a gateway with no key meters locally, so
+  it prints `metering: on`.
 - **A key that is set but wrong says how to keep running free.** When the gateway
   does not start because `BIVELIO_SERVICE_KEY` is malformed or not recognised, or
   `BIVELIO_LICENSE_KEY` does not verify, the message adds, after the fix, that

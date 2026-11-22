@@ -1,7 +1,9 @@
 import { execFileSync } from "node:child_process";
 import { mkdtempSync, readFileSync, rmSync, writeFileSync, mkdirSync } from "node:fs";
+import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { describe, it, expect } from "vitest";
+import { pathToFileURL } from "node:url";
+import { describe, it, expect, vi } from "vitest";
 import { GUIAS_DEL_README } from "./helpers/guias-del-readme.js";
 
 /**
@@ -35,11 +37,66 @@ function fragmentoDelPanel(): string {
   return m[1].replace(/\\`/g, "`").replace(/\\\$/g, "$");
 }
 
+/** Los bloques ```ts de un markdown, en orden. */
+function bloquesTs(md: string): string[] {
+  return [...md.matchAll(/```ts\n([\s\S]*?)```/g)].map((m) => m[1]).filter((b): b is string => typeof b === "string");
+}
+
+const leerReadme = (): string => readFileSync(join(RAIZ, "README.md"), "utf8");
+
 /**
- * TODOS los bloques ```ts del README, montados como UN programa, que es como los
- * lee quien los pega: el primero monta `provider` y `layer`, y los siguientes los
- * usan. Cada bloque posterior va dentro de su propia función para que dos
- * ejemplos puedan declarar `text` sin chocar entre sí.
+ * LOS BLOQUES DEL README QUE SE PRESENTAN COMO UN PROGRAMA ENTERO: los que, tras
+ * sus comentarios, empiezan por `import`. Quien los pega en un fichero vacío
+ * espera que corran tal cual, así que se compilan SOLOS, cada uno en su módulo.
+ *
+ * Lo cazó la prueba de extremo a extremo del tarball 1.2.4: el primer bloque que
+ * ve quien llega a npm («Install anywhere, in 60 seconds») no traía su `import`
+ * y decía en un comentario que compilaba «pegado en orden» con el de «Wrap the
+ * call». Solo era cierto aquí dentro, porque `programaDelReadme` iza los imports
+ * y mete cada bloque posterior en su función, que es algo que nadie hace al
+ * pegar: pegado solo daba `ReferenceError`, y pegado en orden `SyntaxError`
+ * (`provider` declarado dos veces).
+ */
+function bloquesQueSeBastan(): string[] {
+  return bloquesTs(leerReadme()).filter((b) => {
+    const primera = b.split("\n").find((l) => l.trim() !== "" && !/^\s*\/\//.test(l)) ?? "";
+    return /^\s*import\s/.test(primera);
+  });
+}
+
+/**
+ * Los `import` de varios bloques, FUSIONADOS por módulo: dos bloques que importan
+ * lo mismo (`createSavingsLayer` en el quickstart y en «Wrap the call») no pueden
+ * dar dos declaraciones del mismo nombre en el programa que los junta.
+ */
+function fusionarImports(lineas: readonly string[]): string[] {
+  const nombrados = new Map<string, Set<string>>();
+  const otros = new Set<string>();
+  for (const linea of lineas) {
+    const m = /^import\s+(type\s+)?\{([^}]*)\}\s+from\s+"([^"]+)";?$/.exec(linea);
+    if (!m) {
+      otros.add(linea);
+      continue;
+    }
+    const nombres = nombrados.get(m[3]!) ?? new Set<string>();
+    for (const n of m[2]!.split(",").map((x) => x.trim()).filter(Boolean)) nombres.add(m[1] ? `type ${n}` : n);
+    nombrados.set(m[3]!, nombres);
+  }
+  const fusionados = [...nombrados].map(([modulo, nombres]) => {
+    // Si un nombre llega como valor y como tipo, basta el valor.
+    const lista = [...nombres].filter((n) => !(n.startsWith("type ") && nombres.has(n.slice(5))));
+    return `import { ${lista.join(", ")} } from "${modulo}";`;
+  });
+  return [...fusionados, ...otros];
+}
+
+/**
+ * TODOS los bloques ```ts del README y de sus guías, montados como UN programa:
+ * el primero (el quickstart, que se basta solo) monta `provider` y `layer`, y los
+ * bloques que siguen sin montar nada propio —el de streaming, `report.nativeSavings`,
+ * los de las guías— los usan. Cada bloque posterior va dentro de su propia función
+ * para que dos ejemplos puedan declarar `text` sin chocar entre sí. Esto NO es
+ * «pegarlos en orden»: lo que se pega solo lo prueba `bloquesQueSeBastan`.
  *
  * La primera versión de este test filtraba por `includes("createSavingsLayer")`
  * y por eso compilaba SOLO el primer bloque. Los otros dos no los miraba nadie —
@@ -49,21 +106,18 @@ function fragmentoDelPanel(): string {
  *
  * Desde la 1.2.3 los catorce apartados opcionales viven en docs/guias (npm corta
  * el README a 64 KiB): sus bloques siguen el quickstart del README y se compilan
- * aquí detrás de los suyos, como si el lector los pegara a continuación.
+ * aquí detrás de los suyos.
  */
 function programaDelReadme(): string {
-  const src = [readFileSync(join(RAIZ, "README.md"), "utf8"), ...GUIAS_DEL_README.map((g) => readFileSync(join(RAIZ, g), "utf8"))].join("\n");
-  const bloques = [...src.matchAll(/```ts\n([\s\S]*?)```/g)]
-    .map((m) => m[1])
-    .filter((b): b is string => typeof b === "string");
+  const src = [leerReadme(), ...GUIAS_DEL_README.map((g) => readFileSync(join(RAIZ, g), "utf8"))].join("\n");
+  const bloques = bloquesTs(src);
   if (bloques.length === 0) return "";
-  const [primero = "", ...resto] = bloques;
-  // Los `import` se IZAN al principio: dentro de una función son un error de
-  // sintaxis, y quien pega un bloque con un import lo pone arriba de su fichero,
-  // que es exactamente lo que se está modelando.
+  // Los `import` se IZAN al principio, los del primero también: dentro de una
+  // función son un error de sintaxis, y quien pega un bloque con un import lo
+  // pone arriba de su fichero.
   const imports: string[] = [];
-  const cuerpos = resto.map((b, i) => {
-    const sinImports = b
+  const sinImports = (b: string): string =>
+    b
       .split("\n")
       .filter((linea) => {
         if (/^\s*import\s/.test(linea)) {
@@ -73,9 +127,9 @@ function programaDelReadme(): string {
         return true;
       })
       .join("\n");
-    return `async function ejemplo${i}() {\n${sinImports}\n}\nvoid ejemplo${i};`;
-  });
-  return [...imports, primero, ...cuerpos].join("\n");
+  const [primero = "", ...resto] = bloques.map(sinImports);
+  const cuerpos = resto.map((b, i) => `async function ejemplo${i}() {\n${b}\n}\nvoid ejemplo${i};`);
+  return [...fusionarImports(imports), primero, ...cuerpos].join("\n");
 }
 
 /**
@@ -89,14 +143,17 @@ function programaDelReadme(): string {
  * las devDependencies exactas del repo, sin red. Los subpaths del paquete
  * (`@bivelio/savings-layer/ai-sdk`…) apuntan a su fuente, como el paquete raíz.
  */
-function compila(fragmento: string): { ok: boolean; errores: string } {
+function compila(fragmento: string | Readonly<Record<string, string>>): { ok: boolean; errores: string } {
+  // Varios ficheros = varios módulos en UN tsc: cada uno con su propio ámbito,
+  // como si cada bloque se pegara solo en su fichero (ver `bloquesQueSeBastan`).
+  const ficheros = typeof fragmento === "string" ? { "fragmento.ts": fragmento } : fragmento;
   const cache = join(RAIZ, "node_modules/.cache");
   mkdirSync(cache, { recursive: true });
   const dir = mkdtempSync(join(cache, "bvsala-frag-"));
   try {
     mkdirSync(join(dir, "src"), { recursive: true });
     // El fragmento importa por el nombre del paquete; se resuelve con `paths`.
-    writeFileSync(join(dir, "fragmento.ts"), fragmento);
+    for (const [nombre, texto] of Object.entries(ficheros)) writeFileSync(join(dir, nombre), texto);
     writeFileSync(
       join(dir, "tsconfig.json"),
       JSON.stringify({
@@ -107,6 +164,9 @@ function compila(fragmento: string): { ok: boolean; errores: string } {
           moduleResolution: "Bundler",
           noEmit: true,
           skipLibCheck: true,
+          // Un `.mts` pegado es SIEMPRE un módulo: nada de lo que declare un
+          // fichero se ve desde otro.
+          moduleDetection: "force",
           // El proyecto temporal vive fuera del repo, así que hay que decirle
           // dónde están los @types o no encuentra ni `process`.
           types: ["node"],
@@ -124,7 +184,7 @@ function compila(fragmento: string): { ok: boolean; errores: string } {
             "@opentelemetry/api": [join(RAIZ, "node_modules/@opentelemetry/api")],
           },
         },
-        include: ["fragmento.ts"],
+        include: Object.keys(ficheros),
       }),
     );
     try {
@@ -149,7 +209,7 @@ describe("los fragmentos que le damos al cliente compilan pegados tal cual", () 
     expect(r.ok).toBe(true);
   }, 60_000);
 
-  it("TODOS los del README, pegados en orden", () => {
+  it("TODOS los del README y sus guías compilan detrás del quickstart (los que no montan nada usan su `layer`)", () => {
     const programa = programaDelReadme();
     // Si el README deja de tener ejemplos, esto también es un fallo: el paso que
     // convierte a quien paga en quien funciona no puede quedarse sin ejemplo.
@@ -157,6 +217,68 @@ describe("los fragmentos que le damos al cliente compilan pegados tal cual", () 
     const r = compila(programa);
     expect(r.errores).toBe("");
   }, 120_000);
+
+  it("el PRIMER bloque del README se basta solo, y ninguno dice que se compila «pegado en orden»", () => {
+    const [primero = ""] = bloquesTs(leerReadme());
+    expect(bloquesQueSeBastan(), "el quickstart tiene que traer su import").toContain(primero);
+    expect(primero).toMatch(/^import \{[^}]*\bcreateSavingsLayer\b[^}]*\} from "@bivelio\/savings-layer";$/m);
+    // El comentario que mandaba a pegarlo detrás de otro bloque no vuelve.
+    expect(leerReadme()).not.toMatch(/as if you pasted them in order|compiles\s+together with it/);
+  });
+
+  it("cada bloque del README que empieza por `import` compila SOLO, en su propio fichero", () => {
+    const solos = bloquesQueSeBastan();
+    // El quickstart, «Wrap the call» y los cuatro adaptadores.
+    expect(solos.length).toBeGreaterThanOrEqual(6);
+    const ficheros = Object.fromEntries(solos.map((b, i) => [`bloque-${i}.ts`, b]));
+    const r = compila(ficheros);
+    expect(r.errores).toBe("");
+    expect(r.ok).toBe(true);
+  }, 120_000);
+
+  it("cada bloque del README que solo importa el núcleo CORRE solo: sin red, y cuenta 8 en la máquina", async () => {
+    // Los de los adaptadores llaman a su framework y a la red; estos dos (el
+    // quickstart y «Wrap the call») se contestan en local y se pueden ejecutar.
+    const nucleo = bloquesQueSeBastan().filter((b) =>
+      b
+        .split("\n")
+        .filter((l) => /^\s*import\s/.test(l))
+        .every((l) => /from "@bivelio\/savings-layer";$/.test(l.trim())),
+    );
+    expect(nucleo.length).toBeGreaterThanOrEqual(2);
+    expect(nucleo).toContain(bloquesTs(leerReadme())[0]);
+    // FUERA de node_modules, para que vitest lo transforme y resuelva el nombre
+    // del paquete con su alias (a src/index.ts), como el resto de la suite.
+    const dir = mkdtempSync(join(tmpdir(), "bvsala-bloque-"));
+    const red = vi.fn(async () => {
+      throw new Error("un bloque del README intentó salir a la red");
+    });
+    vi.stubGlobal("fetch", red);
+    // Como quien lo pega: sin la puerta de desarrollo que abre la suite.
+    const devOpen = process.env.BVSALA_DEV_OPEN;
+    delete process.env.BVSALA_DEV_OPEN;
+    try {
+      for (const [i, bloque] of nucleo.entries()) {
+        const fichero = join(dir, `bloque-${i}.ts`);
+        writeFileSync(fichero, bloque);
+        const log = vi.spyOn(console, "log").mockImplementation(() => {});
+        try {
+          await import(/* @vite-ignore */ pathToFileURL(fichero).href);
+          const impreso = log.mock.calls.map((c) => c[0]);
+          expect(impreso[0], `bloque ${i}: text`).toBe("8");
+          expect(impreso[1], `bloque ${i}: avoidedLlm`).toBe(1);
+          expect(impreso.at(-1), `bloque ${i}: basis`).toBe("estimated");
+        } finally {
+          log.mockRestore();
+        }
+      }
+      expect(red).not.toHaveBeenCalled();
+    } finally {
+      if (devOpen !== undefined) process.env.BVSALA_DEV_OPEN = devOpen;
+      vi.unstubAllGlobals();
+      rmSync(dir, { recursive: true, force: true });
+    }
+  }, 60_000);
 
   it("el comentario de `report.cost.basis` lista TODOS los basis que `generate()` puede devolver", () => {
     // Lo cazó #317: el SDK ganó basis "reference" y el fragmento que copia quien

@@ -104,9 +104,13 @@ describe("m17 · una sola frase sobre qué palancas van encendidas, igual en tod
 
   it("el README no promete ahorro sin condición: dice dónde ahorra el SDK y cuándo es 0 %", () => {
     expect(readme).not.toMatch(/install it and it saves\./);
+    // Prueba de extremo a extremo del tarball 1.2.4: un stream nunca lidera, así
+    // que «simultaneous requests» no se cumplía detrás de uno; y el «about 0 %»
+    // tiene una excepción que cuesta más (test/readme-prueba-de-extremo-a-extremo.test.ts).
     expect(readme).toContain(
-      "install it and it saves where your traffic repeats (identical or simultaneous requests) and, on Anthropic, " +
-        "where your system prompt is long and stable; traffic that never repeats saves about 0 % by default.",
+      "install it and it saves where your traffic repeats (identical requests, or simultaneous ones when the first " +
+        "is not streamed) and, on Anthropic, where your system prompt is long and stable; traffic that never repeats " +
+        "saves about 0 % by default. One exception costs more:",
     );
     expect(readme).toMatch(/a high `temperature`, questions with freshness words \("today", "price"\), or personal wording \("my"\) without a `context\.sessionId`/);
   });
