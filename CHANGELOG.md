@@ -1,5 +1,101 @@
 # Changelog
 
+## 1.2.5 — 2026-11-22 — fixes from an end-to-end test of the 1.2.4 package, run like a new user
+
+We installed the 1.2.4 tarball in clean projects and followed every README and guide
+block literally, with no key and local stand-in providers. The free mode saved as
+promised and nothing reached BiVelio without a key. What follows is what did not
+match the docs. No saving lever changed: what is sent to the provider, the caches,
+the trimming and the license checks behave exactly as in 1.2.4.
+
+### Fixed
+
+- **Python: wrapped clients no longer send gateway traffic through `HTTP_PROXY`.**
+  The copy that `Gateway.wrap()` returns used the SDK's default HTTP client, which
+  reads `HTTP_PROXY`, `HTTPS_PROXY` and `ALL_PROXY`: traffic to the local gateway,
+  provider API key and prompt included, went through the proxy in plain text, and
+  behind a corporate proxy the call failed with 502. The copy now connects to the
+  gateway directly (OpenAI and Anthropic, sync and async), keeping the client's
+  timeout and the SDK's default limits. A client created with your own
+  `http_client=` keeps it: set `NO_PROXY=127.0.0.1,localhost` before creating it.
+- **Python: error messages give a command that works after `pip install`.**
+  `GatewayUnavailable` and `GatewayMismatch` now say
+  `npx @bivelio/savings-layer gateway` instead of `bvsala gateway`, which is not on
+  the PATH of a pip user.
+- **A provider that cuts a streamed answer is reported as the guide says.** The
+  gateway log reads `→ 200 (stream) · not metered: the provider cut the answer
+  before its final usage · detail: <transport error>`, and the local report carries
+  the same reason. The client still sees the cut and can retry.
+- **Coalesced duplicates no longer hide the call that was paid.** With
+  `BVSALA_GATEWAY_COALESCE=1`, a report looked up by the provider's response id
+  (`?response_id=`, which Python's `gw.report(resp)` uses) now returns the request
+  that called the provider, with its real cost, instead of "call avoided" at $0.
+  Each duplicate's own report is still available by its `x-bvsala-request-id`.
+- **Placeholder service keys are rejected before any network call.**
+  `BIVELIO_SERVICE_KEY='bvk_...'`, `bvk_xxx`, `bvk_<your key>`, `bvk_YOUR_KEY` and
+  similar values get the "does not look like a service key" message and the free
+  exit; nothing is sent to savings.bivelio.com.
+- **Startup and exit texts of `bvsala gateway`.** The banner says COMMUNITY MODE
+  once. `BVSALA_GATEWAY_COALESCE=1` prints a startup line, and
+  `BVSALA_GATEWAY_SHADOW=1` without `BIVELIO_SERVICE_KEY` says it is ignored (also in
+  `--help`). A malformed `BIVELIO_LICENSE_KEY` with no service key points to the free
+  COMMUNITY exit instead of promising online collection. With
+  `BVSALA_GATEWAY_ELISION=0` a $0 summary blames that switch, not the TTL rule.
+  Amounts below one cent keep six decimals (`$0.000044`, not `$0.0000`).
+- **`bvsala init` for the framework adapters** says identical requests in flight are
+  shared unless that one is a stream, as the README does.
+- **Python test suite passes with anthropic 2.x**, which sends the key as
+  `Authorization: Bearer` instead of `x-api-key`.
+
+### Documentation
+
+- **The first README example runs when pasted on its own.** The TypeScript block
+  under "Install anywhere, in 60 seconds" carries its own `import` line; before, it
+  failed with `ReferenceError: OpenAICompatibleProvider is not defined`. The repo now
+  compiles every README block that starts with an `import` on its own and runs the
+  core ones from the packed tarball.
+- **OpenAI-compatible upstreams keep their provider's path.** The gateway forwards
+  the path your client sends to the provider's bare origin, so the base URL is the
+  provider's own with `http://127.0.0.1:<port>` as host: `/v1` for openai, moonshot,
+  minimax, ollama, vllm and lmstudio; no path for deepseek; `/compatible-mode/v1`
+  for qwen; `/api/paas/v4` for glm; `/v1beta/openai` for gemini; `/api/v1` for
+  openrouter. The README, `bvsala doctor`, the Cursor guide and docs/terminales say
+  the same (one table, checked by a test). Cline is listed under the Anthropic
+  gateway, as its guide says.
+- **Simultaneous streamed requests.** A stream joins an identical `generate()`
+  already in flight, but nothing joins a stream: identical requests started while a
+  stream runs are each paid; a repeat after it finished is served from the exact
+  cache. The Mastra adapter never shares a request in flight. The README now says
+  so.
+- **"About 0 %" on non-repeating traffic has one exception, now stated.** With no
+  key, on Anthropic, a long system prompt that changes on every request (a
+  timestamp, a user id) is marked for the prompt cache every time and costs about
+  20 % more than no layer. Keep the system prompt identical and put what changes in
+  the user message (then it saves), or pass `maxCacheBreakpoints: 0` to
+  `AnthropicProvider`. `report.cost.netSavingsRatio` is documented as negative when
+  the layer costs more.
+- **Qwen Code: one settings key everywhere.** The guide, `bvsala doctor` and
+  `bvsala qwen` say `security.auth.selectedType: "anthropic"` in
+  `~/.qwen/settings.json` (or `--auth-type anthropic`), the key current Qwen Code
+  reads, and that it needs `ANTHROPIC_MODEL`.
+- **Droid, Codex, Gemini and DeepSeek guides.** The Droid `customModels` entry
+  carries `model` and `displayName`, the same JSON `bvsala doctor` prints. The Codex
+  block says a hand-started gateway needs `--upstream openai`. The Gemini line no
+  longer shows a fixed port for `bvsala gemini`. The DeepSeek guide says its
+  Anthropic endpoint reports no cache writes, so the TTL lever credits nothing there.
+- **Python README on PyPI.** A paragraph that ran together now renders as a list,
+  every Python block runs on its own, and the README and docstrings say what the
+  gateway does with no key (it measures on your machine; a key adds the cloud).
+  With `BVSALA_GATEWAY_COALESCE=1`, per-request reports need the raw response, the
+  stream or the `x-bvsala-request-id`.
+- **Smaller fixes.** A visible line under the first install command says npm needs
+  `--legacy-peer-deps` on AI SDK 5, LangChain 0.3 or Mastra < 1.68. The
+  `BVSALA_SEAT_ID` example is an `export`. NOTICE lists "cloud metering" (local
+  metering is free). The `savings.semanticCache` type docs name
+  `createSavingsLayer({ semanticCacheStore })` and no longer say a license is
+  needed. The 1.2.4 entry now says `python -m bvsala status` prints `metering: on`
+  against a gateway with no key.
+
 ## 1.2.4 — 2026-11-21 — the free Measure plan saves exactly like no key, paid plans trim Anthropic tool loops, honest texts
 
 ### Changed: what you will notice after upgrading
