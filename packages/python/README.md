@@ -29,22 +29,45 @@ from (`cost.basis`).
 - **No dependencies.** Standard library only. It does not import the OpenAI or
   Anthropic SDKs; you bring them.
 - **Your prompts never reach BiVelio.** The client only talks to the gateway on
-  `127.0.0.1`, ignoring any HTTP proxy settings, and the gateway forwards your
-  requests to your provider. What a cloud key sends to BiVelio is per-request
-  usage (token counts, cost, the model id and opaque ids), never your content:
-  LICENSE-CLOUD.md, section 5, lists every field.
+  `127.0.0.1`, and the gateway forwards your requests to your provider. What a
+  cloud key sends to BiVelio is per-request usage (token counts, cost, the model
+  id and opaque ids), never your content: LICENSE-CLOUD.md, section 5, lists
+  every field.
+- **No proxy between you and the gateway.** HTTP proxy settings (`HTTP_PROXY`,
+  `HTTPS_PROXY`, `ALL_PROXY`) are never used to reach the gateway: not by this
+  package's own calls, and not by the client `wrap()` returns, which gets a new
+  HTTP client of its SDK's default type that connects to the gateway directly.
+  If you created the client with your own `http_client=`, `wrap()` keeps it as
+  it is; if it reads proxy settings, set `NO_PROXY=127.0.0.1,localhost` before
+  creating it.
 
 This package measures. The saving levers of the TypeScript SDK do not run in
 Python; the gateway's own levers apply to Anthropic `/v1/messages` traffic, free
 and with no key, and by default only one acts: cache TTL tuning, which saves
 only when your client pays per token and asks for the one-hour cache. OpenAI
 traffic is measured when the request reports usage, and by default it is never
-changed. In the TypeScript SDK:
-Every lever is included and free, with no key. On by default: exact cache, deduplication, local resolvers, prompt-cache placement, trimming of superseded tool results and compact serialization of the structured data you pass. The rest you switch on, one line each.
+changed.
 
-In the SDK, a BiVelio key only adds the cloud: the free Measure license applies exactly the same levers as no key. A paid license (Pro, Team, Enterprise) does too, except trimming of superseded tool results, which with a paid license only acts inside a tool loop on Anthropic.
-In the `bvsala` gateway the free Measure license applies the same levers as no key, and a paid license works as in 1.2.3: each lever also needs your organization's license to include it, checked fail-closed.
-One dependency comes with a key, the free Measure key included: with BIVELIO_SERVICE_KEY set, the gateway needs savings.bivelio.com to start (or a valid BIVELIO_LICENSE_KEY as a fallback); once running it keeps serving without it. With no key there is no such dependency.
+The TypeScript SDK, and what a BiVelio key changes:
+
+- **The TypeScript SDK.** Every lever is included and free, with no key. On by
+  default: exact cache, deduplication, local resolvers, prompt-cache placement,
+  trimming of superseded tool results and compact serialization of the
+  structured data you pass. The rest you switch on, one line each.
+- **A key in the SDK.** In the SDK, a BiVelio key only adds the cloud: the free
+  Measure license applies exactly the same levers as no key. A paid license
+  (Pro, Team, Enterprise) does too, except trimming of superseded tool results,
+  which with a paid license only acts inside a tool loop on Anthropic.
+- **A key in the gateway.** In the `bvsala` gateway the free Measure license
+  applies the same levers as no key, and a paid license works as in 1.2.3: each
+  lever also needs your organization's license to include it, checked
+  fail-closed.
+- **What a key depends on.** One dependency comes with a key, the free Measure
+  key included: with BIVELIO_SERVICE_KEY set, the gateway needs
+  savings.bivelio.com to start (or a valid BIVELIO_LICENSE_KEY as a fallback);
+  once running it keeps serving without it. With no key there is no such
+  dependency.
+
 What the paid cloud adds is the team dashboard, shared measurement, seats and
 license management. BiVelio hosts no cache.
 
@@ -73,9 +96,9 @@ One gateway per provider:
 
 ```bash
 # export BIVELIO_SERVICE_KEY=…   # optional: adds the cloud dashboard
-npx -p @bivelio/savings-layer bvsala gateway                                 # Anthropic, on 8402
-npx -p @bivelio/savings-layer bvsala gateway --upstream openai --port 8403   # OpenAI, on 8403
-python -m bvsala --url http://127.0.0.1:8403 status                          # version, upstream, license
+npx @bivelio/savings-layer gateway                                 # Anthropic, on 8402
+npx @bivelio/savings-layer gateway --upstream openai --port 8403   # OpenAI, on 8403
+python -m bvsala --url http://127.0.0.1:8403 status                # version, upstream, license
 ```
 
 ## Use it
@@ -99,6 +122,12 @@ Streaming works the same way. For OpenAI Chat Completions, ask for usage in the
 request, or the provider sends no counter and the report says so:
 
 ```python
+import bvsala
+from openai import OpenAI
+
+gw = bvsala.Gateway("http://127.0.0.1:8403")
+client = gw.wrap(OpenAI())
+
 stream = client.chat.completions.create(
     model="gpt-4o-mini", messages=[{"role": "user", "content": "Hi"}],
     stream=True, stream_options={"include_usage": True},
@@ -112,6 +141,7 @@ print(gw.report(stream).summary())
 Anthropic:
 
 ```python
+import bvsala
 from anthropic import Anthropic
 
 gw = bvsala.Gateway()                # $BVSALA_GATEWAY_URL or http://127.0.0.1:8402
@@ -126,6 +156,15 @@ it, a raw response from `with_raw_response`, or an id string. It also reads a
 LiteLLM response sent with `extra_headers=bvsala.REPORT_HEADERS`, from the
 provider headers LiteLLM keeps in `_hidden_params` (checked against LiteLLM's
 source, not yet end to end).
+
+A raw response, a stream and the `x-bvsala-request-id` string each name one
+request exactly; a parsed response, a chunk or an event is looked up by the
+provider's response id. That matters with the gateway's opt-in
+`BVSALA_GATEWAY_COALESCE=1`: identical requests in flight at the same time then
+share one provider call and one response id, so a lookup by that id returns the
+same report for all of them. For each request's own report, make the call with
+`with_raw_response` (`raw = client.chat.completions.with_raw_response.create(...)`),
+pass `raw` to `gw.report()`, and read the response itself with `raw.parse()`.
 
 `gw.report()` waits up to `wait` seconds (5 by default) for a request still in
 flight; after that the report comes back with `status == "pending"`. In async
