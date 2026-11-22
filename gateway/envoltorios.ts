@@ -490,7 +490,12 @@ export function envoltorioDe(
         bin: "qwen",
         args: resto,
         env: { ANTHROPIC_BASE_URL: base },
-        nota: "Qwen Code only routes through here with `security.auth.selectedType: \"anthropic\"` in ~/.qwen/settings.json (see `bvsala doctor`).",
+        // La clave anidada es la que lee Qwen Code hoy (settingsSchema.ts de
+        // QwenLM/qwen-code v0.28.3); para Anthropic no tiene modelo por defecto.
+        nota:
+          "Qwen Code routes through here with the Anthropic auth type: `security.auth.selectedType: \"anthropic\"` in " +
+          "~/.qwen/settings.json (or --auth-type anthropic), and a Claude model in ANTHROPIC_MODEL or model.name " +
+          "(see `bvsala doctor`).",
       };
     case "opencode":
     case "kilo": {
