@@ -70,6 +70,39 @@ const COMPROBAR =
   "check: the gateway log must show `[gateway] POST /v1/messages …`; " +
   "if you see `/v1/v1/messages`, there is one /v1 too many; if you see a bare `POST /messages`, one is missing.";
 
+/**
+ * El prefijo de ruta del base_url de un SDK de OpenAI, por alias de
+ * `--upstream`. El gateway cambia solo el ORIGEN y reenvía la ruta que manda el
+ * cliente (upstream.ts: `urlHaciaElUpstream`; los alias son orígenes pelados),
+ * así que el base_url es el que documenta cada proveedor con
+ * `http://127.0.0.1:PUERTO` en lugar de su host. Consultado el 2026-11-22:
+ *   · deepseek   api-docs.deepseek.com: base_url `https://api.deepseek.com`, sin ruta;
+ *   · moonshot   `https://api.moonshot.cn/v1`;  minimax `/v1` (su doc china da hoy el host
+ *                `api.minimax.cn`; el alias apunta a `api.minimaxi.com`, misma ruta);
+ *   · qwen       Model Studio: `https://dashscope.aliyuncs.com/compatible-mode/v1`;
+ *   · glm        docs.bigmodel.cn: `https://open.bigmodel.cn/api/paas/v4`;
+ *   · gemini     `https://generativelanguage.googleapis.com/v1beta/openai/`;
+ *   · openrouter openrouter.ai/docs/quickstart: `https://openrouter.ai/api/v1`;
+ *   · openai y los servidores locales (Ollama, vLLM, LM Studio): `/v1`.
+ * docs/terminales/README.md lleva la misma tabla (un test las compara).
+ */
+export const PREFIJO_OPENAI_POR_UPSTREAM: ReadonlyArray<readonly [alias: string, prefijo: string]> = [
+  ["openai", "/v1"],
+  ["deepseek", ""],
+  ["moonshot", "/v1"],
+  ["minimax", "/v1"],
+  ["qwen", "/compatible-mode/v1"],
+  ["glm", "/api/paas/v4"],
+  ["gemini", "/v1beta/openai"],
+  ["openrouter", "/api/v1"],
+  ["ollama", "/v1"],
+  ["vllm", "/v1"],
+  ["lmstudio", "/v1"],
+];
+
+/** Los que tienen su propio bloque en el informe (python-openai, ollama-local). */
+const LOCALES_U_OPENAI: ReadonlySet<string> = new Set(["openai", "ollama", "vllm", "lmstudio"]);
+
 const TERMINALES: readonly Terminal[] = [
   {
     id: "claude",
@@ -93,10 +126,16 @@ const TERMINALES: readonly Terminal[] = [
     comprobar:
       "check: the gateway log must show `[gateway] POST /v1/responses …` (API key) or `POST /backend-api/codex/responses …` " +
       "(ChatGPT); `/v1/v1/responses` means one /v1 too many.",
-    receta: ({ base, rutas }) => [
-      "use `bvsala codex` — the base URL prefix depends on the auth mode and the wrapper resolves it:",
-      `  API key             → openai_base_url=${base}/v1`,
-      `  ChatGPT subscription → openai_base_url=${base}/backend-api/codex   (must end exactly there)`,
+    // e2e 1.2.4 · la URL a mano sin el upstream mandaba la clave de OpenAI a
+    // api.anthropic.com: un gateway sin --upstream habla con Anthropic.
+    receta: ({ base, puerto, rutas }) => [
+      "use `bvsala codex` — it starts its own gateway with the upstream of your auth mode and resolves the base URL prefix:",
+      `  API key             → upstream openai,              openai_base_url=${base}/v1`,
+      `  ChatGPT subscription → upstream https://chatgpt.com, openai_base_url=${base}/backend-api/codex   (must end exactly there)`,
+      "by hand, the gateway needs that same upstream: a gateway started without --upstream forwards to api.anthropic.com.",
+      `  API key: bvsala gateway --upstream openai --port ${puerto}, then codex -c openai_base_url=${base}/v1`,
+      `  ChatGPT: bvsala gateway --upstream https://chatgpt.com --port ${puerto}, then codex -c openai_base_url=${base}/backend-api/codex`,
+      "  (one gateway per upstream: if another terminal already uses this port, pick another one for Codex and change both)",
       `${rutas[1]}: only checked for existence; never read.`,
     ],
   },
@@ -203,10 +242,15 @@ const TERMINALES: readonly Terminal[] = [
     binario: "qwen",
     configs: [join(".qwen", "settings.json")],
     detectable: true,
+    // e2e 1.2.4 · la clave que lee Qwen Code es la anidada (settingsSchema.ts
+    // de QwenLM/qwen-code v0.28.3: security.auth.selectedType); el envoltorio
+    // ya lo decía así, el doctor y la guía decían `selectedType` en la raíz.
     receta: ({ base, rutas }) => [
-      `mechanism: ANTHROPIC_BASE_URL environment variable + ${rutas[0]} with selectedType = anthropic. NO /v1 (the official TS SDK appends /v1/messages).`,
-      `ANTHROPIC_BASE_URL=${base} ANTHROPIC_API_KEY=… qwen`,
-      `check by hand that ${rutas[0]} has selectedType: anthropic — the doctor does not read the file.`,
+      `mechanism: ANTHROPIC_BASE_URL environment variable + the Anthropic auth type: "security": { "auth": { "selectedType": "anthropic" } }`,
+      `in ${rutas[0]} (or qwen --auth-type anthropic). NO /v1 (the official TS SDK appends /v1/messages).`,
+      "Qwen Code has no default Anthropic model: set ANTHROPIC_MODEL (or model.name in settings.json).",
+      `ANTHROPIC_BASE_URL=${base} ANTHROPIC_API_KEY=… ANTHROPIC_MODEL=<Anthropic model id> qwen`,
+      `check by hand that ${rutas[0]} has security.auth.selectedType: anthropic — the doctor does not read the file.`,
     ],
   },
   {
@@ -215,8 +259,12 @@ const TERMINALES: readonly Terminal[] = [
     binario: "droid",
     configs: [join(".factory", "settings.json")],
     detectable: true,
+    // El mismo bloque que docs/terminales/droid.md (un test los compara). Los
+    // campos, de la doc BYOK de Factory (docs.factory.com/cli/byok/overview):
+    // `model` es obligatorio y `displayName` es la etiqueta en /model.
     receta: ({ base, rutas }) => [
-      `mechanism: ${rutas[0]} → customModels[] with provider "anthropic". NO /v1 [inferred: validate by hand against the gateway log].`,
+      `mechanism: ${rutas[0]} → customModels[] with provider "anthropic"; "model" is required and "displayName" is its label in /model.`,
+      "NO /v1: Factory's BYOK docs give https://api.anthropic.com for this provider [not validated by hand: check the gateway log].",
       "{",
       '  "customModels": [',
       "    {",
@@ -277,8 +325,11 @@ const TERMINALES: readonly Terminal[] = [
     // El protocolo de Gemini no pasa por /v1/messages: su línea es la de :generateContent.
     comprobar:
       "check: the gateway log must show `[gateway] POST /v1beta/models/<model>:streamGenerateContent …` (or `:generateContent`) with a cost.",
+    // e2e 1.2.4 · el envoltorio arranca su gateway en un puerto EFÍMERO: el
+    // --port del doctor solo vale para la receta a mano.
     receta: ({ base, puerto }) => [
-      `one command: bvsala gemini   (wraps the CLI: GOOGLE_GEMINI_BASE_URL=${base} and the gateway's own --upstream gemini)`,
+      "one command: bvsala gemini   (starts its own gateway with --upstream gemini on an ephemeral port and points",
+      "GOOGLE_GEMINI_BASE_URL at it; the port below is only for the manual recipe)",
       `manual: start \`bvsala gateway --upstream gemini --port ${puerto}\`, then run the Gemini CLI with GOOGLE_GEMINI_BASE_URL=${base}`,
       "The gateway reads usage from :generateContent / :streamGenerateContent responses and meters models with a",
       "list price; your GEMINI_API_KEY travels in x-goog-api-key, intact, and never reaches BiVelio.",
@@ -291,12 +342,12 @@ const TERMINALES: readonly Terminal[] = [
     configs: [".cursor"],
     detectable: true,
     comprobar:
-      "check: the gateway log must show `[gateway] POST /v1/chat/completions …`; nothing in the log means Cursor served " +
-      "the request with one of its own models, which never reach a local gateway.",
+      "check: the gateway log must show `[gateway] POST /v1/chat/completions …` (another upstream: its own path); nothing in the " +
+      "log means Cursor served the request with one of its own models, which never reach a local gateway.",
     receta: ({ baseV1, puerto }) => [
       "mechanism: Cursor → Settings → Models → OpenAI API Base URL override (BYOK: your own API key for OpenAI-compatible models).",
-      `start: bvsala gateway --upstream openai --port ${puerto}   (deepseek, qwen, glm, moonshot and ollama work the same)`,
-      `base URL: ${baseV1}   (WITH /v1)`,
+      `start: bvsala gateway --upstream openai --port ${puerto}`,
+      `base URL: ${baseV1}   (WITH /v1, for openai; another upstream keeps its provider's own path: see the openai-compat-cn block)`,
       "Only requests Cursor sends with YOUR key to that base URL pass through the gateway; its own models go",
       "through Cursor's servers and cannot reach a gateway on 127.0.0.1 (their usage dashboard meters those).",
     ],
@@ -319,16 +370,24 @@ const TERMINALES: readonly Terminal[] = [
   },
   {
     id: "openai-compat-cn",
-    nombre: "DeepSeek, Qwen, GLM, Moonshot — any OpenAI SDK (Chat Completions)",
+    nombre: "DeepSeek, Qwen, GLM, Moonshot, MiniMax, Gemini, OpenRouter — any OpenAI SDK (Chat Completions)",
     configs: [],
     detectable: false,
     estadoSinDeteccion: "no detection: any language, through the SDK's base URL",
     comprobar:
-      "check: the gateway log must show `[gateway] POST /v1/chat/completions …`; if you see `/v1/v1/chat/completions`, there is one /v1 too many.",
-    receta: ({ baseV1, puerto }) => [
-      `start: bvsala gateway --upstream deepseek --port ${puerto}   (qwen, glm, moonshot, minimax and openrouter work the same: one gateway per upstream)`,
-      `python: client = OpenAI(base_url="${baseV1}", api_key="…")   (WITH /v1: the SDK appends /chat/completions)`,
-      `node:   const client = new OpenAI({ baseURL: "${baseV1}" })`,
+      "check: the gateway log must show `[gateway] POST <base_url path>/chat/completions …` (`POST /v1/chat/completions` with moonshot, " +
+      "`POST /compatible-mode/v1/chat/completions` with qwen); a 404 from the provider means the path is not the one it serves.",
+    // e2e 1.2.4 · «qwen, glm… work the same» con …/v1 era falso: el gateway
+    // reenvía la ruta tal cual a un ORIGEN pelado (upstream.ts), así que cada
+    // proveedor necesita su propio prefijo. Ver PREFIJO_OPENAI_POR_UPSTREAM.
+    receta: ({ base, puerto }) => [
+      `start: bvsala gateway --upstream <alias> --port ${puerto}   (one gateway per upstream)`,
+      "base_url: the gateway swaps only the origin and forwards the path as sent, so keep the provider's own path:",
+      ...PREFIJO_OPENAI_POR_UPSTREAM.filter(([alias]) => !LOCALES_U_OPENAI.has(alias)).map(
+        ([alias, prefijo]) => `  ${alias.padEnd(10)} → ${base}${prefijo}`,
+      ),
+      `python: client = OpenAI(base_url="${base}/compatible-mode/v1", api_key="…")   (qwen; the SDK appends /chat/completions)`,
+      `node:   const client = new OpenAI({ baseURL: "${base}/compatible-mode/v1" })`,
       'streaming: pass stream_options={"include_usage": True} or the stream is forwarded but NOT metered; the last chunk then has an empty choices list.',
       "Metered for models with a list price in the catalog; a model without one is forwarded but not metered.",
     ],

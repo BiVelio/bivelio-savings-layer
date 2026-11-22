@@ -55,7 +55,7 @@ does not touch it (Claude Max/Pro: there is no write premium to save).
 | [Claude Code](claude-code.md) | `http://127.0.0.1:8402` | **without** | env `ANTHROPIC_BASE_URL` | `bvsala claude` ✅ | [V] in production |
 | [Codex CLI](codex.md) | `http://127.0.0.1:8402/v1` (API key) · `…/backend-api/codex` (ChatGPT) | **with** | `codex -c openai_base_url=…` | `bvsala codex` ✅ | [V] validated by hand on 30 Aug (426 → HTTP fallback, stream intact) |
 | [Goose](goose.md) | `http://127.0.0.1:8402` | **without** | env `ANTHROPIC_HOST` | `bvsala goose` ✅ | [V] |
-| [Qwen Code](qwen-code.md) | `http://127.0.0.1:8402` | **without** | env `ANTHROPIC_BASE_URL` + `~/.qwen/settings.json` | `bvsala qwen` ✅ | [V] |
+| [Qwen Code](qwen-code.md) | `http://127.0.0.1:8402` | **without** | env `ANTHROPIC_BASE_URL` + `security.auth.selectedType: "anthropic"` in `~/.qwen/settings.json` | `bvsala qwen` ✅ | [V] |
 | [opencode](opencode.md) | `http://127.0.0.1:8402/v1` | **with** | env `OPENCODE_CONFIG_CONTENT` or `~/.config/opencode/opencode.json` | `bvsala opencode` ✅ (nothing written to disk) | [V] in code (v1.18.32) |
 | [Kilo Code](kilo.md) (CLI and extensions) | `http://127.0.0.1:8402/v1` | **with** | env `KILO_CONFIG_CONTENT` or `~/.config/kilo/kilo.json` | `bvsala kilo` ✅ (CLI) | [V] in code (v7.8.1, a fork of opencode) |
 | [Copilot CLI](copilot.md) (BYOK only) | anthropic: `http://127.0.0.1:8402` · openai: `…/v1` | anthropic **without**, openai **with** | env `COPILOT_PROVIDER_BASE_URL` | `bvsala copilot` ✅ (anthropic type) | [V] in the official docs; not validated by hand. openai type: by hand, not validated (WebSocket → 426) |
@@ -63,10 +63,10 @@ does not touch it (Claude Max/Pro: there is no write premium to save).
 | [Aider](aider.md) | Anthropic: `http://127.0.0.1:8402` · OpenAI: `…/v1` | Anthropic **without**, OpenAI **with** | env `ANTHROPIC_API_BASE` / `OPENAI_API_BASE` (litellm) | `bvsala aider` ✅ | [V] in code (litellm 1.82.3); OpenAI streams only with `BVSALA_GATEWAY_USAGE_INJECT=1` |
 | [Continue](continue.md) (`cn` CLI and extensions) | `http://127.0.0.1:8402/v1` | **with** | `~/.continue/config.yaml` (`apiBase`) | — (user config) | [V] in code |
 | [Crush](crush.md) | `http://127.0.0.1:8402/v1` | **with**, no trailing slash | `~/.config/crush/crushrc` | — (user config) | [V] |
-| [Droid](droid.md) | `http://127.0.0.1:8402` | without **[I]** | `~/.factory/settings.json` | — (user config) | validate by hand |
+| [Droid](droid.md) | `http://127.0.0.1:8402` | **without** | `~/.factory/settings.json` (`customModels[]`: `model`, `displayName`, `provider`, `baseUrl`, `apiKey`) | — (user config) | [V] in the official docs; not validated by hand |
 | [Cline](cline.md) | `http://127.0.0.1:8402/v1` | **with** | UI | — | [V] |
 | [Gemini CLI](gemini.md) | `http://127.0.0.1:8402` | n/a (Gemini protocol) | env `GOOGLE_GEMINI_BASE_URL` | `bvsala gemini` ✅ | [V] in a test (fake upstream): `:generateContent` and `:streamGenerateContent` |
-| [Cursor](cursor.md) (BYOK) | `http://127.0.0.1:8402/v1` | **with** | UI → Settings → Models → OpenAI API Base URL | — (UI config) | [I]: only the traffic sent with YOUR key goes through the gateway |
+| [Cursor](cursor.md) (BYOK) | `http://127.0.0.1:8402/v1` (`--upstream openai`; another upstream: [its own path](#openai-compatible-upstreams-keep-the-providers-own-path)) | **with** | UI → Settings → Models → OpenAI API Base URL | — (UI config) | [I]: only the traffic sent with YOUR key goes through the gateway |
 | [Claude Code with DeepSeek](deepseek.md) | `http://127.0.0.1:8402` | **without** | env `ANTHROPIC_BASE_URL` | `bvsala gateway --upstream deepseek` | [V] in a test: `/v1/messages` → `/anthropic` |
 | [Ollama / vLLM / LM Studio](ollama.md) (local) | `http://127.0.0.1:8402/v1` | **with** | the SDK's `base_url` | `bvsala gateway --upstream ollama|vllm|lmstudio` | [V] in a test; no list price → forwarded, not metered in dollars |
 | [Python and any SDK](../../README.md#python-and-any-other-language-the-local-gateway) (OpenAI · Anthropic) | OpenAI: `http://127.0.0.1:8403/v1` · Anthropic: `http://127.0.0.1:8402` | OpenAI **with**, Anthropic **without** | the SDK's `base_url` | `bvsala gateway --upstream openai` | [V] in a test (fake upstream) |
@@ -119,7 +119,8 @@ like the degraded-traffic warning: it is not sent to BiVelio.
 npm i -g @bivelio/savings-layer      # brings the `bvsala` binary
 bvsala gateway                        # listens on http://127.0.0.1:8402 — no keys: Community mode
 bvsala gateway --port 8500            # another port if 8402 is taken
-bvsala gateway --upstream deepseek    # Claude Code with DeepSeek; qwen|glm|moonshot|minimax|gemini|ollama|vllm|lmstudio too
+bvsala gateway --upstream deepseek    # Claude Code with DeepSeek (its Anthropic-format endpoint)
+bvsala gateway --upstream qwen --port 8403    # an OpenAI SDK: openai|deepseek|qwen|glm|moonshot|minimax|gemini|openrouter|ollama|vllm|lmstudio, base URL per upstream below
 # export BIVELIO_SERVICE_KEY=bvk_…      # OPTIONAL: only adds the cloud dashboard; uncomment it with your real key (without it: Community mode)
 ```
 
@@ -158,6 +159,40 @@ environment variable (the flag wins over `BVSALA_GATEWAY_UPSTREAM`). For an
 OpenAI SDK (Python, Node…) start one with `--upstream openai` on another port;
 when streaming, the request has to carry `stream_options.include_usage` or the
 gateway forwards it without metering it and says so in the log.
+
+#### OpenAI-compatible upstreams: keep the provider's own path
+
+The gateway swaps only the origin: it forwards the path your client sends,
+unchanged, to the upstream's bare origin (the one rewrite is `--upstream
+deepseek` with `/v1/messages`, for Claude Code). So an OpenAI SDK's base URL is
+the one the provider documents, with `http://127.0.0.1:<port>` in place of its
+host; the SDK appends `/chat/completions`. `/v1` is right for some upstreams
+only:
+
+| `--upstream` | Forwards to | OpenAI SDK base URL through the gateway | What the gateway reaches |
+|---|---|---|---|
+| `openai` | `https://api.openai.com` | `http://127.0.0.1:8403/v1` | `https://api.openai.com/v1` |
+| `deepseek` | `https://api.deepseek.com` | `http://127.0.0.1:8403` | `https://api.deepseek.com` |
+| `moonshot` | `https://api.moonshot.cn` | `http://127.0.0.1:8403/v1` | `https://api.moonshot.cn/v1` |
+| `minimax` | `https://api.minimaxi.com` | `http://127.0.0.1:8403/v1` | `https://api.minimaxi.com/v1` |
+| `qwen` | `https://dashscope.aliyuncs.com` | `http://127.0.0.1:8403/compatible-mode/v1` | `https://dashscope.aliyuncs.com/compatible-mode/v1` |
+| `glm` | `https://open.bigmodel.cn` | `http://127.0.0.1:8403/api/paas/v4` | `https://open.bigmodel.cn/api/paas/v4` |
+| `gemini` | `https://generativelanguage.googleapis.com` | `http://127.0.0.1:8403/v1beta/openai` | `https://generativelanguage.googleapis.com/v1beta/openai` |
+| `openrouter` | `https://openrouter.ai` | `http://127.0.0.1:8403/api/v1` | `https://openrouter.ai/api/v1` |
+| `ollama` · `vllm` · `lmstudio` | `http://localhost:11434` · `:8000` · `:1234` | `http://127.0.0.1:8403/v1` | `http://localhost:11434/v1` (and so on) |
+
+The last column is where the gateway sends the SDK's requests, and its path is
+the one each provider documents for its OpenAI SDK (read on 2026-11-22). Two
+providers also document other hosts with that same path: MiniMax's China docs
+now give `https://api.minimax.cn/v1`, and Model Studio gives workspace hosts
+(`https://<workspace>.cn-beijing.maas.aliyuncs.com/compatible-mode/v1`). For a
+host no alias covers, start the gateway with that origin
+(`--upstream https://api.minimax.cn`) and keep the same path in the client: a
+path you add to `--upstream` is ignored, with a warning. The log line shows the full
+path (`POST /compatible-mode/v1/chat/completions …` for `qwen`), and every route
+ending in `/chat/completions` or `/responses` is metered, for models with a
+list price in the catalog. A path the provider does not serve comes back as the
+provider's own 404, not metered.
 
 ### 2 · Checking that it meters: the gateway log
 

@@ -4,6 +4,7 @@ import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { doctor } from "../gateway/doctor.js";
+import { envoltorioDe } from "../gateway/envoltorios.js";
 
 const HOME = "/casa/prueba";
 const PUERTO = 8402;
@@ -131,13 +132,19 @@ describe("bvsala doctor — la forma exacta del base URL por terminal", () => {
     const { texto } = await vacio();
     const urls = texto.match(/http:\/\/127\.0\.0\.1:8402[^\s"]*/g) ?? [];
     expect(urls.length).toBeGreaterThan(0);
-    // Solo cuatro formas legales, y ninguna acaba en barra. La ruta completa
-    // `/v1/messages` es solo del BYOK de VS Code, que la usa tal cual.
+    // Solo estas formas legales, y ninguna acaba en barra. La ruta completa
+    // `/v1/messages` es solo del BYOK de VS Code, que la usa tal cual. e2e
+    // 1.2.4 · más los prefijos propios de los upstream OpenAI-compatibles (el
+    // gateway reenvía la ruta tal cual: test/recetas-openai-por-upstream.test.ts).
     const legales = new Set([
       "http://127.0.0.1:8402",
       "http://127.0.0.1:8402/v1",
       "http://127.0.0.1:8402/backend-api/codex",
       "http://127.0.0.1:8402/v1/messages",
+      "http://127.0.0.1:8402/compatible-mode/v1",
+      "http://127.0.0.1:8402/api/paas/v4",
+      "http://127.0.0.1:8402/v1beta/openai",
+      "http://127.0.0.1:8402/api/v1",
     ]);
     for (const u of urls) {
       expect(legales.has(u), u).toBe(true);
@@ -417,5 +424,75 @@ describe("bvsala doctor — jamás contenido, solo rutas", () => {
     expect(fuente).not.toMatch(/node:child_process|node:fs\/promises/);
     const textos = readFileSync(fileURLToPath(new URL("../gateway/textos-publicos.ts", import.meta.url)), "utf8");
     expect(textos).not.toMatch(/^import\s/m);
+  });
+});
+
+describe("e2e 1.2.4 · lo que el doctor imprime coincide con las guías y con lo que hace el envoltorio", () => {
+  const guia = (nombre: string): string =>
+    readFileSync(new URL(`../docs/terminales/${nombre}`, import.meta.url), "utf8");
+  /** Los bloques ```json de una guía, ya parseados. */
+  const bloquesJson = (md: string): unknown[] =>
+    [...md.matchAll(/```json\n([\s\S]*?)```/g)].map((m) => JSON.parse(m[1]!) as unknown);
+  /** El bloque JSON de una sección del doctor: de la línea `{` a la `}` final. */
+  const jsonDelDoctor = (s: string): unknown => {
+    const lineas = s.split("\n").map((l) => l.replace(/^  /, ""));
+    const ini = lineas.indexOf("{");
+    const fin = lineas.lastIndexOf("}");
+    return JSON.parse(lineas.slice(ini, fin + 1).join("\n")) as unknown;
+  };
+
+  it("Codex: la receta a mano dice que ese gateway necesita --upstream openai (sin él, la clave de OpenAI iría a Anthropic)", async () => {
+    const s = seccion((await vacio()).texto, "codex");
+    expect(s).toContain("a gateway started without --upstream forwards to api.anthropic.com");
+    expect(s).toContain("bvsala gateway --upstream openai --port 8402, then codex -c openai_base_url=http://127.0.0.1:8402/v1");
+    expect(s).toContain(
+      "bvsala gateway --upstream https://chatgpt.com --port 8402, then codex -c openai_base_url=http://127.0.0.1:8402/backend-api/codex",
+    );
+    // Las dos líneas del envoltorio nombran su upstream.
+    expect(s).toMatch(/API key +→ upstream openai, +openai_base_url=http:\/\/127\.0\.0\.1:8402\/v1/);
+  });
+
+  it("Gemini: `bvsala gemini` usa un puerto efímero; el del doctor es solo para la receta a mano", async () => {
+    const s = seccion((await vacio()).texto, "gemini");
+    const unComando = s.split("\n").filter((l) => l.includes("one command") || l.includes("GOOGLE_GEMINI_BASE_URL at it"));
+    expect(unComando.join(" ")).toContain("ephemeral port");
+    expect(unComando.join(" ")).not.toContain("127.0.0.1:8402");
+    expect(s).toContain("manual: start `bvsala gateway --upstream gemini --port 8402`");
+  });
+
+  it("Qwen Code: una sola clave en doctor, envoltorio y guía — security.auth.selectedType, nunca selectedType en la raíz", async () => {
+    // QwenLM/qwen-code v0.28.3: settingsSchema.ts → security.auth.selectedType;
+    // la clave plana antigua era selectedAuthType (migración v1→v2).
+    const s = seccion((await vacio()).texto, "qwen");
+    expect(s).toContain('"security": { "auth": { "selectedType": "anthropic" } }');
+    expect(s).toContain("has security.auth.selectedType: anthropic");
+    expect(s).not.toMatch(/with selectedType = anthropic|has selectedType: anthropic/);
+    // Qwen Code no tiene modelo Anthropic por defecto.
+    expect(s).toContain("ANTHROPIC_MODEL");
+    const nota = envoltorioDe("qwen", 8402, []).nota ?? "";
+    expect(nota).toContain('`security.auth.selectedType: "anthropic"`');
+    expect(nota).toContain("ANTHROPIC_MODEL");
+    const md = guia("qwen-code.md");
+    expect(bloquesJson(md)).toEqual([{ security: { auth: { selectedType: "anthropic" } } }]);
+    expect(md).toContain("A top-level\n`\"selectedType\"` is not read");
+    expect(md).not.toMatch(/the key verified in S3 is/);
+    expect(md).not.toMatch(/outside the catalog on\s+purpose/);
+  });
+
+  it("Droid: el bloque de la guía es el mismo JSON que imprime el doctor, con model y displayName", async () => {
+    const s = seccion((await vacio()).texto, "droid");
+    const delDoctor = jsonDelDoctor(s);
+    expect(delDoctor).toEqual({
+      customModels: [
+        {
+          model: "<Anthropic model id>",
+          displayName: "<display name>",
+          provider: "anthropic",
+          baseUrl: "http://127.0.0.1:8402",
+          apiKey: "<your Anthropic API key>",
+        },
+      ],
+    });
+    expect(bloquesJson(guia("droid.md"))).toEqual([delDoctor]);
   });
 });

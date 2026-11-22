@@ -1,10 +1,12 @@
 # Droid (Factory) through the gateway
 
-**Source:** `docs/PASARELA-S3-TERMINALES.md` §3. Droid is **closed source**; the
-routing mechanism is verified [V] (`~/.factory/settings.json` →
-`customModels[]` with `provider: "anthropic"`), but **the shape of the base URL
-is inferred [I]: it has to be validated by hand against the gateway log.** This
-guide says so plainly; no validation has been done.
+**Source:** `docs/PASARELA-S3-TERMINALES.md` §3 and Factory's BYOK docs
+(<https://docs.factory.com/cli/byok/overview>, read on 2026-11-22). Droid is
+**closed source**; the routing mechanism is in its official docs [V]
+(`~/.factory/settings.json` → `customModels[]` with `provider: "anthropic"`), and
+so is the base URL without `/v1` (they give `https://api.anthropic.com` for
+this provider), but **it has not been validated by hand against the gateway
+log yet.** This guide says so plainly.
 
 ## What you need
 
@@ -17,18 +19,23 @@ guide says so plainly; no validation has been done.
 {
   "customModels": [
     {
+      "model": "<Anthropic model id>",
+      "displayName": "<display name>",
       "provider": "anthropic",
       "baseUrl": "http://127.0.0.1:8402",
-      "apiKey": "<your ANTHROPIC_API_KEY>"
+      "apiKey": "<your Anthropic API key>"
     }
   ]
 }
 ```
 
-The verified keys [V] are `customModels[]{provider:"anthropic", baseUrl,
-apiKey}`. The shape **without `/v1`** is inferred [I]. Keep the rest of your
-`settings.json` (the `doctor --write droid` planned in S3 will do the
-conservative JSON merge with a `.bak` copy; it does not exist yet, and today
+It is the same block `bvsala doctor` prints. The fields, from Factory's BYOK
+docs [V]: `model` (required: the model id sent to the API, such as
+`claude-sonnet-5-5`), `displayName` (the label under **Custom Models** in
+`/model`), `provider`, `baseUrl` and `apiKey` (Factory also accepts an
+environment variable reference there, such as `${ANTHROPIC_API_KEY}`). Keep the
+rest of your `settings.json` (the `doctor --write droid` planned in S3 will do
+the conservative JSON merge with a `.bak` copy; it does not exist yet, and today
 `bvsala doctor` only prints the block).
 
 ## Validate by hand (mandatory before you trust it)
@@ -37,11 +44,11 @@ conservative JSON merge with a `.bak` copy; it does not exist yet, and today
 2. Launch `droid` with that custom model and ask a trivial question.
 3. Look at the gateway log:
    - `[gateway] POST /v1/messages  · <model> · $…` → the shape without `/v1` is
-     the right one. Confirm it in S3 (move the [I] to [V]).
+     the right one. Record it in S3 as validated by hand.
    - `[gateway] POST /messages → 404` → Droid only appends `/messages`: change
      the `baseUrl` to `http://127.0.0.1:8402/v1` and repeat.
    - nothing in the log → Droid is not reading the custom model; check that it
-     is the selected model.
+     is the selected model (`/model` → **Custom Models**, by its `displayName`).
 
 ## The typical pitfall
 
