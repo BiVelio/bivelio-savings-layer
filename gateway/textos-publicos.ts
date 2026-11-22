@@ -72,12 +72,13 @@ export const FRASE_LA_CLAVE_SOLO_ANADE_ADAPTADOR =
  * Qué hace un adaptador sin clave (auditoría de lo gratis, 21-11-2026: `init`
  * prometía a los adaptadores la colocación de caché, el recorte, la
  * serialización y `observeOnly`, que no tienen). Lo mismo que el README en
- * «Inside your framework». Mastra no comparte las peticiones idénticas en vuelo.
+ * «Inside your framework». Mastra no comparte las peticiones idénticas en vuelo,
+ * y nada se une a un stream en vuelo (e2e del 22-11).
  */
 export function frasePalancasAdaptador(enMastra: boolean): string {
   return (
     "Every lever is included and free, with no key. The adapter answers exact repeats, " +
-    (enMastra ? "" : "identical requests already in flight, ") +
+    (enMastra ? "" : "identical requests already in flight (unless that one is a stream), ") +
     "and the questions the layer computes locally, without calling the model; it never rewrites what your framework " +
     "sends (prompt-cache placement, trimming of superseded tool results and serialization run in `createSavingsLayer`)."
   );

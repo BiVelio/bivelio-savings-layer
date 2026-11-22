@@ -218,6 +218,7 @@ Environment:
   BVSALA_GATEWAY_SHADOW  =1 enables the shadow lane for context elision (experimental):
                          computes what the elision policy would have saved WITHOUT touching
                          traffic and reports it separately (never counted as a measured saving).
+                         Needs BIVELIO_SERVICE_KEY: without one it is ignored (said at startup).
                          Every other lever keeps acting; to turn them ALL off, see the next one.
   BVSALA_GATEWAY_OBSERVE_ONLY
                          =1 puts the gateway in OBSERVE-ONLY mode, on any plan: requests are

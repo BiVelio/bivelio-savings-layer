@@ -112,10 +112,10 @@ arXiv-ready LaTeX in [`docs/paper/main.tex`](https://github.com/BiVelio/bivelio-
 
 ```shell
 # 1 · Any OpenAI SDK, any language — point it at the local gateway (Python, Node, Cursor, Aider, OpenWebUI…)
-npx @bivelio/savings-layer gateway --upstream openai --port 8403     # or: deepseek | moonshot | minimax | ollama | vllm | lmstudio
+npx @bivelio/savings-layer gateway --upstream openai --port 8403     # or: moonshot | minimax | ollama | vllm | lmstudio
 #    python: OpenAI(base_url="http://127.0.0.1:8403/v1")
-#    qwen | glm | gemini | openrouter: their own path instead of /v1 (the gateway keeps the path):
-#    http://127.0.0.1:8403/compatible-mode/v1 | /api/paas/v4 | /v1beta/openai | /api/v1
+#    deepseek | qwen | glm | gemini | openrouter: their own path instead of /v1 (the gateway keeps the path):
+#    http://127.0.0.1:8403 | /compatible-mode/v1 | /api/paas/v4 | /v1beta/openai | /api/v1
 #    Cline uses the Anthropic gateway (:8402): `bvsala doctor` prints its setup.
 
 # 2 · Coding agents, one command, zero configuration
