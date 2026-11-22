@@ -10,11 +10,14 @@ Qué hace y qué NO hace, a propósito:
   segundo catálogo de precios que pueda divergir del de TypeScript.
 - Solo usa la biblioteca estándar. Instalarlo no añade ninguna dependencia a la
   cadena de suministro del cliente.
-- Ignora los proxies del entorno (HTTP_PROXY…): el gateway es local y lo que
-  va a él no debe pasar por nadie más. Vale para sus propias llamadas
-  (urllib sin ProxyHandler) y para las copias que devuelve `wrap()`, que
-  llevan el cliente HTTP por defecto del SDK sin proxies (salvo que el
-  usuario haya traído el suyo con `http_client=`: ese se respeta).
+- Sus propias llamadas (estado, informes) ignoran los proxies del entorno
+  (HTTP_PROXY…): urllib sin ProxyHandler, porque el gateway es local y lo que
+  va a él no debe pasar por nadie más.
+- La copia de `wrap()` comparte el cliente HTTP del original, como en la 1.2.4
+  (no abre un pool propio que nadie cierra). Ese cliente es del SDK y SÍ lee
+  los proxies del entorno, así que `wrap()` no los cambia: si el entorno
+  mandaría el tráfico al gateway por un proxy, avisa (una vez por gateway y
+  proceso) y dice NO_PROXY.
 """
 
 from __future__ import annotations
@@ -22,12 +25,12 @@ from __future__ import annotations
 import asyncio
 import json
 import os
-import sys
 import threading
 import urllib.error
 import urllib.request
+import warnings
 from collections import OrderedDict
-from typing import Any, Dict, List, Mapping, Optional, Tuple
+from typing import Any, Dict, List, Mapping, Optional, Set, Tuple
 from urllib.parse import quote, urlsplit
 
 from ._errors import BvsalaError, GatewayMismatch, GatewayUnavailable, LicenseInactive, ReportNotFound
@@ -83,44 +86,64 @@ def _mismo_sitio(a: Tuple[str, str], b: Tuple[str, str]) -> bool:
     return canon(a) == canon(b)
 
 
-def _cliente_http_sin_proxy(client: Any, raiz: str, destino: str) -> Optional[Any]:
-    """Un cliente HTTP nuevo, del MISMO tipo que el que el SDK crea por defecto, sin proxies.
+#: Los gateways (origen de la copia) de los que este proceso ya avisó por proxy.
+_AVISADOS_POR_PROXY: Set[str] = set()
+_CANDADO_AVISOS = threading.Lock()
+_LOOPBACK = ("127.0.0.1", "localhost", "::1")
 
-    Los SDK de OpenAI y Anthropic, sin ``http_client=``, crean su propio cliente
-    (``SyncHttpxClientWrapper`` / ``AsyncHttpxClientWrapper``, subclases de
-    ``DefaultHttpxClient`` / ``DefaultAsyncHttpxClient``), y ese cliente lee
-    HTTP_PROXY/HTTPS_PROXY del entorno. Hacia el gateway local eso mandaba la
-    clave del proveedor y el prompt EN CLARO al proxy (y daba 502 detrás de un
-    proxy corporativo). Aquí se construye uno igual —misma clase, mismo timeout
-    que el cliente, y con ella los límites, las redirecciones y los keepalive
-    por defecto del SDK— con dos cerrojos:
 
-    - ``trust_env=False``: httpx no lee los proxies del entorno.
-    - ``mounts={<origen del gateway>: None}``: el origen exacto del gateway va
-      por el transporte directo. Hace falta porque el ``DefaultHttpxClient`` de
-      Anthropic monta él mismo los proxies del entorno, con ``trust_env`` o sin
-      él; un patrón con puerto gana a ``http://`` y ``all://``.
+def _aviso_de_proxy(destino: str) -> Optional[str]:
+    """El aviso, si el entorno mandaría por un proxy lo que va a ``destino``; si no, None.
 
-    Devuelve None si el cliente trae uno suyo (``http_client=``) o si el SDK no
-    tiene la forma esperada: entonces no se toca (la guía dice NO_PROXY).
+    Lo que hace el cliente HTTP por defecto de los SDK (httpx): el proxy del
+    esquema (``http``/``https``) o ``all``, salvo que NO_PROXY cubra el host.
+    Solo mira el ENTORNO (getproxies_environment), sin la configuración del
+    sistema. Del proxy dice solo la variable, nada de su valor.
     """
-    actual = getattr(client, "_client", None)
-    base = sys.modules.get(f"{raiz}._base_client")
-    por_defecto = tuple(
-        c for c in (getattr(base, "SyncHttpxClientWrapper", None), getattr(base, "AsyncHttpxClientWrapper", None))
-        if isinstance(c, type)
-    )
-    if actual is None or type(actual) not in por_defecto:
+    p = urlsplit(destino)
+    esquema, host = (p.scheme or "").lower(), (p.hostname or "").lower()
+    proxies = urllib.request.getproxies_environment()
+    clave = next((k for k in (esquema, "all") if proxies.get(k)), None)
+    if clave is None:
         return None
-    # Como lo construye el propio SDK: base_url y el timeout del cliente.
-    opciones: Dict[str, Any] = {
-        "base_url": destino,
-        "trust_env": False,
-        "mounts": {_texto_origen(_origen(destino)): None},
-    }
-    if hasattr(client, "timeout"):
-        opciones["timeout"] = client.timeout
-    return type(actual)(**opciones)
+    # urllib compara NO_PROXY con «host:puerto» y con el host solo; un IPv6,
+    # sin corchetes ni puerto (con ellos no casaría con «::1»).
+    donde = host if ":" in host or p.port is None else f"{host}:{p.port}"
+    if urllib.request.proxy_bypass_environment(donde, proxies):
+        return None
+    # urllib da prioridad a la variable en minúsculas.
+    nombres = [k for k, v in os.environ.items() if k.lower() == f"{clave}_proxy" and v]
+    variable = f"{clave}_proxy" if f"{clave}_proxy" in nombres else (nombres[0] if nombres else f"{clave.upper()}_PROXY")
+    # Solo el nombre de la variable: del valor (que puede llevar usuario y
+    # clave) no se muestra nada.
+    dice = variable
+    no_proxy = "127.0.0.1,localhost" + ("" if host in _LOOPBACK else f",{host}")
+    return (
+        f"requests to the bvsala gateway at {_texto_origen(_origen(destino))} will go through the proxy in {dice}: "
+        "the provider API key and the prompt would cross that proxy. "
+        f"Set NO_PROXY={no_proxy} before creating the client."
+    )
+
+
+def _avisar_si_hay_proxy(destino: str) -> None:
+    """Un ``UserWarning`` por gateway y proceso si el entorno manda su tráfico por un proxy.
+
+    Solo avisa: no cambia nada ni lanza nunca (tampoco con ``-W error``), para
+    que `wrap()` haga exactamente lo de la 1.2.4.
+    """
+    try:
+        aviso = _aviso_de_proxy(destino)
+        if aviso is None:
+            return
+        llave = _texto_origen(_origen(destino))
+        with _CANDADO_AVISOS:
+            if llave in _AVISADOS_POR_PROXY:
+                return
+            _AVISADOS_POR_PROXY.add(llave)
+        # stacklevel=3: la línea de quien llamó a wrap().
+        warnings.warn(aviso, UserWarning, stacklevel=3)
+    except Exception:  # noqa: BLE001 — un aviso nunca rompe wrap()
+        return
 
 
 class Gateway:
@@ -230,13 +253,16 @@ class Gateway:
         ``LicenseInactive`` if the gateway cannot serve, and ``GatewayMismatch``
         if the client is configured for a provider the gateway does not forward to.
 
-        Proxy settings (``HTTP_PROXY``, ``HTTPS_PROXY``, ``ALL_PROXY``) are not
-        used for the gateway: the copy gets a new HTTP client of the SDK's own
-        default type (the client's timeout, the SDK's default limits and
-        redirects) that talks to the gateway directly. If the client was created with your own
-        ``http_client=``, the copy keeps it as it is; if that client reads proxy
-        settings, add the gateway's host to ``NO_PROXY`` (for example
-        ``NO_PROXY=127.0.0.1,localhost``) before creating it.
+        The copy shares the original's HTTP client (its connection pool and
+        settings), as the SDK's own ``with_options()`` does: closing either one
+        closes both. That client belongs to the SDK and reads proxy settings:
+        with ``HTTP_PROXY`` or ``ALL_PROXY`` set (``HTTPS_PROXY`` for an
+        ``https://`` gateway), requests to the gateway, provider API key and
+        prompt included, go through that proxy unless ``NO_PROXY`` covers the
+        gateway's host. Set ``NO_PROXY=127.0.0.1,localhost`` before creating
+        the client. When the environment would send gateway traffic through a
+        proxy, ``wrap()`` emits a ``UserWarning`` (once per gateway URL and
+        process) and changes nothing else.
         """
         raiz = type(client).__module__.split(".")[0]
         if raiz not in _SDKS or not callable(getattr(client, "with_options", None)):
@@ -259,14 +285,9 @@ class Gateway:
                     f"`{_ARRANCAR} --upstream {_texto_origen(suyo)} --port <free port>`, and pass its URL to Gateway()."
                 )
             nueva = self.url + urlsplit(base).path
-        opciones: Dict[str, Any] = {"base_url": nueva, "default_headers": dict(REPORT_HEADERS)}
-        # Sin proxies hacia el gateway: la clave del proveedor y el prompt no
-        # pasan en claro por un HTTP_PROXY. Si el usuario trajo su http_client,
-        # se respeta (None): la guía le dice NO_PROXY.
-        http = _cliente_http_sin_proxy(client, raiz, nueva)
-        if http is not None:
-            opciones["http_client"] = http
-        return client.with_options(**opciones)
+        # Solo avisa: la copia es la de la 1.2.4 y comparte el cliente HTTP.
+        _avisar_si_hay_proxy(nueva)
+        return client.with_options(base_url=nueva, default_headers=dict(REPORT_HEADERS))
 
     # ── Informes ────────────────────────────────────────────────────────────
 

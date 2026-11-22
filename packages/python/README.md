@@ -33,13 +33,12 @@ from (`cost.basis`).
   cloud key sends to BiVelio is per-request usage (token counts, cost, the model
   id and opaque ids), never your content: LICENSE-CLOUD.md, section 5, lists
   every field.
-- **No proxy between you and the gateway.** HTTP proxy settings (`HTTP_PROXY`,
-  `HTTPS_PROXY`, `ALL_PROXY`) are never used to reach the gateway: not by this
-  package's own calls, and not by the client `wrap()` returns, which gets a new
-  HTTP client of its SDK's default type that connects to the gateway directly.
-  If you created the client with your own `http_client=`, `wrap()` keeps it as
-  it is; if it reads proxy settings, set `NO_PROXY=127.0.0.1,localhost` before
-  creating it.
+- **Proxies: set `NO_PROXY`.** This package's own calls to the gateway
+  (`status()`, the reports) ignore proxy settings. The client `wrap()` returns
+  uses its SDK's HTTP settings, so with `HTTP_PROXY` or `ALL_PROXY` set, its
+  requests to the gateway, provider API key and prompt included, go through
+  that proxy. Set `NO_PROXY=127.0.0.1,localhost` before creating the client;
+  `wrap()` warns when it detects this.
 
 This package measures. The saving levers of the TypeScript SDK do not run in
 Python; the gateway's own levers apply to Anthropic `/v1/messages` traffic, free
