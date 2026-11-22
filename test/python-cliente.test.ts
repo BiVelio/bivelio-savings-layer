@@ -61,7 +61,7 @@ describe("verjas: el paquete de Python dice lo mismo que el de npm", () => {
       const src = leer(`packages/python/src/bvsala/${f}`);
       const importados = [...src.matchAll(/^(?:from|import) ([A-Za-z_][\w]*)/gm)].map((m) => m[1]);
       const ajenos = importados.filter(
-        (m) => !["__future__", "asyncio", "json", "os", "re", "threading", "urllib", "collections", "typing", "dataclasses", "argparse", "sys", "math"].includes(m!),
+        (m) => !["__future__", "asyncio", "json", "os", "re", "threading", "urllib", "collections", "typing", "dataclasses", "argparse", "sys", "math", "warnings"].includes(m!),
       );
       expect(ajenos, f).toEqual([]);
     }
