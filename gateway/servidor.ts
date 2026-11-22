@@ -2076,6 +2076,12 @@ export async function arrancarGateway(opts: OpcionesGateway): Promise<GatewayArr
         // «error while serving: TypeError: terminated…» y el informe «no usage
         // was read from the provider's answer (HTTP 200)» (e2e del 22-11). La
         // causa de undici sigue en la línea, como campo aparte.
+        //
+        // Revisión del PR #617 · si el usage FINAL ya había llegado (un proxy
+        // HTTP/1.1 que entrega el SSE entero y cierra sin el trozo final del
+        // chunked), el proveedor facturó la respuesta entera: se mide como en
+        // la rama del cliente que cierra tras el usage final (mismas llamadas,
+        // sin rebaja), y el motivo del corte queda para cuando no lo hubo.
         if (
           res.headersSent &&
           !res.writableEnded &&
@@ -2084,16 +2090,32 @@ export async function arrancarGateway(opts: OpcionesGateway): Promise<GatewayArr
           req.method === "POST" &&
           tieneDialecto(url.pathname)
         ) {
-          noMedido(
-            requestId,
-            req.method,
-            url.pathname,
-            estadoUpstream ?? 200,
-            observador !== null,
-            MOTIVO_CORTE_DEL_PROVEEDOR,
-            null,
-            describirFallo(err),
-          );
+          const uso = observador ? observador.usageFinal() : null;
+          if (uso) {
+            log(
+              `[gateway] ${req.method} ${url.pathname} → ${estadoUpstream ?? 200} (stream) · the provider closed the ` +
+                `connection after the final usage; metered anyway · detail: ${describirFallo(err)}`,
+            );
+            const elision = atribuir(observador instanceof ObservadorSse ? observador.elision() : null, uso);
+            const sinCobro = url.pathname === "/v1/messages" && observador instanceof ObservadorSse && observador.negativaNoCobrada();
+            medir(
+              requestId, cuerpoPeticion, uso, false, url.pathname, codificacion, atribucion, elision, undefined, inicioMs, hermano, suscripcion,
+              undefined, undefined, sinCobro, undefined, undefined,
+              observador instanceof ObservadorGemini ? modeloDeRutaGemini(url.pathname) : undefined,
+            );
+            vigilarCache(url.pathname, cuerpoPeticion, codificacion, uso, ttlReescrito, sesionId);
+          } else {
+            noMedido(
+              requestId,
+              req.method,
+              url.pathname,
+              estadoUpstream ?? 200,
+              observador !== null,
+              MOTIVO_CORTE_DEL_PROVEEDOR,
+              null,
+              describirFallo(err),
+            );
+          }
           res.destroy();
           return;
         }

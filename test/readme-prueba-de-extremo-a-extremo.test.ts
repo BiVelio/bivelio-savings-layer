@@ -195,6 +195,44 @@ describe("«about 0 %» va siempre con la excepción de Anthropic, y las dos sal
     expect(r.marcadas).toBe(N);
     expect(r.nativo).toBeGreaterThan(0);
   });
+
+  /**
+   * Revisión del PR #617: un `system` ESTABLE que solo se reusa cuando su caché de
+   * 5 minutos ya caducó (peticiones a más de 5 minutos, cada una en un proceso
+   * nuevo: serverless, cron, un script de CLI) se escribe siempre y no se lee
+   * nunca, y cuesta lo mismo que el que cambia. El README lo dice como condición,
+   * con la misma salida (`maxCacheBreakpoints: 0`).
+   */
+  it("un `system` estable reusado solo con la caché caducada, un proceso por petición, también cuesta más; `maxCacheBreakpoints: 0` lo deja en 0", async () => {
+    const enProcesosNuevos = async (opciones: { maxCacheBreakpoints?: number }) => {
+      const ratios: number[] = [];
+      for (let i = 0; i < 4; i++) {
+        // Una API nueva = una caché del proveedor que ya caducó; una capa nueva = un proceso nuevo.
+        const api = apiFalsa();
+        const layer = createSavingsLayer({
+          provider: new AnthropicProvider({ apiKey: "falsa", fetchImpl: api.fetchImpl, ...opciones }),
+          silenceWarnings: true,
+        });
+        const { report } = await layer.generate({
+          model: "anthropic/claude-sonnet-4-5",
+          messages: [
+            { role: "system", content: MANUAL },
+            { role: "user", content: `Question ${i}: what is a widget?` },
+          ],
+        });
+        ratios.push(report.cost.netSavingsRatio);
+      }
+      return ratios;
+    };
+    for (const x of await enProcesosNuevos({})) expect(x).toBeLessThan(0);
+    for (const x of await enProcesosNuevos({ maxCacheBreakpoints: 0 })) expect(x).toBe(0);
+    expect(plano(readme)).toContain(
+      "a long system prompt that changes on every request (a timestamp, a user id), or is reused only after its " +
+        "5-minute cache expired (requests more than 5 minutes apart, each in a fresh process), costs about 20 % more " +
+        "than no layer. Put what changes in the user message, or, in either case, pass `maxCacheBreakpoints: 0` to " +
+        "`AnthropicProvider`.",
+    );
+  });
 });
 
 describe("los detalles de la prueba de extremo a extremo", () => {
@@ -210,6 +248,18 @@ describe("los detalles de la prueba de extremo a extremo", () => {
     expect(aviso).toBeGreaterThan(primerBloque);
     // Antes del primer desplegable: el único sitio donde estaba era dentro de uno.
     expect(aviso).toBeLessThan(readme.indexOf("<details>"));
+  });
+
+  it("el aviso de `ERESOLVE` nombra también `@anthropic-ai/sdk` < 0.103, el mínimo de su peer (revisión #617)", () => {
+    // Un caret 0.x (`^0.60.0` … `^0.102.0`) no alcanza 0.103: npm para con ERESOLVE igual que con AI SDK 5.
+    const pkg = JSON.parse(leer("package.json")) as { peerDependencies: Record<string, string> };
+    expect(pkg.peerDependencies["@anthropic-ai/sdk"]).toMatch(/^>=0\.103\.0 /);
+    const r = plano(readme);
+    expect(r).toContain("On AI SDK 5, LangChain 0.3, Mastra < 1.68 or `@anthropic-ai/sdk` < 0.103, npm stops with `ERESOLVE`");
+    expect(r).toContain("`@mastra/core` < 1.68, `@anthropic-ai/sdk` < 0.103) are not supported by the adapter");
+    const ch = leer("CHANGELOG.md");
+    const entrada = plano(ch.slice(ch.indexOf("## 1.2.5"), ch.indexOf("\n## ", ch.indexOf("## 1.2.5") + 1)));
+    expect(entrada).toContain("`--legacy-peer-deps` on AI SDK 5, LangChain 0.3, Mastra < 1.68 or `@anthropic-ai/sdk` < 0.103");
   });
 
   it("la documentación de `savings.semanticCache` nombra la opción que existe y no pide licencia", () => {

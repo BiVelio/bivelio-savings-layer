@@ -26,20 +26,21 @@ npm i @bivelio/savings-layer         # the SDK, in your TypeScript/JavaScript ap
 npx @bivelio/savings-layer claude    # or meter Claude Code through the local gateway (also codex, gemini, qwen, aider)
 ```
 
-On AI SDK 5, LangChain 0.3 or Mastra < 1.68, npm stops with `ERESOLVE`: add
-`--legacy-peer-deps` (the SDK and the gateway work there; that framework's adapter does not).
+On AI SDK 5, LangChain 0.3, Mastra < 1.68 or `@anthropic-ai/sdk` < 0.103, npm stops with
+`ERESOLVE`: add `--legacy-peer-deps` (the SDK and the gateway work there; that package's adapter does not).
 
 - **Free, with no key.** The open core is the whole savings layer, Apache-2.0. The SDK:
   install it and it saves where your traffic repeats (identical requests, or simultaneous
   ones when the first is not streamed) and, on Anthropic, where your system prompt is long
   and stable; traffic that never repeats saves about 0 % by default. One exception costs
   more: on Anthropic, a long system prompt that changes on every request (a timestamp, a
-  user id) costs about 20 % more than no layer. Keep the system prompt identical and put
-  what changes in the user message, or pass `maxCacheBreakpoints: 0` to
-  `AnthropicProvider`. With a coding agent, the local gateway measures
-  your spend on your machine, request by request; its cache-write TTL lever saves only
-  when your client pays per token and asks for the one-hour cache. No key, no signup, no
-  telemetry, and nothing is sent to BiVelio.
+  user id), or is reused only after its 5-minute cache expired (requests more than 5
+  minutes apart, each in a fresh process), costs about 20 % more than no layer. Put what
+  changes in the user message, or, in either case, pass `maxCacheBreakpoints: 0` to
+  `AnthropicProvider`. With a coding agent, the local gateway measures your spend on your
+  machine, request by request; its cache-write TTL lever saves only when your client pays
+  per token and asks for the one-hour cache. No key, no signup, no telemetry, and nothing
+  is sent to BiVelio.
 - **The cloud is the optional part.** A BiVelio key adds the team dashboard, shared
   measurement, seats and license management: free on Measure, a fixed subscription on
   Pro and Team, and never a commission on what you save. A key only adds the cloud:
@@ -655,10 +656,10 @@ whether a figure comes from your provider's own counter — and `onReport` recei
 too.
 
 Minimum versions: `ai` 6, `@mastra/core` 1.68, `langchain` and `@langchain/core` 1.1,
-and `@anthropic-ai/sdk` 0.103. Older ones (AI SDK 5, LangChain 0.3, `@mastra/core`
-below 1.68) are not supported by the adapter; in such a project npm needs
-`npm i @bivelio/savings-layer --legacy-peer-deps` (pnpm, yarn and bun only warn), and
-the SDK itself and the gateway still work there.
+and `@anthropic-ai/sdk` 0.103. Older ones (AI SDK 5, LangChain 0.3, `@mastra/core` < 1.68,
+`@anthropic-ai/sdk` < 0.103) are not supported by the adapter; in such a project
+npm needs `npm i @bivelio/savings-layer --legacy-peer-deps` (pnpm, yarn and bun only
+warn), and the SDK and the gateway still work there.
 
 ### Vercel AI SDK
 

@@ -1,3 +1,4 @@
+import { readFileSync } from "node:fs";
 import { createServer, type Server, type ServerResponse } from "node:http";
 import { afterEach, beforeEach, describe, it, expect, vi, type MockInstance } from "vitest";
 
@@ -41,12 +42,14 @@ describe("resumenDeMedicion — la línea de salida", () => {
     const l = resumenDeMedicion(r.estado(), "claude");
     expect(l).toBe(
       "[bvsala claude] metering in this run: 2 request(s) metered with the provider's usage · spent $0.5000 at list price · " +
-        // e2e del 22-11: con --upstream deepseek la rebaja SÍ se acredita (api.deepseek.com es un origen
-        // oficial): el texto lo dice, en vez de afirmar «solo en la API oficial de Anthropic».
+        // Revisión del PR #617: el endpoint Anthropic de DeepSeek no informa escrituras de caché
+        // (cache_creation_input_tokens: 0), así que allí no se acredita nada; el texto lo dice igual
+        // que docs/terminales/deepseek.md y el cartel («only acts on Anthropic API-key traffic»).
         "saved $0.00: nothing was credited (cache TTL tuning is credited only on API-key /v1/messages traffic that " +
-        "asks for the 1-hour cache and goes to the provider's own API - Anthropic's, or DeepSeek's Anthropic-compatible " +
-        "one with --upstream deepseek; an opt-in lever or a proxy upstream can change a request without a credited " +
-        "saving; the gateway's levers act on /v1/messages (the Anthropic protocol) only; see `bvsala --help`). " +
+        "asks for the 1-hour cache and goes to Anthropic's own API - DeepSeek's Anthropic-compatible endpoint reports " +
+        "no cache writes, so nothing is credited there; an opt-in lever or a proxy upstream can change a request " +
+        "without a credited saving; the gateway's levers act on /v1/messages (the Anthropic protocol) only; " +
+        "see `bvsala --help`). " +
         "Per-request detail: run it again with BVSALA_GATEWAY_LOG=1 (one line per request, on stderr).",
     );
   });
@@ -68,7 +71,13 @@ describe("resumenDeMedicion — la línea de salida", () => {
     const r = new RecuentoDeMedicion();
     r.medida(SIN_AHORRO);
     const l = resumenDeMedicion(r.estado(), "gateway", { palancasApagadas: true, logVisible: true });
-    expect(l).toContain("saved $0.00: every gateway lever is off (BVSALA_GATEWAY_ELISION=0); unset it to let the levers act");
+    // Revisión del PR #617: =0 no apaga la coalescencia (servidor.ts solo mira `opts.coalescer`), así que
+    // el texto nombra lo que =0 apaga, como la línea de arranque, y no «every gateway lever».
+    expect(l).toContain(
+      "saved $0.00: the savings levers are off (BVSALA_GATEWAY_ELISION=0: no cache TTL tuning, sibling model, " +
+        "effort ceiling or context elision dials); unset it to let them act",
+    );
+    expect(l).not.toContain("every gateway lever");
     expect(l).not.toContain("cache TTL tuning is credited only");
     // Un ahorro que sí hubo (una réplica por referencia) se dice igual: el freno no lo tapa.
     r.replica({ actual: 0, netSavingsUsd: 0.05, basis: "reference" });
@@ -77,26 +86,28 @@ describe("resumenDeMedicion — la línea de salida", () => {
     expect(conReplica).not.toContain("saved $0.00");
   });
 
-  it("⛔ el texto del $0 dice la verdad sobre DeepSeek: la rebaja de TTL se acredita en su origen oficial (e2e del 22-11)", async () => {
+  it("⛔ el texto del $0 dice de DeepSeek lo mismo que su guía: no informa escrituras de caché y allí no se acredita nada (revisión #617)", async () => {
     const { esUpstreamOficial, rutaReescrita } = await import("../gateway/upstream.js");
     // `--upstream deepseek` es un origen oficial y el cliente sigue mandando /v1/messages (la ruta que mira la palanca).
     expect(esUpstreamOficial("https://api.deepseek.com")).toBe(true);
     expect(rutaReescrita("https://api.deepseek.com", "/v1/messages")).toBe("/anthropic/v1/messages");
-    // Con escrituras de caché en el usage, la rebaja acredita ahorro `measured` también en deepseek-flash.
-    const medido = costeMedido("deepseek-flash", { input_tokens: 331, output_tokens: 10, cache_creation_input_tokens: 100_000 })!;
+    // El usage que DeepSeek devuelve de verdad lleva cache_creation_input_tokens 0: aunque la rebaja
+    // se aplique, no hay prima de escritura que bajar y lo acreditado es 0.
+    const medido = costeMedido("deepseek-flash", { input_tokens: 331, output_tokens: 10, cache_creation_input_tokens: 0 })!;
     const rebaja = { rebajadas: 1, yaEran5m: 0, herramientaDeServidor: false };
     const oficial = costeDe(informeMedido("d-1", "deepseek-flash", medido, undefined, null, rebaja, null, false, false));
-    expect(oficial.basis).toBe("measured");
-    expect(oficial.netSavingsUsd).toBeGreaterThan(0);
-    // Detrás de un proxy (origen no oficial), nada.
-    const proxy = costeDe(informeMedido("d-2", "deepseek-flash", medido, undefined, null, rebaja, null, false, true));
-    expect(proxy.netSavingsUsd).toBe(0);
-    // Y el motivo del $0 ya no afirma «solo Anthropic».
+    expect(oficial.netSavingsUsd).toBe(0);
+    // El motivo del $0 ya no presenta ese tráfico como acreditable, y lo dice con las palabras de la guía.
     const r = new RecuentoDeMedicion();
     r.medida(SIN_AHORRO);
     const l = resumenDeMedicion(r.estado(), "gateway");
-    expect(l).toContain("Anthropic's, or DeepSeek's Anthropic-compatible one with --upstream deepseek");
-    expect(l).not.toContain("only on Anthropic API-key traffic");
+    expect(l).toContain(
+      "goes to Anthropic's own API - DeepSeek's Anthropic-compatible endpoint reports no cache writes, so nothing is credited there",
+    );
+    expect(l).not.toContain("or DeepSeek's Anthropic-compatible one with --upstream deepseek");
+    const guia = readFileSync(new URL("../docs/terminales/deepseek.md", import.meta.url), "utf8").replace(/\s+/g, " ");
+    expect(guia).toContain("reports `cache_creation_input_tokens` as 0");
+    expect(guia).toContain("no saving is credited on this traffic");
   });
 
   it("con el log a la vista (`bvsala gateway`, o BVSALA_GATEWAY_LOG=1) el detalle está arriba, no en otra ejecución", () => {
@@ -524,7 +535,11 @@ describe.skipIf(process.platform === "win32")("1.2.4 · `bvsala claude` enseña 
   it("⛔ con BVSALA_GATEWAY_ELISION=0 el resumen culpa al freno, no a la regla de la rebaja (e2e del 22-11)", async () => {
     const r = await correr(2, { "x-api-key": "clave-inventada-de-prueba" }, { BVSALA_GATEWAY_ELISION: "0" });
     expect(r.codigo, r.stderr).toBe(0);
-    expect(r.stderr).toContain("saved $0.00: every gateway lever is off (BVSALA_GATEWAY_ELISION=0); unset it to let the levers act");
+    expect(r.stderr).toContain(
+      "saved $0.00: the savings levers are off (BVSALA_GATEWAY_ELISION=0: no cache TTL tuning, sibling model, " +
+        "effort ceiling or context elision dials); unset it to let them act",
+    );
+    expect(r.stderr).not.toContain("every gateway lever");
     expect(r.stderr).not.toContain("cache TTL tuning is credited only");
   }, 30_000);
 
