@@ -1,4 +1,4 @@
-import { generateKeyPairSync } from "node:crypto";
+import { generateKeyPairSync, randomBytes } from "node:crypto";
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { afterEach, describe, it, expect, vi } from "vitest";
@@ -6,6 +6,7 @@ import { afterEach, describe, it, expect, vi } from "vitest";
 import {
   LicenseRenewer,
   SALIDA_GRATUITA,
+  esMarcadorDeClave,
   licenseVerdict,
   refusalBody,
   startupFailureMessage,
@@ -131,6 +132,50 @@ describe("resolveStartupLicense — el arranque, en orden estricto", () => {
       expect(llamadas(f)).toHaveLength(0);
     },
   );
+
+  // E2E DEL 22-11 · el marcador ASCII `bvk_...` (y los de siempre: `bvk_xxx`,
+  // `bvk_<your key>`, `bvk_YOUR_KEY`…) pasaba el filtro y viajaba a
+  // savings.bivelio.com. Ahora es «malformed», sin red, con la salida gratis.
+  // Con `resolveStartupLicense` a secas y no con `arrancar`: el marcador no es
+  // un secreto, y el mensaje cita `bvk_...` a propósito.
+  it.each([
+    "bvk_...",
+    "bvk_…",
+    "bvk_",
+    "bvk_xxx",
+    "bvk_XXXXXXXXXXXXXXXX",
+    "bvk_<your key>",
+    "bvk_<...>",
+    "bvk_{KEY}",
+    "bvk_$BIVELIO_SERVICE_KEY",
+    "bvk_YOUR_KEY",
+    "bvk_your-service-key-here",
+    "bvk_placeholder",
+  ])("E1 · el marcador ASCII %s → service-key-malformed, SIN red, con la salida gratuita", async (clave) => {
+    const f = responde(200);
+    const r = await resolveStartupLicense({
+      serviceAccountKey: clave,
+      licenseServerUrl: CP,
+      publicKey: TEST_KEYS.publicKey,
+      fetchImpl: f as unknown as typeof fetch,
+    });
+    expect(r).toMatchObject({ ok: false, code: "service-key-malformed" });
+    expect(!r.ok && r.message).toContain("a placeholder such as bvk_... copied from an example is not one");
+    expect(!r.ok && r.message).toContain(SALIDA_GRATUITA);
+    expect(!r.ok && r.message).toMatch(/^[\x20-\x7E]+$/);
+    expect(llamadas(f)).toHaveLength(0);
+  });
+
+  it("E1 · una clave con la forma de las reales (bvk_ + base64url) y las cortas de las pruebas SÍ viajan", async () => {
+    // La forma de apps/web/app/api/service-accounts: `bvk_${randomBytes(24).toString("base64url")}`.
+    for (let i = 0; i < 200; i++) expect(esMarcadorDeClave(`bvk_${randomBytes(24).toString("base64url")}`)).toBe(false);
+    for (const clave of [`bvk_${randomBytes(24).toString("base64url")}`, "bvk_test", "bvk_x", "bvk_prueba"]) {
+      const f = conToken(activo());
+      const r = await arrancar({ serviceAccountKey: clave, fetchImpl: f as unknown as typeof fetch });
+      expect(r, clave).toMatchObject({ ok: true, source: "online" });
+      expect(llamadas(f), clave).toHaveLength(1);
+    }
+  });
 
   it("E1 · una clave que no es bvk_ → service-key-malformed; si es un token de licencia, lo dice", async () => {
     const f = responde(200);
@@ -338,6 +383,24 @@ describe("resolveStartupLicense — el arranque, en orden estricto", () => {
     expect(r).toMatchObject({ ok: false, code: "license-invalid" });
     expect(!r.ok && r.message).toContain("Did you paste the bvk_");
     expect(llamadas(f)).toHaveLength(0);
+  });
+
+  // E2E DEL 22-11 · «unset BIVELIO_LICENSE_KEY: the gateway collects the license
+  // online by itself» solo es verdad CON clave de servicio. Sin ella no hay nada
+  // que recoger: quitarla deja el gateway en modo comunitario, y eso ya lo dice
+  // la salida gratuita.
+  it("⛔ BIVELIO_LICENSE_KEY mal pegada SIN clave de servicio: no promete recogerla online; CON clave, sí", async () => {
+    for (const licenseKey of ["bvk_…", "no-es-una-clave", signLicense(testPayload(), atacante.privateKey)]) {
+      const sinClave = await arrancar({ serviceAccountKey: undefined, licenseKey, fetchImpl: responde(200) as unknown as typeof fetch });
+      expect(sinClave).toMatchObject({ ok: false, code: "license-invalid" });
+      const m = !sinClave.ok ? sinClave.message : "";
+      expect(m, licenseKey).not.toMatch(/collect(s)? (the license|it) online/);
+      expect(m, licenseKey).toContain(SALIDA_GRATUITA);
+      const conClave = await arrancar({ licenseKey, fetchImpl: responde(200) as unknown as typeof fetch });
+      expect(conClave).toMatchObject({ ok: false, code: "license-invalid" });
+      expect(!conClave.ok && conClave.message, licenseKey).toMatch(/collect(s)? (the license|it) online/);
+      expect(!conClave.ok && conClave.message, licenseKey).toContain(SALIDA_GRATUITA);
+    }
   });
 
   it("⛔ BIVELIO_LICENSE_KEY firmada por un atacante → license-invalid, SIN red", async () => {
