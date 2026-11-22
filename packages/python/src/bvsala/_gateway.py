@@ -11,7 +11,10 @@ Qué hace y qué NO hace, a propósito:
 - Solo usa la biblioteca estándar. Instalarlo no añade ninguna dependencia a la
   cadena de suministro del cliente.
 - Ignora los proxies del entorno (HTTP_PROXY…): el gateway es local y lo que
-  va a él no debe pasar por nadie más.
+  va a él no debe pasar por nadie más. Vale para sus propias llamadas
+  (urllib sin ProxyHandler) y para las copias que devuelve `wrap()`, que
+  llevan el cliente HTTP por defecto del SDK sin proxies (salvo que el
+  usuario haya traído el suyo con `http_client=`: ese se respeta).
 """
 
 from __future__ import annotations
@@ -19,6 +22,7 @@ from __future__ import annotations
 import asyncio
 import json
 import os
+import sys
 import threading
 import urllib.error
 import urllib.request
@@ -31,8 +35,12 @@ from ._keys import is_request_id, request_id_of, response_id_of
 from ._report import GatewayStatus, Report, Totals, parse_report, parse_status
 
 #: El gateway de Anthropic, el de siempre. El de OpenAI se arranca aparte
-#: (`bvsala gateway --upstream openai --port 8403`).
+#: (`npx @bivelio/savings-layer gateway --upstream openai --port 8403`).
 DEFAULT_URL = "http://127.0.0.1:8402"
+#: Cómo arranca el gateway quien instaló este paquete con pip: `bvsala` es el
+#: binario del paquete de npm y no está en su PATH; `npx` sí lo encuentra (es
+#: el único `bin` del paquete). La misma forma que el README del repositorio.
+_ARRANCAR = "npx @bivelio/savings-layer gateway"
 ENV_URL = "BVSALA_GATEWAY_URL"
 #: La cabecera con la que una petición pide su informe al gateway (que no la reenvía).
 REPORT_HEADER = "x-bvsala-report"
@@ -75,13 +83,53 @@ def _mismo_sitio(a: Tuple[str, str], b: Tuple[str, str]) -> bool:
     return canon(a) == canon(b)
 
 
+def _cliente_http_sin_proxy(client: Any, raiz: str, destino: str) -> Optional[Any]:
+    """Un cliente HTTP nuevo, del MISMO tipo que el que el SDK crea por defecto, sin proxies.
+
+    Los SDK de OpenAI y Anthropic, sin ``http_client=``, crean su propio cliente
+    (``SyncHttpxClientWrapper`` / ``AsyncHttpxClientWrapper``, subclases de
+    ``DefaultHttpxClient`` / ``DefaultAsyncHttpxClient``), y ese cliente lee
+    HTTP_PROXY/HTTPS_PROXY del entorno. Hacia el gateway local eso mandaba la
+    clave del proveedor y el prompt EN CLARO al proxy (y daba 502 detrás de un
+    proxy corporativo). Aquí se construye uno igual —misma clase, mismo timeout
+    que el cliente, y con ella los límites, las redirecciones y los keepalive
+    por defecto del SDK— con dos cerrojos:
+
+    - ``trust_env=False``: httpx no lee los proxies del entorno.
+    - ``mounts={<origen del gateway>: None}``: el origen exacto del gateway va
+      por el transporte directo. Hace falta porque el ``DefaultHttpxClient`` de
+      Anthropic monta él mismo los proxies del entorno, con ``trust_env`` o sin
+      él; un patrón con puerto gana a ``http://`` y ``all://``.
+
+    Devuelve None si el cliente trae uno suyo (``http_client=``) o si el SDK no
+    tiene la forma esperada: entonces no se toca (la guía dice NO_PROXY).
+    """
+    actual = getattr(client, "_client", None)
+    base = sys.modules.get(f"{raiz}._base_client")
+    por_defecto = tuple(
+        c for c in (getattr(base, "SyncHttpxClientWrapper", None), getattr(base, "AsyncHttpxClientWrapper", None))
+        if isinstance(c, type)
+    )
+    if actual is None or type(actual) not in por_defecto:
+        return None
+    # Como lo construye el propio SDK: base_url y el timeout del cliente.
+    opciones: Dict[str, Any] = {
+        "base_url": destino,
+        "trust_env": False,
+        "mounts": {_texto_origen(_origen(destino)): None},
+    }
+    if hasattr(client, "timeout"):
+        opciones["timeout"] = client.timeout
+    return type(actual)(**opciones)
+
+
 class Gateway:
     """A local ``bvsala gateway``, and the reports it recorded for this process.
 
     ``url`` defaults to ``$BVSALA_GATEWAY_URL`` or ``http://127.0.0.1:8402`` (the
-    Anthropic gateway). For OpenAI, start ``bvsala gateway --upstream openai
-    --port 8403`` and use ``Gateway("http://127.0.0.1:8403")``. Only the origin
-    of ``url`` matters: a path such as ``/v1`` is ignored.
+    Anthropic gateway). For OpenAI, start ``npx @bivelio/savings-layer gateway
+    --upstream openai --port 8403`` and use ``Gateway("http://127.0.0.1:8403")``.
+    Only the origin of ``url`` matters: a path such as ``/v1`` is ignored.
     """
 
     def __init__(self, url: Optional[str] = None, *, timeout: float = 5.0) -> None:
@@ -115,9 +163,9 @@ class Gateway:
         except (urllib.error.URLError, OSError) as e:
             raise GatewayUnavailable(
                 f"no bvsala gateway answered at {self.url} ({getattr(e, 'reason', e)}). Start one with "
-                "`bvsala gateway` (Anthropic, port 8402) or `bvsala gateway --upstream openai --port 8403` "
-                "(the gateway ships in the npm package @bivelio/savings-layer and needs no key: with none it runs "
-                "free in COMMUNITY mode)."
+                f"`{_ARRANCAR}` (Anthropic, port 8402) or `{_ARRANCAR} --upstream openai --port 8403` "
+                "(the gateway ships in the npm package @bivelio/savings-layer, runs on Node.js 20.19 or newer and "
+                "needs no key: with none it runs free in COMMUNITY mode)."
             ) from e
 
     @staticmethod
@@ -161,7 +209,11 @@ class Gateway:
             raise GatewayUnavailable(f"{self.url}: {e}") from e
 
     def require_ready(self) -> GatewayStatus:
-        """Fail closed: return the status only if the gateway serves new requests under a live license."""
+        """Fail closed: return the status only if the gateway serves new requests.
+
+        A gateway with no BiVelio key (COMMUNITY mode) always does; with a key,
+        only while its license is active or in its grace period.
+        """
         st = self.status()
         if not st.serving:
             raise LicenseInactive(st.license_state, f"the bvsala gateway at {self.url} reports license {st.license_state}")
@@ -177,6 +229,14 @@ class Gateway:
         client is left untouched. Raises ``GatewayUnavailable`` or
         ``LicenseInactive`` if the gateway cannot serve, and ``GatewayMismatch``
         if the client is configured for a provider the gateway does not forward to.
+
+        Proxy settings (``HTTP_PROXY``, ``HTTPS_PROXY``, ``ALL_PROXY``) are not
+        used for the gateway: the copy gets a new HTTP client of the SDK's own
+        default type (the client's timeout, the SDK's default limits and
+        redirects) that talks to the gateway directly. If the client was created with your own
+        ``http_client=``, the copy keeps it as it is; if that client reads proxy
+        settings, add the gateway's host to ``NO_PROXY`` (for example
+        ``NO_PROXY=127.0.0.1,localhost``) before creating it.
         """
         raiz = type(client).__module__.split(".")[0]
         if raiz not in _SDKS or not callable(getattr(client, "with_options", None)):
@@ -196,10 +256,17 @@ class Gateway:
                 raise GatewayMismatch(
                     f"this {type(client).__name__} client sends to {_texto_origen(suyo)}, but the gateway at "
                     f"{self.url} forwards to {st.upstream}. Start a gateway for that provider, e.g. "
-                    f"`bvsala gateway --upstream {_texto_origen(suyo)} --port <free port>`, and pass its URL to Gateway()."
+                    f"`{_ARRANCAR} --upstream {_texto_origen(suyo)} --port <free port>`, and pass its URL to Gateway()."
                 )
             nueva = self.url + urlsplit(base).path
-        return client.with_options(base_url=nueva, default_headers=dict(REPORT_HEADERS))
+        opciones: Dict[str, Any] = {"base_url": nueva, "default_headers": dict(REPORT_HEADERS)}
+        # Sin proxies hacia el gateway: la clave del proveedor y el prompt no
+        # pasan en claro por un HTTP_PROXY. Si el usuario trajo su http_client,
+        # se respeta (None): la guía le dice NO_PROXY.
+        http = _cliente_http_sin_proxy(client, raiz, nueva)
+        if http is not None:
+            opciones["http_client"] = http
+        return client.with_options(**opciones)
 
     # ── Informes ────────────────────────────────────────────────────────────
 
@@ -210,6 +277,15 @@ class Gateway:
         event or chunk, a LiteLLM response, a raw response, or an id string.
         Waits up to ``wait`` seconds for a request still in flight; if it has
         not finished by then, the report comes back with status ``"pending"``.
+
+        A raw response (``with_raw_response``), a stream or the
+        ``x-bvsala-request-id`` string name the request exactly. A parsed
+        response, a chunk or an event is looked up by the provider's response
+        id instead. With the gateway's opt-in ``BVSALA_GATEWAY_COALESCE=1``,
+        identical requests in flight at the same time share one provider call
+        and one response id, so that lookup cannot tell them apart and returns
+        the same report for all of them: pass the raw response, the stream or
+        the header value to get each request's own report.
         """
         espera = max(0.0, min(float(wait), _ESPERA_MAXIMA_S))
         if isinstance(obj, str):
