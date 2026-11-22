@@ -271,6 +271,14 @@ export interface OpcionesGateway {
    */
   avisosDeNoMedido?: boolean;
   /**
+   * El aviso de MODO COMUNITARIO al arrancar sin licencia. Por defecto, sí:
+   * quien arranca el gateway desde código no tiene otra línea que lo diga.
+   * bin.ts lo apaga porque imprime su propio cartel (LINEA_MODO_COMUNITARIO y
+   * la línea de «metering: LOCAL ONLY»), y salían dos «COMMUNITY MODE (open
+   * core)» distintas (e2e del 22-11).
+   */
+  avisoComunitario?: boolean;
+  /**
    * Cuánto espera `cerrar()` a las mediciones EN VUELO (una gemela que ya
    * escribió su réplica y espera el `finish` de su cliente para medirse) antes
    * de vaciar el emisor. Vencido, se avisa y se cierra igual: el apagado nunca
@@ -422,6 +430,13 @@ const CABECERAS_DE_SALTO = new Set([
 ]);
 
 /**
+ * El motivo de «not metered» de un corte del proveedor a mitad de respuesta:
+ * la primera fila de la tabla de docs/terminales/README.md. Lo comparten la
+ * línea de log, el informe local y el resumen de salida.
+ */
+export const MOTIVO_CORTE_DEL_PROVEEDOR = "the provider cut the answer before its final usage";
+
+/**
  * El fallo de un fetch con su CAUSA. undici envuelve TODO en «TypeError: fetch
  * failed» y guarda lo que pasó en `cause`: sin ella, un ECONNREFUSED (el
  * upstream no está), un ENOTFOUND (DNS) y una cabecera que undici se negó a
@@ -555,14 +570,16 @@ export async function arrancarGateway(opts: OpcionesGateway): Promise<GatewayArr
     else void deriveSeatId(opts.serviceAccountKey).then((s) => emisor?.setSeat(s, ci)).catch(() => {});
     emisor.start();
   } else if (comunidad) {
-    avisarUnaVez(
-      "gateway-modo-comunitario",
-      // 1.2.4 · decía «every local saving lever is on»: en la pasarela va UNA por
-      // defecto, y eso lo dice la línea de las palancas (textos-publicos.ts).
-      "[bvsala gateway] COMMUNITY MODE (open core): no BIVELIO_SERVICE_KEY - every request is metered on this " +
-        "machine with the provider's own usage (log line, exit summary, and the local report routes with " +
-        "x-bvsala-report). Nothing is sent to BiVelio. A service key only adds the cloud dashboard.",
-    );
+    if (opts.avisoComunitario !== false) {
+      avisarUnaVez(
+        "gateway-modo-comunitario",
+        // 1.2.4 · decía «every local saving lever is on»: en la pasarela va UNA por
+        // defecto, y eso lo dice la línea de las palancas (textos-publicos.ts).
+        "[bvsala gateway] COMMUNITY MODE (open core): no BIVELIO_SERVICE_KEY - every request is metered on this " +
+          "machine with the provider's own usage (log line, exit summary, and the local report routes with " +
+          "x-bvsala-report). Nothing is sent to BiVelio. A service key only adds the cloud dashboard.",
+      );
+    }
   } else {
     // Licencia presente (offline) pero sin clave de servicio: no hay org cuyo
     // metering autorizar ni entitlements que consultar.
@@ -743,6 +760,8 @@ export async function arrancarGateway(opts: OpcionesGateway): Promise<GatewayArr
    * La línea de «reenviado pero NO medido», con su motivo, y el aviso único
    * que le toque. Hasta aquí una ruta con dialecto que respondía 2xx sin usage
    * pasaba sin dejar rastro: ni registro ni línea. Nada se estima en su lugar.
+   * `detalle` (opcional) va al final de la línea como campo aparte, nunca
+   * dentro del motivo: el informe local guarda el motivo tal cual.
    */
   const noMedido = (
     requestId: string,
@@ -752,9 +771,13 @@ export async function arrancarGateway(opts: OpcionesGateway): Promise<GatewayArr
     stream: boolean,
     motivo: string,
     aviso: AvisoDeNoMedido,
+    detalle?: string,
   ): void => {
     buzon.noMedido(requestId, motivo);
-    log(`[gateway] ${metodo} ${path} → ${status}${stream ? " (stream)" : ""} · not metered: ${motivo}`);
+    log(
+      `[gateway] ${metodo} ${path} → ${status}${stream ? " (stream)" : ""} · not metered: ${motivo}` +
+        (detalle ? ` · detail: ${detalle}` : ""),
+    );
     // Al recuento, solo lo que es API: una ruta con dialecto o bajo `/v1/`. Lo
     // demás que un terminal manda por el base URL (telemetría, sondas) no es
     // inferencia, y contarlo como «no medido» asustaría sin motivo.
@@ -1343,7 +1366,10 @@ export async function arrancarGateway(opts: OpcionesGateway): Promise<GatewayArr
                 vigiaId?.observar(ch);
               }
               // El id de la respuesta: del stream si lo es, si no del JSON (stream:false).
-              if (vigiaId) buzon.anotarRespuesta(requestId, vigiaId.valor() ?? idDeCuerpoJson(Buffer.concat(replica.chunks)));
+              // `replica`: el índice por id de respuesta sigue en la primaria (informes-locales.ts).
+              if (vigiaId) {
+                buzon.anotarRespuesta(requestId, vigiaId.valor() ?? idDeCuerpoJson(Buffer.concat(replica.chunks)), { replica: true });
+              }
               if (!seFueAntes) res.end();
               // ¿Llegó ENTERA? `finish` = el último byte se entregó al sistema;
               // un `close` sin `finish` = el cliente cortó a mitad. Una llamada
@@ -2036,22 +2062,48 @@ export async function arrancarGateway(opts: OpcionesGateway): Promise<GatewayArr
           }
         }
       } else {
-        log(`[gateway] ${req.method} ${url.pathname} → error while serving: ${describirFallo(err)}`);
-        if (!res.headersSent) {
-          res.writeHead(502, { "content-type": "application/json" });
-          res.end(JSON.stringify({ error: "bvsala gateway: stream interrupted", detail: describirFallo(err) }));
-          return;
-        }
         // EL PROVEEDOR CORTÓ A MEDIAS, con las cabeceras ya enviadas: el
         // cliente tiene que ver el corte, como lo vería sin gateway. Cerrar
         // con `res.end()` terminaba el cuerpo «chunked» LIMPIAMENTE y una
         // respuesta truncada llegaba como completa (un SSE sin su final, o un
         // JSON partido sobre un 200 válido): el SDK no reintentaba. Se rompe
         // la conexión.
+        //
+        // En una ruta con dialecto que respondió 2xx, el corte deja la línea
+        // y el motivo que promete docs/terminales/README.md («· not metered:
+        // the provider cut the answer before its final usage»), el MISMO en el
+        // informe local y en el resumen de salida. Hasta la 1.2.4 el log decía
+        // «error while serving: TypeError: terminated…» y el informe «no usage
+        // was read from the provider's answer (HTTP 200)» (e2e del 22-11). La
+        // causa de undici sigue en la línea, como campo aparte.
+        if (
+          res.headersSent &&
+          !res.writableEnded &&
+          respuestaOk &&
+          !medida &&
+          req.method === "POST" &&
+          tieneDialecto(url.pathname)
+        ) {
+          noMedido(
+            requestId,
+            req.method,
+            url.pathname,
+            estadoUpstream ?? 200,
+            observador !== null,
+            MOTIVO_CORTE_DEL_PROVEEDOR,
+            null,
+            describirFallo(err),
+          );
+          res.destroy();
+          return;
+        }
+        log(`[gateway] ${req.method} ${url.pathname} → error while serving: ${describirFallo(err)}`);
+        if (!res.headersSent) {
+          res.writeHead(502, { "content-type": "application/json" });
+          res.end(JSON.stringify({ error: "bvsala gateway: stream interrupted", detail: describirFallo(err) }));
+          return;
+        }
         if (!res.writableEnded) {
-          if (respuestaOk && !medida && req.method === "POST" && tieneDialecto(url.pathname)) {
-            recuento.noMedida("the provider cut the answer before its final usage");
-          }
           res.destroy();
           return;
         }
