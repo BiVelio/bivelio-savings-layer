@@ -170,7 +170,7 @@ export default async function Footer({ sinGitHub = false }: { sinGitHub?: boolea
   ];
 
   return (
-    <footer className="ftr">
+    <footer className="ftr" data-medir-zona="footer">
       {/* Banda CTA — la pieza que abre el footer de bivelio.com. Un solo botón,
           el del alta (decisión del dueño 2026-08-24): el verificador ya tiene su
           CTA en el héroe y aquí solo repartía el clic del cierre. */}

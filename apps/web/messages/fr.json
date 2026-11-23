@@ -2520,7 +2520,7 @@
     "website": {
       "title": "Visites sur ce site",
       "body": "Ce site, et non le Logiciel, mesure ses propres visites avec <b>Vercel Web Analytics</b>. Il compte les pages vues et trois actions : copier une commande d'installation, suivre un lien vers GitHub, npm ou PyPI, et passer à l'inscription. La mesure est agrégée et sans cookies, sans données personnelles ni suivi entre sites.",
-      "limits": "Chaque action ne transmet que la page et la section, ainsi que le gestionnaire de paquets, la destination ou la formule ; jamais ce que vous saisissez ou copiez. Les adresses des pages sont envoyées sans paramètres de requête ni jetons."
+      "limits": "Chaque page vue ou action ne transmet que la page et la section, le site d'où vous venez tel que votre navigateur l'indique, et le gestionnaire de paquets, la destination ou la formule ; jamais ce que vous saisissez ou copiez. Vercel déduit le pays, le navigateur et le type d'appareil de la requête elle-même. Les adresses des pages sont envoyées sans paramètres de requête ni jetons."
     },
     "contact": "Questions et demandes concernant ces données : <mail>{email}</mail>.",
     "overview": {

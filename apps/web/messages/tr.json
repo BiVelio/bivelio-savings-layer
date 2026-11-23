@@ -2520,7 +2520,7 @@
     "website": {
       "title": "Bu sitenin ziyaretleri",
       "body": "Yazılım değil, bu site kendi ziyaretlerini <b>Vercel Web Analytics</b> ile ölçer. Görüntülenen sayfaları ve üç eylemi sayar: bir kurulum komutunu kopyalamak, GitHub, npm veya PyPI bağlantısını izlemek ve kayda geçmek. Ölçüm toplu ve çerezsizdir; kişisel veri içermez ve siteler arası izleme yapmaz.",
-      "limits": "Her eylem yalnızca sayfayı ve bölümü, ayrıca paket yöneticisini, hedefi veya planı taşır; yazdığın ya da kopyaladığın şeyi asla taşımaz. Sayfa adresleri sorgu parametreleri ve token olmadan gönderilir."
+      "limits": "Her sayfa görüntüleme veya eylem yalnızca sayfayı ve bölümü, tarayıcının bildirdiği şekliyle geldiğin siteyi ve paket yöneticisini, hedefi veya planı taşır; yazdığın ya da kopyaladığın şeyi asla taşımaz. Ülkeyi, tarayıcıyı ve cihaz türünü Vercel isteğin kendisinden çıkarır. Sayfa adresleri sorgu parametreleri ve token olmadan gönderilir."
     },
     "contact": "Bu verilerle ilgili sorular ve talepler: <mail>{email}</mail>.",
     "overview": {

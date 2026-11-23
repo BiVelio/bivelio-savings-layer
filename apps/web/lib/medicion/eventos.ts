@@ -1,3 +1,6 @@
+import type { ComponentProps } from "react";
+import type { Analytics, BeforeSendEvent } from "@vercel/analytics/react";
+
 import { locales } from "@/i18n/config";
 
 /**
@@ -189,10 +192,32 @@ export function paginaDe(pathname: string): string {
 }
 
 /**
- * La URL que se manda a Vercel: origen e idioma, más la ruta conocida con sus
- * segmentos dinámicos tapados. Sin query (ni `?code=`, ni `?next=`, ni el
- * `gclid` de un anuncio) y sin fragmento. `null` si no se puede leer: mejor no
- * mandar nada que mandarla en bruto.
+ * La ruta limpia de una página, en las dos formas que pide Vercel: `path`
+ * (`/es/invitacion/[token]`) y `route`, la plantilla de la ruta
+ * (`/[locale]/invitacion/[token]`). Una ruta conocida conserva su plantilla;
+ * una desconocida (un 404, que puede llevar cualquier cosa que alguien teclee:
+ * un correo, un `k=v&z=1`) se pliega en `[...rest]`.
+ *
+ * Hay que dárselas hechas a `<Analytics>`: el componente de Next las calcula
+ * con usePathname() + useParams(), y como Next codifica los parámetros pero no
+ * la ruta, un 404 en `/es/alguien@example.com` salía como
+ * `route: "/[locale]/alguien@example.com"`. `beforeSend` no llega a la ruta,
+ * solo a la URL.
+ */
+export function rutaParaVercel(pathname: string): { route: string; path: string } {
+  const { idioma, ruta } = analizar(pathname);
+  const resto = ruta === null ? "/[...rest]" : ruta ? `/${ruta}` : "";
+  return {
+    route: `${idioma ? "/[locale]" : ""}${resto}` || "/",
+    path: `${idioma ? `/${idioma}` : ""}${resto}` || "/",
+  };
+}
+
+/**
+ * La URL que se manda: origen más la ruta limpia de `rutaParaVercel`. Sin
+ * query (ni `?code=`, ni `?next=`, ni el `gclid` de un anuncio) y sin
+ * fragmento. `null` si no se puede leer: mejor no mandar nada que mandarla en
+ * bruto.
  */
 export function urlSinDatos(url: string): string | null {
   let u: URL;
@@ -201,10 +226,23 @@ export function urlSinDatos(url: string): string | null {
   } catch {
     return null;
   }
-  const { idioma, ruta } = analizar(u.pathname);
-  const resto = ruta === null ? "/[...rest]" : ruta ? `/${ruta}` : "";
-  const camino = `${idioma ? `/${idioma}` : ""}${resto}` || "/";
-  return `${u.origin}${camino}`;
+  return `${u.origin}${rutaParaVercel(u.pathname).path}`;
+}
+
+/** Toda vista y todo evento salen con la URL limpia; si no se puede limpiar, no salen. */
+export function sinDatos(evento: BeforeSendEvent): BeforeSendEvent | null {
+  const url = urlSinDatos(evento.url);
+  return url ? { ...evento, url } : null;
+}
+
+/**
+ * Las props de `<Analytics>` (el de `@vercel/analytics/react`) para una ruta:
+ * el script y los envíos fijados, la ruta y el camino ya limpios y el
+ * `beforeSend`. Es exactamente lo que pinta MedicionWeb, así que lo que prueba
+ * eventos.test.ts es lo que sale.
+ */
+export function propsDeAnalytics(pathname: string) {
+  return { ...RUTAS_DE_VERCEL, ...rutaParaVercel(pathname), beforeSend: sinDatos, framework: "next" } satisfies ComponentProps<typeof Analytics>;
 }
 
 /** Lo que `zonaDe` necesita de un elemento; un `Element` del DOM lo cumple. */
@@ -221,20 +259,22 @@ const valida = (s: string | null): s is string => !!s && s.length <= 40 && NOMBR
 
 /**
  * La zona de la página donde ocurrió algo, subiendo desde el elemento: la
- * primera `data-medir-zona`, `footer` o `nav` (cabecera incluida), el primer
- * `id` con forma de nombre o, al llegar a `<main>` o a la raíz, `main`.
+ * primera `data-medir-zona` (la cabecera del sitio es `nav` y su pie,
+ * `footer`, marcados en NavShell y Footer), el primer `id` con forma de
+ * nombre, `main` al llegar a `<main>` y `page` si no hay nada de eso.
+ *
+ * No se mira la etiqueta `<header>`, `<nav>` ni `<footer>`: hay muchas dentro
+ * de las páginas (la cabecera de cada página, un índice, el pie de una
+ * tarjeta) y todas habrían salido como la cabecera o el pie del sitio.
  */
 export function zonaDe(el: NodoMedible | null): string {
   for (let n = el; n; n = n.parentElement) {
     const marcada = n.getAttribute(ATRIBUTO_ZONA);
     if (valida(marcada)) return marcada;
-    const etiqueta = n.tagName.toLowerCase();
-    if (etiqueta === "footer") return "footer";
-    if (etiqueta === "header" || etiqueta === "nav") return "nav";
-    if (etiqueta === "main" || etiqueta === "body") return "main";
+    if (n.tagName.toLowerCase() === "main") return "main";
     if (valida(n.id)) return n.id;
   }
-  return "main";
+  return "page";
 }
 
 /** «Dónde», en un solo valor: `página/zona`. */

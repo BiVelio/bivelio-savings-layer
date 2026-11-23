@@ -1,9 +1,10 @@
 "use client";
 
 import { useEffect } from "react";
-import { Analytics, type BeforeSendEvent } from "@vercel/analytics/next";
+import { usePathname } from "next/navigation";
+import { Analytics } from "@vercel/analytics/react";
 
-import { RUTAS_DE_VERCEL, urlSinDatos } from "@/lib/medicion/eventos";
+import { propsDeAnalytics } from "@/lib/medicion/eventos";
 import { medirClic, medirCopiaManual } from "@/lib/medicion/medir";
 
 /**
@@ -18,15 +19,17 @@ import { medirClic, medirCopiaManual } from "@/lib/medicion/medir";
  * cabecera, y los de páginas futuras. El botón «Copiar» de los bloques de
  * código cuenta por su cuenta (`CopiarCodigo`): `navigator.clipboard` no
  * dispara el evento `copy`, así que no hay doble cuenta.
+ *
+ * Es el `<Analytics>` de React, no el de `@vercel/analytics/next`, a propósito:
+ * el de Next calcula la ruta él mismo y la de un 404 salía en bruto
+ * (`/[locale]/alguien@example.com`), sin que `beforeSend` pudiera tocarla. Aquí
+ * la ruta y el camino llegan ya limpios (`rutaParaVercel`). Lo demás que hace el
+ * de Next se repite: `framework`, y el basePath y la configuración que Vercel
+ * inyecta en el build (las rutas fijadas mandan sobre ellos).
  */
 
-/** Toda vista y todo evento salen con la URL limpia; si no se puede limpiar, no salen. */
-function sinDatos(evento: BeforeSendEvent): BeforeSendEvent | null {
-  const url = urlSinDatos(evento.url);
-  return url ? { ...evento, url } : null;
-}
-
 export function MedicionWeb() {
+  const pathname = usePathname();
   useEffect(() => {
     const alClic = (e: MouseEvent) => {
       // `auxclick` solo para el botón central (abrir en otra pestaña).
@@ -44,5 +47,11 @@ export function MedicionWeb() {
     };
   }, []);
 
-  return <Analytics beforeSend={sinDatos} {...RUTAS_DE_VERCEL} />;
+  return (
+    <Analytics
+      {...propsDeAnalytics(pathname)}
+      basePath={process.env.NEXT_PUBLIC_VERCEL_OBSERVABILITY_BASEPATH}
+      configString={process.env.NEXT_PUBLIC_VERCEL_OBSERVABILITY_CLIENT_CONFIG}
+    />
+  );
 }

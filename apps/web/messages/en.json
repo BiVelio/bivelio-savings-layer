@@ -2520,7 +2520,7 @@
     "website": {
       "title": "Visits to this website",
       "body": "This website, not the Software, measures its own visits with <b>Vercel Web Analytics</b>. It counts pages viewed and three actions: copying an install command, following a link to GitHub, npm or PyPI, and going to sign-up. The measurement is aggregated and cookieless, with no personal data and no tracking across sites.",
-      "limits": "Each action carries only the page and section, plus the package manager, the destination or the plan; never what you type or copy. Page addresses are sent without query strings or tokens."
+      "limits": "Each page view or action carries only the page and section, the site you came from as your browser reports it, and the package manager, destination or plan; never what you type or copy. Vercel works out the country, browser and device type from the request itself. Page addresses are sent without query strings or tokens."
     },
     "contact": "Questions and requests about this data: <mail>{email}</mail>.",
     "overview": {

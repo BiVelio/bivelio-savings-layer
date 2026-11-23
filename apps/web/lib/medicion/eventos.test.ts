@@ -14,6 +14,7 @@ import {
   gestorDelComando,
   paginaDe,
   planDelAlta,
+  propsDeAnalytics,
   urlSinDatos,
   zonaDe,
   type NodoMedible,
@@ -168,6 +169,36 @@ describe("la página y la URL que salen", () => {
     expect(urlSinDatos("no es una url")).toBeNull();
   });
 
+  it("las props de <Analytics>: ruta y camino de un 404 plegados en [...rest], el token tapado", () => {
+    // Los tres de la revisión: con el <Analytics> de Next salían en bruto en `route`.
+    for (const [ruta, camino] of [
+      ["/es/alguien@example.com", "/es/[...rest]"],
+      ["/en/john.doe@gmail.com", "/en/[...rest]"],
+      ["/es/k=v&z=1", "/es/[...rest]"],
+    ] as const) {
+      const p = propsDeAnalytics(ruta);
+      expect(p.route, ruta).toBe("/[locale]/[...rest]");
+      expect(p.path, ruta).toBe(camino);
+    }
+    expect(propsDeAnalytics("/es/invitacion/bvi_9f2c1e0b7a")).toMatchObject({ route: "/[locale]/invitacion/[token]", path: "/es/invitacion/[token]" });
+    expect(propsDeAnalytics("/en/pricing")).toMatchObject({ route: "/[locale]/pricing", path: "/en/pricing" });
+    expect(propsDeAnalytics("/es")).toMatchObject({ route: "/[locale]", path: "/es" });
+    // Con el script y los envíos fijados, y el beforeSend que limpia la URL.
+    const p = propsDeAnalytics("/es");
+    expect(p).toMatchObject(RUTAS_DE_VERCEL);
+    expect(p.beforeSend({ type: "pageview", url: "https://savings.bivelio.com/es/k=v&z=1?x=1" })).toEqual({
+      type: "pageview",
+      url: "https://savings.bivelio.com/es/[...rest]",
+    });
+  });
+
+  it("MedicionWeb pinta el <Analytics> de React con esas props (el de Next recalcularía la ruta en bruto)", () => {
+    const src = leer("app/components/MedicionWeb.tsx");
+    expect(src).toContain('import { Analytics } from "@vercel/analytics/react";');
+    expect(src).toMatch(/<Analytics\s+\{\.\.\.propsDeAnalytics\(pathname\)\}/);
+    for (const f of fuentes()) expect(leer(f), f).not.toMatch(/from\s+["']@vercel\/analytics\/next["']/);
+  });
+
   it("todo idioma de la web se reconoce como idioma", () => {
     for (const l of locales) expect(paginaDe(`/${l}/privacy`), l).toBe("privacy");
   });
@@ -178,16 +209,31 @@ describe("la zona", () => {
     return { tagName, id: attrs.id ?? "", getAttribute: (n) => attrs[n] ?? null, parentElement: padre };
   }
 
-  it("manda la marca explícita; luego el pie, la cabecera y el id de la sección", () => {
+  it("manda la marca explícita; luego el id de la sección, `main` y, sin nada, `page`", () => {
     const main = nodo("MAIN", { id: "contenido" }, nodo("BODY"));
     const seccion = nodo("SECTION", { id: "install-gateway" }, main);
     expect(zonaDe(nodo("BUTTON", {}, nodo("DIV", { [ATRIBUTO_ZONA]: "sdk" }, seccion)))).toBe("sdk");
     expect(zonaDe(nodo("A", {}, nodo("DIV", {}, seccion)))).toBe("install-gateway");
-    expect(zonaDe(nodo("A", {}, nodo("FOOTER", {}, nodo("BODY"))))).toBe("footer");
-    expect(zonaDe(nodo("A", {}, nodo("NAV", {}, nodo("HEADER"))))).toBe("nav");
+    // El pie y la cabecera del sitio van marcados (Footer, NavShell).
+    expect(zonaDe(nodo("A", {}, nodo("FOOTER", { [ATRIBUTO_ZONA]: "footer" }, nodo("BODY"))))).toBe("footer");
+    expect(zonaDe(nodo("A", {}, nodo("NAV", {}, nodo("HEADER", { [ATRIBUTO_ZONA]: "nav" }))))).toBe("nav");
     // `<main id="contenido">` del panel: es `main`, no su id.
     expect(zonaDe(nodo("A", {}, main))).toBe("main");
-    expect(zonaDe(null)).toBe("main");
+    // Fuera de <main> y sin marca (la barra lateral del panel): `page`.
+    expect(zonaDe(nodo("A", {}, nodo("ASIDE", {}, nodo("BODY"))))).toBe("page");
+    expect(zonaDe(null)).toBe("page");
+  });
+
+  it("un <header>, <nav> o <footer> DENTRO de la página no es la cabecera ni el pie del sitio", () => {
+    const seccion = nodo("SECTION", { id: "verify" }, nodo("MAIN"));
+    expect(zonaDe(nodo("A", {}, nodo("HEADER", {}, seccion)))).toBe("verify");
+    expect(zonaDe(nodo("A", {}, nodo("NAV", {}, seccion)))).toBe("verify");
+    expect(zonaDe(nodo("A", {}, nodo("FOOTER", {}, nodo("ARTICLE", {}, nodo("MAIN")))))).toBe("main");
+  });
+
+  it("la cabecera y el pie del sitio llevan su marca", () => {
+    expect(leer("app/components/NavShell.tsx")).toMatch(/<header className="site-nav" data-medir-zona="nav"/);
+    expect(leer("app/components/Footer.tsx")).toMatch(/<footer className="ftr" data-medir-zona="footer"/);
   });
 
   it("un id generado o con datos no es una zona: se sigue subiendo", () => {

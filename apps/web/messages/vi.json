@@ -2520,7 +2520,7 @@
     "website": {
       "title": "Lượt truy cập trang web này",
       "body": "Trang web này, không phải Phần mềm, tự đo lượt truy cập của mình bằng <b>Vercel Web Analytics</b>. Nó đếm các trang được xem và ba thao tác: sao chép lệnh cài đặt, mở liên kết tới GitHub, npm hoặc PyPI, và chuyển tới trang đăng ký. Việc đo lường là tổng hợp và không dùng cookie, không có dữ liệu cá nhân và không theo dõi giữa các trang web.",
-      "limits": "Mỗi thao tác chỉ mang theo trang và mục, cùng trình quản lý gói, đích đến hoặc gói dịch vụ đã chọn; không bao giờ là những gì bạn nhập hoặc sao chép. Địa chỉ trang được gửi đi không kèm tham số truy vấn hay token."
+      "limits": "Mỗi lượt xem trang hoặc thao tác chỉ mang theo trang và mục, trang web bạn đến từ đó theo những gì trình duyệt của bạn báo, cùng trình quản lý gói, đích đến hoặc gói dịch vụ đã chọn; không bao giờ là những gì bạn nhập hoặc sao chép. Vercel suy ra quốc gia, trình duyệt và loại thiết bị từ chính yêu cầu. Địa chỉ trang được gửi đi không kèm tham số truy vấn hay token."
     },
     "contact": "Câu hỏi và yêu cầu về dữ liệu này: <mail>{email}</mail>.",
     "overview": {
