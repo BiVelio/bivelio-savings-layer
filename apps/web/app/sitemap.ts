@@ -3,6 +3,8 @@ import type { MetadataRoute } from "next";
 import { locales } from "@/i18n/config";
 import { absolute, languageAlternates } from "@/i18n/site";
 
+import { entradasDelSitemap as guias } from "./[locale]/guides/registry";
+
 /**
  * `/sitemap.xml`. Solo entra lo que de verdad queremos indexar: la landing en
  * cada uno de los 12 idiomas. El dashboard y las pantallas de auth quedan fuera
@@ -73,5 +75,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: "monthly" as const,
       priority: 0.6,
     },
+    // Las guías (/en/guides): solo en inglés, el índice y una URL por guía.
+    ...guias(),
   ];
 }
