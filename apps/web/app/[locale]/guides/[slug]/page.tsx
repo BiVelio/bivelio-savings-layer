@@ -92,7 +92,10 @@ export default async function GuidePage({ params }: Params) {
         // Datos, no código: JSON escapado para que ningún `<` cierre la etiqueta.
         dangerouslySetInnerHTML={{ __html: JSON.stringify(datosEstructurados(guia, bloques)).replace(/</g, "\\u003c") }}
       />
-      <main className="wrap guia-page" lang="en">
+      {/* La página va en el idioma de quien lee (migas, índice, «volver
+          arriba», el botón de copiar) y cada pieza del texto inglés lleva
+          `lang="en"`: un lector de pantalla pronuncia cada cosa en su idioma. */}
+      <main className="wrap guia-page" lang={locale}>
         <HeroeDeCampana pagina="guides">
           <GridBackground className="doc-fondo">
             <section className="terms-hero guia-hero" id="inicio">
@@ -100,12 +103,17 @@ export default async function GuidePage({ params }: Params) {
                 className="doc-migas"
                 label={tn("breadcrumb")}
                 linkAs={Link}
-                lang="en"
-                items={[{ label: tn("home"), href: "/" }, { label: "Guides", href: "/guides" }, { label: guia.title }]}
+                items={[
+                  { label: tn("home"), href: "/" },
+                  { label: <span lang="en">Guides</span>, href: "/guides" },
+                  { label: <span lang="en">{guia.title}</span> },
+                ]}
               />
-              <span className="eyebrow">Guide · LLM API costs</span>
-              <h1>{guia.title}</h1>
-              <p className="doc-nota">
+              <span className="eyebrow" lang="en">
+                Guide · LLM API costs
+              </span>
+              <h1 lang="en">{guia.title}</h1>
+              <p className="doc-nota" lang="en">
                 By BiVelio · <time dateTime={guia.date}>{fechaLegible(guia.date)}</time>
                 {guia.updated ? (
                   <>
@@ -121,7 +129,7 @@ export default async function GuidePage({ params }: Params) {
                   {t("englishOnly")}
                 </p>
               )}
-              <Bloques bloques={entradilla} copiar={copiar} />
+              <Bloques bloques={entradilla} copiar={copiar} lang="en" />
             </section>
           </GridBackground>
         </HeroeDeCampana>
@@ -130,12 +138,14 @@ export default async function GuidePage({ params }: Params) {
           <div className="doc-body">
             {partes.map((p, i) => (
               <section key={i} className="terms-sec" aria-labelledby={p[0]!.t === "titulo" ? p[0]!.id : undefined}>
-                <Bloques bloques={p} copiar={copiar} />
+                <Bloques bloques={p} copiar={copiar} lang="en" />
               </section>
             ))}
             <section className="terms-sec" aria-labelledby="more-guides">
-              <h2 id="more-guides">More guides</h2>
-              <ul className="terms-list">
+              <h2 id="more-guides" lang="en">
+                More guides
+              </h2>
+              <ul className="terms-list" lang="en">
                 {otras.map((g) => (
                   <li key={g.slug}>
                     <Link href={`/guides/${g.slug}`}>{g.title}</Link>

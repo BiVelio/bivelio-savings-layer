@@ -38,6 +38,19 @@ export function palabras(bloques: readonly Bloque[]): number {
   return n;
 }
 
+/**
+ * Un enlace interno del texto de una guía, sin el prefijo `/en`, para pasarlo
+ * al `Link` de next-intl, que pone el idioma de quien lee. Los textos enlazan
+ * `/en/…` (la URL canónica, la que vale también en GitHub); bajo /es, un enlace
+ * literal a /en sacaba al lector de su idioma y reescribía su cookie
+ * NEXT_LOCALE (revisión del PR #620). `null` si no es una ruta del sitio.
+ */
+export function rutaSinIdioma(href: string): string | null {
+  const m = /^\/en(?=$|[/#?])(.*)$/.exec(href);
+  if (m) return m[1] === "" || m[1]!.startsWith("#") || m[1]!.startsWith("?") ? `/${m[1]}` : m[1]!;
+  return href.startsWith("/") ? href : null;
+}
+
 /** Minutos de lectura, a 220 palabras por minuto (redondeo hacia arriba). */
 export function minutosDeLectura(bloques: readonly Bloque[]): number {
   return Math.max(1, Math.ceil(palabras(bloques) / 220));

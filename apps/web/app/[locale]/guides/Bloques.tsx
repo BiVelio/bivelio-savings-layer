@@ -1,9 +1,12 @@
 import type { ReactNode } from "react";
 
 import { CodeFrame } from "@/app/components/ui";
+import { Link } from "@/i18n/navigation";
 import type { Bloque, EnLinea } from "@/lib/guia-migracion/markdown";
 import { CodeLines } from "@/vendor/affectui/code-block-clean";
 import { DataTable } from "@/vendor/affectui/data-table-clean";
+
+import { rutaSinIdioma } from "./articulo";
 
 /**
  * Pinta el árbol de una guía (lib/guia-migracion/markdown.ts) con las mismas
@@ -13,7 +16,12 @@ import { DataTable } from "@/vendor/affectui/data-table-clean";
  *
  * Diferencia con la guía de migración: aquí los enlaces a otras páginas del
  * sitio (`/en/benchmarks`, `/en/guides/…`) son enlaces de verdad, porque las
- * guías se enlazan entre sí y con el banco.
+ * guías se enlazan entre sí y con el banco. Se pintan con el `Link` de
+ * next-intl sin el `/en`, para que quien lee bajo /es siga en /es.
+ *
+ * `lang`: el idioma del TEXTO (inglés). Va en cada bloque de prosa y no en la
+ * sección, porque dentro de la sección también vive interfaz traducida (el
+ * botón «Copiar» de cada bloque de código), que hereda el idioma de la página.
  */
 
 export type Copiar = { etiqueta: string; etiquetaCopiado: string };
@@ -38,11 +46,19 @@ export function EnLineaR({ c }: { c: readonly EnLinea[] }): ReactNode {
           </em>
         );
       case "enlace": {
-        if (n.href.startsWith("#") || n.href.startsWith("/")) {
+        if (n.href.startsWith("#")) {
           return (
             <a key={i} href={n.href}>
               <EnLineaR c={n.c} />
             </a>
+          );
+        }
+        const ruta = rutaSinIdioma(n.href);
+        if (ruta) {
+          return (
+            <Link key={i} href={ruta}>
+              <EnLineaR c={n.c} />
+            </Link>
           );
         }
         if (/^https:\/\//.test(n.href)) {
@@ -69,20 +85,20 @@ function Codigo({ v, lenguaje, copiar }: { v: string; lenguaje: string; copiar: 
   );
 }
 
-export function Bloques({ bloques, copiar }: { bloques: readonly Bloque[]; copiar: Copiar }): ReactNode {
+export function Bloques({ bloques, copiar, lang }: { bloques: readonly Bloque[]; copiar: Copiar; lang?: string }): ReactNode {
   return bloques.map((b, i) => {
     switch (b.t) {
       case "titulo": {
         const H = (b.nivel <= 2 ? "h2" : b.nivel === 3 ? "h3" : "h4") as "h2" | "h3" | "h4";
         return (
-          <H key={i} id={b.id}>
+          <H key={i} id={b.id} lang={lang}>
             <EnLineaR c={b.c} />
           </H>
         );
       }
       case "parrafo":
         return (
-          <p key={i}>
+          <p key={i} lang={lang}>
             <EnLineaR c={b.c} />
           </p>
         );
@@ -90,7 +106,7 @@ export function Bloques({ bloques, copiar }: { bloques: readonly Bloque[]; copia
         return <Codigo key={i} v={b.v} lenguaje={b.lenguaje} copiar={copiar} />;
       case "cita":
         return (
-          <blockquote key={i} className="terms-governs guia-cita">
+          <blockquote key={i} className="terms-governs guia-cita" lang={lang}>
             <Bloques bloques={b.c} copiar={copiar} />
           </blockquote>
         );
@@ -101,11 +117,11 @@ export function Bloques({ bloques, copiar }: { bloques: readonly Bloque[]; copia
           </li>
         ));
         return b.ordenada ? (
-          <ol key={i} className="terms-list" start={b.inicio}>
+          <ol key={i} className="terms-list" start={b.inicio} lang={lang}>
             {items}
           </ol>
         ) : (
-          <ul key={i} className="terms-list">
+          <ul key={i} className="terms-list" lang={lang}>
             {items}
           </ul>
         );
@@ -116,6 +132,7 @@ export function Bloques({ bloques, copiar }: { bloques: readonly Bloque[]; copia
             key={i}
             className="guia-datos"
             label="Table"
+            lang={lang}
             minWidth={`${Math.max(b.cabecera.length, 2) * 9}rem`}
             prose
             columns={b.cabecera.map((c, k) => ({ key: String(k), label: <EnLineaR c={c} /> }))}

@@ -2,10 +2,10 @@ import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 
 import { HeroeDeCampana } from "@/app/components/campana/HeroeDeCampana";
-import { Migas } from "@/app/components/docs/Migas";
 import Footer from "@/app/components/Footer";
 import { Link } from "@/i18n/navigation";
 import { tarjetaSocial } from "@/i18n/site";
+import { Breadcrumb } from "@/vendor/affectui/breadcrumb-clean";
 import { GridBackground } from "@/vendor/affectui/grid-background";
 
 import { fechaLegible } from "./articulo";
@@ -40,28 +40,37 @@ export default async function GuidesIndexPage({ params }: { params: Promise<{ lo
   const { locale } = await params;
   setRequestLocale(locale);
   const t = await getTranslations("docsPage");
+  const tn = await getTranslations("nav");
 
   return (
     <div className="lp terms-page doc-page">
-      <main className="wrap guia-page" lang="en">
+      {/* En el idioma de quien lee, con `lang="en"` en cada pieza inglesa. */}
+      <main className="wrap guia-page" lang={locale}>
         <HeroeDeCampana pagina="guides">
           <GridBackground className="doc-fondo">
             <section className="terms-hero guia-hero" id="inicio">
-              <Migas actual="Guides" lang="en" />
-              <span className="eyebrow">Guides · LLM API costs</span>
-              <h1>{TITULO}</h1>
+              <Breadcrumb
+                className="doc-migas"
+                label={tn("breadcrumb")}
+                linkAs={Link}
+                items={[{ label: tn("home"), href: "/" }, { label: <span lang="en">Guides</span> }]}
+              />
+              <span className="eyebrow" lang="en">
+                Guides · LLM API costs
+              </span>
+              <h1 lang="en">{TITULO}</h1>
               {locale === IDIOMA_DE_LAS_GUIAS ? null : (
                 <p className="doc-nota" lang={locale}>
                   {t("englishOnly")}
                 </p>
               )}
-              <p>
+              <p lang="en">
                 Practical, provider-neutral guides for developers who pay a per-token bill. Each one teaches the
                 technique first, so it is useful without any tool; then shows how the open-source BV-SALA layer does it,
                 free and with no key; then shows how to check the saving against your provider&apos;s own usage
                 numbers.
               </p>
-              <p>
+              <p lang="en">
                 Every figure comes from the provider&apos;s documentation or from our{" "}
                 <Link href="/benchmarks">published benchmarks</Link>, and says where it came from. The code is on{" "}
                 <a href="https://github.com/BiVelio/bivelio-savings-layer" rel="noopener noreferrer">
@@ -74,7 +83,7 @@ export default async function GuidesIndexPage({ params }: { params: Promise<{ lo
         </HeroeDeCampana>
         <div className="doc-body">
           {GUIAS.map((g) => (
-            <section key={g.slug} className="terms-sec" aria-labelledby={`guia-${g.slug}`}>
+            <section key={g.slug} className="terms-sec" aria-labelledby={`guia-${g.slug}`} lang="en">
               <h2 id={`guia-${g.slug}`}>
                 <Link href={`/guides/${g.slug}`}>{g.title}</Link>
               </h2>

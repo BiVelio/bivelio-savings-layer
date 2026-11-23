@@ -7,7 +7,7 @@ import { describe, expect, it } from "vitest";
 import { idDeTitulo, leerMarkdown, type Bloque } from "@/lib/guia-migracion/markdown";
 
 import sitemap from "../../sitemap";
-import { palabras } from "./articulo";
+import { palabras, rutaSinIdioma } from "./articulo";
 import { cargarTexto } from "./cargar";
 import { GUIAS, urlDeGuia } from "./registry";
 
@@ -40,7 +40,8 @@ const CIFRAS_CON_FUENTE: Record<string, string> = {
   "95 %": "intervalos al 95 % (/benchmarks) y el 0 % → 95 % de aciertos de caché del README",
   "0 %": "README: el tráfico que no se repite ahorra cerca de 0 %; el 0 % → 95 % del A/B exploratorio",
   "82.76 %": "README: A/B exploratorio de savings.cachePrefix, claude-haiku-4-5, 20 peticiones por brazo, 1.2.0",
-  "20 %": "README: un system largo que cambia en cada petición cuesta cerca de un 20 % más en Anthropic",
+  "20 %": "README (un system que cambia cuesta cerca de un 20 % más en Anthropic) y Model Studio context-cache (aciertos implícitos, típicamente 20 %)",
+  "10 %": "alibabacloud.com/help/en/model-studio/context-cache: aciertos de la caché explícita, típicamente 10 %; catálogo 1.2.3 de qwen-plus (115e-7 frente a 115e-6)",
   "25 %": "aritmética de la tarifa oficial de Anthropic: escribir a 5 minutos cuesta 1,25 veces la entrada",
   "+166 %": "CHANGELOG 1.2.4: recorte de resultados en un bucle de 60 pasos en DeepSeek, proveedor falso, 1.2.3 y 1.2.4 sin clave",
   "+12.2 %": "CHANGELOG 1.2.4: el mismo bucle en gpt-5",
@@ -55,6 +56,7 @@ const CIFRAS_CON_FUENTE: Record<string, string> = {
   "$30": "code.claude.com/docs/en/costs: el 90 % por debajo de esto al día",
   "$113.45": "/benchmarks#gateway-ttl: neto del replay en dólares",
   "$4,563.61": "/benchmarks#gateway-ttl: factura a precio de lista de las peticiones simuladas",
+  "$40": "platform.claude.com/docs/en/build-with-claude/fast-mode: salida en modo rápido de Claude Opus 5.5 ($8 / $40 por MTok)",
   "$0.003": "catálogo 1.2.3 (cachedInputPer1k 3e-6 en deepseek-flash y deepseek-v4-pro) y api-docs.deepseek.com/quick_start/pricing (acierto fuera de punta de deepseek-flash), leído el 2026-11-23",
 };
 
@@ -171,7 +173,7 @@ describe("lo que corrigió la revisión del PR #620", () => {
   it("el envoltorio `qwen` no se vende para modelos Qwen: la ruta es el modo OpenAI de Qwen Code contra el gateway", () => {
     const t = fuente("deepseek-qwen-api-cost-local-gateway");
     expect(t).not.toMatch(/`npx @bivelio\/savings-layer qwen` launches it through the gateway/);
-    expect(t).toMatch(/OPENAI_BASE_URL=http:\/\/127\.0\.0\.1:8404\/compatible-mode\/v1/);
+    expect(t).toMatch(/GW=http:\/\/127\.0\.0\.1:8404\/compatible-mode\/v1\n/);
   });
 
   it("un stream sin include_usage no se mide en la 1.2.3, y la guía da la salida (BVSALA_GATEWAY_USAGE_INJECT=1)", () => {
@@ -211,6 +213,46 @@ describe("lo que corrigió la revisión del PR #620", () => {
       const src = readFileSync(join(dir, f), "utf8");
       expect(src, f).not.toMatch(/locale\s*!==\s*IDIOMA_DE_LAS_GUIAS\)\s*(notFound|return)/);
       expect(src, f).toMatch(/canonical: url, languages: \{ en: url, "x-default": url \}/);
+    }
+  });
+});
+
+/** La segunda revisión del PR #620 (2026-11-23). */
+describe("lo que corrigió la segunda revisión del PR #620", () => {
+  it("el modo rápido: la 1.2.3 lo tarifa como estándar, y la conciliación lo cuenta como causa", () => {
+    const t = fuente("claude-code-cost-per-request");
+    expect(t).not.toMatch(/metered like any other turn/);
+    expect(t).toMatch(/Fast-mode turns are logged at the standard price/);
+    expect(t).toMatch(/platform\.claude\.com\/docs\/en\/build-with-claude\/fast-mode/);
+    expect(t).toMatch(/3\. \*\*Explain any gap\.\*\*[^\n]*Fast mode/);
+  });
+
+  it("Qwen Code por el gateway conserva la caché explícita de DashScope (DASHSCOPE_PROXY_BASE_URL igual al base URL)", () => {
+    const t = fuente("deepseek-qwen-api-cost-local-gateway");
+    expect(t).toMatch(/OPENAI_BASE_URL="\$GW" DASHSCOPE_PROXY_BASE_URL="\$GW"/);
+    expect(t).toMatch(/implicit-cache hits \(billed at about 20 %\) are logged at about half their cost/);
+  });
+
+  it("los enlaces internos del texto pierden el /en y siguen el idioma de quien lee", () => {
+    expect(rutaSinIdioma("/en/guides/deduplicate-llm-requests")).toBe("/guides/deduplicate-llm-requests");
+    expect(rutaSinIdioma("/en/guides/a#b")).toBe("/guides/a#b");
+    expect(rutaSinIdioma("/en/benchmarks#savings")).toBe("/benchmarks#savings");
+    expect(rutaSinIdioma("/en")).toBe("/");
+    expect(rutaSinIdioma("/en#x")).toBe("/#x");
+    expect(rutaSinIdioma("/enterprise")).toBe("/enterprise");
+    expect(rutaSinIdioma("https://github.com/BiVelio/bivelio-savings-layer")).toBeNull();
+    const dir = dirname(fileURLToPath(import.meta.url));
+    const bloques = readFileSync(join(dir, "Bloques.tsx"), "utf8");
+    expect(bloques).toMatch(/<Link key=\{i\} href=\{ruta\}>/);
+  });
+
+  it("la interfaz traducida va en el idioma de la página; solo el texto inglés lleva lang=\"en\"", () => {
+    const dir = dirname(fileURLToPath(import.meta.url));
+    for (const f of ["page.tsx", join("[slug]", "page.tsx")]) {
+      const src = readFileSync(join(dir, f), "utf8");
+      expect(src, f).toMatch(/<main className="wrap guia-page" lang=\{locale\}>/);
+      expect(src, f).not.toMatch(/<Migas[^>]*lang="en"/);
+      expect(src, f).not.toMatch(/linkAs=\{Link\}\s*lang="en"/);
     }
   });
 });
