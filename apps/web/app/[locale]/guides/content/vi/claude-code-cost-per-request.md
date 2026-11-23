@@ -20,7 +20,7 @@
 
 ## Đo từng yêu cầu bằng một gateway cục bộ
 
-Gateway là một proxy nhỏ nằm giữa Claude Code và API, đọc các bộ đếm usage của từng phản hồi. Claude Code hỗ trợ chính thức cách này qua `ANTHROPIC_BASE_URL`. [BV-SALA](https://github.com/BiVelio/bivelio-savings-layer) kèm sẵn một gateway trong gói npm của mình: Apache-2.0, **không cần khóa, không cần đăng ký**, và không có gì được gửi về BiVelio. Nó cần Node.js 20 trở lên.
+Gateway là một proxy nhỏ nằm giữa Claude Code và API, đọc các bộ đếm usage của từng phản hồi. Claude Code hỗ trợ chính thức cách này qua `ANTHROPIC_BASE_URL`. [BV-SALA](https://github.com/BiVelio/bivelio-savings-layer) kèm sẵn một gateway trong gói npm của mình: Apache-2.0, **không cần khóa, không cần đăng ký**, và không có gì được gửi về BiVelio. Nó cần Node.js 20.19.0 trở lên.
 
 Cách chỉ với một lệnh:
 
@@ -29,7 +29,7 @@ Cách chỉ với một lệnh:
 npx @bivelio/savings-layer claude
 ```
 
-Wrapper giữ cho log theo từng yêu cầu im lặng để không vẽ đè lên giao diện của Claude Code. Khi bạn thoát, nó in ra số yêu cầu đã được đo, những yêu cầu nào được chuyển tiếp mà không đo, và lý do. Để xem từng yêu cầu ngay khi nó diễn ra, bạn có thể yêu cầu log ra stderr:
+Wrapper giữ cho log theo từng yêu cầu im lặng để không vẽ đè lên giao diện của Claude Code. Khi bạn thoát, nó in ra số yêu cầu đã được đo, chi phí của chúng theo giá niêm yết, số tiền tiết kiệm được hoặc lý do không tiết kiệm được gì, những yêu cầu nào được chuyển tiếp mà không đo, và lý do. Để xem từng yêu cầu ngay khi nó diễn ra, bạn có thể yêu cầu log ra stderr:
 
 ```bash
 BVSALA_GATEWAY_LOG=1 npx @bivelio/savings-layer claude
@@ -61,20 +61,20 @@ Mỗi yêu cầu thành một dòng. Hai dòng dưới đây lấy từ một th
 
 - **Nó chuyển tiếp đúng những gì Claude Code gửi.** Khi không có đòn bẩy nào tác động lên một yêu cầu, body đến Anthropic nguyên vẹn từng byte, kể cả các đánh dấu `cache_control` và header `anthropic-beta`, nên caching hoạt động y như khi không có gateway. Một bài test trong repository kiểm tra điều này với một upstream giả ở mỗi lần thay đổi.
 - **Hai lệnh gọi nhỏ đi vòng qua nó.** Theo [hướng dẫn tương thích gateway](https://code.claude.com/docs/en/llm-gateway-protocol) của Claude Code, bước kiểm tra khả dụng của chế độ nhanh (fast mode) và bước kiểm tra an toàn tên miền của WebFetch gọi thẳng `api.anthropic.com` thay vì đi theo `ANTHROPIC_BASE_URL`. Không cái nào là yêu cầu tới mô hình: bản thân việc suy luận ở chế độ nhanh vẫn đi theo base URL và qua gateway.
-- **Các lượt chế độ nhanh được ghi theo giá tiêu chuẩn.** Anthropic đánh dấu yêu cầu chế độ nhanh bằng `speed: "fast"` và tính giá cao hơn: 8 US$ đầu vào và 40 US$ đầu ra mỗi triệu token trên Claude Opus 5.5, gấp đôi giá tiêu chuẩn, cộng thêm các hệ số nhân của cache ([tài liệu fast mode](https://platform.claude.com/docs/en/build-with-claude/fast-mode)). Gateway phiên bản 1.2.3 không đọc `speed`, nên nó đếm đúng các token đó nhưng tính giá như lượt tiêu chuẩn: trên Opus 5.5, chỉ bằng một nửa số Anthropic tính. Nếu bạn dùng `/fast`, tổng của gateway cho các lượt đó sẽ thấp hơn thực tế.
+- **Các lượt chế độ nhanh được ghi theo giá tiêu chuẩn.** Anthropic đánh dấu yêu cầu chế độ nhanh bằng `speed: "fast"` và tính giá cao hơn: 8 US$ đầu vào và 40 US$ đầu ra mỗi triệu token trên Claude Opus 5.5, gấp đôi giá tiêu chuẩn, cộng thêm các hệ số nhân của cache ([tài liệu fast mode](https://platform.claude.com/docs/en/build-with-claude/fast-mode)). Gateway phiên bản 1.2.5, cũng như 1.2.3, không đọc `speed`, nên nó đếm đúng các token đó nhưng tính giá như lượt tiêu chuẩn: trên Opus 5.5, chỉ bằng một nửa số Anthropic tính. Nếu bạn dùng `/fast`, tổng của gateway cho các lượt đó sẽ thấp hơn thực tế.
 - **Lưu lượng từ gói thuê bao được đo, không bị tính tiền.** Khi đăng nhập Claude Pro hoặc Max, không có hóa đơn theo token; gateway quy lưu lượng đó ra giá trị tương đương giá niêm yết để bạn nhìn thấy, và không ghi nhận khoản tiết kiệm nào trên đó.
 
 ## Gateway có tiết kiệm tiền không?
 
-Mặc định, với Claude Code dùng khóa API, nó chỉ đo và không tiết kiệm gì. Đừng đọc thông báo khởi động của phiên bản 1.2.3 như một lời hứa: thông báo đó nói mọi đòn bẩy tiết kiệm cục bộ đều đang bật, còn bản tóm tắt khi thoát chỉ đếm những yêu cầu đã được đo, nên không cái nào cho bạn biết khoản tiết kiệm bằng không. Đòn bẩy mặc định của gateway hạ thời gian sống của lượt ghi cache từ một giờ xuống năm phút ở những lượt mà phần lớn yêu cầu là nội dung mới, vì ghi một giờ tốn gấp đôi giá đầu vào còn ghi năm phút tốn 1,25 lần. Claude Code dùng khóa API vốn đã yêu cầu năm phút, trừ khi bạn đặt `promptCacheTtl` thành `1h`, nên chẳng có gì để hạ.
+Mặc định, với Claude Code dùng khóa API, nó chỉ đo và không tiết kiệm gì, và phiên bản 1.2.5 nói rõ điều đó. Thông báo khởi động của nó nói rằng điều chỉnh TTL của cache là đòn bẩy tiết kiệm duy nhất bật theo mặc định và chỉ tác động lên lưu lượng Anthropic dùng khóa API có yêu cầu cache một giờ, còn bản tóm tắt khi thoát đặt số tiền tiết kiệm được cạnh số tiền đã chi, kèm lý do khi khoản tiết kiệm bằng không. Phiên bản 1.2.3 nói mọi đòn bẩy tiết kiệm cục bộ đều đang bật, còn bản tóm tắt khi thoát chỉ đếm yêu cầu: nếu bạn vẫn dùng nó, đừng đọc cái nào như một lời hứa. Đòn bẩy mặc định của gateway hạ thời gian sống của lượt ghi cache từ một giờ xuống năm phút ở những lượt mà phần lớn yêu cầu là nội dung mới, vì ghi một giờ tốn gấp đôi giá đầu vào còn ghi năm phút tốn 1,25 lần. Claude Code dùng khóa API vốn đã yêu cầu năm phút, trừ khi bạn đặt `promptCacheTtl` thành `1h`, nên chẳng có gì để hạ.
 
 Khi cache một giờ được dùng, khoản tiết kiệm nhỏ và phụ thuộc vào lưu lượng của bạn. [Trang benchmark](/vi/benchmarks#gateway-ttl) công bố một bản phát lại (replay) lưu lượng Claude Code của chính một tổ chức: ròng **+2,49%** hóa đơn theo giá niêm yết (113,45 US$ trên 4.563,61 US$), với khoảng tin cậy 95% từ +1,50% đến +3,57% khi lấy mẫu lại theo phiên, và mức trần 7,2% cho bất kỳ chính sách nào thuộc loại này. Trên một mô hình, kết quả gần như bằng không, và trong một giai đoạn nó còn lỗ. Đây là một bản phát lại với đường cơ sở được dựng lại một phần, không phải hóa đơn, và trang đó liệt kê mọi giới hạn.
 
 ## Đối chiếu số liệu của gateway với hóa đơn
 
-1. **Với `/usage`.** Cho một phiên, cộng chi phí theo từng yêu cầu của gateway rồi so với khối Session của `/usage`. Cả hai đều tính giá cùng các bộ đếm theo giá niêm yết, nên kết quả phải gần nhau, ngoại trừ các lượt chế độ nhanh, mà `/usage` tính theo giá nhanh còn gateway 1.2.3 tính theo giá tiêu chuẩn.
+1. **Với `/usage`.** Cho một phiên, cộng chi phí theo từng yêu cầu của gateway rồi so với khối Session của `/usage`. Cả hai đều tính giá cùng các bộ đếm theo giá niêm yết, nên kết quả phải gần nhau, ngoại trừ các lượt chế độ nhanh, mà `/usage` tính theo giá nhanh còn gateway 1.2.5 tính theo giá tiêu chuẩn.
 2. **Với Console.** Dùng một khóa API hoặc workspace riêng trong một ngày, rồi so tổng theo mô hình của gateway với trang Usage của Console cho khóa đó: đầu vào, đầu ra, ghi cache và đọc cache, so bằng token trước, rồi mới bằng đô la.
-3. **Giải thích mọi chênh lệch.** Giá niêm yết không phải lúc nào cũng là giá của bạn: chiết khấu theo hợp đồng, yêu cầu lưu trú dữ liệu (data residency) hay hạng ưu tiên (priority tier) làm thay đổi số tiền nhưng không thay đổi số token. Chế độ nhanh cũng vậy: khi bật `/fast`, tổng của gateway thấp hơn của Console, vì 1.2.3 tính các lượt chế độ nhanh theo giá tiêu chuẩn. Lưu lượng không đi qua gateway này, như một máy khác, một script hay một job CI dùng chung khóa, chỉ xuất hiện trên Console.
+3. **Giải thích mọi chênh lệch.** Giá niêm yết không phải lúc nào cũng là giá của bạn: chiết khấu theo hợp đồng, yêu cầu lưu trú dữ liệu (data residency) hay hạng ưu tiên (priority tier) làm thay đổi số tiền nhưng không thay đổi số token. Chế độ nhanh cũng vậy: khi bật `/fast`, tổng của gateway thấp hơn của Console, vì 1.2.5 tính các lượt chế độ nhanh theo giá tiêu chuẩn. Lưu lượng không đi qua gateway này, như một máy khác, một script hay một job CI dùng chung khóa, chỉ xuất hiện trên Console.
 
 Nếu số token khớp mà số đô la không khớp, chênh lệch nằm ở giá, không phải ở phép đo. Để có phương pháp đầy đủ, hãy đọc [cách kiểm chứng khoản tiết kiệm LLM với hóa đơn của nhà cung cấp](/vi/guides/verify-llm-savings-against-provider-bill).
 

@@ -20,7 +20,7 @@
 
 ## Mierz każde żądanie lokalnym gatewayem
 
-Gateway to mały serwer proxy między Claude Code a API, który odczytuje liczniki użycia z każdej odpowiedzi. Claude Code oficjalnie to wspiera przez `ANTHROPIC_BASE_URL`. [BV-SALA](https://github.com/BiVelio/bivelio-savings-layer) dostarcza taki gateway w swoim pakiecie npm: Apache-2.0, **bez klucza, bez rejestracji**, i nic nie jest wysyłane do BiVelio. Wymaga Node.js 20 lub nowszego.
+Gateway to mały serwer proxy między Claude Code a API, który odczytuje liczniki użycia z każdej odpowiedzi. Claude Code oficjalnie to wspiera przez `ANTHROPIC_BASE_URL`. [BV-SALA](https://github.com/BiVelio/bivelio-savings-layer) dostarcza taki gateway w swoim pakiecie npm: Apache-2.0, **bez klucza, bez rejestracji**, i nic nie jest wysyłane do BiVelio. Wymaga Node.js 20.19.0 lub nowszego.
 
 Sposób w jednym poleceniu:
 
@@ -29,7 +29,7 @@ Sposób w jednym poleceniu:
 npx @bivelio/savings-layer claude
 ```
 
-Wrapper wycisza log poszczególnych żądań, żeby nie rysował się na interfejsie Claude Code. Przy wyjściu wypisuje, ile żądań zmierzył, które przekazał dalej bez pomiaru i dlaczego. Żeby widzieć każde żądanie na bieżąco, albo poproś o log na stderr:
+Wrapper wycisza log poszczególnych żądań, żeby nie rysował się na interfejsie Claude Code. Przy wyjściu wypisuje, ile żądań zmierzył, ile kosztowały po cenie katalogowej, ile zaoszczędzono albo dlaczego nic, oraz które żądania przekazał dalej bez pomiaru i dlaczego. Żeby widzieć każde żądanie na bieżąco, albo poproś o log na stderr:
 
 ```bash
 BVSALA_GATEWAY_LOG=1 npx @bivelio/savings-layer claude
@@ -61,20 +61,20 @@ Czytaj od lewej do prawej: model, koszt po standardowej cenie katalogowej modelu
 
 - **Przekazuje dalej to, co wysyła Claude Code.** Gdy na żądanie nie działa żadna dźwignia, body dociera do Anthropic bajt w bajt, łącznie ze znacznikami `cache_control` i nagłówkiem `anthropic-beta`, więc cache działa dokładnie tak samo jak bez gatewaya. Test w repozytorium sprawdza to przy każdej zmianie na atrapie upstreamu.
 - **Dwa małe wywołania go omijają.** Według [przewodnika po zgodności z gatewayami](https://code.claude.com/docs/en/llm-gateway-protocol) Claude Code sprawdzenie dostępności trybu szybkiego i sprawdzenie bezpieczeństwa domeny przez WebFetch wywołują `api.anthropic.com` bezpośrednio, zamiast podążać za `ANTHROPIC_BASE_URL`. Żadne z nich nie jest żądaniem do modelu: samo wnioskowanie w trybie szybkim podąża za base URL i przechodzi przez gateway.
-- **Tury w trybie szybkim są logowane po cenie standardowej.** Anthropic oznacza żądanie w trybie szybkim przez `speed: "fast"` i nalicza za nie dopłatę: 8 USD za wejście i 40 USD za wyjście za milion tokenów w Claude Opus 5.5, dwa razy więcej niż stawka standardowa, z mnożnikami cache na dokładkę ([dokumentacja trybu szybkiego](https://platform.claude.com/docs/en/build-with-claude/fast-mode)). Wersja 1.2.3 gatewaya nie czyta `speed`, więc liczy te tokeny poprawnie, ale wycenia je jak tury standardowe: w Opus 5.5 to połowa tego, co nalicza Anthropic. Jeśli używasz `/fast`, suma gatewaya dla tych tur jest za niska.
+- **Tury w trybie szybkim są logowane po cenie standardowej.** Anthropic oznacza żądanie w trybie szybkim przez `speed: "fast"` i nalicza za nie dopłatę: 8 USD za wejście i 40 USD za wyjście za milion tokenów w Claude Opus 5.5, dwa razy więcej niż stawka standardowa, z mnożnikami cache na dokładkę ([dokumentacja trybu szybkiego](https://platform.claude.com/docs/en/build-with-claude/fast-mode)). Wersja 1.2.5 gatewaya, tak jak 1.2.3, nie czyta `speed`, więc liczy te tokeny poprawnie, ale wycenia je jak tury standardowe: w Opus 5.5 to połowa tego, co nalicza Anthropic. Jeśli używasz `/fast`, suma gatewaya dla tych tur jest za niska.
 - **Ruch z subskrypcji jest mierzony, a nie fakturowany.** Przy logowaniu przez Claude Pro albo Max nie ma faktury za tokeny; gateway wycenia ten ruch według równowartości ceny katalogowej, żeby był widoczny, i nie przypisuje mu żadnej oszczędności.
 
 ## Czy gateway też oszczędza pieniądze?
 
-Od razu po instalacji, z Claude Code na kluczu API, tylko mierzy i niczego nie oszczędza. Nie traktuj komunikatu startowego wersji 1.2.3 jak obietnicy: mówi, że wszystkie lokalne dźwignie oszczędności są włączone, a podsumowanie przy wyjściu liczy tylko zmierzone żądania, więc ani jedno, ani drugie nie mówi, że oszczędność wyniosła zero. Domyślna dźwignia gatewaya obniża czas życia zapisu do cache z jednej godziny do pięciu minut w turach, w których duża część żądania jest nowa, bo zapis na godzinę kosztuje dwukrotność ceny wejścia, a zapis na pięć minut jej 1,25-krotność. Claude Code na kluczu API i tak prosi o pięć minut, chyba że ustawisz `promptCacheTtl` na `1h`, więc nie ma czego obniżać.
+Od razu po instalacji, z Claude Code na kluczu API, tylko mierzy i niczego nie oszczędza, i wersja 1.2.5 to mówi. Jej komunikat startowy mówi, że dostrajanie TTL cache to jedyna dźwignia oszczędności włączona domyślnie i że działa tylko na ruch do Anthropic z kluczem API, który prosi o cache na godzinę, a podsumowanie przy wyjściu stawia zaoszczędzoną kwotę obok wydanej, z powodem, gdy oszczędność wynosi zero. Wersja 1.2.3 mówiła, że wszystkie lokalne dźwignie oszczędności są włączone, a jej podsumowanie przy wyjściu liczyło tylko żądania: jeśli wciąż jej używasz, nie traktuj żadnego z nich jak obietnicy. Domyślna dźwignia gatewaya obniża czas życia zapisu do cache z jednej godziny do pięciu minut w turach, w których duża część żądania jest nowa, bo zapis na godzinę kosztuje dwukrotność ceny wejścia, a zapis na pięć minut jej 1,25-krotność. Claude Code na kluczu API i tak prosi o pięć minut, chyba że ustawisz `promptCacheTtl` na `1h`, więc nie ma czego obniżać.
 
 Gdy w grę wchodzi cache na godzinę, oszczędność jest mała i zależy od Twojego ruchu. [Strona benchmarków](/pl/benchmarks#gateway-ttl) publikuje odtworzenie (replay) własnego ruchu Claude Code jednej organizacji: netto **+2,49%** rachunku po cenie katalogowej (113,45 USD z 4563,61 USD), z przedziałem 95% od +1,50% do +3,57% przy ponownym próbkowaniu po sesjach i górnym limitem 7,2% dla każdej polityki tego rodzaju. Na jednym modelu wynik był bliski zera, a w jednym okresie przyniósł stratę. To odtworzenie z częściowo zrekonstruowaną linią bazową, a nie faktura, i strona wymienia każde ograniczenie.
 
 ## Sprawdź liczby gatewaya z rachunkiem
 
-1. **Z `/usage`.** Dla jednej sesji zsumuj koszty poszczególnych żądań z gatewaya i porównaj je z blokiem Session w `/usage`. Oba wyceniają te same liczniki po cenie katalogowej, więc powinny być blisko, z wyjątkiem tur w trybie szybkim, które `/usage` wycenia według stawki trybu szybkiego, a gateway 1.2.3 według standardowej.
+1. **Z `/usage`.** Dla jednej sesji zsumuj koszty poszczególnych żądań z gatewaya i porównaj je z blokiem Session w `/usage`. Oba wyceniają te same liczniki po cenie katalogowej, więc powinny być blisko, z wyjątkiem tur w trybie szybkim, które `/usage` wycenia według stawki trybu szybkiego, a gateway 1.2.5 według standardowej.
 2. **Z Console.** Przez jeden dzień używaj osobnego klucza API lub workspace'u, a potem porównaj sumy gatewaya na model ze stroną Usage w Console dla tego klucza: wejście, wyjście, zapisy do cache i odczyty cache, najpierw w tokenach, potem w dolarach.
-3. **Wyjaśnij każdą różnicę.** Cena katalogowa nie zawsze jest Twoją ceną: rabaty umowne, rezydencja danych albo poziomy priorytetowe zmieniają kwoty, ale nie liczby tokenów. Tryb szybki również: przy włączonym `/fast` suma gatewaya jest niższa niż w Console, bo 1.2.3 wycenia tury w trybie szybkim według stawki standardowej. Ruch, który nie przeszedł przez ten gateway, na przykład z innej maszyny, skryptu albo zadania CI na tym samym kluczu, pojawia się tylko w Console.
+3. **Wyjaśnij każdą różnicę.** Cena katalogowa nie zawsze jest Twoją ceną: rabaty umowne, rezydencja danych albo poziomy priorytetowe zmieniają kwoty, ale nie liczby tokenów. Tryb szybki również: przy włączonym `/fast` suma gatewaya jest niższa niż w Console, bo 1.2.5 wycenia tury w trybie szybkim według stawki standardowej. Ruch, który nie przeszedł przez ten gateway, na przykład z innej maszyny, skryptu albo zadania CI na tym samym kluczu, pojawia się tylko w Console.
 
 Jeśli liczby tokenów się zgadzają, a dolary nie, różnica wynika z cen, a nie z pomiaru. Pełną metodę opisuje [jak sprawdzić oszczędności na LLM z rachunkiem dostawcy](/pl/guides/verify-llm-savings-against-provider-bill).
 

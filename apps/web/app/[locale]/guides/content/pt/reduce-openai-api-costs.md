@@ -61,7 +61,7 @@ console.log(report.calls.avoidedLlm); // 1: a whole call you did not pay for
 console.log(report.cost.basis); // "estimated": nothing ran, so there is no provider counter to read
 ```
 
-Dois limites, ditos com franqueza. Primeiro, o tráfego que nunca se repete poupa cerca de 0% com a cache e a deduplicação, por conceção. Segundo, o corte que a camada faz por predefinição dos resultados de ferramentas substituídos pode custar mais do que poupa em ciclos de agente longos com um fornecedor que põe em cache o prompt inteiro: o changelog do projeto regista +12,2% num ciclo de 60 passos com `gpt-5`, medido contra um fornecedor falso com as versões 1.2.3 e 1.2.4 e sem chave. Em ciclos de agente longos, passa `savings: { elision: false }` no pedido e compara.
+Dois limites, ditos com franqueza. Primeiro, o tráfego que nunca se repete poupa cerca de 0% com a cache e a deduplicação, por conceção. Segundo, o corte que a camada faz por predefinição dos resultados de ferramentas substituídos pode custar mais do que poupa em ciclos de agente longos com um fornecedor que põe em cache o prompt inteiro: o changelog do projeto regista +12,2% num ciclo de 60 passos com `gpt-5`, medido contra um fornecedor falso com as versões 1.2.3 e 1.2.4 e sem chave; a 1.2.5 corta da mesma forma. Em ciclos de agente longos, passa `savings: { elision: false }` no pedido e compara.
 
 ## Prova cada poupança com os números da OpenAI
 

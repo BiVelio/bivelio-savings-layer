@@ -61,7 +61,7 @@ console.log(report.calls.avoidedLlm); // 1: a whole call you did not pay for
 console.log(report.cost.basis); // "estimated": nothing ran, so there is no provider counter to read
 ```
 
-Due limiti, detti con onestà. Primo: il traffico che non si ripete mai risparmia circa lo 0% con la cache e la deduplicazione, ed è voluto. Secondo: il taglio predefinito che il layer applica ai risultati dei tool superati può costare più di quanto fa risparmiare nei lunghi loop di agenti, con un provider che mette in cache l'intero prompt: il changelog del progetto riporta +12,2% su un loop di 60 passi con `gpt-5`, misurato contro un provider fittizio con le versioni 1.2.3 e 1.2.4 e senza chiave. Per i lunghi loop di agenti, passa `savings: { elision: false }` nella richiesta e confronta.
+Due limiti, detti con onestà. Primo: il traffico che non si ripete mai risparmia circa lo 0% con la cache e la deduplicazione, ed è voluto. Secondo: il taglio predefinito che il layer applica ai risultati dei tool superati può costare più di quanto fa risparmiare nei lunghi loop di agenti, con un provider che mette in cache l'intero prompt: il changelog del progetto riporta +12,2% su un loop di 60 passi con `gpt-5`, misurato contro un provider fittizio con le versioni 1.2.3 e 1.2.4 e senza chiave; la 1.2.5 taglia allo stesso modo. Per i lunghi loop di agenti, passa `savings: { elision: false }` nella richiesta e confronta.
 
 ## Dimostra ogni risparmio con i numeri di OpenAI
 

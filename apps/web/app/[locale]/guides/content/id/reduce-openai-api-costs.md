@@ -61,7 +61,7 @@ console.log(report.calls.avoidedLlm); // 1: a whole call you did not pay for
 console.log(report.cost.basis); // "estimated": nothing ran, so there is no provider counter to read
 ```
 
-Dua batasan, terus terang saja. Pertama, lalu lintas yang tidak pernah berulang menghemat sekitar 0% dari cache dan deduplikasi, memang begitu rancangannya. Kedua, pemangkasan bawaan lapisan ini atas hasil alat yang sudah tergantikan bisa lebih mahal daripada penghematannya dalam loop agen panjang pada penyedia yang meng-cache seluruh prompt: changelog proyek melaporkan +12,2% pada loop 60 langkah di `gpt-5`, diukur terhadap penyedia palsu dengan versi 1.2.3 dan 1.2.4 dan tanpa kunci. Untuk loop agen yang panjang, kirim `savings: { elision: false }` pada permintaan lalu bandingkan.
+Dua batasan, terus terang saja. Pertama, lalu lintas yang tidak pernah berulang menghemat sekitar 0% dari cache dan deduplikasi, memang begitu rancangannya. Kedua, pemangkasan bawaan lapisan ini atas hasil alat yang sudah tergantikan bisa lebih mahal daripada penghematannya dalam loop agen panjang pada penyedia yang meng-cache seluruh prompt: changelog proyek melaporkan +12,2% pada loop 60 langkah di `gpt-5`, diukur terhadap penyedia palsu dengan versi 1.2.3 dan 1.2.4 dan tanpa kunci; 1.2.5 memangkas dengan cara yang sama. Untuk loop agen yang panjang, kirim `savings: { elision: false }` pada permintaan lalu bandingkan.
 
 ## Buktikan setiap penghematan dengan angka OpenAI
 

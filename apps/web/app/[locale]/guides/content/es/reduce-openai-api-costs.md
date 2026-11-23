@@ -61,7 +61,7 @@ console.log(report.calls.avoidedLlm); // 1: a whole call you did not pay for
 console.log(report.cost.basis); // "estimated": nothing ran, so there is no provider counter to read
 ```
 
-Dos límites, dichos con franqueza. Primero, el tráfico que nunca se repite ahorra cerca de un 0 % con la caché y la deduplicación, por diseño. Segundo, el recorte que hace la capa por defecto de los resultados de herramientas sustituidos puede costar más de lo que ahorra en bucles de agente largos con un proveedor que guarda en caché el prompt entero: el changelog del proyecto registra un +12,2 % en un bucle de 60 pasos con `gpt-5`, medido contra un proveedor falso con las versiones 1.2.3 y 1.2.4 y sin clave. En bucles de agente largos, pasa `savings: { elision: false }` en la petición y compara.
+Dos límites, dichos con franqueza. Primero, el tráfico que nunca se repite ahorra cerca de un 0 % con la caché y la deduplicación, por diseño. Segundo, el recorte que hace la capa por defecto de los resultados de herramientas sustituidos puede costar más de lo que ahorra en bucles de agente largos con un proveedor que guarda en caché el prompt entero: el changelog del proyecto registra un +12,2 % en un bucle de 60 pasos con `gpt-5`, medido contra un proveedor falso con las versiones 1.2.3 y 1.2.4 y sin clave; la 1.2.5 recorta igual. En bucles de agente largos, pasa `savings: { elision: false }` en la petición y compara.
 
 ## Demuestra cada ahorro con las cifras de OpenAI
 

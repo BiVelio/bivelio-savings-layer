@@ -44,8 +44,8 @@ const CIFRAS_CON_FUENTE: Record<string, string> = {
   "82.76 %": "README: A/B exploratorio de savings.cachePrefix, claude-haiku-4-5, 20 peticiones por brazo, 1.2.0",
   "20 %": "README (un system que cambia cuesta cerca de un 20 % más en Anthropic) y Model Studio context-cache (aciertos implícitos, típicamente 20 %)",
   "125 %": "alibabacloud.com/help/en/model-studio/context-cache: creación de la caché explícita, típicamente 125 %",
-  "80 %": "aritmética: la 1.2.3 tarifa como entrada normal (1×) una escritura que Model Studio cobra a 1,25× (1/1,25 = 80 %); reproducido con un servidor de prueba",
-  "10 %": "alibabacloud.com/help/en/model-studio/context-cache: aciertos de la caché explícita, típicamente 10 %; catálogo 1.2.3 de qwen-plus (115e-7 frente a 115e-6)",
+  "80 %": "aritmética: la 1.2.5 (como la 1.2.3) tarifa como entrada normal (1×) una escritura que Model Studio cobra a 1,25× (1/1,25 = 80 %); reproducido con un servidor de prueba contra las dos",
+  "10 %": "alibabacloud.com/help/en/model-studio/context-cache: aciertos de la caché explícita, típicamente 10 %; catálogo de qwen-plus de la 1.2.5, igual que el de la 1.2.3 (115e-7 frente a 115e-6)",
   "25 %": "aritmética de la tarifa oficial de Anthropic: escribir a 5 minutos cuesta 1,25 veces la entrada",
   "+166 %": "CHANGELOG 1.2.4: recorte de resultados en un bucle de 60 pasos en DeepSeek, proveedor falso, 1.2.3 y 1.2.4 sin clave",
   "+12.2 %": "CHANGELOG 1.2.4: el mismo bucle en gpt-5",
@@ -61,7 +61,7 @@ const CIFRAS_CON_FUENTE: Record<string, string> = {
   "$113.45": "/benchmarks#gateway-ttl: neto del replay en dólares",
   "$4,563.61": "/benchmarks#gateway-ttl: factura a precio de lista de las peticiones simuladas",
   "$40": "platform.claude.com/docs/en/build-with-claude/fast-mode: salida en modo rápido de Claude Opus 5.5 ($8 / $40 por MTok)",
-  "$0.003": "catálogo 1.2.3 (cachedInputPer1k 3e-6 en deepseek-flash y deepseek-v4-pro) y api-docs.deepseek.com/quick_start/pricing (acierto fuera de punta de deepseek-flash), leído el 2026-11-23",
+  "$0.003": "catálogo de la 1.2.5, igual que el de la 1.2.3 (cachedInputPer1k 3e-6 en deepseek-flash y deepseek-v4-pro) y api-docs.deepseek.com/quick_start/pricing (acierto fuera de punta de deepseek-flash), leído el 2026-11-23",
 };
 
 function enlaces(bloques: readonly Bloque[]): string[] {
@@ -170,8 +170,9 @@ describe.each(GUIAS.map((g) => g.slug))("la guía %s", (slug) => {
 
 /**
  * Lo que encontró la revisión del PR #620 (2026-11-23), comprobado contra el
- * paquete 1.2.3 y la documentación oficial de cada proveedor. Cada línea fija
- * una frase que fue falsa para que no vuelva.
+ * paquete 1.2.3 y la documentación oficial de cada proveedor (y de nuevo contra
+ * la 1.2.5: ver «lo que cambia con la 1.2.5»). Cada línea fija una frase que
+ * fue falsa para que no vuelva.
  */
 describe("lo que corrigió la revisión del PR #620", () => {
   it("el envoltorio `qwen` no se vende para modelos Qwen: la ruta es el modo OpenAI de Qwen Code contra el gateway", () => {
@@ -180,7 +181,7 @@ describe("lo que corrigió la revisión del PR #620", () => {
     expect(t).toMatch(/GW=http:\/\/127\.0\.0\.1:8404\/compatible-mode\/v1\n/);
   });
 
-  it("un stream sin include_usage no se mide en la 1.2.3, y la guía da la salida (BVSALA_GATEWAY_USAGE_INJECT=1)", () => {
+  it("un stream sin include_usage no se mide (1.2.3 y 1.2.5), y la guía da la salida (BVSALA_GATEWAY_USAGE_INJECT=1)", () => {
     expect(fuente("deepseek-qwen-api-cost-local-gateway")).toMatch(/BVSALA_GATEWAY_USAGE_INJECT=1/);
   });
 
@@ -196,7 +197,7 @@ describe("lo que corrigió la revisión del PR #620", () => {
     expect(fuente("deduplicate-llm-requests")).not.toMatch(/went to the provider's own API/);
   });
 
-  it("Claude Code: la 1.2.3 no avisa de que no ahorra; el modo rápido pasa por el gateway; tool search depende de la versión", () => {
+  it("Claude Code: el modo rápido pasa por el gateway; tool search depende de la versión", () => {
     const t = fuente("claude-code-cost-per-request");
     expect(t).not.toMatch(/saves nothing, and it says so/);
     expect(t).not.toMatch(/fast mode and the WebFetch safety check go straight/);
@@ -224,17 +225,54 @@ describe("lo que corrigió la revisión del PR #620", () => {
 
 /** La tercera revisión del PR #620 (2026-11-23). */
 describe("lo que corrigió la tercera revisión del PR #620", () => {
-  it("con DASHSCOPE_PROXY_BASE_URL, la 1.2.3 tarifa las escrituras explícitas de Qwen como entrada normal, y la conciliación lo cuenta", () => {
+  it("con DASHSCOPE_PROXY_BASE_URL, la 1.2.5 (como la 1.2.3) tarifa las escrituras explícitas de Qwen como entrada normal, y la conciliación lo cuenta", () => {
     const t = fuente("deepseek-qwen-api-cost-local-gateway");
-    expect(t).toMatch(/The 1\.2\.3 gateway does not read that field: it logs those tokens as ordinary input/);
+    expect(t).toMatch(/The 1\.2\.5 gateway does not read that field: it logs those tokens as ordinary input/);
     const conciliacion = t.slice(t.indexOf("## Check the numbers against your provider"));
     expect(conciliacion).toMatch(/explicit-cache writes as ordinary input/);
   });
 });
 
+/**
+ * Lo que cambia con la 1.2.5 (comprobado el 2026-11-23 con el paquete construido
+ * desde main, antes de publicarse: gateway contra un proveedor de prueba, los
+ * envoltorios con binarios de prueba y el cliente de Python). Las guías se
+ * escribieron contra la 1.2.3; estas líneas fijan lo que la 1.2.5 hace distinto.
+ */
+describe("lo que cambia con la 1.2.5", () => {
+  it("Claude Code: la 1.2.5 dice que no ahorra (cartel de arranque y resumen de salida con el dinero)", () => {
+    const t = fuente("claude-code-cost-per-request");
+    expect(t).toMatch(/saves nothing, and version 1\.2\.5 says so/);
+    expect(t).toMatch(/cache TTL tuning is the only saving lever on by default/);
+    expect(t).toMatch(/what they cost at list price, what was saved or why nothing was/);
+    // engines de package.json (>=20.19.0), y el mensaje de GatewayUnavailable de Python.
+    expect(t).toMatch(/Node\.js 20\.19\.0 or newer/);
+  });
+
+  it("Python: wrap() avisa del proxy, y GatewayUnavailable ya no dice que haga falta una clave de servicio", () => {
+    const t = fuente("deepseek-qwen-api-cost-local-gateway");
+    expect(t).not.toMatch(/needs a service key/);
+    expect(t).toMatch(/NO_PROXY=127\.0\.0\.1,localhost` before creating the client/);
+    expect(t).toMatch(/version 1\.2\.5 warns when they would/);
+    expect(t).toMatch(/says how to start one, with no key/);
+  });
+
+  it("Claude Code por el endpoint Anthropic de DeepSeek: se mide, pero no hay escrituras de caché que abaratar", () => {
+    expect(fuente("deepseek-qwen-api-cost-local-gateway")).toMatch(/ignores `cache_control` and reports no cache writes/);
+  });
+
+  it("la 1.2.3 solo aparece como comparación o en las mediciones del changelog, nunca como la versión que se describe", () => {
+    const permitidas = [/like 1\.2\.3,/g, /Version 1\.2\.3 said/g, /versions 1\.2\.3 and 1\.2\.4/g];
+    for (const g of GUIAS) {
+      const resto = permitidas.reduce((t, p) => t.replace(p, ""), fuente(g.slug));
+      expect(resto, g.slug).not.toMatch(/1\.2\.3/);
+    }
+  });
+});
+
 /** La segunda revisión del PR #620 (2026-11-23). */
 describe("lo que corrigió la segunda revisión del PR #620", () => {
-  it("el modo rápido: la 1.2.3 lo tarifa como estándar, y la conciliación lo cuenta como causa", () => {
+  it("el modo rápido: la 1.2.5 (como la 1.2.3) lo tarifa como estándar, y la conciliación lo cuenta como causa", () => {
     const t = fuente("claude-code-cost-per-request");
     expect(t).not.toMatch(/metered like any other turn/);
     expect(t).toMatch(/Fast-mode turns are logged at the standard price/);

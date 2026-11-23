@@ -61,7 +61,7 @@ console.log(report.calls.avoidedLlm); // 1: a whole call you did not pay for
 console.log(report.cost.basis); // "estimated": nothing ran, so there is no provider counter to read
 ```
 
-Dos límits, dits amb franquesa. Primer, el trànsit que mai no es repeteix estalvia prop d'un 0 % amb la memòria cau i la deduplicació, per disseny. Segon, la retallada que la capa fa per defecte dels resultats d'eines substituïts pot costar més del que estalvia en bucles d'agent llargs amb un proveïdor que desa a la memòria cau tot el prompt: el changelog del projecte registra un +12,2 % en un bucle de 60 passos amb `gpt-5`, mesurat contra un proveïdor fals amb les versions 1.2.3 i 1.2.4 i sense clau. En bucles d'agent llargs, passa `savings: { elision: false }` a la petició i compara.
+Dos límits, dits amb franquesa. Primer, el trànsit que mai no es repeteix estalvia prop d'un 0 % amb la memòria cau i la deduplicació, per disseny. Segon, la retallada que la capa fa per defecte dels resultats d'eines substituïts pot costar més del que estalvia en bucles d'agent llargs amb un proveïdor que desa a la memòria cau tot el prompt: el changelog del projecte registra un +12,2 % en un bucle de 60 passos amb `gpt-5`, mesurat contra un proveïdor fals amb les versions 1.2.3 i 1.2.4 i sense clau; la 1.2.5 retalla igual. En bucles d'agent llargs, passa `savings: { elision: false }` a la petició i compara.
 
 ## Demostra cada estalvi amb les xifres d'OpenAI
 

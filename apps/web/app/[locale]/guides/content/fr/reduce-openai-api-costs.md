@@ -61,7 +61,7 @@ console.log(report.calls.avoidedLlm); // 1: a whole call you did not pay for
 console.log(report.cost.basis); // "estimated": nothing ran, so there is no provider counter to read
 ```
 
-Deux limites, en toute honnêteté. D'abord, un trafic qui ne se répète jamais économise environ 0 % grâce au cache et à la déduplication, et c'est voulu. Ensuite, l'élagage par défaut des résultats d'outils devenus obsolètes peut coûter plus qu'il ne rapporte dans les longues boucles d'agent, chez un fournisseur qui met tout le prompt en cache : le changelog du projet rapporte +12,2 % sur une boucle de 60 étapes avec `gpt-5`, mesuré contre un faux fournisseur avec les versions 1.2.3 et 1.2.4, sans clé. Pour les longues boucles d'agent, passez `savings: { elision: false }` dans la requête et comparez.
+Deux limites, en toute honnêteté. D'abord, un trafic qui ne se répète jamais économise environ 0 % grâce au cache et à la déduplication, et c'est voulu. Ensuite, l'élagage par défaut des résultats d'outils devenus obsolètes peut coûter plus qu'il ne rapporte dans les longues boucles d'agent, chez un fournisseur qui met tout le prompt en cache : le changelog du projet rapporte +12,2 % sur une boucle de 60 étapes avec `gpt-5`, mesuré contre un faux fournisseur avec les versions 1.2.3 et 1.2.4, sans clé ; la 1.2.5 élague de la même façon. Pour les longues boucles d'agent, passez `savings: { elision: false }` dans la requête et comparez.
 
 ## Prouvez chaque économie avec les chiffres d'OpenAI
 

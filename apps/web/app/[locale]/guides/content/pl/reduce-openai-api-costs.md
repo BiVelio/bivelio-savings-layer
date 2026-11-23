@@ -61,7 +61,7 @@ console.log(report.calls.avoidedLlm); // 1: a whole call you did not pay for
 console.log(report.cost.basis); // "estimated": nothing ran, so there is no provider counter to read
 ```
 
-Dwa uczciwe ograniczenia. Po pierwsze, ruch, który nigdy się nie powtarza, oszczędza na cache i deduplikacji około 0%, i tak ma być. Po drugie, domyślne przycinanie zastąpionych wyników narzędzi może w długich pętlach agentów kosztować więcej, niż oszczędza, u dostawcy, który cache'uje cały prompt: changelog projektu podaje +12,2% w pętli z 60 krokami na `gpt-5`, zmierzone na atrapie dostawcy z wersjami 1.2.3 i 1.2.4 i bez klucza. W długich pętlach agentów przekaż w żądaniu `savings: { elision: false }` i porównaj.
+Dwa uczciwe ograniczenia. Po pierwsze, ruch, który nigdy się nie powtarza, oszczędza na cache i deduplikacji około 0%, i tak ma być. Po drugie, domyślne przycinanie zastąpionych wyników narzędzi może w długich pętlach agentów kosztować więcej, niż oszczędza, u dostawcy, który cache'uje cały prompt: changelog projektu podaje +12,2% w pętli z 60 krokami na `gpt-5`, zmierzone na atrapie dostawcy z wersjami 1.2.3 i 1.2.4 i bez klucza; 1.2.5 przycina tak samo. W długich pętlach agentów przekaż w żądaniu `savings: { elision: false }` i porównaj.
 
 ## Udowodnij każdą oszczędność liczbami z OpenAI
 
