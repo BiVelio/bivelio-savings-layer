@@ -1232,8 +1232,8 @@
     }
   },
   "landing": {
-    "metaTitle": "Reduce LLM API Costs — Open-Source SDK & Gateway | BiVelio",
-    "metaDescription": "Cut OpenAI, Anthropic and Gemini API costs where your traffic repeats: exact cache, deduplication, prompt caching. Open-source SDK and local gateway; free, no key.",
+    "metaTitle": "Reduce LLM API Costs with an Open-Source SDK | BiVelio",
+    "metaDescription": "TypeScript SDK that cuts OpenAI, Anthropic and Gemini API costs where traffic repeats: exact cache, dedup, Anthropic prompt caching. A gateway meters coding agents.",
     "hero": {
       "title": "Optimize your LLM calls.",
       "titleAccent": "Verify every saving.",
@@ -2114,8 +2114,8 @@
     "tableRegion": "Scrollable table: {title}"
   },
   "howItWorks": {
-    "metaTitle": "How to Cut LLM API Costs: SDK or Local Gateway · BiVelio Savings Layer",
-    "metaDescription": "Cut LLM API costs with an SDK in your app or a local gateway for your coding agent; calls still go straight to your provider. What it saves, its limits, how it's measured.",
+    "metaTitle": "How to Cut LLM API Costs with an SDK · BiVelio Savings Layer",
+    "metaDescription": "Cut LLM API costs with an SDK in your app; meter your coding agent with a local gateway. Calls never pass through BiVelio. What it saves, its limits, how it is measured.",
     "eyebrow": "The layer, explained · no jargon",
     "title": "Where does",
     "titleAccent": "the saving install?",
