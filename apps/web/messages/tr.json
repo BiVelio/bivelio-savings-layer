@@ -1232,8 +1232,8 @@
     }
   },
   "landing": {
-    "metaTitle": "BiVelio — LLM Tasarrufunuzu Doğrulayın",
-    "metaDescription": "Uygulamanızın LLM sağlayıcısına yalnızca ihtiyacı olanı ödeten bir SDK ve kodlama aracınızı ölçen bir ağ geçidi. Apache-2.0 açık çekirdek: anahtar yok, hesap yok, telemetri yok — sağlayıcınızın kendi sayacıyla ölçülür; isteğe bağlı bulut, tasarrufunuz üzerinden komisyonsuz sabit bir ücrettir.",
+    "metaTitle": "LLM API Maliyetlerini Düşürün — Açık Kaynak SDK ve Ağ Geçidi | BiVelio",
+    "metaDescription": "OpenAI, Anthropic ve Gemini API maliyetlerinizi trafiğinizin tekrarlandığı yerde düşürün: birebir önbellek, tekilleştirme, prompt önbelleği. Açık kaynak SDK ve yerel ağ geçidi; ücretsiz, anahtarsız.",
     "hero": {
       "title": "LLM çağrılarınızı optimize edin.",
       "titleAccent": "Her tasarrufu doğrulayın.",
@@ -1761,8 +1761,8 @@
     "arteAlt": "İllüstrasyon: zaten bağlı bir kuruluş ve Savings Cloud paneli ile boş yuvaya giren üçüncü bir daire."
   },
   "benchmarksPage": {
-    "metaTitle": "Herkese açık A/B testi: bizi ölçün | BiVelio Savings Layer",
-    "metaDescription": "Dört herkese açık test bataryası (GSM8K, BFCL, XSTest ve MT-Bench), sağlayıcının kendi kullanım sayacıyla ölçülen iki kol, her sayı kendi n değeri, aralığı ve tarihiyle. Neyin tasarruf sağladığı, neyin sağlamadığı ve testin bulduğu hatalar.",
+    "metaTitle": "LLM tasarruf benchmarkları: herkese açık A/B sonuçları · BiVelio Savings Layer",
+    "metaDescription": "LLM API tasarruflarının herkese açık A/B benchmarkları (GSM8K, BFCL, XSTest, MT-Bench), sağlayıcının kendi kullanım sayacıyla ölçülür. Her sayı kendi n değeri, aralığı ve tarihiyle.",
     "eyebrow": "Herkese açık test · yeniden üretilebilir",
     "title": "A/B testimiz, açıkta.",
     "titleAccent": "Bizi ölçün.",
@@ -2114,8 +2114,8 @@
     "tableRegion": "Kaydırılabilir tablo: {title}"
   },
   "howItWorks": {
-    "metaTitle": "Tasarruf nereye kurulur? · BiVelio Savings Layer",
-    "metaDescription": "BiVelio Savings Layer, altyapınızda SDK veya yerel gateway olarak çalışır. Açık kaynak motor, isteğe bağlı Savings Cloud: ne tasarruf eder, nerede etmez, nasıl ölçülür.",
+    "metaTitle": "LLM API maliyetleri nasıl düşürülür: SDK veya yerel gateway · BiVelio Savings Layer",
+    "metaDescription": "LLM API maliyetlerini uygulamanızdaki bir SDK veya kodlama aracınız için yerel bir gateway ile düşürün; çağrılar yine doğrudan sağlayıcınıza gider. Ne tasarruf eder, nerede etmez, nasıl ölçülür.",
     "eyebrow": "Katman, açıklandı · jargonsuz",
     "title": "Tasarruf",
     "titleAccent": "nereye kurulur?",
@@ -2280,8 +2280,8 @@
     }
   },
   "pricingPage": {
-    "metaTitle": "Fiyat koşulları · BiVelio Savings Layer",
-    "metaDescription": "Açık çekirdek ücretsizdir; Measure, Pro, Team ve Enterprise bulut planlarıdır — hiçbiri tasarrufunuz üzerinden komisyon almaz. Faturalayan sabitlerden yayımlanan rakamlar.",
+    "metaTitle": "Fiyatlar: ücretsiz açık kaynak motor, sabit ücretli bulut · BiVelio Savings Layer",
+    "metaDescription": "LLM API maliyetlerini düşüren açık kaynak motor ücretsizdir ve anahtar gerektirmez. Savings Cloud: Measure ücretsizdir; Pro ve Team, tasarrufunuz üzerinden komisyonsuz sabit bir ücrettir.",
     "eyebrow": "Yayımlanan fiyatlar",
     "title": "Açık kaynak motor.",
     "titleAccent": "Ekibiniz için bulut kontrolü.",
