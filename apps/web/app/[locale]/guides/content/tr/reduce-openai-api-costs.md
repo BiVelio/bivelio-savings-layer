@@ -61,7 +61,7 @@ console.log(report.calls.avoidedLlm); // 1: a whole call you did not pay for
 console.log(report.cost.basis); // "estimated": nothing ran, so there is no provider counter to read
 ```
 
-İki dürüst sınır var. Birincisi, hiç tekrarlanmayan trafik önbellek ve tekilleştirmeden tasarım gereği yaklaşık %0 tasarruf eder. İkincisi, katmanın yerini yenisi almış araç sonuçlarını varsayılan olarak kırpması, prompt'un tamamını önbelleğe alan bir sağlayıcıda uzun ajan döngülerinde kazandırdığından fazlasına mal olabilir: Projenin changelog'u, `gpt-5` üzerinde 60 adımlık bir döngüde +%12,2 bildiriyor; ölçüm, sahte bir sağlayıcıya karşı 1.2.3 ve 1.2.4 sürümleriyle ve anahtarsız yapıldı. Uzun ajan döngülerinde istekte `savings: { elision: false }` geçin ve karşılaştırın.
+İki dürüst sınır var. Birincisi, hiç tekrarlanmayan trafik önbellek ve tekilleştirmeden tasarım gereği yaklaşık %0 tasarruf eder. İkincisi, katmanın yerini yenisi almış araç sonuçlarını varsayılan olarak kırpması, prompt'un tamamını önbelleğe alan bir sağlayıcıda uzun ajan döngülerinde kazandırdığından fazlasına mal olabilir: Projenin changelog'u, `gpt-5` üzerinde 60 adımlık bir döngüde +%12,2 bildiriyor; ölçüm, sahte bir sağlayıcıya karşı 1.2.3 ve 1.2.4 sürümleriyle ve anahtarsız yapıldı; 1.2.5 de aynı şekilde kırpar. Uzun ajan döngülerinde istekte `savings: { elision: false }` geçin ve karşılaştırın.
 
 ## Her tasarrufu OpenAI'ın sayılarıyla kanıtlayın
 

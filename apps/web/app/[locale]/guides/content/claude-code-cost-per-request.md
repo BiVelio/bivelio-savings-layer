@@ -20,7 +20,7 @@ What none of these makes easy is the **per-request view**: which turn was the ex
 
 ## Measure every request with a local gateway
 
-A gateway is a small proxy between Claude Code and the API that reads the usage counters of each response. Claude Code supports this officially through `ANTHROPIC_BASE_URL`. [BV-SALA](https://github.com/BiVelio/bivelio-savings-layer) ships one in its npm package: Apache-2.0, **no key, no signup**, and nothing is sent to BiVelio. It needs Node.js 20 or newer.
+A gateway is a small proxy between Claude Code and the API that reads the usage counters of each response. Claude Code supports this officially through `ANTHROPIC_BASE_URL`. [BV-SALA](https://github.com/BiVelio/bivelio-savings-layer) ships one in its npm package: Apache-2.0, **no key, no signup**, and nothing is sent to BiVelio. It needs Node.js 20.19.0 or newer.
 
 The one-command way:
 
@@ -29,7 +29,7 @@ The one-command way:
 npx @bivelio/savings-layer claude
 ```
 
-The wrapper keeps the per-request log quiet so it does not draw over Claude Code's interface. When you exit, it prints how many requests it metered and which ones it forwarded without metering, and why. To see every request as it happens, either ask for the log on stderr:
+The wrapper keeps the per-request log quiet so it does not draw over Claude Code's interface. When you exit, it prints how many requests it metered, what they cost at list price, what was saved or why nothing was, and which requests it forwarded without metering, and why. To see every request as it happens, either ask for the log on stderr:
 
 ```bash
 BVSALA_GATEWAY_LOG=1 npx @bivelio/savings-layer claude
@@ -61,20 +61,20 @@ Read it from left to right: the model, the cost at the model's standard list pri
 
 - **It forwards what Claude Code sends.** With no lever acting on a request, the body reaches Anthropic byte for byte, including `cache_control` markers and the `anthropic-beta` header, so caching works exactly as it does without the gateway. A test in the repository checks this against a fake upstream on every change.
 - **Two small calls skip it.** Per Claude Code's [gateway compatibility guide](https://code.claude.com/docs/en/llm-gateway-protocol), the fast-mode availability check and the WebFetch domain safety check call `api.anthropic.com` directly instead of following `ANTHROPIC_BASE_URL`. Neither is a model request: fast-mode inference itself follows the base URL and goes through the gateway.
-- **Fast-mode turns are logged at the standard price.** Anthropic marks a fast-mode request with `speed: "fast"` and bills it at a premium: $8 input and $40 output per million tokens on Claude Opus 5.5, twice the standard rate, with the cache multipliers on top ([fast mode documentation](https://platform.claude.com/docs/en/build-with-claude/fast-mode)). Version 1.2.3 of the gateway does not read `speed`, so it counts those tokens correctly but prices them as standard turns: on Opus 5.5, half of what Anthropic bills. If you use `/fast`, the gateway's total for those turns is too low.
+- **Fast-mode turns are logged at the standard price.** Anthropic marks a fast-mode request with `speed: "fast"` and bills it at a premium: $8 input and $40 output per million tokens on Claude Opus 5.5, twice the standard rate, with the cache multipliers on top ([fast mode documentation](https://platform.claude.com/docs/en/build-with-claude/fast-mode)). Version 1.2.5 of the gateway, like 1.2.3, does not read `speed`, so it counts those tokens correctly but prices them as standard turns: on Opus 5.5, half of what Anthropic bills. If you use `/fast`, the gateway's total for those turns is too low.
 - **Subscription traffic is measured, not billed.** On a Claude Pro or Max login there is no per-token invoice; the gateway prices that traffic at list-price equivalent so you can see it, and credits no saving on it.
 
 ## Does the gateway also save money?
 
-Out of the box, with Claude Code on an API key, it measures and saves nothing. Do not read the startup message of version 1.2.3 as a promise: it says every local saving lever is on, and its exit summary only counts the requests it metered, so neither tells you that the saving was zero. The gateway's default lever lowers the cache-write lifetime from one hour to five minutes on turns where a large part of the request is new, because a one-hour write costs twice the input price and a five-minute write 1.25 times. Claude Code on an API key asks for five minutes already, unless you set `promptCacheTtl` to `1h`, so there is nothing to lower.
+Out of the box, with Claude Code on an API key, it measures and saves nothing, and version 1.2.5 says so. Its startup banner says that cache TTL tuning is the only saving lever on by default and that it only acts on Anthropic API-key traffic that asks for the one-hour cache, and its exit summary puts what was saved next to what was spent, with the reason when the saving is zero. Version 1.2.3 said every local saving lever was on, and its exit summary only counted requests: if you still run it, read neither as a promise. The gateway's default lever lowers the cache-write lifetime from one hour to five minutes on turns where a large part of the request is new, because a one-hour write costs twice the input price and a five-minute write 1.25 times. Claude Code on an API key asks for five minutes already, unless you set `promptCacheTtl` to `1h`, so there is nothing to lower.
 
 When the one-hour cache is in play, the saving is small and depends on your traffic. The [benchmarks page](/en/benchmarks#gateway-ttl) publishes a replay of one organisation's own Claude Code traffic: net **+2.49 %** of the list-price bill ($113.45 of $4,563.61), with a 95 % interval of +1.50 % to +3.57 % when resampled by session, and a ceiling of 7.2 % for any policy of this kind. On one model the result was close to nothing, and in one period it lost money. It is a replay with a partly reconstructed baseline, not an invoice, and the page lists every limit.
 
 ## Check the gateway's numbers against your bill
 
-1. **Against `/usage`.** For one session, add up the gateway's per-request costs and compare them with the Session block of `/usage`. Both price the same counters at list price, so they should be close, except for fast-mode turns, which `/usage` prices at the fast rate and the 1.2.3 gateway at the standard one.
+1. **Against `/usage`.** For one session, add up the gateway's per-request costs and compare them with the Session block of `/usage`. Both price the same counters at list price, so they should be close, except for fast-mode turns, which `/usage` prices at the fast rate and the 1.2.5 gateway at the standard one.
 2. **Against the Console.** Use a dedicated API key or workspace for a day, then compare the gateway's totals per model with the Console's Usage page for that key: input, output, cache writes and cache reads, in tokens first, then in dollars.
-3. **Explain any gap.** List price is not always your price: contracted discounts, data residency or priority tiers change the money but not the token counts. Fast mode does too: with `/fast` on, the gateway's total is below the Console's, because 1.2.3 prices fast-mode turns at the standard rate. Traffic that did not pass through this gateway, such as another machine, a script or a CI job using the same key, appears only on the Console.
+3. **Explain any gap.** List price is not always your price: contracted discounts, data residency or priority tiers change the money but not the token counts. Fast mode does too: with `/fast` on, the gateway's total is below the Console's, because 1.2.5 prices fast-mode turns at the standard rate. Traffic that did not pass through this gateway, such as another machine, a script or a CI job using the same key, appears only on the Console.
 
 If the token counts match and the dollars do not, the difference is pricing, not measurement. For the full method, read [how to verify LLM savings against your provider's bill](/en/guides/verify-llm-savings-against-provider-bill).
 

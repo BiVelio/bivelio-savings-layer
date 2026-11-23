@@ -61,7 +61,7 @@ console.log(report.calls.avoidedLlm); // 1: a whole call you did not pay for
 console.log(report.cost.basis); // "estimated": nothing ran, so there is no provider counter to read
 ```
 
-Nói thẳng, có hai giới hạn. Thứ nhất, lưu lượng không bao giờ lặp lại tiết kiệm được khoảng 0% từ cache và khử trùng lặp, và đó là do thiết kế. Thứ hai, việc mặc định cắt bớt các kết quả công cụ đã bị thay thế có thể tốn nhiều hơn số tiết kiệm được trong các vòng lặp agent dài trên nhà cung cấp cache toàn bộ prompt: changelog của dự án ghi nhận +12,2% trên một vòng lặp 60 bước với `gpt-5`, đo bằng một nhà cung cấp giả với các phiên bản 1.2.3 và 1.2.4 và không có khóa. Với vòng lặp agent dài, hãy truyền `savings: { elision: false }` trong yêu cầu và so sánh.
+Nói thẳng, có hai giới hạn. Thứ nhất, lưu lượng không bao giờ lặp lại tiết kiệm được khoảng 0% từ cache và khử trùng lặp, và đó là do thiết kế. Thứ hai, việc mặc định cắt bớt các kết quả công cụ đã bị thay thế có thể tốn nhiều hơn số tiết kiệm được trong các vòng lặp agent dài trên nhà cung cấp cache toàn bộ prompt: changelog của dự án ghi nhận +12,2% trên một vòng lặp 60 bước với `gpt-5`, đo bằng một nhà cung cấp giả với các phiên bản 1.2.3 và 1.2.4 và không có khóa; 1.2.5 cắt bớt theo đúng cách đó. Với vòng lặp agent dài, hãy truyền `savings: { elision: false }` trong yêu cầu và so sánh.
 
 ## Chứng minh từng khoản tiết kiệm bằng số liệu của OpenAI
 

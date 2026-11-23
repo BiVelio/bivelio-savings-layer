@@ -24,8 +24,9 @@ import { hayIndiceTraducido, hayTraduccion, metaDelIdioma, ORIGINAL, type Indice
  * cada cifra sale del README o del banco publicado y dice de dónde; cada guía
  * enlaza el banco y el repositorio; ningún texto, en ningún idioma, dice que
  * haga falta una clave para ahorrar. Los fragmentos de código se comprobaron
- * contra el paquete publicado en npm y PyPI (1.2.3) el día de la fecha, y las
- * traducciones los llevan byte a byte.
+ * contra el paquete publicado en npm y PyPI (1.2.3) el día de la fecha, y de
+ * nuevo contra la 1.2.5 construida desde main (2026-11-23), con lo que dice de
+ * la 1.2.5 cada guía; las traducciones los llevan byte a byte.
  */
 import { GUIAS, type Guia } from "./lista";
 export { GUIAS, type Guia };

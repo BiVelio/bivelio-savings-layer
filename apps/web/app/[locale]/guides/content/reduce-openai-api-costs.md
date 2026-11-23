@@ -61,7 +61,7 @@ console.log(report.calls.avoidedLlm); // 1: a whole call you did not pay for
 console.log(report.cost.basis); // "estimated": nothing ran, so there is no provider counter to read
 ```
 
-Two honest limits. First, traffic that never repeats saves about 0 % from the cache and deduplication, by design. Second, the layer's default trimming of superseded tool results can cost more than it saves in long agent loops on a provider that caches the whole prompt: the project's changelog reports +12.2 % on a 60-step loop on `gpt-5`, measured against a fake provider with versions 1.2.3 and 1.2.4 and no key. For long agent loops, pass `savings: { elision: false }` on the request and compare.
+Two honest limits. First, traffic that never repeats saves about 0 % from the cache and deduplication, by design. Second, the layer's default trimming of superseded tool results can cost more than it saves in long agent loops on a provider that caches the whole prompt: the project's changelog reports +12.2 % on a 60-step loop on `gpt-5`, measured against a fake provider with versions 1.2.3 and 1.2.4 and no key; 1.2.5 trims the same. For long agent loops, pass `savings: { elision: false }` on the request and compare.
 
 ## Prove each saving with OpenAI's numbers
 

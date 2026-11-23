@@ -61,7 +61,7 @@ console.log(report.calls.avoidedLlm); // 1: a whole call you did not pay for
 console.log(report.cost.basis); // "estimated": nothing ran, so there is no provider counter to read
 ```
 
-Twee eerlijke beperkingen. Ten eerste bespaart verkeer dat zich nooit herhaalt met de cache en deduplicatie ongeveer 0%, en dat is zo bedoeld. Ten tweede kan het standaard inkorten van achterhaalde toolresultaten in lange agent-loops meer kosten dan het oplevert bij een provider die de hele prompt cachet: de changelog van het project meldt +12,2% op een loop van 60 stappen met `gpt-5`, gemeten tegen een nepprovider met versies 1.2.3 en 1.2.4 en zonder sleutel. Geef voor lange agent-loops `savings: { elision: false }` mee in het verzoek en vergelijk.
+Twee eerlijke beperkingen. Ten eerste bespaart verkeer dat zich nooit herhaalt met de cache en deduplicatie ongeveer 0%, en dat is zo bedoeld. Ten tweede kan het standaard inkorten van achterhaalde toolresultaten in lange agent-loops meer kosten dan het oplevert bij een provider die de hele prompt cachet: de changelog van het project meldt +12,2% op een loop van 60 stappen met `gpt-5`, gemeten tegen een nepprovider met versies 1.2.3 en 1.2.4 en zonder sleutel; 1.2.5 kort op dezelfde manier in. Geef voor lange agent-loops `savings: { elision: false }` mee in het verzoek en vergelijk.
 
 ## Bewijs elke besparing met de cijfers van OpenAI
 

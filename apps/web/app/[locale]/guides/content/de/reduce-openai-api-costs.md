@@ -61,7 +61,7 @@ console.log(report.calls.avoidedLlm); // 1: a whole call you did not pay for
 console.log(report.cost.basis); // "estimated": nothing ran, so there is no provider counter to read
 ```
 
-Zwei ehrliche Grenzen. Erstens spart Traffic, der sich nie wiederholt, durch Cache und Deduplizierung konstruktionsbedingt etwa 0 %. Zweitens kann das standardmäßige Kürzen überholter Tool-Ergebnisse in langen Agent-Schleifen bei einem Anbieter, der den ganzen Prompt cacht, mehr kosten, als es spart: Das Changelog des Projekts meldet +12,2 % bei einer Schleife mit 60 Schritten auf `gpt-5`, gemessen gegen einen simulierten Anbieter mit den Versionen 1.2.3 und 1.2.4 und ohne Schlüssel. Übergib bei langen Agent-Schleifen `savings: { elision: false }` in der Anfrage und vergleiche.
+Zwei ehrliche Grenzen. Erstens spart Traffic, der sich nie wiederholt, durch Cache und Deduplizierung konstruktionsbedingt etwa 0 %. Zweitens kann das standardmäßige Kürzen überholter Tool-Ergebnisse in langen Agent-Schleifen bei einem Anbieter, der den ganzen Prompt cacht, mehr kosten, als es spart: Das Changelog des Projekts meldet +12,2 % bei einer Schleife mit 60 Schritten auf `gpt-5`, gemessen gegen einen simulierten Anbieter mit den Versionen 1.2.3 und 1.2.4 und ohne Schlüssel; 1.2.5 kürzt genauso. Übergib bei langen Agent-Schleifen `savings: { elision: false }` in der Anfrage und vergleiche.
 
 ## Belege jede Einsparung mit OpenAIs Zahlen
 

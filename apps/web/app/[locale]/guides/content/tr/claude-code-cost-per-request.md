@@ -20,7 +20,7 @@ Bunların hiçbiri **istek başına görünümü** kolaylaştırmaz: hangi turun
 
 ## Her isteği yerel bir gateway ile ölçün
 
-Gateway, Claude Code ile API arasında duran ve her yanıtın kullanım sayaçlarını okuyan küçük bir proxy'dir. Claude Code bunu `ANTHROPIC_BASE_URL` üzerinden resmi olarak destekler. [BV-SALA](https://github.com/BiVelio/bivelio-savings-layer), npm paketinde bir gateway ile gelir: Apache-2.0, **anahtarsız, kayıt olmadan** ve BiVelio'ya hiçbir şey gönderilmez. Node.js 20 veya daha yenisini gerektirir.
+Gateway, Claude Code ile API arasında duran ve her yanıtın kullanım sayaçlarını okuyan küçük bir proxy'dir. Claude Code bunu `ANTHROPIC_BASE_URL` üzerinden resmi olarak destekler. [BV-SALA](https://github.com/BiVelio/bivelio-savings-layer), npm paketinde bir gateway ile gelir: Apache-2.0, **anahtarsız, kayıt olmadan** ve BiVelio'ya hiçbir şey gönderilmez. Node.js 20.19.0 veya daha yenisini gerektirir.
 
 Tek komutluk yol:
 
@@ -29,7 +29,7 @@ Tek komutluk yol:
 npx @bivelio/savings-layer claude
 ```
 
-Wrapper, Claude Code'un arayüzünün üzerine yazmaması için istek başına logu sessiz tutar. Çıkışta kaç isteği ölçtüğünü, hangilerini ölçmeden ilettiğini ve nedenini yazdırır. Her isteği anında görmek için ya logu stderr'e isteyin:
+Wrapper, Claude Code'un arayüzünün üzerine yazmaması için istek başına logu sessiz tutar. Çıkışta kaç isteği ölçtüğünü, bunların liste fiyatıyla neye mal olduğunu, ne kadar tasarruf edildiğini ya da neden hiç edilmediğini, hangi istekleri ölçmeden ilettiğini ve nedenini yazdırır. Her isteği anında görmek için ya logu stderr'e isteyin:
 
 ```bash
 BVSALA_GATEWAY_LOG=1 npx @bivelio/savings-layer claude
@@ -61,20 +61,20 @@ Soldan sağa okuyun: model, modelin standart liste fiyatıyla maliyet (hızlı m
 
 - **Claude Code'un gönderdiğini iletir.** Bir isteğe hiçbir kaldıraç uygulanmadığında gövde Anthropic'e bayt bayt ulaşır; `cache_control` işaretleri ve `anthropic-beta` başlığı dahil. Böylece önbellek, gateway olmadan nasıl çalışıyorsa aynen öyle çalışır. Depodaki bir test bunu her değişiklikte sahte bir upstream'e karşı kontrol eder.
 - **İki küçük çağrı onu atlar.** Claude Code'un [gateway uyumluluk rehberine](https://code.claude.com/docs/en/llm-gateway-protocol) göre hızlı mod kullanılabilirlik kontrolü ve WebFetch alan adı güvenlik kontrolü, `ANTHROPIC_BASE_URL` değerini izlemek yerine doğrudan `api.anthropic.com` adresini çağırır. İkisi de model isteği değildir: Hızlı mod çıkarımının kendisi base URL'yi izler ve gateway'den geçer.
-- **Hızlı mod turları standart fiyatla loglanır.** Anthropic, hızlı moddaki bir isteği `speed: "fast"` ile işaretler ve primli faturalar: Claude Opus 5.5'te milyon token başına girdi için $8, çıktı için $40; yani standart tarifenin iki katı, üstüne önbellek çarpanları ([hızlı mod belgeleri](https://platform.claude.com/docs/en/build-with-claude/fast-mode)). Gateway'in 1.2.3 sürümü `speed` alanını okumaz; bu token'ları doğru sayar ama standart turlar gibi fiyatlar: Opus 5.5'te Anthropic'in faturaladığının yarısı. `/fast` kullanıyorsanız gateway'in bu turlar için verdiği toplam düşük kalır.
+- **Hızlı mod turları standart fiyatla loglanır.** Anthropic, hızlı moddaki bir isteği `speed: "fast"` ile işaretler ve primli faturalar: Claude Opus 5.5'te milyon token başına girdi için $8, çıktı için $40; yani standart tarifenin iki katı, üstüne önbellek çarpanları ([hızlı mod belgeleri](https://platform.claude.com/docs/en/build-with-claude/fast-mode)). Gateway'in 1.2.5 sürümü de, 1.2.3 gibi, `speed` alanını okumaz; bu token'ları doğru sayar ama standart turlar gibi fiyatlar: Opus 5.5'te Anthropic'in faturaladığının yarısı. `/fast` kullanıyorsanız gateway'in bu turlar için verdiği toplam düşük kalır.
 - **Abonelik trafiği ölçülür, faturalanmaz.** Claude Pro veya Max hesabıyla oturum açıldığında token başına fatura yoktur; gateway bu trafiği görebilmeniz için liste fiyatı karşılığıyla fiyatlar ve ona hiçbir tasarruf yazmaz.
 
 ## Gateway para da kazandırır mı?
 
-Kutudan çıktığı haliyle, bir API anahtarıyla çalışan Claude Code'da yalnızca ölçer, hiçbir şey kazandırmaz. 1.2.3 sürümünün başlangıç mesajını bir vaat olarak okumayın: Tüm yerel tasarruf kaldıraçlarının açık olduğunu söyler ve çıkış özeti yalnızca ölçtüğü istekleri sayar; yani ikisi de size tasarrufun sıfır olduğunu söylemez. Gateway'in varsayılan kaldıracı, isteğin büyük kısmının yeni olduğu turlarda önbellek yazma ömrünü bir saatten beş dakikaya indirir; çünkü bir saatlik yazma girdi fiyatının iki katına, beş dakikalık yazma 1,25 katına mal olur. API anahtarıyla çalışan Claude Code, `promptCacheTtl` değerini `1h` yapmadığınız sürece zaten beş dakika ister; yani düşürülecek bir şey yoktur.
+Kutudan çıktığı haliyle, bir API anahtarıyla çalışan Claude Code'da yalnızca ölçer, hiçbir şey kazandırmaz ve 1.2.5 sürümü bunu söyler. Başlangıç mesajı, varsayılan olarak açık olan tek tasarruf kaldıracının önbellek TTL ayarı olduğunu ve bunun yalnızca bir saatlik önbelleği isteyen, API anahtarlı Anthropic trafiğinde devreye girdiğini söyler; çıkış özeti de tasarruf edileni harcananın yanına koyar ve tasarruf sıfırsa nedenini yazar. 1.2.3 sürümü tüm yerel tasarruf kaldıraçlarının açık olduğunu söylüyordu ve çıkış özeti yalnızca istekleri sayıyordu: Hâlâ onu kullanıyorsanız ikisini de bir vaat olarak okumayın. Gateway'in varsayılan kaldıracı, isteğin büyük kısmının yeni olduğu turlarda önbellek yazma ömrünü bir saatten beş dakikaya indirir; çünkü bir saatlik yazma girdi fiyatının iki katına, beş dakikalık yazma 1,25 katına mal olur. API anahtarıyla çalışan Claude Code, `promptCacheTtl` değerini `1h` yapmadığınız sürece zaten beş dakika ister; yani düşürülecek bir şey yoktur.
 
 Bir saatlik önbellek devredeyken tasarruf küçüktür ve trafiğinize bağlıdır. [Benchmark sayfası](/tr/benchmarks#gateway-ttl), bir kuruluşun kendi Claude Code trafiğinin yeniden oynatımını (replay) yayımlıyor: liste fiyatıyla faturanın net **+%2,49**'u ($4.563,61 içinden $113,45), oturum bazında yeniden örneklemeyle %95 aralığı +%1,50 ile +%3,57 arası ve bu türden herhangi bir politika için %7,2 tavan. Bir modelde sonuç sıfıra yakındı, bir dönemde ise zarar ettirdi. Bu, kısmen yeniden kurulmuş bir referans çizgisiyle yapılmış bir yeniden oynatım, bir fatura değil ve sayfa tüm sınırlamaları listeliyor.
 
 ## Gateway'in sayılarını faturanızla karşılaştırın
 
-1. **`/usage` ile.** Bir oturum için gateway'in istek başına maliyetlerini toplayın ve `/usage` içindeki Session bloğuyla karşılaştırın. İkisi de aynı sayaçları liste fiyatıyla fiyatlar, dolayısıyla birbirine yakın olmalıdır; istisna, `/usage` aracının hızlı mod tarifesiyle, 1.2.3 gateway'inin ise standart tarifeyle fiyatladığı hızlı mod turlarıdır.
+1. **`/usage` ile.** Bir oturum için gateway'in istek başına maliyetlerini toplayın ve `/usage` içindeki Session bloğuyla karşılaştırın. İkisi de aynı sayaçları liste fiyatıyla fiyatlar, dolayısıyla birbirine yakın olmalıdır; istisna, `/usage` aracının hızlı mod tarifesiyle, 1.2.5 gateway'inin ise standart tarifeyle fiyatladığı hızlı mod turlarıdır.
 2. **Console ile.** Bir gün boyunca ayrı bir API anahtarı ya da workspace kullanın, sonra gateway'in model başına toplamlarını o anahtar için Console'daki Usage sayfasıyla karşılaştırın: girdi, çıktı, önbellek yazmaları ve önbellek okumaları; önce token, sonra dolar olarak.
-3. **Her farkı açıklayın.** Liste fiyatı her zaman sizin fiyatınız değildir: Sözleşmeli indirimler, veri yerleşimi ya da öncelik katmanları tutarı değiştirir ama token sayılarını değiştirmez. Hızlı mod da öyle: `/fast` açıkken gateway'in toplamı Console'unkinin altında kalır, çünkü 1.2.3 hızlı mod turlarını standart tarifeyle fiyatlar. Bu gateway'den geçmeyen trafik, örneğin aynı anahtarı kullanan başka bir makine, bir betik ya da bir CI işi, yalnızca Console'da görünür.
+3. **Her farkı açıklayın.** Liste fiyatı her zaman sizin fiyatınız değildir: Sözleşmeli indirimler, veri yerleşimi ya da öncelik katmanları tutarı değiştirir ama token sayılarını değiştirmez. Hızlı mod da öyle: `/fast` açıkken gateway'in toplamı Console'unkinin altında kalır, çünkü 1.2.5 hızlı mod turlarını standart tarifeyle fiyatlar. Bu gateway'den geçmeyen trafik, örneğin aynı anahtarı kullanan başka bir makine, bir betik ya da bir CI işi, yalnızca Console'da görünür.
 
 Token sayıları tutuyor ama dolar tutmuyorsa fark ölçümde değil fiyatlandırmadadır. Yöntemin tamamı için [LLM tasarruflarını sağlayıcı faturasıyla doğrulama](/tr/guides/verify-llm-savings-against-provider-bill) rehberini okuyun.
 
