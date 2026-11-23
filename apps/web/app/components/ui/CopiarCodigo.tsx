@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from "react";
 
+import { medirCopia } from "@/lib/medicion/medir";
+
 /**
  * Botón de copiar del marco de código. Mismo comportamiento que el
  * `CopyButton` del panel (portapapeles + confirmación breve), con dos
@@ -11,6 +13,10 @@ import { useEffect, useState } from "react";
  *
  * NO es el contenedor de una credencial: una service key real conserva su
  * control propio de copia y visibilidad única.
+ *
+ * Si lo copiado es un comando que instala BV-SALA, la copia se cuenta en la
+ * medición de la web (lib/medicion): el gestor (npm, npx, pnpm, pip…) y dónde
+ * estaba el bloque. El texto no sale del navegador.
  */
 export function CopiarCodigo({ texto, etiqueta, etiquetaCopiado }: { texto: string; etiqueta: string; etiquetaCopiado: string }) {
   const [copiado, setCopiado] = useState(false);
@@ -27,10 +33,12 @@ export function CopiarCodigo({ texto, etiqueta, etiquetaCopiado }: { texto: stri
         type="button"
         className="codeframe-copy"
         data-copied={copiado ? "" : undefined}
-        onClick={async () => {
+        onClick={async (e) => {
+          const boton = e.currentTarget;
           try {
             await navigator.clipboard.writeText(texto);
             setCopiado(true);
+            medirCopia(texto, boton);
           } catch {
             /* portapapeles no disponible: el texto sigue seleccionable */
           }

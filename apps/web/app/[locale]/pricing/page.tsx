@@ -96,7 +96,7 @@ export default async function PricingPage({ params }: { params: Promise<{ locale
             con marcador y mosaico de llamadas al pie de la cabecera. */}
         <HeroeDeCampana pagina="pricing">
         <GridBackground className="doc-fondo">
-        <section className="terms-hero precios-hero">
+        <section className="terms-hero precios-hero" data-medir-zona="hero">
           <Migas actual={tn("pricing")} />
           <span className="eyebrow">{t("eyebrow")}</span>
           <h1>
@@ -147,7 +147,7 @@ export default async function PricingPage({ params }: { params: Promise<{ locale
           </div>
         </section>
 
-        <section className="precios-planes" aria-labelledby="plans">
+        <section className="precios-planes" aria-labelledby="plans" data-medir-zona="plans">
           <h2 id="plans" className="precios-h2">
             {t("plans.title")}
           </h2>

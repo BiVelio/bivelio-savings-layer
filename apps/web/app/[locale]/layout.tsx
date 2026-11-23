@@ -13,6 +13,7 @@ import "../globals.css";
 // cabecera de affectui.css). Las que solo usa el panel las carga su layout, y
 // las del acceso (login, alta, invitación), cada una de sus páginas.
 import "@/vendor/affectui/affectui.css";
+import { MedicionWeb } from "@/app/components/MedicionWeb";
 import { NavBar } from "@/app/components/NavBar";
 import { SiteNavGate } from "@/app/components/SiteNavGate";
 import { SkipLink, SkipTarget } from "@/app/components/SkipLink";
@@ -80,6 +81,13 @@ export default async function LocaleLayout({
             <SkipTarget />
           </SiteNavGate>
           {children}
+          {/* Medición de la WEB, no del paquete (que sigue sin telemetría):
+              Vercel Web Analytics, sin cookies y en agregado — vistas de
+              página, copias del comando de instalación, salidas a
+              GitHub/npm/PyPI y pasos al alta (lib/medicion/eventos.ts). No
+              pide mensajes. Solo en el build de producción: en `next dev` no
+              se carga nada. */}
+          {process.env.NODE_ENV === "production" ? <MedicionWeb /> : null}
         </MensajesCliente>
       </body>
     </html>
