@@ -35,19 +35,26 @@ const PYPI = "https://pypi.org/project/bivelio-savings-layer/";
  * el gateway local MIDE (no tiene caché exacta, la coalescencia va apagada salvo
  * `BVSALA_GATEWAY_COALESCE=1` y su única palanca por defecto, el TTL de
  * Anthropic, solo ahorra si el cliente pide la caché de una hora); el paquete de
- * Python solo mide, a través de ese gateway. Proveedores, los de cada parte.
+ * Python solo mide, a través de ese gateway. Proveedores, los de cada parte:
+ * el gateway solo mide modelos con precio de lista en su catálogo, así que un
+ * servidor local (Ollama, vLLM, LM Studio) se reenvía pero no se mide en
+ * dólares (lo dice `bvsala doctor`). Y el informe no siempre sale del contador
+ * del proveedor: cada cifra lleva su etiqueta, y solo `measured` y `reference`
+ * salen de él.
  */
 export const RESUMEN =
   "BiVelio Savings Layer (BV-SALA, npm package `@bivelio/savings-layer`) is open source (Apache-2.0) and free " +
   "with no key, no signup and no telemetry. Its TypeScript SDK cuts LLM API spend inside your app where your " +
   "traffic repeats: an exact cache and deduplication of identical requests on OpenAI, Anthropic, Gemini and " +
   "any OpenAI-compatible endpoint (DeepSeek, Qwen, GLM, Moonshot, a local server), plus prompt-cache placement " +
-  "on Anthropic; each request's report is valued with the provider's own usage counter. The same package ships " +
-  "a local gateway that meters coding agents (Claude Code, Codex, Gemini CLI, Qwen Code, Aider) and any SDK " +
-  "that lets you set a base URL, in any language, in front of Anthropic, OpenAI, Gemini, DeepSeek, Qwen, GLM, " +
-  "Moonshot, MiniMax, OpenRouter or a local server. The Python package (`bivelio-savings-layer` on PyPI) is a " +
-  "measurement client for that gateway. The optional Savings Cloud adds a team dashboard, shared measurement, " +
-  "seats and license management.";
+  "on Anthropic. Its per-request report labels every figure `measured`, `reference` or `estimated`; only " +
+  "measured and reference figures come from the provider's own usage counter. The same package ships a local " +
+  "gateway that meters coding agents (Claude Code, Codex, Gemini CLI, Qwen Code, Aider) and any SDK that lets " +
+  "you set a base URL, in any language, in front of Anthropic, OpenAI, Gemini, DeepSeek, Qwen, GLM, Moonshot, " +
+  "MiniMax or OpenRouter, for models with a list price in its catalog; it also forwards to a local server " +
+  "(Ollama, vLLM, LM Studio), whose models have no list price and are not metered in dollars. The Python " +
+  "package (`bivelio-savings-layer` on PyPI) is a measurement client for that gateway. The optional Savings " +
+  "Cloud adds a team dashboard, shared measurement, seats and license management.";
 
 /**
  * ⚠ ACTUALIZAR CUANDO LA 1.2.5 LLEGUE A NPM. En la 1.2.3 (npm `latest` hoy) una
