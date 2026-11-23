@@ -41,6 +41,8 @@ const CIFRAS_CON_FUENTE: Record<string, string> = {
   "0 %": "README: el tráfico que no se repite ahorra cerca de 0 %; el 0 % → 95 % del A/B exploratorio",
   "82.76 %": "README: A/B exploratorio de savings.cachePrefix, claude-haiku-4-5, 20 peticiones por brazo, 1.2.0",
   "20 %": "README (un system que cambia cuesta cerca de un 20 % más en Anthropic) y Model Studio context-cache (aciertos implícitos, típicamente 20 %)",
+  "125 %": "alibabacloud.com/help/en/model-studio/context-cache: creación de la caché explícita, típicamente 125 %",
+  "80 %": "aritmética: la 1.2.3 tarifa como entrada normal (1×) una escritura que Model Studio cobra a 1,25× (1/1,25 = 80 %); reproducido con un servidor de prueba",
   "10 %": "alibabacloud.com/help/en/model-studio/context-cache: aciertos de la caché explícita, típicamente 10 %; catálogo 1.2.3 de qwen-plus (115e-7 frente a 115e-6)",
   "25 %": "aritmética de la tarifa oficial de Anthropic: escribir a 5 minutos cuesta 1,25 veces la entrada",
   "+166 %": "CHANGELOG 1.2.4: recorte de resultados en un bucle de 60 pasos en DeepSeek, proveedor falso, 1.2.3 y 1.2.4 sin clave",
@@ -217,6 +219,16 @@ describe("lo que corrigió la revisión del PR #620", () => {
   });
 });
 
+/** La tercera revisión del PR #620 (2026-11-23). */
+describe("lo que corrigió la tercera revisión del PR #620", () => {
+  it("con DASHSCOPE_PROXY_BASE_URL, la 1.2.3 tarifa las escrituras explícitas de Qwen como entrada normal, y la conciliación lo cuenta", () => {
+    const t = fuente("deepseek-qwen-api-cost-local-gateway");
+    expect(t).toMatch(/The 1\.2\.3 gateway does not read that field: it logs those tokens as ordinary input/);
+    const conciliacion = t.slice(t.indexOf("## Check the numbers against your provider"));
+    expect(conciliacion).toMatch(/explicit-cache writes as ordinary input/);
+  });
+});
+
 /** La segunda revisión del PR #620 (2026-11-23). */
 describe("lo que corrigió la segunda revisión del PR #620", () => {
   it("el modo rápido: la 1.2.3 lo tarifa como estándar, y la conciliación lo cuenta como causa", () => {
@@ -230,7 +242,7 @@ describe("lo que corrigió la segunda revisión del PR #620", () => {
   it("Qwen Code por el gateway conserva la caché explícita de DashScope (DASHSCOPE_PROXY_BASE_URL igual al base URL)", () => {
     const t = fuente("deepseek-qwen-api-cost-local-gateway");
     expect(t).toMatch(/OPENAI_BASE_URL="\$GW" DASHSCOPE_PROXY_BASE_URL="\$GW"/);
-    expect(t).toMatch(/implicit-cache hits \(billed at about 20 %\) are logged at about half their cost/);
+    expect(t).toMatch(/\*\*Without the variable\*\* there are no explicit writes, but the hits are implicit ones/);
   });
 
   it("los enlaces internos del texto pierden el /en y siguen el idioma de quien lee", () => {
