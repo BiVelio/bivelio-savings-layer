@@ -1,0 +1,38 @@
+{
+  "index": {
+    "title": "Hướng dẫn cắt giảm hóa đơn API LLM",
+    "description": "Hướng dẫn thực tế để giảm chi phí API OpenAI, Anthropic, DeepSeek và Qwen: caching, khử trùng lặp, chi phí Claude Code theo từng yêu cầu, kiểm chứng tiết kiệm.",
+    "intro": "Các hướng dẫn thực tế, trung lập với nhà cung cấp, dành cho lập trình viên trả hóa đơn theo token. Mỗi bài dạy kỹ thuật trước, để vẫn hữu ích khi không dùng công cụ nào; sau đó cho thấy lớp tiết kiệm mã nguồn mở BV-SALA làm việc đó thế nào, miễn phí và không cần khóa; cuối cùng là cách kiểm tra khoản tiết kiệm bằng chính bộ đếm usage của nhà cung cấp của bạn.",
+    "sources": "Mọi con số đều lấy từ tài liệu của nhà cung cấp hoặc từ [trang benchmark](/vi/benchmarks) của chúng tôi, và ghi rõ nguồn. Mã nguồn có trên [GitHub](https://github.com/BiVelio/bivelio-savings-layer)."
+  },
+  "guides": {
+    "reduce-openai-api-costs": {
+      "title": "Cách giảm chi phí API OpenAI và chứng minh từng khoản tiết kiệm",
+      "description": "Sáu đòn bẩy giảm hóa đơn OpenAI: caching, khử trùng lặp, Batch, chọn mô hình, độ dài đầu ra và đầu vào. Khi nào đáng dùng và cách kiểm tra trên lưu lượng thật."
+    },
+    "claude-prompt-caching-not-working": {
+      "title": "Prompt caching của Claude không hoạt động? Vì sao cache read luôn bằng 0",
+      "description": "Vì sao cache_read_input_tokens luôn bằng 0 trên Claude, cách tìm byte làm hỏng tiền tố và cách đối chiếu tỷ lệ trúng cache với số liệu usage của Anthropic."
+    },
+    "claude-code-cost-per-request": {
+      "title": "Claude Code tốn bao nhiêu tiền? Đo chi phí theo từng yêu cầu",
+      "description": "Chi phí Claude Code khi dùng khóa API, /usage và Console cho thấy gì, và cách xem chi phí của từng yêu cầu bằng một gateway cục bộ miễn phí."
+    },
+    "openai-prompt-caching-cached-tokens": {
+      "title": "Prompt caching của OpenAI: vì sao cached_tokens bằng 0 và cách khắc phục",
+      "description": "Checklist prompt caching của OpenAI khi cached_tokens bằng 0: độ dài prompt, thứ tự tiền tố, eviction, định tuyến và stream, kèm mã theo dõi tỷ lệ trúng cache."
+    },
+    "deduplicate-llm-requests": {
+      "title": "Loại bỏ yêu cầu LLM trùng lặp: cache khớp chính xác và gộp yêu cầu in-flight",
+      "description": "Đừng trả tiền hai lần cho cùng lệnh gọi LLM: cache key an toàn, những gì không được cache, gộp yêu cầu giống hệt đang chạy và cách kiểm chứng khoản tiết kiệm."
+    },
+    "deepseek-qwen-api-cost-local-gateway": {
+      "title": "Chi phí API DeepSeek và Qwen: xem cache hit và chi tiêu theo từng yêu cầu",
+      "description": "Cách DeepSeek và Qwen tính phí cache hit và miss, cách tính giá một yêu cầu từ các trường usage, và cách đo từng yêu cầu bằng gateway cục bộ miễn phí."
+    },
+    "verify-llm-savings-against-provider-bill": {
+      "title": "Cách kiểm chứng khoản tiết kiệm chi phí LLM với hóa đơn nhà cung cấp",
+      "description": "Phương pháp kiểm tra mọi tuyên bố tiết kiệm LLM: ghi bộ đếm nhà cung cấp, đối soát token trước tiền, tách số đo được khỏi ước tính và quy đúng nguồn tiết kiệm."
+    }
+  }
+}

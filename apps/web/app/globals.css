@@ -4193,6 +4193,15 @@ a.card:active, button.card:active, .card-link:active { transform: translateY(0);
 .paper-datos { font-family: var(--sans); text-align: start; }
 .guia-datos { margin: 10px 0 20px; }
 .guia-page .guia-datos code { font-size: .86em; }
+/* Las guías TRADUCIDAS: en sus tablas nada se parte a mitad de palabra.
+   Con las palabras más largas de otros idiomas, la primera columna se
+   ensanchaba y estrujaba a las demás: «DeepSee/k» (vietnamita) o
+   «https://dashsco/pe-» (alemán) a 390px. El texto parte entre palabras
+   (sin guiones automáticos, que dejaban «De-/Seek») y el código solo donde
+   el propio código lo permite (tras un guion). Si así no cabe, la tabla
+   desliza dentro de su caja, como ya hacía. La edición inglesa no cambia. */
+.ui-dtc.guia-datos[data-prose]:not(:lang(en)) .ui-dtc__table :is(th, td),
+.ui-dtc.guia-datos[data-prose]:not(:lang(en)) .ui-dtc__table code { overflow-wrap: break-word; }
 .precios-legado-insignia { margin: 0 0 12px; }
 
 /* ── E4·3 Privacidad: la cabecera con la carpeta ────────────────────────── */

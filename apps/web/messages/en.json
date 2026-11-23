@@ -2608,6 +2608,18 @@
       "versionNote": "This is the guide for migrating to version {version}. It is not the announcement of the latest release."
     }
   },
+  "guidesPage": {
+    "breadcrumb": "Guides",
+    "eyebrowIndex": "Guides · LLM API costs",
+    "eyebrowGuide": "Guide · LLM API costs",
+    "by": "By BiVelio",
+    "updated": "updated <fecha>{date}</fecha>",
+    "minRead": "{n} min read",
+    "moreGuides": "More guides",
+    "readGuide": "Read the guide",
+    "readAria": "Read: {title}",
+    "table": "Table"
+  },
   "paperCard": {
     "kind": "Preprint",
     "pages": "{n, plural, one {# page} other {# pages}}",

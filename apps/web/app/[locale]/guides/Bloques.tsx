@@ -15,13 +15,15 @@ import { rutaSinIdioma } from "./articulo";
  * tabla de datos. Nunca HTML en crudo.
  *
  * Diferencia con la guía de migración: aquí los enlaces a otras páginas del
- * sitio (`/en/benchmarks`, `/en/guides/…`) son enlaces de verdad, porque las
+ * sitio (`/en/benchmarks`, `/es/guides/…`) son enlaces de verdad, porque las
  * guías se enlazan entre sí y con el banco. Se pintan con el `Link` de
- * next-intl sin el `/en`, para que quien lee bajo /es siga en /es.
+ * next-intl sin su prefijo de idioma, para que quien lee bajo /es siga en /es.
  *
- * `lang`: el idioma del TEXTO (inglés). Va en cada bloque de prosa y no en la
- * sección, porque dentro de la sección también vive interfaz traducida (el
- * botón «Copiar» de cada bloque de código), que hereda el idioma de la página.
+ * `lang`: el idioma del TEXTO (el de la traducción, o `en` si se sirve el
+ * original). Va en cada bloque de prosa y no en la sección, porque dentro de
+ * la sección también vive interfaz traducida (el botón «Copiar» de cada bloque
+ * de código), que hereda el idioma de la página. `tabla`: el nombre accesible
+ * de cada tabla, en el idioma de la interfaz.
  */
 
 export type Copiar = { etiqueta: string; etiquetaCopiado: string };
@@ -85,7 +87,17 @@ function Codigo({ v, lenguaje, copiar }: { v: string; lenguaje: string; copiar: 
   );
 }
 
-export function Bloques({ bloques, copiar, lang }: { bloques: readonly Bloque[]; copiar: Copiar; lang?: string }): ReactNode {
+export function Bloques({
+  bloques,
+  copiar,
+  lang,
+  tabla = "Table",
+}: {
+  bloques: readonly Bloque[];
+  copiar: Copiar;
+  lang?: string;
+  tabla?: string;
+}): ReactNode {
   return bloques.map((b, i) => {
     switch (b.t) {
       case "titulo": {
@@ -107,13 +119,13 @@ export function Bloques({ bloques, copiar, lang }: { bloques: readonly Bloque[];
       case "cita":
         return (
           <blockquote key={i} className="terms-governs guia-cita" lang={lang}>
-            <Bloques bloques={b.c} copiar={copiar} />
+            <Bloques bloques={b.c} copiar={copiar} tabla={tabla} />
           </blockquote>
         );
       case "lista": {
         const items = b.items.map((it, j) => (
           <li key={j}>
-            {it.length === 1 && it[0]!.t === "parrafo" ? <EnLineaR c={it[0]!.c} /> : <Bloques bloques={it} copiar={copiar} />}
+            {it.length === 1 && it[0]!.t === "parrafo" ? <EnLineaR c={it[0]!.c} /> : <Bloques bloques={it} copiar={copiar} tabla={tabla} />}
           </li>
         ));
         return b.ordenada ? (
@@ -131,7 +143,7 @@ export function Bloques({ bloques, copiar, lang }: { bloques: readonly Bloque[];
           <DataTable
             key={i}
             className="guia-datos"
-            label="Table"
+            label={tabla}
             lang={lang}
             minWidth={`${Math.max(b.cabecera.length, 2) * 9}rem`}
             prose

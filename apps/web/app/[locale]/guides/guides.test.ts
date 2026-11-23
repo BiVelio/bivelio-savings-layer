@@ -9,10 +9,11 @@ import { idDeTitulo, leerMarkdown, type Bloque } from "@/lib/guia-migracion/mark
 import sitemap from "../../sitemap";
 import { palabras, rutaSinIdioma } from "./articulo";
 import { cargarTexto } from "./cargar";
-import { GUIAS, urlDeGuia } from "./registry";
+import { GUIAS, idiomasDe, urlDeGuia } from "./registry";
 
 /**
- * Las guías (/en/guides): lo que no puede romperse sin que nadie lo note.
+ * Las guías (/<idioma>/guides), su ORIGINAL inglés: lo que no puede romperse
+ * sin que nadie lo note. Las traducciones las vigila traducciones.test.ts.
  *
  * - La lista del registro y los ficheros de `content/` son el mismo conjunto.
  * - Cada guía tiene entre 1.000 y 2.000 palabras, enlaza el banco publicado y
@@ -23,7 +24,7 @@ import { GUIAS, urlDeGuia } from "./registry";
  * - Cada cifra del texto (fuera de los bloques de código) está en la lista de
  *   abajo con su fuente. Una cifra nueva sin fuente rompe el test: no se
  *   publica un número inventado.
- * - El sitemap anuncia el índice y cada guía.
+ * - El sitemap anuncia el índice y cada guía en cada idioma traducido.
  */
 
 const DIR = join(dirname(fileURLToPath(import.meta.url)), "content");
@@ -209,12 +210,13 @@ describe("lo que corrigió la revisión del PR #620", () => {
     expect(t).not.toMatch(/bill again at full price/);
   });
 
-  it("ninguna página de guías da 404 por idioma: se sirven en inglés bajo cualquier prefijo, con el canonical en /en", () => {
+  it("ninguna página de guías da 404 por idioma; canonical propio y los hreflang del registro (los del sitemap)", () => {
     const dir = dirname(fileURLToPath(import.meta.url));
     for (const f of ["page.tsx", join("[slug]", "page.tsx")]) {
       const src = readFileSync(join(dir, f), "utf8");
       expect(src, f).not.toMatch(/locale\s*!==\s*IDIOMA_DE_LAS_GUIAS\)\s*(notFound|return)/);
-      expect(src, f).toMatch(/canonical: url, languages: \{ en: url, "x-default": url \}/);
+      expect(src, f).not.toMatch(/hayTraduccion\([^)]*\)\)?\s*(notFound|return)/);
+      expect(src, f).toMatch(/alternates: \{ canonical: url, languages: alternativasDe\((slug)?\) \}/);
     }
   });
 });
@@ -252,6 +254,12 @@ describe("lo que corrigió la segunda revisión del PR #620", () => {
     expect(rutaSinIdioma("/en")).toBe("/");
     expect(rutaSinIdioma("/en#x")).toBe("/#x");
     expect(rutaSinIdioma("/enterprise")).toBe("/enterprise");
+    // Las traducciones enlazan con SU prefijo: también se quita (si no, /de/de/…).
+    expect(rutaSinIdioma("/de/guides/deduplicate-llm-requests")).toBe("/guides/deduplicate-llm-requests");
+    expect(rutaSinIdioma("/vi/benchmarks#savings")).toBe("/benchmarks#savings");
+    expect(rutaSinIdioma("/pt")).toBe("/");
+    expect(rutaSinIdioma("/idiomas")).toBe("/idiomas");
+    expect(rutaSinIdioma("/vienna/x")).toBe("/vienna/x");
     expect(rutaSinIdioma("https://github.com/BiVelio/bivelio-savings-layer")).toBeNull();
     const dir = dirname(fileURLToPath(import.meta.url));
     const bloques = readFileSync(join(dir, "Bloques.tsx"), "utf8");
@@ -270,12 +278,16 @@ describe("lo que corrigió la segunda revisión del PR #620", () => {
 });
 
 describe("el sitemap", () => {
-  it("anuncia el índice y cada guía, una sola vez y solo en inglés", () => {
+  it("anuncia el índice y cada guía en cada idioma en que existen, una sola vez cada URL", () => {
     const urls = sitemap().map((e) => e.url);
-    for (const u of [urlDeGuia(), ...GUIAS.map((g) => urlDeGuia(g.slug))]) {
-      expect(urls.filter((x) => x === u)).toHaveLength(1);
+    for (const slug of [undefined, ...GUIAS.map((g) => g.slug)]) {
+      for (const l of idiomasDe(slug)) expect(urls.filter((x) => x === urlDeGuia(slug, l)), `${l} ${slug ?? "índice"}`).toHaveLength(1);
     }
-    expect(urls.some((u) => /\/(?!en\/)[a-z]{2}\/guides/.test(new URL(u).pathname))).toBe(false);
+    // Ninguna URL de guía en un idioma sin traducción (su canonical es /en).
+    for (const u of urls) {
+      const m = /^\/([a-z]{2})\/guides(?:\/([a-z0-9-]+))?$/.exec(new URL(u).pathname);
+      if (m) expect(idiomasDe(m[2]), u).toContain(m[1]);
+    }
   });
 
   it("los ids de los títulos son los de GitHub (las anclas que enlazan otras guías)", () => {

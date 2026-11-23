@@ -30,7 +30,7 @@ const CONSTRUIDO = new Date();
 
 /**
  * La fecha de la guía más reciente (publicada o revisada): el `<lastmod>` del
- * índice /en/guides, que cambia cuando entra o se revisa una guía.
+ * índice /<idioma>/guides, que cambia cuando entra o se revisa una guía.
  */
 const GUIA_MAS_RECIENTE = GUIAS.map((g) => g.updated ?? g.date)
   .sort()
@@ -73,9 +73,11 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.6,
       alternates: { languages: { en: absolute("/en/paper"), "x-default": absolute("/en/paper") } },
     },
-    // Las guías (/en/guides): solo en inglés, el índice y una URL por guía, del
-    // registro (su única fuente). Cada guía trae su fecha; el índice, que no la
-    // trae, lleva la de la guía más reciente.
+    // Las guías (/<idioma>/guides): el índice y cada guía en cada idioma en que
+    // están traducidas (registry.ts, su única fuente), una URL por edición y
+    // con los mismos `hreflang` que declara la página. Una copia inglesa bajo
+    // un prefijo sin traducción no entra: su `canonical` es /en. Cada guía
+    // trae su fecha; el índice, que no la trae, lleva la de la guía más reciente.
     ...guias().map((e) => ({ ...e, lastModified: e.lastModified ?? GUIA_MAS_RECIENTE ?? CONSTRUIDO })),
   ];
 }

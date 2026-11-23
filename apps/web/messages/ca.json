@@ -1431,7 +1431,7 @@
       "measured": "Resultats mesurats",
       "benchmarks": "Banc públic",
       "migrate": "Guia de migració",
-      "guides": "Guies (en anglès)",
+      "guides": "Guies",
       "pricing": "Preus",
       "home": "Inici",
       "docs": "Documentació",
@@ -2607,6 +2607,18 @@
     "migrate": {
       "versionNote": "Aquesta és la guia per migrar a la versió {version}. No és l'anunci de la versió més recent."
     }
+  },
+  "guidesPage": {
+    "breadcrumb": "Guies",
+    "eyebrowIndex": "Guies · Costos d'API de LLM",
+    "eyebrowGuide": "Guia · Costos d'API de LLM",
+    "by": "Per BiVelio",
+    "updated": "actualitzada el <fecha>{date}</fecha>",
+    "minRead": "{n} min de lectura",
+    "moreGuides": "Més guies",
+    "readGuide": "Llegeix la guia",
+    "readAria": "Llegeix: {title}",
+    "table": "Taula"
   },
   "paperCard": {
     "kind": "Preprint",

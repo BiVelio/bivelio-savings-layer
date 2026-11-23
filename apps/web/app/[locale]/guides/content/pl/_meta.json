@@ -1,0 +1,38 @@
+{
+  "index": {
+    "title": "Poradniki: jak obniżyć koszty API LLM",
+    "description": "Praktyczne poradniki, jak obniżyć koszty API OpenAI, Anthropic, DeepSeek i Qwen: cache, deduplikacja, koszt Claude Code na żądanie i weryfikacja oszczędności.",
+    "intro": "Praktyczne, niezależne od dostawcy poradniki dla programistów, którzy płacą rachunek za tokeny. Każdy najpierw uczy techniki, więc przydaje się bez żadnego narzędzia; potem pokazuje, jak robi to otwartoźródłowa warstwa BV-SALA, za darmo i bez klucza; a na koniec, jak sprawdzić oszczędność w licznikach użycia Twojego dostawcy.",
+    "sources": "Każda liczba pochodzi z dokumentacji dostawcy albo z naszej [strony benchmarków](/pl/benchmarks) i podaje swoje źródło. Kod jest na [GitHubie](https://github.com/BiVelio/bivelio-savings-layer)."
+  },
+  "guides": {
+    "reduce-openai-api-costs": {
+      "title": "Jak obniżyć koszty API OpenAI i udowodnić każdą oszczędność",
+      "description": "Sześć dźwigni na rachunek od OpenAI: cache, deduplikacja, Batch, wybór modelu, długość wyjścia i wejścia. Kiedy się opłacają i jak je sprawdzić na swoim ruchu."
+    },
+    "claude-prompt-caching-not-working": {
+      "title": "Prompt caching w Claude nie działa? Dlaczego odczyty cache wynoszą 0",
+      "description": "Dlaczego cache_read_input_tokens w Claude wynosi 0, jak znaleźć bajt, który psuje prefiks, i jak sprawdzić odsetek trafień z danymi o użyciu od Anthropic."
+    },
+    "claude-code-cost-per-request": {
+      "title": "Ile kosztuje Claude Code? Zmierz koszt każdego żądania",
+      "description": "Ile kosztuje Claude Code na kluczu API, co pokazują /usage i Console oraz jak zobaczyć koszt każdego żądania dzięki darmowemu lokalnemu gatewayowi."
+    },
+    "openai-prompt-caching-cached-tokens": {
+      "title": "Prompt caching w OpenAI: dlaczego cached_tokens wynosi 0 i jak to naprawić",
+      "description": "Lista kontrolna, gdy cached_tokens w OpenAI stoi na 0: długość promptu, kolejność prefiksu, wygasanie, routing i strumienie, z kodem do śledzenia trafień."
+    },
+    "deduplicate-llm-requests": {
+      "title": "Deduplikacja identycznych żądań do LLM: dokładny cache i scalanie w locie",
+      "description": "Nie płać dwa razy za to samo wywołanie LLM: bezpieczny klucz cache, czego nigdy nie cache'ować, scalanie identycznych żądań w locie i weryfikacja oszczędności."
+    },
+    "deepseek-qwen-api-cost-local-gateway": {
+      "title": "Koszty API DeepSeek i Qwen: trafienia w cache i wydatki na każde żądanie",
+      "description": "Jak DeepSeek i Qwen rozliczają trafienia i chybienia cache, jak wycenić żądanie z pól użycia i jak mierzyć każde żądanie darmowym lokalnym gatewayem."
+    },
+    "verify-llm-savings-against-provider-bill": {
+      "title": "Jak sprawdzić oszczędności na kosztach LLM z rachunkiem dostawcy",
+      "description": "Metoda weryfikacji oszczędności na LLM: loguj liczniki dostawcy, uzgadniaj najpierw tokeny, potem dolary, oddziel zmierzone od szacowanych i przypisz efekt."
+    }
+  }
+}
