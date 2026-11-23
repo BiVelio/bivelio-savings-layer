@@ -3,8 +3,10 @@ import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 
 import { URL_DEL_CODIGO } from "@/app/components/sitio";
+import { VERSION_MEDIR_AHORRA } from "@/lib/license/medir-publico";
+import { compararVersiones } from "@/lib/version/semver";
 
-import { AVISO_MEASURE, RESUMEN, leerReadme, llmsFull, llmsTxt } from "./llms";
+import { MEASURE_EN_EL_INDICE, RESUMEN, VERSION_EN_NPM, leerReadme, llmsFull, llmsTxt } from "./llms";
 
 /**
  * /llms.txt y /llms-full.txt dicen lo mismo que el README, y llms-full.txt SE
@@ -15,6 +17,10 @@ const RAIZ = fileURLToPath(new URL("../../../../", import.meta.url));
 const readme = readFileSync(`${RAIZ}README.md`, "utf8");
 const indice = llmsTxt();
 const completo = llmsFull(readme);
+
+/** Las versiones x.y.z de un texto (no las IP: ni detrás de un punto ni delante de «.dígito»). */
+const versiones = (t: string) => [...t.matchAll(/(?<![\d.])\d+\.\d+\.\d+(?!\.?\d)/g)].map((m) => m[0]);
+const mayor = (a: string, b: string) => compararVersiones(a, b) > 0;
 
 describe("llms.txt (formato de llmstxt.org)", () => {
   it("H1 con el nombre, un resumen en cita y secciones de enlaces", () => {
@@ -94,14 +100,31 @@ describe("llms.txt (formato de llmstxt.org)", () => {
     expect(readFileSync(`${RAIZ}src/providers/anthropic.ts`, "utf8")).toContain("maxCacheBreakpoints");
   });
 
-  it("⚠ Measure en sombra (npm latest = 1.2.3): el aviso va en el índice y tras la tabla Community vs Cloud", () => {
-    // QUITAR JUNTO CON `AVISO_MEASURE` cuando la 1.2.5 llegue a npm: desde la
-    // 1.2.4 una clave Measure aplica las mismas palancas que sin clave.
-    expect(AVISO_MEASURE).toMatch(/Measure key currently runs the SDK and the gateway in shadow mode/);
-    expect(AVISO_MEASURE).toMatch(/no lever is applied\. To save, leave the key out\.$/);
-    expect(indice).toContain(AVISO_MEASURE);
+  it("Measure (1.2.5 en npm): las mismas palancas que sin clave, desde la versión que lee /pricing; ningún aviso de modo sombra", () => {
+    // Hasta la 1.2.3 una clave Measure ponía el SDK y el gateway en modo sombra,
+    // y el índice y llms-full.txt llevaban un aviso («To save, leave the key
+    // out»). Desde la 1.2.5 (la 1.2.4 no llegó a npm) Measure aplica las mismas
+    // palancas que sin clave: el aviso se fue, y el índice dice desde qué versión.
+    expect(MEASURE_EN_EL_INDICE).toBe(
+      `With @bivelio/savings-layer ${VERSION_MEDIR_AHORRA} or later a Measure key applies exactly the same levers as no key and adds the dashboard; older versions only observe with it.`,
+    );
+    expect(indice).toContain(`with no commission on your savings. ${MEASURE_EN_EL_INDICE}\n`);
+    for (const t of [indice, completo]) {
+      expect(t).not.toMatch(/currently runs the SDK and the gateway in shadow mode|leave the key out/i);
+    }
+    // llms-full.txt lo dice con las palabras del README: la viñeta de la nube, los
+    // párrafos bajo la tabla y la sección de licencias.
+    expect(readme).toContain("the free Measure license applies exactly the same levers as no key");
+    const nube = completo.slice(completo.indexOf("## Overview"), completo.indexOf("## How it saves"));
+    expect(nube).toContain("- **The cloud is the optional part.**");
     const tabla = completo.slice(completo.indexOf("## Community vs Cloud"), completo.indexOf("## Pricing"));
-    expect(tabla.trim().endsWith(AVISO_MEASURE)).toBe(true);
+    expect(tabla).toContain("Both columns have the same levers.");
+    expect(tabla).toContain("the free Measure license applies exactly the same levers as no key");
+    expect(tabla).toMatch(/with `licenseServerUrl` set[^\n]*72 hours/);
+    expect(tabla).not.toContain("**Pricing.**");
+    const licencias = completo.slice(completo.indexOf("## Licensing & privacy"), completo.indexOf("## Requirements"));
+    expect(licencias).toContain("up to 5 seats and 20,000\nrequests a day: the layer applies exactly the same levers as with no key");
+    expect(licencias).toContain("**observe-only mode**");
   });
 });
 
@@ -127,8 +150,8 @@ describe("llms-full.txt sale del README", () => {
     const hasta = completo.indexOf("\n## Links\n");
     const copiado = completo.slice(desde, hasta).split("\n");
     for (const l of copiado) {
-      // La única línea escrita aquí y no en el README: el aviso de Measure.
-      if (l === "" || l.startsWith("## ") || l === AVISO_MEASURE) continue;
+      // Nada escrito aquí: todo lo que va entre los encabezados sale del README.
+      if (l === "" || l.startsWith("## ")) continue;
       const original = l.replaceAll(`](${URL_DEL_CODIGO}#`, "](#");
       expect(readme.includes(l) || readme.includes(original), l).toBe(true);
     }
@@ -146,14 +169,25 @@ describe("llms-full.txt sale del README", () => {
     }
   });
 
-  it("⛔ ningún párrafo atado a una versión 1.x: esos son los que pueden ir por delante de npm", () => {
-    // El README de main describe ya cosas de la 1.2.4/1.2.5 (la licencia Measure,
-    // el modo observe-only) y npm puede seguir en una versión anterior. Esos
-    // párrafos nombran la versión; la lista blanca (PIEZAS) los deja fuera. Lo
-    // que dice hoy llms-full.txt de Measure es AVISO_MEASURE (la 1.2.3), y se
-    // cambia a mano cuando la 1.2.5 llegue a npm (ver su test de arriba).
-    expect(completo).not.toMatch(/\b1\.\d+\.\d+\b/);
-    expect(completo).not.toMatch(/observeOnly|observe-only|BVSALA_GATEWAY_OBSERVE_ONLY/);
+  it("⛔ ninguna versión por delante de npm: lo que llms-full.txt nombra es VERSION_EN_NPM o anterior", () => {
+    // El README de main puede ir por delante de npm (hoy lleva ya la 1.2.5
+    // mientras npm sirve la 1.2.3): un párrafo que nombra una versión que npm no
+    // tiene describe algo que quien instala no recibe. VERSION_EN_NPM se sube a
+    // mano cuando la versión nueva es `latest`; hasta entonces, este test falla.
+    const encima = (t: string) => versiones(t).filter((v) => mayor(v, VERSION_EN_NPM));
+    expect(versiones(completo).length).toBeGreaterThan(0); // la sección de licencias nombra la 1.2.3 y la 1.2.4
+    expect(encima(completo)).toEqual([]);
+    expect(encima(indice)).toEqual([]);
+    // Y el guardián funciona: un README que nombra una versión futura no pasa.
+    expect(encima(llmsFull(readme.replace("This is new in 1.2.4", "This is new in 9.9.9")))).toEqual(["9.9.9"]);
+    // Una IP no es una versión.
+    expect(versiones("http://127.0.0.1:8403 and 1.2.3.")).toEqual(["1.2.3"]);
+  });
+
+  it("VERSION_EN_NPM: no por delante del paquete del repositorio, y Measure ya ahorra en ella", () => {
+    const npm = JSON.parse(readFileSync(`${RAIZ}package.json`, "utf8")) as { version: string };
+    expect(mayor(VERSION_EN_NPM, npm.version), `${VERSION_EN_NPM} > ${npm.version}`).toBe(false);
+    expect(mayor(VERSION_MEDIR_AHORRA, VERSION_EN_NPM)).toBe(false);
   });
 
   it("si el README pierde una sección publicada, falla con su nombre (y el build también)", () => {

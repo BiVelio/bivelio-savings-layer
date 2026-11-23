@@ -3,6 +3,7 @@ import { join } from "node:path";
 
 import { URL_DEL_CODIGO } from "@/app/components/sitio";
 import { absolute } from "@/i18n/site";
+import { VERSION_MEDIR_AHORRA } from "@/lib/license/medir-publico";
 
 /**
  * /llms.txt y /llms-full.txt (formato de llmstxt.org): lo que lee un asistente
@@ -18,20 +19,31 @@ import { absolute } from "@/i18n/site";
  *   secciones de abajo, `llmsFull()` lanza y el build (y llms.test.ts) fallan.
  *
  * QUÉ SECCIONES Y POR QUÉ ESAS. Una lista blanca, no el README entero: el README
- * de `main` puede ir por delante de la versión publicada en npm (p. ej. el
- * comportamiento de la licencia Measure de la 1.2.4), y esos párrafos se
- * reconocen porque nombran la versión. Las secciones elegidas describen lo que
- * hace el motor abierto sin clave, que no depende de esa diferencia. Lo único
- * escrito aquí y no en el README, además del resumen, es `AVISO_MEASURE`: lo
- * que hace hoy (1.2.3) una clave Measure, tras la tabla Community vs Cloud.
+ * de `main` puede ir por delante de la versión publicada en npm, y esos párrafos
+ * se reconocen porque nombran la versión. Con la 1.2.5 en npm, lo que el README
+ * dice de la licencia Measure (las mismas palancas que sin clave) es lo que hace
+ * la versión publicada, y entra: la viñeta de la nube, los párrafos de Community
+ * vs Cloud y «Licensing & privacy». Lo único escrito aquí y no en el README es
+ * el resumen. `VERSION_EN_NPM` vigila que ninguna pieza nombre una versión que
+ * npm todavía no tiene (llms.test.ts).
  */
 
 const NPM = "https://www.npmjs.com/package/@bivelio/savings-layer";
 const PYPI = "https://pypi.org/project/bivelio-savings-layer/";
 
 /**
+ * LA VERSIÓN DE `@bivelio/savings-layer` QUE ES `latest` EN NPM (y en PyPI), la
+ * que describe lo publicado aquí. llms-full.txt copia el README de `main`, y
+ * `main` puede llevar ya la versión siguiente: si una pieza nombra una versión
+ * mayor que esta, llms.test.ts falla, porque ese párrafo describe algo que quien
+ * instala hoy no tiene. Se sube A MANO cuando la versión nueva llega a npm, no
+ * antes (este cambio se fusiona cuando la 1.2.5 es `latest`).
+ */
+export const VERSION_EN_NPM = "1.2.5";
+
+/**
  * El resumen, el mismo en los dos ficheros. Cada parte con lo que de verdad hace
- * en la versión publicada en npm (1.2.3): el SDK de TypeScript es el que ahorra;
+ * en la versión publicada en npm (`VERSION_EN_NPM`): el SDK de TypeScript es el que ahorra;
  * el gateway local MIDE (no tiene caché exacta, la coalescencia va apagada salvo
  * `BVSALA_GATEWAY_COALESCE=1` y su única palanca por defecto, el TTL de
  * Anthropic, solo ahorra si el cliente pide la caché de una hora); el paquete de
@@ -57,15 +69,15 @@ export const RESUMEN =
   "Cloud adds a team dashboard, shared measurement, seats and license management.";
 
 /**
- * ⚠ ACTUALIZAR CUANDO LA 1.2.5 LLEGUE A NPM. En la 1.2.3 (npm `latest` hoy) una
- * clave Measure pone el SDK y el gateway en modo sombra: no aplica ninguna
- * palanca. Desde la 1.2.4 Measure ahorra igual que sin clave; entonces esta
- * frase sobra y se quita (de aquí, de llms.txt y de la tabla de llms-full.txt),
- * junto con su test en llms.test.ts («Measure en sombra»).
+ * El plan gratuito, en la línea de precios del índice. Desde la 1.2.5 (la
+ * primera publicada en npm con la licencia Measure de la 1.2.4) una clave
+ * Measure aplica exactamente las mismas palancas que sin clave; las versiones
+ * anteriores, desde la 0.4.33, solo observan con ella. La versión llega de
+ * `VERSION_MEDIR_AHORRA`, la misma que leen /pricing, el alta y el panel.
  */
-export const AVISO_MEASURE =
-  "A free Measure key currently runs the SDK and the gateway in shadow mode (observe only): requests go to " +
-  "your provider untouched and no lever is applied. To save, leave the key out.";
+export const MEASURE_EN_EL_INDICE =
+  `With @bivelio/savings-layer ${VERSION_MEDIR_AHORRA} or later a Measure key applies exactly the same levers ` +
+  `as no key and adds the dashboard; older versions only observe with it.`;
 
 export function llmsTxt(): string {
   return `# BiVelio Savings Layer
@@ -87,7 +99,7 @@ The local gateway measures by default. It has no exact cache, coalescing of iden
 
 - [How it works](${absolute("/en/how-it-works")}): where the layer runs (inside your app or as a local gateway), what it saves, its limits and how it is measured
 - [Benchmarks](${absolute("/en/benchmarks")}): the public A/B bench, metered with the provider's own usage counter, every run with its raw JSON report
-- [Pricing](${absolute("/en/pricing")}): the open-source engine is free; the optional Savings Cloud has a free plan (Measure) and flat-fee plans with no commission on your savings. ${AVISO_MEASURE}
+- [Pricing](${absolute("/en/pricing")}): the open-source engine is free; the optional Savings Cloud has a free plan (Measure) and flat-fee plans with no commission on your savings. ${MEASURE_EN_EL_INDICE}
 - [Paper](${absolute("/en/paper")}): Verifiable Measurement of Cost Savings in LLM Applications — the method, the results and every limitation
 - [README as plain text](${absolute("/llms-full.txt")}): install, both modes, providers, and what is free and what the Cloud adds
 
@@ -190,8 +202,7 @@ function limpiar(lineas: string[]): string {
     .trim();
 }
 
-/** `nota`: una línea escrita aquí, no copiada del README, que va tras la pieza. */
-type Pieza = { titulo: string; lineas: (l: string[]) => string[]; nota?: string };
+type Pieza = { titulo: string; lineas: (l: string[]) => string[] };
 
 /**
  * LA LISTA BLANCA. Cada pieza tiene que existir en el README y no estar vacía:
@@ -200,19 +211,19 @@ type Pieza = { titulo: string; lineas: (l: string[]) => string[]; nota?: string 
 const PIEZAS: readonly Pieza[] = [
   {
     titulo: "Overview",
-    // El primer bloque de instalación y la nota de --legacy-peer-deps; de las
-    // tres viñetas, las dos que no dependen de la versión publicada (la de la
-    // nube describe la licencia Measure de la 1.2.4). El párrafo de entrada del
-    // README NO va: dice que la capa «deja pasar solo lo que hay que pagar»
-    // también delante del agente de código, y el gateway, por defecto, mide. Lo
-    // que hace cada parte lo dice el resumen de arriba.
+    // El primer bloque de instalación, la nota de --legacy-peer-deps y las tres
+    // viñetas (gratis sin clave, la nube opcional y la evidencia). La de la nube
+    // describe la licencia Measure de la 1.2.4, que llegó a npm con la 1.2.5. El
+    // párrafo de entrada del README NO va: dice que la capa «deja pasar solo lo
+    // que hay que pagar» también delante del agente de código, y el gateway, por
+    // defecto, mide. Lo que hace cada parte lo dice el resumen de arriba.
     lineas: (l) => {
       const entrada = l.findIndex((x) => x.startsWith("`@bivelio/savings-layer`"));
       if (entrada < 0) return [];
       const i = l.findIndex((x, j) => j > entrada && x.trim() === "");
       if (i < 0) return [];
       const cuerpo = hastaElCorte(l, i);
-      const vinetas = ["**Free, with no key.**", "**The evidence is public.**"];
+      const vinetas = ["**Free, with no key.**", "**The cloud is the optional part.**", "**The evidence is public.**"];
       const filtrado = sinVinetasSalvo(cuerpo, vinetas);
       return vinetas.every((v) => filtrado.some((x) => x.startsWith(`- ${v}`))) ? filtrado : [];
     },
@@ -226,19 +237,24 @@ const PIEZAS: readonly Pieza[] = [
   { titulo: "Inside your framework", lineas: (l) => porEncabezado(l, "Inside your framework") },
   {
     titulo: "Community vs Cloud",
-    // Solo la tabla: los párrafos de debajo detallan la licencia Measure por
-    // versión. Sin ellos, la columna Cloud diría que una clave Measure deja todas
-    // las palancas puestas, y en la 1.2.3 no es así: de ahí la nota.
-    nota: AVISO_MEASURE,
+    // La tabla y los párrafos de debajo, hasta el de precios (que es su propia
+    // pieza): la licencia Measure aplica las mismas palancas que sin clave, las
+    // dos excepciones de las licencias de pago, lo que ata una clave (72 h con
+    // `licenseServerUrl`) y la caché compartida en un almacén propio. Con la
+    // 1.2.5 en npm es lo que hace la versión publicada.
     lineas: (l) => {
       const seccion = porEncabezado(l, "Community vs Cloud");
       const i = seccion.findIndex((x) => x.startsWith("|"));
       if (i < 0) return [];
-      const fin = seccion.findIndex((x, j) => j > i && !x.startsWith("|"));
-      return seccion.slice(i, fin < 0 ? undefined : fin);
+      const precios = seccion.findIndex((x, j) => j > i && x.startsWith("**Pricing.**"));
+      return seccion.slice(i, precios < 0 ? undefined : precios);
     },
   },
   { titulo: "Pricing", lineas: (l) => porParrafo(l, "**Pricing.**") },
+  // Los planes y la licencia Measure (topes, las mismas palancas que sin clave),
+  // el modo solo-observar, el plan antiguo con comisión, la licencia firmada que
+  // se verifica sin red y lo que cubre la Apache-2.0.
+  { titulo: "Licensing & privacy", lineas: (l) => porEncabezado(l, "Licensing & privacy") },
   { titulo: "Requirements", lineas: (l) => porResumen(l, "Requirements") },
 ];
 
@@ -248,7 +264,7 @@ export function llmsFull(readme: string): string {
   const secciones = PIEZAS.map((p) => {
     const cuerpo = limpiar(p.lineas(lineas));
     if (!cuerpo) throw new Error(`llms-full.txt: el README ya no tiene la sección «${p.titulo}» (lib/llms/llms.ts, PIEZAS).`);
-    return `## ${p.titulo}\n\n${cuerpo}${p.nota ? `\n\n${p.nota}` : ""}`;
+    return `## ${p.titulo}\n\n${cuerpo}`;
   });
   return `# BiVelio Savings Layer
 
