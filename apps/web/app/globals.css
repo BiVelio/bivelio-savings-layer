@@ -4740,22 +4740,37 @@ a.ph-insignia:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px
 
    Nada de lenguaje nuevo: la hoja blanca con hairline y --shadow-card de
    `.card`, el radio editorial (--r-card-lg), el tema en la píldora mono de
-   `.dm-etiqueta`, el titular en Plus Jakarta como `.paperc-titulo`, el azul de
-   marca como texto pequeño (--brand-ink) y el hover de `a.card`: borde
-   --line-strong y --shadow-hover, y los 2px de subida solo sin reduced-motion.
+   `.dm-etiqueta`, el titular en Plus Jakarta 800 como `.paperc-titulo` y
+   `.dm-nombre` (-.04em en la destacada; -.03em en las demás, a 19–22 px,
+   para que las palabras no se peguen), el azul de marca como texto pequeño
+   (--brand-ink) y el hover de `a.card`: borde --line-strong y --shadow-hover,
+   y los 2px de subida solo sin reduced-motion.
 
-   UN enlace por tarjeta, el del titular, estirado con `::after` sobre toda
-   ella; su anillo de foco se pinta en ese `::after`, con el radio de la
-   tarjeta. Las tarjetas de una fila miden lo mismo (la fila de la rejilla las
-   estira) y el pie se apoya abajo (`margin-top: auto`).
+   Anchos (revisión de diseño del 23-11): dos columnas solo desde 960 px. Por
+   debajo (el iPad vertical, 768), una: a 720 px cada tarjeta medía 329 px,
+   menos que la del móvil, con titulares de tres líneas y el pie partido en
+   dos. El titular no lleva tope en `ch`: nunca es más estrecho que la
+   descripción que tiene debajo.
+
+   La guía `destacada` (lista.ts: se elige a mano, no sale de cuántas haya)
+   abre a todo el ancho. Desde 960 px tiene su propia composición: tema y
+   titular grande a la izquierda; descripción y pie a la derecha. Así el texto
+   llena la tarjeta y la fecha no queda a 1000 px del «Leer la guía →».
+
+   El pie, en una fila: la fecha corta («23 Nov 2026») y, en el móvil
+   (< 480 px), la señal queda en la flecha sola, a la derecha. Es aria-hidden:
+   el enlace es el titular, estirado sobre toda la tarjeta.
+
+   UN enlace por tarjeta, el del titular, estirado con `::after`; su anillo de
+   foco se pinta en ese `::after`, con el radio de la tarjeta. Las tarjetas de
+   una fila miden lo mismo (la fila de la rejilla las estira) y el pie se
+   apoya abajo (`margin-top: auto`).
    ========================================================================== */
 /* El aire entre el mosaico del héroe y la lista: el de una sección. */
 .guias-indice { padding-top: clamp(40px, 5.5vw, 72px); }
 .guias-lista { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: clamp(14px, 1.8vw, 20px); margin: 0; padding: 0; list-style: none; }
 .guias-item { display: flex; min-width: 0; }
-/* Con un número impar de guías, la primera abre la rejilla a todo el ancho y
-   las demás van de dos en dos: ninguna se queda sola en la última fila. */
-.guias-item:first-child:nth-last-child(odd):not(:only-child) { grid-column: 1 / -1; }
+.guias-item--destacada { grid-column: 1 / -1; }
 .guia-tarjeta {
   position: relative; display: flex; flex-direction: column; flex: 1 1 auto; min-width: 0;
   padding: clamp(22px, 2.4vw, 30px);
@@ -4770,9 +4785,9 @@ a.ph-insignia:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px
   overflow-wrap: anywhere;
 }
 .lp .guia-tarjeta .guia-tarjeta-titulo {
-  margin: 0; max-width: 36ch;
-  font-family: var(--font-editorial); font-weight: 700; font-size: clamp(1.2rem, 1.75vw, 1.4rem);
-  line-height: 1.25; letter-spacing: -.028em; color: var(--ink);
+  margin: 0; max-width: none;
+  font-family: var(--font-editorial); font-weight: 800; font-size: clamp(1.2rem, 1.75vw, 1.4rem);
+  line-height: 1.22; letter-spacing: -.03em; color: var(--ink);
   text-wrap: balance; overflow-wrap: break-word;
 }
 .guia-tarjeta-titulo a, .guia-tarjeta-titulo a:hover { color: inherit; text-decoration: none; }
@@ -4785,7 +4800,7 @@ a.ph-insignia:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px
   margin-top: auto; padding-top: 16px; border-top: 1px solid var(--line);
   font-size: 13px; line-height: 1.4; color: var(--ink-soft);
 }
-.guia-tarjeta-datos { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; margin: 0; font-variant-numeric: tabular-nums; }
+.guia-tarjeta-datos { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; min-width: 0; margin: 0; font-variant-numeric: tabular-nums; }
 .guia-tarjeta-leer { display: inline-flex; align-items: center; gap: 6px; font-size: 13.5px; font-weight: 500; color: var(--brand-ink); white-space: nowrap; }
 .guia-tarjeta-leer svg { flex: none; width: 14px; height: 14px; transition: transform var(--dur-2) var(--ease-out); }
 .guia-tarjeta:focus-within { border-color: var(--line-strong); }
@@ -4796,12 +4811,31 @@ a.ph-insignia:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px
   .guia-tarjeta:hover { transform: translateY(-2px); }
   .guia-tarjeta:hover .guia-tarjeta-leer svg { transform: translateX(3px); }
 }
-/* La primera, a todo el ancho: el titular sube un escalón. */
-@media (min-width: 720px) {
-  .lp .guias-item:first-child:nth-last-child(odd):not(:only-child) .guia-tarjeta-titulo { max-width: 44ch; font-size: clamp(1.4rem, 2.2vw, 1.75rem); line-height: 1.18; }
+/* La destacada desde 960 px: tema y titular a la izquierda; descripción y pie
+   a la derecha, la descripción a la altura del titular y el pie abajo. La
+   columna derecha (1fr frente a 1,25fr) deja el pie en una fila a 960 px
+   también en catalán, el más largo («23 de nov. del 2026 · …»). Más aire
+   arriba y abajo, pero el mismo a los lados que las demás: el tema y el
+   titular empiezan en la misma vertical que los de las tarjetas de debajo. */
+@media (min-width: 960px) {
+  .guia-tarjeta--destacada {
+    display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); grid-template-rows: auto 1fr auto;
+    grid-template-areas: "tema ." "titulo resumen" "titulo pie";
+    column-gap: clamp(32px, 3.6vw, 56px); padding: clamp(28px, 3vw, 40px) clamp(22px, 2.4vw, 30px);
+  }
+  .guia-tarjeta--destacada .guia-tarjeta-tema { grid-area: tema; justify-self: start; }
+  .lp .guia-tarjeta--destacada .guia-tarjeta-titulo { grid-area: titulo; font-size: clamp(1.75rem, 2.6vw, 2.15rem); line-height: 1.1; letter-spacing: -.04em; }
+  .guia-tarjeta--destacada .guia-tarjeta-resumen { grid-area: resumen; margin: 0 0 22px; max-width: none; font-size: 16px; }
+  .guia-tarjeta--destacada .guia-tarjeta-pie { grid-area: pie; }
 }
-@media (max-width: 719.98px) {
+@media (max-width: 959.98px) {
   .guias-lista { grid-template-columns: minmax(0, 1fr); }
+}
+/* El móvil: el pie en una fila, con la flecha sola al final. */
+@media (max-width: 479.98px) {
+  .guia-tarjeta-pie { flex-wrap: nowrap; }
+  .guia-tarjeta-leer-texto { display: none; }
+  .guia-tarjeta-leer svg { width: 18px; height: 18px; }
 }
 @media print {
   .guia-tarjeta { box-shadow: none; break-inside: avoid; }

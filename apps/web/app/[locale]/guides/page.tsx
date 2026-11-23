@@ -26,13 +26,15 @@ import { alternativasDe, canonicalDe, GUIAS, guiaEnIdioma, indiceEnIdioma } from
  * `alternativasDe`), los mismos que anuncia el sitemap. Un idioma sin índice
  * traducido sirve el inglés con su nota y el `canonical` en /en.
  *
- * La lista es una rejilla de tarjetas (dos columnas en escritorio, una en
- * móvil; dueño, 2026-11-23: «darle espacio y modernizar»): el tema, el titular,
- * la descripción y un pie con la fecha, los minutos de lectura (los mismos que
- * da la cabecera de la guía) y «Leer la guía →». UN solo enlace por tarjeta, el
- * del titular, estirado sobre toda ella con `::after`: un lector de pantalla
- * oye un enlace por guía con su titular por nombre, y el «Leer la guía» del pie
- * es solo la señal visual (`aria-hidden`).
+ * La lista es una rejilla de tarjetas (dos columnas desde 960 px, una por
+ * debajo; dueño, 2026-11-23: «darle espacio y modernizar»): el tema, el
+ * titular, la descripción y un pie con la fecha corta, los minutos de lectura
+ * (los mismos que da la cabecera de la guía) y «Leer la guía →». La guía
+ * `destacada` de lista.ts abre a todo el ancho con su propia composición. UN
+ * solo enlace por tarjeta, el del titular, estirado sobre toda ella con
+ * `::after`: un lector de pantalla oye un enlace por guía con su titular por
+ * nombre, y el «Leer la guía →» del pie es solo la señal visual (`aria-hidden`;
+ * en el móvil, solo la flecha).
  */
 export const dynamic = "force-static";
 
@@ -94,8 +96,12 @@ export default async function GuidesIndexPage({ params }: { params: Promise<{ lo
             {GUIAS.map((guia) => {
               const g = guiaEnIdioma(guia, locale);
               return (
-                <li key={g.slug} className="guias-item">
-                  <article className="guia-tarjeta" aria-labelledby={`guia-${g.slug}`} lang={g.idioma}>
+                <li key={g.slug} className={g.destacada ? "guias-item guias-item--destacada" : "guias-item"}>
+                  <article
+                    className={g.destacada ? "guia-tarjeta guia-tarjeta--destacada" : "guia-tarjeta"}
+                    aria-labelledby={`guia-${g.slug}`}
+                    lang={g.idioma}
+                  >
                     <p className="guia-tarjeta-tema" lang={lang}>
                       {tg(`topics.${g.tema}`)}
                     </p>
@@ -105,12 +111,12 @@ export default async function GuidesIndexPage({ params }: { params: Promise<{ lo
                     <p className="guia-tarjeta-resumen">{g.description}</p>
                     <div className="guia-tarjeta-pie" lang={lang}>
                       <p className="guia-tarjeta-datos">
-                        <time dateTime={g.date}>{fechaLegible(g.date, lang)}</time>
+                        <time dateTime={g.date}>{fechaLegible(g.date, lang, "short")}</time>
                         <span aria-hidden="true">·</span>
                         <span>{tg("minRead", { n: minutosDeLectura(cargarTexto(g.slug, locale)) })}</span>
                       </p>
                       <span className="guia-tarjeta-leer" aria-hidden="true">
-                        {tg("readGuide")}
+                        <span className="guia-tarjeta-leer-texto">{tg("readGuide")}</span>
                         <ArrowRightIcon />
                       </span>
                     </div>

@@ -19,6 +19,12 @@ export interface Guia {
   date: string;
   /** Fecha de la última revisión de fondo, si la hubo. */
   updated?: string;
+  /**
+   * La guía que abre el índice a todo el ancho, con su propia composición en
+   * escritorio (titular a la izquierda; descripción y pie a la derecha). Se
+   * elige aquí, a mano, y como mucho una: no depende de cuántas guías haya.
+   */
+  destacada?: true;
 }
 
 /** Las guías publicadas, en el orden en que las lista el índice. */
@@ -30,6 +36,7 @@ export const GUIAS: readonly Guia[] = [
       "Six levers that cut an OpenAI bill: caching, deduplication, Batch, model choice, output and input size. When each one pays, and how to check it on your usage.",
     tema: "openai",
     date: "2026-11-23",
+    destacada: true,
   },
   {
     slug: "claude-prompt-caching-not-working",
