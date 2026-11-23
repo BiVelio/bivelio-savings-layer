@@ -286,7 +286,7 @@ export async function HowItWorks({
           <span className="n"># 2 · {t("snip3")}</span>{"\n"}
           <span className="k">const</span>{" layer = createSavingsLayer({ provider });\n"}
           <span className="k">const</span>{" { text, report } = "}<span className="k">await</span>{" layer.generate({ model, messages });\n\n"}
-          {"console.log(report.cost.netSavingsRatio)  "}
+          {"console.log(report.cost)  "}
           <span className="g">{"// ← "}{t("snipResult")}</span>
         </CodeFrame>
         {entera ? instalacion : null}

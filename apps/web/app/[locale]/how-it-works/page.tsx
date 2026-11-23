@@ -208,8 +208,8 @@ export default async function HowItWorksPage({ params }: { params: Promise<{ loc
                   unix={
                     <pre className="code">
                       {"npm i -g @bivelio/savings-layer\n"}
-                      {"# optional: cloud dashboard\n"}
-                      {"export "}
+                      {"# optional, only for the cloud dashboard:\n"}
+                      {"# export "}
                       <span className="s">BIVELIO_SERVICE_KEY</span>
                       {"=bvk_…\n\n"}
                       <span className="k">bvsala</span>
@@ -219,7 +219,8 @@ export default async function HowItWorksPage({ params }: { params: Promise<{ loc
                   windows={
                     <pre className="code">
                       {"npm i -g @bivelio/savings-layer\n"}
-                      {"# optional: cloud dashboard\n"}
+                      {"# optional, only for the cloud dashboard:\n"}
+                      {"# "}
                       <span className="s">$env:BIVELIO_SERVICE_KEY</span>
                       {' = "bvk_…"\n\n'}
                       <span className="k">bvsala</span>

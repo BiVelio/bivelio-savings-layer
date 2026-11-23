@@ -2164,7 +2164,7 @@
     "snip1": "paket",
     "snip2": "lisans (panelinden)",
     "snip3": "çağrıyı sarmak — kod değişikliğinin tamamı bu",
-    "snipResult": "tasarruf, ölçülmüş",
+    "snipResult": "tasarruf, dayanağıyla: ölçülmüş ya da tahmini",
     "ctaVerify": "Ölçülen tasarrufu gör",
     "ctaSignup": "Hesap oluştur",
     "ctaInstall": "Kurulum rehberine git",
