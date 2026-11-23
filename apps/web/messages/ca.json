@@ -2583,6 +2583,7 @@
   "cookieBanner": {
     "title": "Cookies de publicitat",
     "body": "Si acceptes, Google Ads posa cookies per mesurar quins anuncis porten altes i per a remàrqueting. No es carrega fins que triïs. El nostre propi recompte de visites no fa servir cookies.",
+    "bodyShort": "Google Ads, només si acceptes: per mesurar anuncis i per a remàrqueting.",
     "accept": "Acceptar",
     "reject": "Rebutjar",
     "privacy": "Detalls de privadesa"

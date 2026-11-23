@@ -42,7 +42,7 @@ export default async function LocaleLayout({
 
   const dir = metaFor(locale).dir;
   const tc = await getTranslations({ locale, namespace: "cookieBanner" });
-  const textosDelAviso = { titulo: tc("title"), cuerpo: tc("body"), aceptar: tc("accept"), rechazar: tc("reject"), privacidad: tc("privacy") };
+  const textosDelAviso = { titulo: tc("title"), cuerpo: tc("body"), cuerpoCorto: tc("bodyShort"), aceptar: tc("accept"), rechazar: tc("reject"), privacidad: tc("privacy") };
 
   return (
     // Superficie light-only, igual que bivelio.com: no hay script de tema, ni

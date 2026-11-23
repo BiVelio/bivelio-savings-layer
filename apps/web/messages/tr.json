@@ -2583,6 +2583,7 @@
   "cookieBanner": {
     "title": "Reklam çerezleri",
     "body": "Kabul edersen Google Ads, hangi reklamların kayıt getirdiğini ölçmek ve yeniden pazarlama için çerez yerleştirir. Sen seçene kadar Google Ads yüklenmez. Kendi ziyaret sayımımız çerez kullanmaz.",
+    "bodyShort": "Google Ads yalnızca kabul edersen: reklam ölçümü ve yeniden pazarlama için.",
     "accept": "Kabul et",
     "reject": "Reddet",
     "privacy": "Gizlilik ayrıntıları"

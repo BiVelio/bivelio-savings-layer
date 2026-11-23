@@ -2583,6 +2583,7 @@
   "cookieBanner": {
     "title": "Advertising cookies",
     "body": "If you accept, Google Ads sets cookies to measure which ads bring sign-ups and for remarketing. It does not load until you choose. Our own visit counts use no cookies.",
+    "bodyShort": "Google Ads, only if you accept: to measure ads and for remarketing.",
     "accept": "Accept",
     "reject": "Reject",
     "privacy": "Privacy details"

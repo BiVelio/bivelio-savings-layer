@@ -2583,6 +2583,7 @@
   "cookieBanner": {
     "title": "Cookies de publicidad",
     "body": "Si aceptas, Google Ads pone cookies para medir qué anuncios traen altas y para remarketing. No se carga hasta que elijas. Nuestro propio recuento de visitas no usa cookies.",
+    "bodyShort": "Google Ads, solo si aceptas: para medir anuncios y para remarketing.",
     "accept": "Aceptar",
     "reject": "Rechazar",
     "privacy": "Detalles de privacidad"

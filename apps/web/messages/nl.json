@@ -2583,6 +2583,7 @@
   "cookieBanner": {
     "title": "Advertentiecookies",
     "body": "Als je accepteert, plaatst Google Ads cookies om te meten welke advertenties tot aanmeldingen leiden en voor remarketing. Zolang je niet kiest, laadt Google Ads niet. Onze eigen bezoektelling gebruikt geen cookies.",
+    "bodyShort": "Google Ads, alleen als je accepteert: om advertenties te meten en voor remarketing.",
     "accept": "Accepteren",
     "reject": "Weigeren",
     "privacy": "Privacydetails"

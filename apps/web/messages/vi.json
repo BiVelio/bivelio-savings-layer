@@ -2583,6 +2583,7 @@
   "cookieBanner": {
     "title": "Cookie quảng cáo",
     "body": "Nếu bạn đồng ý, Google Ads sẽ đặt cookie để đo quảng cáo nào mang lại lượt đăng ký và để tiếp thị lại. Google Ads không được tải cho đến khi bạn chọn. Việc đếm lượt truy cập của chúng tôi không dùng cookie.",
+    "bodyShort": "Google Ads, chỉ khi bạn đồng ý: để đo quảng cáo và tiếp thị lại.",
     "accept": "Đồng ý",
     "reject": "Từ chối",
     "privacy": "Chi tiết quyền riêng tư"

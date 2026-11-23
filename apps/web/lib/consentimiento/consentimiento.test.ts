@@ -138,12 +138,15 @@ describe("el aviso", () => {
   it("sus textos, el del pie y los de /privacy existen en los 12 idiomas y nombran Google Ads", () => {
     for (const l of locales) {
       const m = JSON.parse(leer(`messages/${l}.json`)) as {
-        cookieBanner: Record<"title" | "body" | "accept" | "reject" | "privacy", string>;
+        cookieBanner: Record<"title" | "body" | "bodyShort" | "accept" | "reject" | "privacy", string>;
         landing: { footer: { cookieSettings: string } };
         privacyPage: { website: { ads: string; consent: string; settings: string } };
       };
-      for (const k of ["title", "body", "accept", "reject", "privacy"] as const) expect(m.cookieBanner[k], `${l} ${k}`).toBeTruthy();
+      for (const k of ["title", "body", "bodyShort", "accept", "reject", "privacy"] as const) expect(m.cookieBanner[k], `${l} ${k}`).toBeTruthy();
       expect(m.cookieBanner.body, l).toContain("Google Ads");
+      // La versión corta del móvil dice lo mismo: Google Ads, solo con «Aceptar», para qué.
+      expect(m.cookieBanner.bodyShort, l).toContain("Google Ads");
+      expect(m.cookieBanner.bodyShort.length, l).toBeLessThan(m.cookieBanner.body.length);
       expect(m.landing.footer.cookieSettings, l).toBeTruthy();
       expect(m.privacyPage.website.consent, l).toContain(COOKIE_CONSENTIMIENTO);
       expect(m.privacyPage.website.settings, l).toBe(m.landing.footer.cookieSettings);
@@ -212,6 +215,8 @@ describe("revisión del PR #622", () => {
     expect(bloque).not.toMatch(/position:\s*(fixed|sticky)/);
     expect(bloque).not.toContain("--aviso-cookies-h");
     expect(css).not.toContain("--aviso-cookies-h");
+    // Compacto por debajo de 640 px: texto corto, los dos botones iguales.
+    expect(bloque).toMatch(/@media \(max-width: 639\.98px\) \{[^]*\.aviso-cookies-largo \{ display: none; \}[^]*\.aviso-cookies-corto \{ display: inline; \}/);
     const aviso = leer("app/components/AvisoCookies.tsx");
     expect(aviso).toContain("RUTAS_CON_GOOGLE_ADS");
     // Va en el layout tras la cabecera y antes de la página; el guion previo, en el <head>.
