@@ -5,7 +5,7 @@ import Script from "next/script";
 import { usePathname } from "next/navigation";
 
 import { CONSENTIMIENTO_CONCEDIDO, CONSENTIMIENTO_POR_DEFECTO } from "@/lib/consentimiento/consentimiento";
-import { useConsentimiento } from "@/lib/consentimiento/navegador";
+import { eleccionActual, useConsentimiento } from "@/lib/consentimiento/navegador";
 import {
   ID_GOOGLE_ADS,
   referenteParaGoogle,
@@ -86,6 +86,12 @@ export function EtiquetaGoogleAds() {
       const w = window as ConGtag;
       if (urlVetaLaVisita(location.href)) vetarVisita();
       if (w.gtag) {
+        // Sin consentimiento (retirado aquí, en otra pestaña o antes de volver
+        // de la caché atrás/adelante): la página se recarga sin gtag.
+        if (consentimiento === "denied" || consentimiento === "sin-eleccion") {
+          location.reload();
+          return;
+        }
         if (!urlPermiteGoogleAds(location.href)) {
           // Se llegó sin recarga a una página donde gtag no puede correr: se recarga sin él.
           location.reload();
@@ -125,12 +131,30 @@ export function EtiquetaGoogleAds() {
     }
   }, [pathname, consentimiento]);
 
-  // Con gtag cargado, los enlaces del sitio hacia páginas donde no puede correr
-  // se abren con una carga nueva: así gtag no llega a verlas (ni sus formularios).
+  // Con gtag cargado:
+  //  - antes de cualquier clic o paso atrás/adelante se relee el consentimiento
+  //    (síncrono). Si ya no está, la página se recarga sin gtag ANTES de que su
+  //    escucha del historial mande nada: este código se registra antes de que
+  //    llegue gtag.js, así que corre primero;
+  //  - los enlaces del sitio hacia páginas donde gtag no puede correr se abren
+  //    con una carga nueva: así gtag no llega a verlas (ni sus formularios).
   useEffect(() => {
     if (!cargar) return;
+    const sinConsentimiento = () => {
+      try {
+        return eleccionActual() !== "granted";
+      } catch {
+        return true;
+      }
+    };
     const alClic = (e: MouseEvent) => {
       try {
+        if (sinConsentimiento()) {
+          e.preventDefault();
+          e.stopPropagation();
+          location.reload();
+          return;
+        }
         if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
         const enlace = e.target instanceof Element ? e.target.closest("a[href]") : null;
         if (!(enlace instanceof HTMLAnchorElement) || (enlace.target && enlace.target !== "_self") || enlace.hasAttribute("download")) return;
@@ -144,8 +168,17 @@ export function EtiquetaGoogleAds() {
         /* ante la duda, el enlace sigue su curso */
       }
     };
+    const alHistorial = (e: PopStateEvent) => {
+      if (!sinConsentimiento()) return;
+      e.stopImmediatePropagation();
+      location.reload();
+    };
     document.addEventListener("click", alClic, true);
-    return () => document.removeEventListener("click", alClic, true);
+    window.addEventListener("popstate", alHistorial, true);
+    return () => {
+      document.removeEventListener("click", alClic, true);
+      window.removeEventListener("popstate", alHistorial, true);
+    };
   }, [cargar]);
 
   return cargar ? <Script src={`https://www.googletagmanager.com/gtag/js?id=${ID_GOOGLE_ADS}`} strategy="afterInteractive" /> : null;
