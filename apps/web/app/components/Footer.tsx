@@ -142,8 +142,8 @@ export default async function Footer({ sinGitHub = false }: { sinGitHub?: boolea
     // La guía 0.4 → 0.5 (/migrate-to-0.5). Sin este enlace, quien actualiza
     // desde la 0.4 solo llegaba a ella desde npm o GitHub.
     [t("footer.migrate"), "/migrate-to-0.5"],
-    // Las guías prácticas (/guides): en inglés bajo cualquier prefijo, con el
-    // canonical en /en; la etiqueta lo avisa fuera del inglés.
+    // Las guías prácticas (/guides), traducidas a los doce idiomas
+    // (app/[locale]/guides/content/<idioma>/).
     [t("footer.guides"), "/guides"],
     [t("footer.pricing"), "/#pricing"],
     // El repositorio del motor open source, visible también en el pie (guía

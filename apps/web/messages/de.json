@@ -1431,7 +1431,7 @@
       "measured": "Gemessene Ergebnisse",
       "benchmarks": "Offener Benchmark",
       "migrate": "Migrationsleitfaden",
-      "guides": "Leitfäden (auf Englisch)",
+      "guides": "Leitfäden",
       "pricing": "Preise",
       "home": "Startseite",
       "docs": "Dokumentation",
@@ -2607,6 +2607,18 @@
     "migrate": {
       "versionNote": "Dies ist die Anleitung für die Migration auf Version {version}. Sie ist nicht die Ankündigung der neuesten Version."
     }
+  },
+  "guidesPage": {
+    "breadcrumb": "Leitfäden",
+    "eyebrowIndex": "Leitfäden · LLM-API-Kosten",
+    "eyebrowGuide": "Leitfaden · LLM-API-Kosten",
+    "by": "Von BiVelio",
+    "updated": "aktualisiert am <fecha>{date}</fecha>",
+    "minRead": "{n} Min. Lesezeit",
+    "moreGuides": "Weitere Leitfäden",
+    "readGuide": "Leitfaden lesen",
+    "readAria": "Lesen: {title}",
+    "table": "Tabelle"
   },
   "paperCard": {
     "kind": "Preprint",

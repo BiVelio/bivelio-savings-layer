@@ -1431,7 +1431,7 @@
       "measured": "Zmierzone wyniki",
       "benchmarks": "Publiczny benchmark",
       "migrate": "Przewodnik migracji",
-      "guides": "Poradniki (po angielsku)",
+      "guides": "Poradniki",
       "pricing": "Cennik",
       "home": "Strona główna",
       "docs": "Dokumentacja",
@@ -2607,6 +2607,18 @@
     "migrate": {
       "versionNote": "To jest przewodnik migracji do wersji {version}. Nie jest to ogłoszenie najnowszego wydania."
     }
+  },
+  "guidesPage": {
+    "breadcrumb": "Poradniki",
+    "eyebrowIndex": "Poradniki · Koszty API LLM",
+    "eyebrowGuide": "Poradnik · Koszty API LLM",
+    "by": "Autor: BiVelio",
+    "updated": "aktualizacja: <fecha>{date}</fecha>",
+    "minRead": "{n} min czytania",
+    "moreGuides": "Więcej poradników",
+    "readGuide": "Przeczytaj poradnik",
+    "readAria": "Przeczytaj: {title}",
+    "table": "Tabela"
   },
   "paperCard": {
     "kind": "Preprint",

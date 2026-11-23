@@ -1,0 +1,38 @@
+{
+  "index": {
+    "title": "LLM API faturanızı düşürme rehberleri",
+    "description": "OpenAI, Anthropic, DeepSeek ve Qwen API maliyetlerini düşürme rehberleri: önbellek, tekilleştirme, istek başına Claude Code maliyeti ve tasarrufu doğrulama.",
+    "intro": "Token başına fatura ödeyen geliştiriciler için sağlayıcıdan bağımsız, uygulamalı rehberler. Her biri önce tekniği anlatır, böylece hiçbir araç olmadan da işe yarar; ardından açık kaynaklı BV-SALA katmanının bunu ücretsiz ve anahtarsız nasıl yaptığını gösterir; son olarak da tasarrufu kendi sağlayıcınızın kullanım sayaçlarıyla nasıl doğrulayacağınızı anlatır.",
+    "sources": "Her rakam sağlayıcının belgelerinden ya da [benchmark sayfamızdan](/tr/benchmarks) gelir ve kaynağını belirtir. Kod [GitHub](https://github.com/BiVelio/bivelio-savings-layer) üzerinde."
+  },
+  "guides": {
+    "reduce-openai-api-costs": {
+      "title": "OpenAI API maliyetleri nasıl düşürülür ve her tasarruf nasıl kanıtlanır",
+      "description": "OpenAI faturasını düşüren altı kaldıraç: önbellek, tekilleştirme, Batch, model seçimi, çıktı ve girdi boyutu. Ne zaman kazandırır, kullanımınızda nasıl ölçülür."
+    },
+    "claude-prompt-caching-not-working": {
+      "title": "Claude prompt caching çalışmıyor mu? Önbellek okumaları neden 0 kalır",
+      "description": "Claude'da cache_read_input_tokens neden 0 kalır, öneki bozan bayt nasıl bulunur ve isabet oranı Anthropic'in kullanım sayılarıyla nasıl doğrulanır."
+    },
+    "claude-code-cost-per-request": {
+      "title": "Claude Code ne kadar tutar? Maliyeti istek istek ölçün",
+      "description": "Claude Code'un API anahtarıyla maliyeti, /usage ve Console'un gösterdikleri ve ücretsiz bir yerel gateway ile her isteğin maliyetini görmenin yolu."
+    },
+    "openai-prompt-caching-cached-tokens": {
+      "title": "OpenAI prompt caching: cached_tokens neden 0 ve nasıl düzeltilir",
+      "description": "cached_tokens 0'da kalınca OpenAI prompt caching kontrol listesi: prompt uzunluğu, önek sırası, tahliye, yönlendirme ve akışlar; isabet oranını izleyen kodla."
+    },
+    "deduplicate-llm-requests": {
+      "title": "Aynı LLM isteklerini tekilleştirme: birebir önbellek ve eşzamanlı birleştirme",
+      "description": "Aynı LLM çağrısına iki kez ödemeyin: güvenli önbellek anahtarı, asla önbelleğe alınmayacaklar, eşzamanlı istekleri birleştirme ve tasarrufu doğrulama."
+    },
+    "deepseek-qwen-api-cost-local-gateway": {
+      "title": "DeepSeek ve Qwen API maliyetleri: istek başına önbellek isabeti ve harcama",
+      "description": "DeepSeek ve Qwen önbellek isabetini ve ıskasını nasıl faturalar, istek kullanım alanlarından nasıl fiyatlanır, ücretsiz yerel gateway ile nasıl ölçülür."
+    },
+    "verify-llm-savings-against-provider-bill": {
+      "title": "LLM maliyet tasarrufu sağlayıcı faturasıyla nasıl doğrulanır",
+      "description": "LLM tasarruf iddialarını kontrol yöntemi: sağlayıcı sayaçlarını loglayın, önce token'ları eşleştirin, ölçüleni tahminden ayırın, tasarrufu kaynağına bağlayın."
+    }
+  }
+}

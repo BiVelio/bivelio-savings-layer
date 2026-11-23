@@ -1431,7 +1431,7 @@
       "measured": "Hasil terukur",
       "benchmarks": "Benchmark publik",
       "migrate": "Panduan migrasi",
-      "guides": "Panduan (bahasa Inggris)",
+      "guides": "Panduan",
       "pricing": "Harga",
       "home": "Beranda",
       "docs": "Dokumentasi",
@@ -2607,6 +2607,18 @@
     "migrate": {
       "versionNote": "Ini adalah panduan migrasi ke versi {version}. Ini bukan pengumuman rilis terbaru."
     }
+  },
+  "guidesPage": {
+    "breadcrumb": "Panduan",
+    "eyebrowIndex": "Panduan · Biaya API LLM",
+    "eyebrowGuide": "Panduan · Biaya API LLM",
+    "by": "Oleh BiVelio",
+    "updated": "diperbarui <fecha>{date}</fecha>",
+    "minRead": "{n} menit baca",
+    "moreGuides": "Panduan lainnya",
+    "readGuide": "Baca panduan",
+    "readAria": "Baca: {title}",
+    "table": "Tabel"
   },
   "paperCard": {
     "kind": "Pracetak",

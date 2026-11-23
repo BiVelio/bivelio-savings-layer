@@ -1,0 +1,38 @@
+{
+  "index": {
+    "title": "Panduan memangkas tagihan API LLM Anda",
+    "description": "Panduan praktis menurunkan biaya API OpenAI, Anthropic, DeepSeek, dan Qwen: caching, deduplikasi, biaya Claude Code per permintaan, dan verifikasi penghematan.",
+    "intro": "Panduan praktis yang netral terhadap penyedia, untuk pengembang yang membayar tagihan per token. Setiap panduan mengajarkan tekniknya lebih dulu, sehingga tetap berguna tanpa alat apa pun; lalu menunjukkan cara lapisan sumber terbuka BV-SALA melakukannya, gratis dan tanpa kunci; lalu cara memeriksa penghematannya dengan penghitung penggunaan milik penyedia Anda sendiri.",
+    "sources": "Setiap angka berasal dari dokumentasi penyedia atau dari [halaman benchmark](/id/benchmarks) kami, dan menyebutkan sumbernya. Kodenya ada di [GitHub](https://github.com/BiVelio/bivelio-savings-layer)."
+  },
+  "guides": {
+    "reduce-openai-api-costs": {
+      "title": "Cara mengurangi biaya API OpenAI dan membuktikan setiap penghematan",
+      "description": "Enam tuas memangkas tagihan OpenAI: caching, deduplikasi, Batch, pilihan model, ukuran keluaran dan masukan. Kapan masing-masing efektif dan cara mengeceknya."
+    },
+    "claude-prompt-caching-not-working": {
+      "title": "Prompt caching Claude tidak berfungsi? Ini sebabnya cache read tetap 0",
+      "description": "Mengapa cache_read_input_tokens tetap 0 di Claude, cara menemukan byte yang merusak prefiks, dan cara mengecek hit rate dengan angka usage Anthropic."
+    },
+    "claude-code-cost-per-request": {
+      "title": "Berapa biaya Claude Code? Ukur biayanya per permintaan",
+      "description": "Biaya Claude Code dengan kunci API, apa yang ditampilkan /usage dan Console, dan cara melihat biaya setiap permintaan dengan gateway lokal gratis."
+    },
+    "openai-prompt-caching-cached-tokens": {
+      "title": "Prompt caching OpenAI: mengapa cached_tokens 0 dan cara memperbaikinya",
+      "description": "Checklist prompt caching OpenAI saat cached_tokens tetap 0: panjang prompt, urutan prefiks, eviction, routing, dan stream, plus kode untuk memantau hit rate."
+    },
+    "deduplicate-llm-requests": {
+      "title": "Deduplikasi permintaan LLM identik: cache eksak dan penggabungan in-flight",
+      "description": "Jangan bayar dua kali untuk panggilan LLM yang sama: cache key yang aman, apa yang tak boleh di-cache, penggabungan in-flight, dan cara mengecek penghematannya."
+    },
+    "deepseek-qwen-api-cost-local-gateway": {
+      "title": "Biaya API DeepSeek dan Qwen: lihat cache hit dan biaya per permintaan",
+      "description": "Cara DeepSeek dan Qwen menagih cache hit dan miss, cara menghitung biaya permintaan dari field usage, dan cara mengukurnya dengan gateway lokal gratis."
+    },
+    "verify-llm-savings-against-provider-bill": {
+      "title": "Cara memverifikasi penghematan biaya LLM terhadap tagihan penyedia",
+      "description": "Metode mengecek klaim penghematan LLM apa pun: catat penghitung penyedia, cocokkan token sebelum dolar, pisahkan terukur dan estimasi, lalu atribusikan."
+    }
+  }
+}

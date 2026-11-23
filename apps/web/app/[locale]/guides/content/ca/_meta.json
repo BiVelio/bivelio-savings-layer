@@ -1,0 +1,38 @@
+{
+  "index": {
+    "title": "Guies per reduir la factura de la teva API de LLM",
+    "description": "Guies pràctiques per reduir costos de les API d'OpenAI, Anthropic, DeepSeek i Qwen: memòria cau, deduplicació, cost de Claude Code i com verificar l'estalvi.",
+    "intro": "Guies pràctiques i neutrals respecte al proveïdor, per a qui desenvolupa i paga una factura per token. Cada una ensenya primer la tècnica, perquè serveixi sense cap eina; després mostra com ho fa la capa de codi obert BV-SALA, gratis i sense clau; i, finalment, com comprovar l'estalvi amb els comptadors d'ús del teu propi proveïdor.",
+    "sources": "Cada xifra surt de la documentació del proveïdor o del nostre [banc públic](/ca/benchmarks), i diu d'on surt. El codi és a [GitHub](https://github.com/BiVelio/bivelio-savings-layer)."
+  },
+  "guides": {
+    "reduce-openai-api-costs": {
+      "title": "Com reduir els costos de l'API d'OpenAI i demostrar cada estalvi",
+      "description": "Sis palanques que abaixen la factura d'OpenAI: memòria cau, deduplicació, Batch, model, sortida i entrada. Quan surt a compte cadascuna i com comprovar-ho."
+    },
+    "claude-prompt-caching-not-working": {
+      "title": "El prompt caching de Claude no funciona? Per què les lectures es queden a 0",
+      "description": "Per què cache_read_input_tokens es queda a 0 a Claude, com trobar el byte que trenca el prefix i com contrastar la taxa d'encerts amb l'ús d'Anthropic."
+    },
+    "claude-code-cost-per-request": {
+      "title": "Quant costa Claude Code? Mesura-ho petició a petició",
+      "description": "El que costa Claude Code amb una clau d'API, què mostren /usage i la Console, i com veure el cost de cada petició amb un gateway local gratuït."
+    },
+    "openai-prompt-caching-cached-tokens": {
+      "title": "Prompt caching d'OpenAI: per què cached_tokens és 0 i com arreglar-ho",
+      "description": "Prompt caching d'OpenAI amb cached_tokens a 0: revisa longitud, ordre del prefix, expulsió, encaminament i streams, amb codi per seguir la taxa d'encerts."
+    },
+    "deduplicate-llm-requests": {
+      "title": "Deduplicar peticions idèntiques a un LLM: memòria cau exacta i fusió en curs",
+      "description": "No paguis dos cops la mateixa crida a un LLM: clau de memòria cau segura, què no desar-hi mai, fusió de peticions idèntiques en curs i com mesurar l'estalvi."
+    },
+    "deepseek-qwen-api-cost-local-gateway": {
+      "title": "Costos de l'API de DeepSeek i Qwen: encerts de memòria cau i despesa per petició",
+      "description": "Com facturen DeepSeek i Qwen els encerts i fallades de memòria cau, com calcular el preu d'una petició amb el seu ús i mesurar-les amb un gateway local gratuït."
+    },
+    "verify-llm-savings-against-provider-bill": {
+      "title": "Com verificar l'estalvi en costos de LLM amb la factura del teu proveïdor",
+      "description": "Mètode per verificar qualsevol estalvi en LLM: registra els comptadors del proveïdor, concilia tokens abans que dòlars, separa mesurat d'estimat i atribueix-lo."
+    }
+  }
+}

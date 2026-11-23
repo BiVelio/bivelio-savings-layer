@@ -1431,7 +1431,7 @@
       "measured": "Kết quả đo được",
       "benchmarks": "Bộ đo công khai",
       "migrate": "Hướng dẫn chuyển đổi",
-      "guides": "Hướng dẫn (tiếng Anh)",
+      "guides": "Hướng dẫn",
       "pricing": "Giá",
       "home": "Trang chủ",
       "docs": "Tài liệu",
@@ -2607,6 +2607,18 @@
     "migrate": {
       "versionNote": "Đây là hướng dẫn chuyển sang phiên bản {version}. Đây không phải thông báo về bản phát hành mới nhất."
     }
+  },
+  "guidesPage": {
+    "breadcrumb": "Hướng dẫn",
+    "eyebrowIndex": "Hướng dẫn · Chi phí API LLM",
+    "eyebrowGuide": "Hướng dẫn · Chi phí API LLM",
+    "by": "Bởi BiVelio",
+    "updated": "cập nhật <fecha>{date}</fecha>",
+    "minRead": "{n} phút đọc",
+    "moreGuides": "Hướng dẫn khác",
+    "readGuide": "Đọc hướng dẫn",
+    "readAria": "Đọc: {title}",
+    "table": "Bảng"
   },
   "paperCard": {
     "kind": "Bản tiền ấn phẩm",

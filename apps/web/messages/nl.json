@@ -1431,7 +1431,7 @@
       "measured": "Gemeten resultaten",
       "benchmarks": "Openbare benchmark",
       "migrate": "Migratiegids",
-      "guides": "Gidsen (Engelstalig)",
+      "guides": "Gidsen",
       "pricing": "Prijzen",
       "home": "Home",
       "docs": "Documentatie",
@@ -2607,6 +2607,18 @@
     "migrate": {
       "versionNote": "Dit is de gids voor de migratie naar versie {version}. Het is niet de aankondiging van de nieuwste release."
     }
+  },
+  "guidesPage": {
+    "breadcrumb": "Gidsen",
+    "eyebrowIndex": "Gidsen · LLM API-kosten",
+    "eyebrowGuide": "Gids · LLM API-kosten",
+    "by": "Door BiVelio",
+    "updated": "bijgewerkt op <fecha>{date}</fecha>",
+    "minRead": "{n} min lezen",
+    "moreGuides": "Meer gidsen",
+    "readGuide": "Lees de gids",
+    "readAria": "Lees: {title}",
+    "table": "Tabel"
   },
   "paperCard": {
     "kind": "Preprint",

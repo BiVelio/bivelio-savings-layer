@@ -1,8 +1,9 @@
+import { locales } from "@/i18n/config";
 import { absolute, IMAGEN_AL_COMPARTIR } from "@/i18n/site";
 import type { Bloque } from "@/lib/guia-migracion/markdown";
 import { textoPlano } from "@/lib/guia-migracion/markdown";
 
-import { urlDeGuia, type Guia } from "./registry";
+import { canonicalDe, type GuiaEnIdioma } from "./registry";
 
 /** Las palabras de una guía, código incluido (lo que se lee de verdad). */
 export function palabras(bloques: readonly Bloque[]): number {
@@ -38,15 +39,19 @@ export function palabras(bloques: readonly Bloque[]): number {
   return n;
 }
 
+/** `/en`, `/es`, … `/vi`: cualquiera de los doce prefijos, seguido de fin, `/`, `#` o `?`. */
+const PREFIJO = new RegExp(`^/(?:${locales.join("|")})(?=$|[/#?])(.*)$`);
+
 /**
- * Un enlace interno del texto de una guía, sin el prefijo `/en`, para pasarlo
- * al `Link` de next-intl, que pone el idioma de quien lee. Los textos enlazan
- * `/en/…` (la URL canónica, la que vale también en GitHub); bajo /es, un enlace
- * literal a /en sacaba al lector de su idioma y reescribía su cookie
- * NEXT_LOCALE (revisión del PR #620). `null` si no es una ruta del sitio.
+ * Un enlace interno del texto de una guía, sin su prefijo de idioma, para
+ * pasarlo al `Link` de next-intl, que pone el idioma de quien lee. El original
+ * enlaza `/en/…` y cada traducción `/<su idioma>/…` (la URL canónica, la que
+ * vale también en GitHub); bajo /es, un enlace literal a /en sacaba al lector
+ * de su idioma y reescribía su cookie NEXT_LOCALE (revisión del PR #620), y un
+ * `/de/…` sin quitar salía como `/de/de/…`. `null` si no es una ruta del sitio.
  */
 export function rutaSinIdioma(href: string): string | null {
-  const m = /^\/en(?=$|[/#?])(.*)$/.exec(href);
+  const m = PREFIJO.exec(href);
   if (m) return m[1] === "" || m[1]!.startsWith("#") || m[1]!.startsWith("?") ? `/${m[1]}` : m[1]!;
   return href.startsWith("/") ? href : null;
 }
@@ -56,17 +61,22 @@ export function minutosDeLectura(bloques: readonly Bloque[]): number {
   return Math.max(1, Math.ceil(palabras(bloques) / 220));
 }
 
-/** «23 November 2026»: la fecha en inglés, sin depender de la zona del servidor. */
-export function fechaLegible(iso: string): string {
-  return new Date(`${iso}T12:00:00Z`).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric", timeZone: "UTC" });
+/**
+ * «23 November 2026», «23 de noviembre de 2026», «23. November 2026»: la fecha
+ * en el idioma del texto, sin depender de la zona del servidor.
+ */
+export function fechaLegible(iso: string, idioma: string = "en"): string {
+  const local = idioma === "en" ? "en-GB" : idioma;
+  return new Date(`${iso}T12:00:00Z`).toLocaleDateString(local, { day: "numeric", month: "long", year: "numeric", timeZone: "UTC" });
 }
 
 /**
- * El JSON-LD `Article` de una guía: titular, descripción, fechas, idioma, autor
- * y editor (BiVelio), la imagen al compartir y la página canónica.
+ * El JSON-LD `Article` de una guía en el idioma en que se sirve: titular,
+ * descripción, fechas, idioma del texto (`inLanguage`), autor y editor
+ * (BiVelio), la imagen al compartir y la página canónica de esa edición.
  */
-export function datosEstructurados(guia: Guia, bloques: readonly Bloque[]) {
-  const url = urlDeGuia(guia.slug);
+export function datosEstructurados(guia: GuiaEnIdioma, bloques: readonly Bloque[]) {
+  const url = canonicalDe(guia.slug, guia.idioma);
   const bivelio = { "@type": "Organization", name: "BiVelio", url: "https://bivelio.com" };
   return {
     "@context": "https://schema.org",
@@ -75,7 +85,7 @@ export function datosEstructurados(guia: Guia, bloques: readonly Bloque[]) {
     description: guia.description,
     datePublished: guia.date,
     dateModified: guia.updated ?? guia.date,
-    inLanguage: "en",
+    inLanguage: guia.idioma,
     wordCount: palabras(bloques),
     author: bivelio,
     publisher: { ...bivelio, logo: { "@type": "ImageObject", url: absolute("/logo-bivelio.png") } },

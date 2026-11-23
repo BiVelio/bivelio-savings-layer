@@ -1431,7 +1431,7 @@
       "measured": "Ölçülen sonuçlar",
       "benchmarks": "Açık benchmark",
       "migrate": "Geçiş kılavuzu",
-      "guides": "Rehberler (İngilizce)",
+      "guides": "Rehberler",
       "pricing": "Fiyatlandırma",
       "home": "Ana sayfa",
       "docs": "Dokümantasyon",
@@ -2607,6 +2607,18 @@
     "migrate": {
       "versionNote": "Bu, {version} sürümüne geçiş kılavuzudur. En son sürümün duyurusu değildir."
     }
+  },
+  "guidesPage": {
+    "breadcrumb": "Rehberler",
+    "eyebrowIndex": "Rehberler · LLM API maliyetleri",
+    "eyebrowGuide": "Rehber · LLM API maliyetleri",
+    "by": "Yazan: BiVelio",
+    "updated": "güncelleme: <fecha>{date}</fecha>",
+    "minRead": "{n} dk okuma",
+    "moreGuides": "Diğer rehberler",
+    "readGuide": "Rehberi okuyun",
+    "readAria": "Okuyun: {title}",
+    "table": "Tablo"
   },
   "paperCard": {
     "kind": "Ön baskı",

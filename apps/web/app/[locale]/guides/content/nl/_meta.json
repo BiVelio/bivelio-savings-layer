@@ -1,0 +1,38 @@
+{
+  "index": {
+    "title": "Gidsen om je LLM API-factuur te verlagen",
+    "description": "Gidsen om API-kosten van OpenAI, Anthropic, DeepSeek en Qwen te verlagen: caching, deduplicatie, Claude Code-kosten per verzoek, besparingen controleren.",
+    "intro": "Praktische, providerneutrale gidsen voor ontwikkelaars die per token betalen. Elke gids legt eerst de techniek uit, zodat je er ook zonder tool iets aan hebt; laat daarna zien hoe de opensource-laag BV-SALA het doet, gratis en zonder sleutel; en tot slot hoe je de besparing controleert met de gebruikstellers van je eigen provider.",
+    "sources": "Elk getal komt uit de documentatie van de provider of uit onze [benchmarkpagina](/nl/benchmarks), en vermeldt waar het vandaan komt. De code staat op [GitHub](https://github.com/BiVelio/bivelio-savings-layer)."
+  },
+  "guides": {
+    "reduce-openai-api-costs": {
+      "title": "OpenAI API-kosten verlagen, en elke besparing bewijzen",
+      "description": "Zes hefbomen tegen je OpenAI-factuur: caching, deduplicatie, Batch, modelkeuze, output- en inputgrootte. Wanneer elk loont, en hoe je het op je gebruik checkt."
+    },
+    "claude-prompt-caching-not-working": {
+      "title": "Claude prompt caching werkt niet? Waarom cache-lezingen op 0 blijven",
+      "description": "Waarom cache_read_input_tokens bij Claude op 0 blijft, hoe je de byte vindt die de prefix breekt en je hitrate controleert met de gebruikscijfers van Anthropic."
+    },
+    "claude-code-cost-per-request": {
+      "title": "Wat kost Claude Code? Meet het verzoek voor verzoek",
+      "description": "Wat Claude Code kost met een API-sleutel, wat /usage en de Console laten zien, en hoe je de kosten van elk verzoek ziet met een gratis lokale gateway."
+    },
+    "openai-prompt-caching-cached-tokens": {
+      "title": "OpenAI prompt caching: waarom cached_tokens 0 is en hoe je dat oplost",
+      "description": "Checklist voor OpenAI prompt caching als cached_tokens op 0 blijft: promptlengte, prefixvolgorde, verwijdering, routering, streams en code voor de hitrate."
+    },
+    "deduplicate-llm-requests": {
+      "title": "Identieke LLM-verzoeken dedupliceren: exacte cache en samenvoegen",
+      "description": "Niet langer dubbel betalen voor dezelfde LLM-aanroep: veilige cachesleutel, wat je nooit cachet, identieke lopende verzoeken samenvoegen, besparing controleren."
+    },
+    "deepseek-qwen-api-cost-local-gateway": {
+      "title": "API-kosten van DeepSeek en Qwen: cache-hits en uitgaven per verzoek",
+      "description": "Hoe DeepSeek en Qwen cache-hits en -misses factureren, een verzoek beprijzen uit zijn usage-velden, en elk verzoek meten met een gratis lokale gateway."
+    },
+    "verify-llm-savings-against-provider-bill": {
+      "title": "LLM-kostenbesparingen controleren aan de hand van je providerfactuur",
+      "description": "Elke LLM-besparingsclaim controleren: log de tellers van de provider, stem tokens af vóór dollars, scheid gemeten en geschat, en wijs de besparing toe."
+    }
+  }
+}
