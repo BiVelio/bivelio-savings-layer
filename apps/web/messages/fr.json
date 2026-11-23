@@ -1440,6 +1440,7 @@
       "terms": "Conditions d'utilisation",
       "gdpr": "RGPD",
       "cookies": "Cookies",
+      "cookieSettings": "Paramètres des cookies",
       "billing": "Facturation",
       "aiAct": "IA responsable (AI Act)",
       "legalCenter": "Centre juridique",
@@ -2521,8 +2522,10 @@
       "title": "Mesure sur ce site",
       "body": "Ce site, et non le Logiciel, mesure ses propres visites avec <b>Vercel Web Analytics</b>. Il compte les pages vues et trois actions : copier une commande d'installation, suivre un lien vers GitHub, npm ou PyPI, et passer à l'inscription. La mesure est agrégée et sans cookies, sans données personnelles ni suivi entre sites.",
       "limits": "Chaque page vue ou action ne transmet que la page et la section, le site d'où vous venez tel que votre navigateur l'indique, et le gestionnaire de paquets, la destination ou la formule ; jamais ce que vous saisissez ou copiez. Vercel déduit le pays, le navigateur et le type d'appareil de la requête elle-même. Les adresses des pages sont envoyées sans paramètres de requête ni jetons.",
-      "ads": "Le site charge aussi la balise <b>Google Ads</b>, pour mesurer quelles annonces amènent des inscriptions et pour le remarketing. Elle dépose des cookies publicitaires (comme _gcl_au, et _gcl_aw si vous arrivez depuis une annonce Google). Elle ne s'exécute que sur les pages publiques (accueil, fonctionnement, tarifs, banc d'essai, article, guide de migration et cette page) et sur celle qui confirme un nouveau compte. Elle ne s'exécute jamais sur les pages d'inscription, de connexion, de mot de passe, d'invitation ou de page introuvable, ni dans le tableau de bord : un lien depuis une page avec la balise vers l'une d'elles l'ouvre avec un nouveau chargement, sans la balise. Après une page dont l'adresse contient un jeton ou un code (une invitation ou un nouveau mot de passe), ou une page introuvable, elle ne s'exécute plus pendant le reste de la visite dans cet onglet du navigateur.",
-      "adsData": "Avant le chargement de la balise, tous les paramètres que le site n'utilise pas sont retirés de l'adresse ; seuls restent la destination après l'inscription, la formule choisie et l'identifiant de clic de Google. Google reçoit ensuite l'adresse de chaque page que vous ouvrez ici, la page d'où vous venez telle que votre navigateur l'indique (de ce site, seulement son adresse), l'identifiant de clic que Google a ajouté au lien de l'annonce et, quand un nouveau compte est confirmé, un identifiant interne du compte pour ne pas compter l'inscription deux fois. Sur les pages où elle s'exécute, la balise regarde aussi ce que vous saisissez : si vous saisissez une adresse e-mail, par exemple dans le formulaire de la page d'accueil pour réserver un appel, elle peut l'envoyer à Google sous forme hachée ({hash})."
+      "ads": "Uniquement si vous acceptez les cookies publicitaires, le site charge aussi la balise <b>Google Ads</b>, pour mesurer quelles annonces amènent des inscriptions et pour le remarketing. Tant que vous n'avez pas choisi, et si vous refusez, elle ne se charge pas. Elle dépose des cookies publicitaires (comme _gcl_au, et _gcl_aw si vous arrivez depuis une annonce Google). Elle ne s'exécute que sur les pages publiques (accueil, fonctionnement, tarifs, banc d'essai, article, guide de migration et cette page) et sur celle qui confirme un nouveau compte. Elle ne s'exécute jamais sur les pages d'inscription, de connexion, de mot de passe, d'invitation ou de page introuvable, ni dans le tableau de bord : un lien depuis une page avec la balise vers l'une d'elles l'ouvre avec un nouveau chargement, sans la balise. Après une page dont l'adresse contient un jeton ou un code (une invitation ou un nouveau mot de passe), ou une page introuvable, elle ne s'exécute plus pendant le reste de la visite dans cet onglet du navigateur.",
+      "adsData": "Avant le chargement de la balise, tous les paramètres que le site n'utilise pas sont retirés de l'adresse ; seuls restent la destination après l'inscription, la formule choisie et l'identifiant de clic de Google. Google reçoit ensuite l'adresse de chaque page que vous ouvrez ici, la page d'où vous venez telle que votre navigateur l'indique (de ce site, seulement son adresse), l'identifiant de clic que Google a ajouté au lien de l'annonce et, quand un nouveau compte est confirmé, un identifiant interne du compte pour ne pas compter l'inscription deux fois. Sur les pages où elle s'exécute, la balise regarde aussi ce que vous saisissez : si vous saisissez une adresse e-mail, par exemple dans le formulaire de la page d'accueil pour réserver un appel, elle peut l'envoyer à Google sous forme hachée ({hash}).",
+      "consent": "Votre choix est conservé six mois dans un cookie de ce site (bv_consent) qui ne contient que le choix et sa date. Vous pouvez le modifier à tout moment avec « Paramètres des cookies », en bas de page, ou avec le bouton ci-dessous. Si vous retirez votre consentement, la balise s'arrête aussitôt et les cookies _gcl_ qu'elle a déposés sur ce domaine sont supprimés.",
+      "settings": "Paramètres des cookies"
     },
     "contact": "Questions et demandes concernant ces données : <mail>{email}</mail>.",
     "overview": {
@@ -2562,7 +2565,7 @@
         "retention": "Uniquement des totaux agrégés : ni cookies ni données personnelles"
       },
       "ads": {
-        "data": "Balise Google Ads, uniquement sur les pages publiques : cookies publicitaires, adresse de chaque page et e-mail saisi sur ces pages, haché",
+        "data": "Balise Google Ads, uniquement avec votre consentement et sur les pages publiques : cookies publicitaires, adresse de chaque page et e-mail saisi sur ces pages, haché",
         "destination": "Google",
         "purpose": "Mesurer quelles annonces amènent des inscriptions, et remarketing",
         "retention": "Conservé par Google ; BiVelio voit les totaux de conversions dans Google Ads"
@@ -2576,6 +2579,13 @@
       "alt": "Illustration : un dossier bleu contenant trois documents, derrière une poche translucide.",
       "caption": "Vos requêtes, réponses et identifiants ne sont pas envoyés à BiVelio."
     }
+  },
+  "cookieBanner": {
+    "title": "Cookies publicitaires",
+    "body": "Si vous acceptez, Google Ads dépose des cookies pour mesurer quelles annonces amènent des inscriptions et pour le remarketing. Google Ads ne se charge pas tant que vous n'avez pas choisi. Notre propre comptage des visites n'utilise aucun cookie.",
+    "accept": "Accepter",
+    "reject": "Refuser",
+    "privacy": "Détails sur la confidentialité"
   },
   "docsPage": {
     "englishOnly": "Ce document est en anglais. Seule l'interface de lecture est traduite.",

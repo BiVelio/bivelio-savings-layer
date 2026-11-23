@@ -4,6 +4,7 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 
 import { DocIndice } from "@/app/components/docs/DocIndice";
 import { Migas } from "@/app/components/docs/Migas";
+import { AjustesCookies } from "@/app/components/AjustesCookies";
 import Footer from "@/app/components/Footer";
 import { etiquetasQueRigen } from "@/app/components/LegalGoverns";
 import { Link } from "@/i18n/navigation";
@@ -323,6 +324,10 @@ export default async function PrivacyPage({ params }: { params: Promise<{ locale
               <p>{t("website.limits")}</p>
               <p>{t.rich("website.ads", { b })}</p>
               <p>{t("website.adsData", { hash: "SHA-256" })}</p>
+              <p>{t("website.consent")}</p>
+              <p>
+                <AjustesCookies className="btn ghost" texto={t("website.settings")} />
+              </p>
             </section>
 
             <p className="doc-arriba">

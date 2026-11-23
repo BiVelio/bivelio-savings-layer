@@ -1440,6 +1440,7 @@
       "terms": "Termos do serviço",
       "gdpr": "RGPD",
       "cookies": "Cookies",
+      "cookieSettings": "Definições de cookies",
       "billing": "Faturação",
       "aiAct": "IA responsável (AI Act)",
       "legalCenter": "Centro jurídico",
@@ -2521,8 +2522,10 @@
       "title": "Medição neste site",
       "body": "Este site, e não o Software, mede as suas próprias visitas com o <b>Vercel Web Analytics</b>. Conta as páginas vistas e três ações: copiar um comando de instalação, seguir um link para o GitHub, npm ou PyPI e avançar para o registo. A medição é agregada e sem cookies, sem dados pessoais e sem rastreamento entre sites.",
       "limits": "Cada visualização ou ação leva apenas a página e a secção, o site de onde vem, tal como o seu navegador o indica, e o gestor de pacotes, o destino ou o plano; nunca o que escreve ou copia. A Vercel deduz o país, o navegador e o tipo de dispositivo a partir do próprio pedido. Os endereços das páginas são enviados sem parâmetros de consulta nem tokens.",
-      "ads": "O site também carrega a etiqueta do <b>Google Ads</b>, para medir que anúncios trazem registos e para remarketing. Coloca cookies de publicidade (como _gcl_au, e _gcl_aw se chegar a partir de um anúncio do Google). Só funciona nas páginas públicas (início, como funciona, preços, banco de testes, artigo, guia de migração e esta página) e na que confirma uma conta nova. Nunca funciona nas páginas de registo, acesso, palavra-passe, convite ou página não encontrada, nem no painel: um link de uma página com a etiqueta para uma delas abre-a com um novo carregamento, sem a etiqueta. Depois de uma página cujo endereço leva um token ou um código (um convite ou uma nova palavra-passe), ou de uma página não encontrada, não volta a funcionar no resto da visita nesse separador do navegador.",
-      "adsData": "Antes de a etiqueta carregar, são retirados do endereço todos os parâmetros que o site não usa; ficam apenas o destino após o registo, o plano escolhido e o identificador de clique da própria Google. Depois, a Google recebe o endereço de cada página que abre aqui, a página de onde vem tal como o seu navegador a indica (deste site, só o seu endereço), o identificador de clique que a Google acrescentou ao link do anúncio e, quando uma conta nova é confirmada, um identificador interno da conta para não contar o registo duas vezes. Nas páginas onde funciona, a etiqueta também lê o que escreve: se escrever um endereço de e-mail, por exemplo no formulário da página inicial para marcar uma chamada, pode enviá-lo à Google em forma de hash ({hash})."
+      "ads": "Só se aceitar os cookies de publicidade, o site carrega também a etiqueta do <b>Google Ads</b>, para medir que anúncios trazem registos e para remarketing. Até escolher, e se rejeitar, não é carregada. Coloca cookies de publicidade (como _gcl_au, e _gcl_aw se chegar a partir de um anúncio do Google). Só funciona nas páginas públicas (início, como funciona, preços, banco de testes, artigo, guia de migração e esta página) e na que confirma uma conta nova. Nunca funciona nas páginas de registo, acesso, palavra-passe, convite ou página não encontrada, nem no painel: um link de uma página com a etiqueta para uma delas abre-a com um novo carregamento, sem a etiqueta. Depois de uma página cujo endereço leva um token ou um código (um convite ou uma nova palavra-passe), ou de uma página não encontrada, não volta a funcionar no resto da visita nesse separador do navegador.",
+      "adsData": "Antes de a etiqueta carregar, são retirados do endereço todos os parâmetros que o site não usa; ficam apenas o destino após o registo, o plano escolhido e o identificador de clique da própria Google. Depois, a Google recebe o endereço de cada página que abre aqui, a página de onde vem tal como o seu navegador a indica (deste site, só o seu endereço), o identificador de clique que a Google acrescentou ao link do anúncio e, quando uma conta nova é confirmada, um identificador interno da conta para não contar o registo duas vezes. Nas páginas onde funciona, a etiqueta também lê o que escreve: se escrever um endereço de e-mail, por exemplo no formulário da página inicial para marcar uma chamada, pode enviá-lo à Google em forma de hash ({hash}).",
+      "consent": "A sua escolha é guardada durante seis meses num cookie deste site (bv_consent) que contém apenas a escolha e a data. Pode alterá-la a qualquer momento em «Definições de cookies», no fundo da página, ou com o botão abaixo. Se retirar o consentimento, a etiqueta para de imediato e os cookies _gcl_ que colocou neste domínio são apagados.",
+      "settings": "Definições de cookies"
     },
     "contact": "Perguntas e pedidos sobre estes dados: <mail>{email}</mail>.",
     "overview": {
@@ -2562,7 +2565,7 @@
         "retention": "Apenas contagens agregadas: sem cookies nem dados pessoais"
       },
       "ads": {
-        "data": "Etiqueta do Google Ads, só nas páginas públicas: cookies de publicidade, o endereço de cada página e o e-mail que lá escrever, em hash",
+        "data": "Etiqueta do Google Ads, só com o seu consentimento e nas páginas públicas: cookies de publicidade, o endereço de cada página e o e-mail que lá escrever, em hash",
         "destination": "Google",
         "purpose": "Medir que anúncios trazem registos, e remarketing",
         "retention": "Guardado pela Google; a BiVelio vê os totais de conversões no Google Ads"
@@ -2576,6 +2579,13 @@
       "alt": "Ilustração: uma pasta azul com três documentos, atrás de um bolso translúcido.",
       "caption": "Os seus pedidos, respostas e credenciais não são enviados para a BiVelio."
     }
+  },
+  "cookieBanner": {
+    "title": "Cookies de publicidade",
+    "body": "Se aceitar, o Google Ads coloca cookies para medir que anúncios trazem registos e para remarketing. O Google Ads não é carregado até escolher. A nossa própria contagem de visitas não usa cookies.",
+    "accept": "Aceitar",
+    "reject": "Rejeitar",
+    "privacy": "Detalhes de privacidade"
   },
   "docsPage": {
     "englishOnly": "O documento está em inglês. Só a interface de leitura está traduzida.",

@@ -1440,6 +1440,7 @@
       "terms": "Nutzungsbedingungen",
       "gdpr": "DSGVO",
       "cookies": "Cookies",
+      "cookieSettings": "Cookie-Einstellungen",
       "billing": "Abrechnung",
       "aiAct": "Verantwortungsvolle KI (AI Act)",
       "legalCenter": "Rechtliches",
@@ -2521,8 +2522,10 @@
       "title": "Messung auf dieser Website",
       "body": "Diese Website, nicht die Software, misst ihre eigenen Besuche mit <b>Vercel Web Analytics</b>. Gezählt werden aufgerufene Seiten und drei Aktionen: einen Installationsbefehl kopieren, einem Link zu GitHub, npm oder PyPI folgen und zur Registrierung wechseln. Die Messung ist aggregiert und ohne Cookies, ohne personenbezogene Daten und ohne seitenübergreifendes Tracking.",
       "limits": "Jeder Seitenaufruf und jede Aktion übermittelt nur Seite und Abschnitt, die Website, von der du kommst, so wie dein Browser sie angibt, sowie den Paketmanager, das Ziel oder den Tarif; nie, was du eingibst oder kopierst. Land, Browser und Gerätetyp leitet Vercel aus der Anfrage selbst ab. Seitenadressen werden ohne Query-Parameter und ohne Tokens gesendet.",
-      "ads": "Die Website lädt außerdem das <b>Google Ads</b>-Tag, um zu messen, welche Anzeigen zu Registrierungen führen, und für Remarketing. Es setzt Werbe-Cookies (etwa _gcl_au und, wenn du über eine Google-Anzeige kommst, _gcl_aw). Es läuft nur auf den öffentlichen Seiten (Startseite, So funktioniert's, Preise, Benchmarks, Paper, Migrationsleitfaden und diese Seite) und auf der Seite, die ein neues Konto bestätigt. Auf Registrierungs-, Anmelde-, Passwort-, Einladungs- und Nicht-gefunden-Seiten sowie im Dashboard läuft es nie: Ein Link von einer Seite mit dem Tag zu einer davon öffnet sie neu geladen, ohne das Tag. Nach einer Seite, deren Adresse ein Token oder einen Code enthält (eine Einladung oder ein neues Passwort), oder nach einer Nicht-gefunden-Seite läuft es für den Rest des Besuchs in diesem Browser-Tab nicht mehr.",
-      "adsData": "Bevor das Tag lädt, werden alle Parameter, die die Website nicht nutzt, aus der Adresse entfernt; nur das Ziel nach der Registrierung, der gewählte Tarif und Googles eigene Klick-ID bleiben. Danach erhält Google die Adresse jeder Seite, die du hier öffnest, die Seite, von der du kommst, so wie dein Browser sie angibt (von dieser Website nur ihre Adresse), die Klick-ID, die Google dem Anzeigenlink angehängt hat, und, wenn ein neues Konto bestätigt wird, eine interne Konto-ID, damit die Registrierung nicht doppelt gezählt wird. Auf den Seiten, auf denen es läuft, liest das Tag auch mit, was du eingibst: Gibst du eine E-Mail-Adresse ein, etwa im Formular der Startseite zum Buchen eines Gesprächs, kann es sie gehasht ({hash}) an Google senden."
+      "ads": "Nur wenn du Werbe-Cookies akzeptierst, lädt die Website außerdem das <b>Google Ads</b>-Tag, um zu messen, welche Anzeigen zu Registrierungen führen, und für Remarketing. Bevor du entscheidest und wenn du ablehnst, wird es nicht geladen. Es setzt Werbe-Cookies (etwa _gcl_au und, wenn du über eine Google-Anzeige kommst, _gcl_aw). Es läuft nur auf den öffentlichen Seiten (Startseite, So funktioniert's, Preise, Benchmarks, Paper, Migrationsleitfaden und diese Seite) und auf der Seite, die ein neues Konto bestätigt. Auf Registrierungs-, Anmelde-, Passwort-, Einladungs- und Nicht-gefunden-Seiten sowie im Dashboard läuft es nie: Ein Link von einer Seite mit dem Tag zu einer davon öffnet sie neu geladen, ohne das Tag. Nach einer Seite, deren Adresse ein Token oder einen Code enthält (eine Einladung oder ein neues Passwort), oder nach einer Nicht-gefunden-Seite läuft es für den Rest des Besuchs in diesem Browser-Tab nicht mehr.",
+      "adsData": "Bevor das Tag lädt, werden alle Parameter, die die Website nicht nutzt, aus der Adresse entfernt; nur das Ziel nach der Registrierung, der gewählte Tarif und Googles eigene Klick-ID bleiben. Danach erhält Google die Adresse jeder Seite, die du hier öffnest, die Seite, von der du kommst, so wie dein Browser sie angibt (von dieser Website nur ihre Adresse), die Klick-ID, die Google dem Anzeigenlink angehängt hat, und, wenn ein neues Konto bestätigt wird, eine interne Konto-ID, damit die Registrierung nicht doppelt gezählt wird. Auf den Seiten, auf denen es läuft, liest das Tag auch mit, was du eingibst: Gibst du eine E-Mail-Adresse ein, etwa im Formular der Startseite zum Buchen eines Gesprächs, kann es sie gehasht ({hash}) an Google senden.",
+      "consent": "Deine Entscheidung wird sechs Monate lang in einem Cookie dieser Website (bv_consent) gespeichert, das nur die Entscheidung und ihr Datum enthält. Du kannst sie jederzeit über „Cookie-Einstellungen“ unten auf der Seite oder mit der Schaltfläche unten ändern. Wenn du die Einwilligung widerrufst, stoppt das Tag sofort, und die _gcl_-Cookies, die es auf dieser Domain gesetzt hat, werden gelöscht.",
+      "settings": "Cookie-Einstellungen"
     },
     "contact": "Fragen und Anfragen zu diesen Daten: <mail>{email}</mail>.",
     "overview": {
@@ -2562,7 +2565,7 @@
         "retention": "Nur aggregierte Zahlen: keine Cookies, keine personenbezogenen Daten"
       },
       "ads": {
-        "data": "Google Ads-Tag, nur auf öffentlichen Seiten: Werbe-Cookies, die Adresse jeder Seite und dort eingegebene E-Mail-Adressen, gehasht",
+        "data": "Google Ads-Tag, nur mit deiner Einwilligung und auf öffentlichen Seiten: Werbe-Cookies, die Adresse jeder Seite und dort eingegebene E-Mail-Adressen, gehasht",
         "destination": "Google",
         "purpose": "Messen, welche Anzeigen zu Registrierungen führen, und Remarketing",
         "retention": "Bei Google; BiVelio sieht in Google Ads die Summen der Conversions"
@@ -2576,6 +2579,13 @@
       "alt": "Illustration: ein blauer Ordner mit drei Dokumenten hinter einer durchscheinenden Tasche.",
       "caption": "Deine Anfragen, Antworten und Zugangsdaten gehen nicht an BiVelio."
     }
+  },
+  "cookieBanner": {
+    "title": "Werbe-Cookies",
+    "body": "Wenn du zustimmst, setzt Google Ads Cookies, um zu messen, welche Anzeigen zu Registrierungen führen, und für Remarketing. Bevor du entscheidest, wird Google Ads nicht geladen. Unsere eigene Besuchszählung nutzt keine Cookies.",
+    "accept": "Akzeptieren",
+    "reject": "Ablehnen",
+    "privacy": "Datenschutzdetails"
   },
   "docsPage": {
     "englishOnly": "Dieses Dokument ist auf Englisch. Nur die Leseoberfläche ist übersetzt.",

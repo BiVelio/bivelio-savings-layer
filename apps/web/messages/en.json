@@ -1440,6 +1440,7 @@
       "terms": "Terms of service",
       "gdpr": "GDPR",
       "cookies": "Cookies",
+      "cookieSettings": "Cookie settings",
       "billing": "Billing",
       "aiAct": "Responsible AI (AI Act)",
       "legalCenter": "Legal center",
@@ -2521,8 +2522,10 @@
       "title": "Measurement on this website",
       "body": "This website, not the Software, measures its own visits with <b>Vercel Web Analytics</b>. It counts pages viewed and three actions: copying an install command, following a link to GitHub, npm or PyPI, and going to sign-up. The measurement is aggregated and cookieless, with no personal data and no tracking across sites.",
       "limits": "Each page view or action carries only the page and section, the site you came from as your browser reports it, and the package manager, destination or plan; never what you type or copy. Vercel works out the country, browser and device type from the request itself. Page addresses are sent without query strings or tokens.",
-      "ads": "The website also loads the <b>Google Ads</b> tag, to measure which ads lead to sign-ups and for remarketing. It sets advertising cookies (such as _gcl_au, and _gcl_aw if you arrive from a Google ad). It only runs on the public pages (home, how it works, pricing, benchmarks, paper, migration guide and this page) and on the page that confirms a new account. It never runs on the sign-up, login, password, invitation or not-found pages, nor in the dashboard: a link from a page with the tag to one of them opens it with a fresh page load, without the tag. After a page whose address carries a token or code (an invitation or a password reset), or a not-found page, it does not run again for the rest of the visit in that browser tab.",
-      "adsData": "Before the tag loads, every query parameter the website does not use is removed from the address; only the destination after sign-up, the chosen plan and Google's own ad-click identifier stay. Google then receives the address of each page you open here, the page you came from as your browser reports it (from this website, only its address), the click identifier Google added to the ad's link and, when a new account is confirmed, an internal account identifier so the sign-up is not counted twice. On the pages where it runs, the tag also looks at what you type: if you type an e-mail address, for example in the home page's form to book a call, it can send it to Google in hashed form ({hash})."
+      "ads": "Only if you accept advertising cookies does the website also load the <b>Google Ads</b> tag, to measure which ads lead to sign-ups and for remarketing. Until you choose, and if you reject, it does not load. It sets advertising cookies (such as _gcl_au, and _gcl_aw if you arrive from a Google ad). It only runs on the public pages (home, how it works, pricing, benchmarks, paper, migration guide and this page) and on the page that confirms a new account. It never runs on the sign-up, login, password, invitation or not-found pages, nor in the dashboard: a link from a page with the tag to one of them opens it with a fresh page load, without the tag. After a page whose address carries a token or code (an invitation or a password reset), or a not-found page, it does not run again for the rest of the visit in that browser tab.",
+      "adsData": "Before the tag loads, every query parameter the website does not use is removed from the address; only the destination after sign-up, the chosen plan and Google's own ad-click identifier stay. Google then receives the address of each page you open here, the page you came from as your browser reports it (from this website, only its address), the click identifier Google added to the ad's link and, when a new account is confirmed, an internal account identifier so the sign-up is not counted twice. On the pages where it runs, the tag also looks at what you type: if you type an e-mail address, for example in the home page's form to book a call, it can send it to Google in hashed form ({hash}).",
+      "consent": "Your choice is kept for six months in a cookie on this website (bv_consent) that holds only the choice and its date. You can change it at any time with “Cookie settings” at the bottom of the page or the button below. If you withdraw consent, the tag stops at once and the _gcl_ cookies it set on this domain are deleted.",
+      "settings": "Cookie settings"
     },
     "contact": "Questions and requests about this data: <mail>{email}</mail>.",
     "overview": {
@@ -2562,7 +2565,7 @@
         "retention": "Aggregated counts only: no cookies, no personal data"
       },
       "ads": {
-        "data": "Google Ads tag, on public pages only: advertising cookies, the address of each page and any e-mail address typed there, hashed",
+        "data": "Google Ads tag, only with your consent and on public pages: advertising cookies, the address of each page and any e-mail address typed there, hashed",
         "destination": "Google",
         "purpose": "Measuring which ads lead to sign-ups, and remarketing",
         "retention": "Kept by Google; BiVelio sees conversion totals in Google Ads"
@@ -2576,6 +2579,13 @@
       "alt": "Illustration: a blue folder holding three documents behind a translucent pocket.",
       "caption": "Your requests, responses and credentials are not sent to BiVelio."
     }
+  },
+  "cookieBanner": {
+    "title": "Advertising cookies",
+    "body": "If you accept, Google Ads sets cookies to measure which ads bring sign-ups and for remarketing. It does not load until you choose. Our own visit counts use no cookies.",
+    "accept": "Accept",
+    "reject": "Reject",
+    "privacy": "Privacy details"
   },
   "docsPage": {
     "englishOnly": "This document is in English. Only the reading interface is translated.",
