@@ -426,19 +426,22 @@ describe("verificación final de la 1.2.4 (#614): lo que quedaba en la web", () 
     vi: "Cài đặt mã nguồn mở",
   };
   /** La base del ahorro, con las palabras de landing.devs.cards.1.body en cada idioma. */
+  // Las tres bases que da el resumen de salida de la 1.2.5 (gateway/recuento.ts,
+  // `fraseDeDinero`): measured, by reference y estimated. «Medido o estimado» se
+  // dejaba fuera la de referencia (repetidas evitadas con BVSALA_GATEWAY_COALESCE=1).
   const BASE: Record<Loc, string> = {
-    ca: "(mesurat o estimat)",
-    de: "(gemessen oder geschätzt)",
-    en: "(measured or estimated)",
-    es: "(medido o estimado)",
-    fr: "(mesuré ou estimé)",
-    id: "(terukur atau estimasi)",
-    it: "(misurato o stimato)",
-    nl: "(gemeten of geschat)",
-    pl: "(zmierzone lub szacowane)",
-    pt: "(medido ou estimado)",
-    tr: "(ölçülen veya tahmini)",
-    vi: "(đo được hay ước tính)",
+    ca: "(mesurat, per referència o estimat)",
+    de: "(gemessen, per Referenz oder geschätzt)",
+    en: "(measured, by reference or estimated)",
+    es: "(medido, por referencia o estimado)",
+    fr: "(mesuré, par référence ou estimé)",
+    id: "(terukur, berdasarkan referensi, atau estimasi)",
+    it: "(misurato, per riferimento o stimato)",
+    nl: "(gemeten, via referentie of geschat)",
+    pl: "(zmierzone, przez odniesienie lub szacowane)",
+    pt: "(medido, por referência ou estimado)",
+    tr: "(ölçülen, referansla veya tahmini)",
+    vi: "(đo được, theo tham chiếu hay ước tính)",
   };
   /** La sexta palanca por defecto, la serialización compacta. */
   const SERIALIZACION: Record<Loc, RegExp> = {

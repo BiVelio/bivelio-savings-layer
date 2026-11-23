@@ -3,6 +3,7 @@
 import { useTranslations } from "next-intl";
 import { useState } from "react";
 
+import { VERSION_MEDIR_AHORRA } from "@/lib/license/medir-publico";
 import { Spinner } from "@/vendor/affectui/spinner-clean";
 
 import { CopyButton } from "./CopyButton";
@@ -64,7 +65,9 @@ export function MeasureClaimButton({ seats }: { seats: number }) {
 
   return (
     <div className="trialkey">
-      <p className="ck-note sak-lede">{t("body", { seats })}</p>
+      {/* Desde qué versión ahorra Measure: la misma constante que la tarjeta de
+          /pricing y el alta (lib/license/medir-publico.ts), por parámetro. */}
+      <p className="ck-note sak-lede">{t("body", { seats, saves: VERSION_MEDIR_AHORRA })}</p>
       <button type="button" className="btn btn-ghost sak-btn" onClick={reclamar} disabled={state === "loading"}>
         {state === "loading" ? <Spinner size={15} /> : null}
         {state === "loading" ? t("claiming") : t("claim")}

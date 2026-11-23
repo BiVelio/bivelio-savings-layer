@@ -135,11 +135,13 @@ describe("sin clave, el gasto de Claude Code no aparece en el panel", () => {
   it("es/en: sin clave se dice lo que hace el gateway — mide en local y lo cuenta al salir", () => {
     const es = tarjeta("es");
     expect(es).toContain("sin ninguna clave de BiVelio");
-    // Con la 1.2.4 el resumen al salir también da el gasto a precio de lista y el ahorro por base.
-    expect(es).toContain("al salir te dice cuánto ha gastado a precio de lista, cuánto ha ahorrado según su base (medido o estimado), cuántas peticiones ha medido");
+    // Desde la 1.2.4 (en npm con la 1.2.5) el resumen al salir da también el gasto a
+    // precio de lista y el ahorro por base: medido, por referencia o estimado
+    // (gateway/recuento.ts, `fraseDeDinero`).
+    expect(es).toContain("al salir te dice cuánto ha gastado a precio de lista, cuánto ha ahorrado según su base (medido, por referencia o estimado), cuántas peticiones ha medido");
     const en = tarjeta("en");
     expect(en).toContain("with no BiVelio key at all");
-    expect(en).toContain("on exit tells you what it spent at list price, what it saved by basis (measured or estimated), how many requests it metered");
+    expect(en).toContain("on exit tells you what it spent at list price, what it saved by basis (measured, by reference or estimated), how many requests it metered");
   });
 });
 
