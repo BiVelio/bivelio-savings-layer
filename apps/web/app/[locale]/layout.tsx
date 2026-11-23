@@ -1,5 +1,4 @@
 import type { ReactNode } from "react";
-import Script from "next/script";
 import { notFound } from "next/navigation";
 import { hasLocale } from "next-intl";
 import { setRequestLocale } from "next-intl/server";
@@ -13,6 +12,7 @@ import "../globals.css";
 // cabecera de affectui.css). Las que solo usa el panel las carga su layout, y
 // las del acceso (login, alta, invitación), cada una de sus páginas.
 import "@/vendor/affectui/affectui.css";
+import { EtiquetaGoogleAds } from "@/app/components/EtiquetaGoogleAds";
 import { MedicionWeb } from "@/app/components/MedicionWeb";
 import { NavBar } from "@/app/components/NavBar";
 import { SiteNavGate } from "@/app/components/SiteNavGate";
@@ -56,23 +56,19 @@ export default async function LocaleLayout({
         <link rel="preload" href="/fonts/plus-jakarta-sans-latin-wght-normal.woff2" as="font" type="font/woff2" crossOrigin="anonymous" />
       </head>
       <body>
-        {/* Google tag (gtag.js) — seguimiento de conversiones de Google Ads
-            (pedido del dueño, 02-09). `afterInteractive` para no competir con
-            el LCP; los hosts van declarados en la CSP (next.config.mjs) o el
-            navegador lo bloquearía en silencio. */}
-        <Script src="https://www.googletagmanager.com/gtag/js?id=AW-18425303387" strategy="afterInteractive" />
-        <Script id="gtag-init" strategy="afterInteractive">{`
-          window.dataLayer = window.dataLayer || [];
-          function gtag(){dataLayer.push(arguments);}
-          gtag('js', new Date());
-          gtag('config', 'AW-18425303387');
-        `}</Script>
         {/* Al navegador va solo lo que piden los componentes cliente de la
             barra (`sitio`), no el catálogo entero: viajaba serializado en el
             HTML de CADA página (~170 KB). Las rutas cuyos componentes cliente
             piden más envuelven su tramo en su propio MensajesCliente (ver
             i18n/mensajes-cliente.ts). */}
         <MensajesCliente tramo="sitio" locale={locale}>
+          {/* Google tag (gtag.js) — seguimiento de conversiones de Google Ads
+              (pedido del dueño, 02-09). `afterInteractive` para no competir
+              con el LCP; los hosts van declarados en la CSP (next.config.mjs).
+              No se carga con una URL con token y, en el resto, va con la URL
+              limpia: ver EtiquetaGoogleAds. Va ANTES que la página: su efecto
+              define `window.gtag` antes de que ConversionRegistro lo use. */}
+          <EtiquetaGoogleAds />
           <SiteNavGate>
             {/* Primer foco de la página y su destino, a los dos lados de la
                 cabecera. El panel pinta los suyos (dashboard/layout.tsx). */}

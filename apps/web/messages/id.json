@@ -2519,9 +2519,11 @@
       "body": "Email masukmu, organisasimu, dan detail penagihanmu (pembayaran diproses oleh Stripe) diatur oleh <policy>kebijakan privasi BiVelio</policy>."
     },
     "website": {
-      "title": "Kunjungan ke situs ini",
+      "title": "Pengukuran di situs ini",
       "body": "Situs ini, bukan Perangkat Lunak, mengukur kunjungannya sendiri dengan <b>Vercel Web Analytics</b>. Yang dihitung adalah halaman yang dilihat dan tiga tindakan: menyalin perintah instalasi, mengikuti tautan ke GitHub, npm, atau PyPI, dan menuju pendaftaran. Pengukurannya agregat dan tanpa cookie, tanpa data pribadi, dan tanpa pelacakan lintas situs.",
-      "limits": "Setiap tampilan halaman atau tindakan hanya membawa halaman dan bagiannya, situs asalmu sebagaimana dilaporkan browser-mu, serta package manager, tujuan tautan, atau paket yang dipilih; tidak pernah apa yang kamu ketik atau salin. Negara, browser, dan jenis perangkat disimpulkan Vercel dari permintaan itu sendiri. Alamat halaman dikirim tanpa parameter kueri atau token."
+      "limits": "Setiap tampilan halaman atau tindakan hanya membawa halaman dan bagiannya, situs asalmu sebagaimana dilaporkan browser-mu, serta package manager, tujuan tautan, atau paket yang dipilih; tidak pernah apa yang kamu ketik atau salin. Negara, browser, dan jenis perangkat disimpulkan Vercel dari permintaan itu sendiri. Alamat halaman dikirim tanpa parameter kueri atau token.",
+      "ads": "Situs ini juga memuat tag <b>Google Ads</b>, untuk mengukur iklan mana yang menghasilkan pendaftaran dan untuk pemasaran ulang. Berbeda dengan Vercel Web Analytics, tag ini memasang cookie iklan (seperti _gcl_au, dan _gcl_aw jika kamu datang dari iklan Google). Tag ini tidak dimuat di halaman undangan, kata sandi baru, atau halaman tidak ditemukan, dan juga tidak di sisa kunjungan yang lebih dulu melewati salah satunya.",
+      "adsData": "Google menerima alamat setiap halaman yang kamu buka di sini: tanpa parameter kueri, fragmen, atau token saat halaman dimuat, dan dengan parameternya saat kamu berpindah halaman tanpa memuat ulang (di situs ini isinya hanya halaman berikutnya, paket, periode, atau sebuah status). Google juga menerima halaman sebelumnya (hanya alamat situsnya), kapan formulir mulai diisi atau dikirim (bukan isinya), ID klik yang ditambahkan Google ke tautan iklan, dan, saat akun baru dikonfirmasi, ID internal akun agar pendaftaran tidak dihitung dua kali."
     },
     "contact": "Pertanyaan dan permintaan tentang data ini: <mail>{email}</mail>.",
     "overview": {
@@ -2559,6 +2561,12 @@
         "destination": "Vercel Web Analytics",
         "purpose": "Menghitung kunjungan dan salinan perintah instalasi",
         "retention": "Hanya hitungan agregat: tanpa cookie, tanpa data pribadi"
+      },
+      "ads": {
+        "data": "Tag Google Ads: cookie iklan dan alamat setiap halaman",
+        "destination": "Google",
+        "purpose": "Mengukur iklan mana yang menghasilkan pendaftaran, dan pemasaran ulang",
+        "retention": "Disimpan Google; BiVelio melihat total konversi di Google Ads"
       }
     },
     "fields": {

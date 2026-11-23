@@ -2519,9 +2519,11 @@
       "body": "Your sign-in e-mail, your organization and your billing details (payments are processed by Stripe) are covered by <policy>BiVelio's privacy policy</policy>."
     },
     "website": {
-      "title": "Visits to this website",
+      "title": "Measurement on this website",
       "body": "This website, not the Software, measures its own visits with <b>Vercel Web Analytics</b>. It counts pages viewed and three actions: copying an install command, following a link to GitHub, npm or PyPI, and going to sign-up. The measurement is aggregated and cookieless, with no personal data and no tracking across sites.",
-      "limits": "Each page view or action carries only the page and section, the site you came from as your browser reports it, and the package manager, destination or plan; never what you type or copy. Vercel works out the country, browser and device type from the request itself. Page addresses are sent without query strings or tokens."
+      "limits": "Each page view or action carries only the page and section, the site you came from as your browser reports it, and the package manager, destination or plan; never what you type or copy. Vercel works out the country, browser and device type from the request itself. Page addresses are sent without query strings or tokens.",
+      "ads": "The website also loads the <b>Google Ads</b> tag, to measure which ads lead to sign-ups and for remarketing. Unlike Vercel Web Analytics, it sets advertising cookies (such as _gcl_au, and _gcl_aw if you arrive from a Google ad). It does not load on invitation, password-reset or not-found pages, nor for the rest of a visit that passes through one of them first.",
+      "adsData": "Google receives the address of each page you open here: without query string, fragment or tokens when the page loads, and with its query string when you move between pages without reloading (on this website that only holds the next page, the plan, the period or a status). It also receives the previous page (only the website's address), when a form is started or submitted (not what you type in it), the click identifier Google added to the ad's link and, when a new account is confirmed, an internal account identifier so the sign-up is not counted twice."
     },
     "contact": "Questions and requests about this data: <mail>{email}</mail>.",
     "overview": {
@@ -2559,6 +2561,12 @@
         "destination": "Vercel Web Analytics",
         "purpose": "Counting visits and install-command copies",
         "retention": "Aggregated counts only: no cookies, no personal data"
+      },
+      "ads": {
+        "data": "Google Ads tag: advertising cookies and the address of each page",
+        "destination": "Google",
+        "purpose": "Measuring which ads lead to sign-ups, and remarketing",
+        "retention": "Kept by Google; BiVelio sees conversion totals in Google Ads"
       }
     },
     "fields": {
