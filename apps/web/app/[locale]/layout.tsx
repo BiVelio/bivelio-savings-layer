@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import { notFound } from "next/navigation";
 import { hasLocale } from "next-intl";
-import { setRequestLocale } from "next-intl/server";
+import { getTranslations, setRequestLocale } from "next-intl/server";
 
 import "../globals.css";
 // Las hojas de affectUI que usa el sitio público, en un fichero y DESPUÉS de
@@ -12,11 +12,12 @@ import "../globals.css";
 // cabecera de affectui.css). Las que solo usa el panel las carga su layout, y
 // las del acceso (login, alta, invitación), cada una de sus páginas.
 import "@/vendor/affectui/affectui.css";
+import { AvisoCookies } from "@/app/components/AvisoCookies";
 import { EtiquetaGoogleAds } from "@/app/components/EtiquetaGoogleAds";
 import { MedicionWeb } from "@/app/components/MedicionWeb";
 import { NavBar } from "@/app/components/NavBar";
 import { SiteNavGate } from "@/app/components/SiteNavGate";
-import { SkipLink, SkipTarget } from "@/app/components/SkipLink";
+import { ID_DEL_CONTENIDO, SkipLink, SkipTarget } from "@/app/components/SkipLink";
 import { routing } from "@/i18n/routing";
 import { metaFor } from "@/i18n/locale-meta";
 import { MensajesCliente } from "@/i18n/MensajesCliente";
@@ -39,6 +40,8 @@ export default async function LocaleLayout({
   setRequestLocale(locale);
 
   const dir = metaFor(locale).dir;
+  const tc = await getTranslations({ locale, namespace: "cookieBanner" });
+  const textosDelAviso = { titulo: tc("title"), cuerpo: tc("body"), aceptar: tc("accept"), rechazar: tc("reject"), privacidad: tc("privacy") };
 
   return (
     // Superficie light-only, igual que bivelio.com: no hay script de tema, ni
@@ -76,6 +79,12 @@ export default async function LocaleLayout({
             <NavBar />
             <SkipTarget />
           </SiteNavGate>
+          {/* El aviso de cookies de publicidad (23-11): sin «Aceptar», Google
+              Ads no se carga (EtiquetaGoogleAds). Va aquí, tras la cabecera y
+              antes de la página, para que el teclado lo encuentre pronto
+              (abajo se pinta igual: es fijo). Los textos llegan del servidor:
+              el aviso no pide mensajes al cliente. */}
+          <AvisoCookies textos={textosDelAviso} idContenido={ID_DEL_CONTENIDO} />
           {children}
           {/* Medición de la WEB, no del paquete (que sigue sin telemetría):
               Vercel Web Analytics, sin cookies y en agregado — vistas de

@@ -1441,6 +1441,7 @@
       "terms": "Ketentuan layanan",
       "gdpr": "GDPR",
       "cookies": "Cookie",
+      "cookieSettings": "Pengaturan cookie",
       "billing": "Penagihan",
       "aiAct": "AI yang bertanggung jawab (AI Act)",
       "legalCenter": "Pusat hukum",
@@ -2522,8 +2523,10 @@
       "title": "Pengukuran di situs ini",
       "body": "Situs ini, bukan Perangkat Lunak, mengukur kunjungannya sendiri dengan <b>Vercel Web Analytics</b>. Yang dihitung adalah halaman yang dilihat dan tiga tindakan: menyalin perintah instalasi, mengikuti tautan ke GitHub, npm, atau PyPI, dan menuju pendaftaran. Pengukurannya agregat dan tanpa cookie, tanpa data pribadi, dan tanpa pelacakan lintas situs.",
       "limits": "Setiap tampilan halaman atau tindakan hanya membawa halaman dan bagiannya, situs asalmu sebagaimana dilaporkan browser-mu, serta package manager, tujuan tautan, atau paket yang dipilih; tidak pernah apa yang kamu ketik atau salin. Negara, browser, dan jenis perangkat disimpulkan Vercel dari permintaan itu sendiri. Alamat halaman dikirim tanpa parameter kueri atau token.",
-      "ads": "Situs ini juga memuat tag <b>Google Ads</b>, untuk mengukur iklan mana yang menghasilkan pendaftaran dan untuk pemasaran ulang. Tag ini memasang cookie iklan (seperti _gcl_au, dan _gcl_aw jika kamu datang dari iklan Google). Tag ini hanya berjalan di halaman publik (beranda, cara kerja, harga, tolok ukur, makalah, panduan, panduan migrasi, dan halaman ini) serta di halaman yang mengonfirmasi akun baru. Tag ini tidak pernah berjalan di halaman pendaftaran, masuk, kata sandi, undangan, atau halaman tidak ditemukan, maupun di dasbor: tautan dari halaman bertag ke salah satunya membukanya dengan pemuatan ulang, tanpa tag. Setelah halaman yang alamatnya membawa token atau kode (undangan atau kata sandi baru), atau halaman tidak ditemukan, tag ini tidak berjalan lagi selama sisa kunjungan di tab browser itu.",
-      "adsData": "Sebelum tag dimuat, semua parameter yang tidak dipakai situs dihapus dari alamat; yang tersisa hanya tujuan setelah pendaftaran, paket yang dipilih, dan ID klik milik Google sendiri. Setelah itu Google menerima alamat setiap halaman yang kamu buka di sini, halaman asalmu (saat halaman dimuat, sebagaimana dilaporkan browser-mu, dan dari situs ini hanya alamatnya; saat kamu berpindah halaman di sini tanpa memuat ulang, alamat lengkap halaman sebelumnya, termasuk tujuan, paket, atau ID klik jika ada), ID klik yang ditambahkan Google ke tautan iklan, dan, saat akun baru dikonfirmasi, ID internal akun agar pendaftaran tidak dihitung dua kali. Di halaman tempat tag ini berjalan, tag juga membaca apa yang kamu ketik: jika kamu mengetik alamat email, misalnya di formulir beranda untuk memesan panggilan, tag ini dapat mengirimkannya ke Google dalam bentuk hash ({hash})."
+      "ads": "Hanya jika kamu menerima cookie iklan, situs ini juga memuat tag <b>Google Ads</b>, untuk mengukur iklan mana yang menghasilkan pendaftaran dan untuk pemasaran ulang. Sebelum kamu memilih, dan jika kamu menolak, tag ini tidak dimuat. Tag ini memasang cookie iklan (seperti _gcl_au, dan _gcl_aw jika kamu datang dari iklan Google). Tag ini hanya berjalan di halaman publik (beranda, cara kerja, harga, tolok ukur, makalah, panduan migrasi, dan halaman ini) serta di halaman yang mengonfirmasi akun baru. Tag ini tidak pernah berjalan di halaman pendaftaran, masuk, kata sandi, undangan, atau halaman tidak ditemukan, maupun di dasbor: tautan dari halaman bertag ke salah satunya membukanya dengan pemuatan ulang, tanpa tag. Setelah halaman yang alamatnya membawa token atau kode (undangan atau kata sandi baru), atau halaman tidak ditemukan, tag ini tidak berjalan lagi selama sisa kunjungan di tab browser itu.",
+      "adsData": "Sebelum tag dimuat, semua parameter yang tidak dipakai situs dihapus dari alamat; yang tersisa hanya tujuan setelah pendaftaran, paket yang dipilih, dan ID klik milik Google sendiri. Setelah itu Google menerima alamat setiap halaman yang kamu buka di sini, halaman asalmu (saat halaman dimuat, sebagaimana dilaporkan browser-mu, dan dari situs ini hanya alamatnya; saat kamu berpindah halaman di sini tanpa memuat ulang, alamat lengkap halaman sebelumnya, termasuk tujuan, paket, atau ID klik jika ada), ID klik yang ditambahkan Google ke tautan iklan, dan, saat akun baru dikonfirmasi, ID internal akun agar pendaftaran tidak dihitung dua kali. Di halaman tempat tag ini berjalan, tag juga membaca apa yang kamu ketik: jika kamu mengetik alamat email, misalnya di formulir beranda untuk memesan panggilan, tag ini dapat mengirimkannya ke Google dalam bentuk hash ({hash}).",
+      "consent": "Pilihanmu disimpan selama enam bulan dalam cookie situs ini (bv_consent) yang hanya berisi pilihan dan tanggalnya. Kamu bisa mengubahnya kapan saja lewat “Pengaturan cookie” di bagian bawah halaman atau tombol di bawah ini. Jika kamu menarik persetujuan, tag langsung berhenti dan cookie _gcl_ yang dipasangnya di domain ini dihapus.",
+      "settings": "Pengaturan cookie"
     },
     "contact": "Pertanyaan dan permintaan tentang data ini: <mail>{email}</mail>.",
     "overview": {
@@ -2563,7 +2566,7 @@
         "retention": "Hanya hitungan agregat: tanpa cookie, tanpa data pribadi"
       },
       "ads": {
-        "data": "Tag Google Ads, di halaman publik dan halaman konfirmasi akun: cookie iklan, alamat setiap halaman, email yang diketik di sana (dalam bentuk hash), dan saat konfirmasi, ID akunmu",
+        "data": "Tag Google Ads, hanya dengan persetujuanmu, di halaman publik dan halaman konfirmasi akun: cookie iklan, alamat setiap halaman, email yang diketik di sana (dalam bentuk hash), dan saat konfirmasi, ID akunmu",
         "destination": "Google",
         "purpose": "Mengukur iklan mana yang menghasilkan pendaftaran, dan pemasaran ulang",
         "retention": "Disimpan Google; BiVelio melihat total konversi di Google Ads"
@@ -2577,6 +2580,13 @@
       "alt": "Ilustrasi: map biru berisi tiga dokumen di balik saku tembus pandang.",
       "caption": "Permintaan, respons, dan kredensialmu tidak dikirim ke BiVelio."
     }
+  },
+  "cookieBanner": {
+    "title": "Cookie iklan",
+    "body": "Jika kamu menerima, Google Ads memasang cookie untuk mengukur iklan mana yang menghasilkan pendaftaran dan untuk pemasaran ulang. Google Ads tidak dimuat sebelum kamu memilih. Penghitungan kunjungan kami sendiri tidak memakai cookie.",
+    "accept": "Terima",
+    "reject": "Tolak",
+    "privacy": "Detail privasi"
   },
   "docsPage": {
     "englishOnly": "Dokumen ini berbahasa Inggris. Hanya antarmuka bacanya yang diterjemahkan.",
