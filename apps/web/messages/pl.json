@@ -2519,9 +2519,11 @@
       "body": "Twój adres e-mail do logowania, Twoja organizacja i dane rozliczeniowe (płatności obsługuje Stripe) podlegają <policy>polityce prywatności BiVelio</policy>."
     },
     "website": {
-      "title": "Wizyty w tym serwisie",
+      "title": "Pomiar w tym serwisie",
       "body": "Ten serwis, a nie Oprogramowanie, mierzy własne wizyty za pomocą <b>Vercel Web Analytics</b>. Liczy wyświetlone strony i trzy działania: skopiowanie polecenia instalacji, kliknięcie linku do GitHub, npm lub PyPI oraz przejście do rejestracji. Pomiar jest zbiorczy i bez plików cookie, bez danych osobowych i bez śledzenia między witrynami.",
-      "limits": "Każde wyświetlenie lub działanie przekazuje tylko stronę i sekcję, witrynę, z której przychodzisz (tak jak podaje ją Twoja przeglądarka), oraz menedżer pakietów, cel lub plan; nigdy tego, co wpisujesz lub kopiujesz. Kraj, przeglądarkę i typ urządzenia Vercel ustala na podstawie samego żądania. Adresy stron są wysyłane bez parametrów zapytania i bez tokenów."
+      "limits": "Każde wyświetlenie lub działanie przekazuje tylko stronę i sekcję, witrynę, z której przychodzisz (tak jak podaje ją Twoja przeglądarka), oraz menedżer pakietów, cel lub plan; nigdy tego, co wpisujesz lub kopiujesz. Kraj, przeglądarkę i typ urządzenia Vercel ustala na podstawie samego żądania. Adresy stron są wysyłane bez parametrów zapytania i bez tokenów.",
+      "ads": "Serwis wczytuje też tag <b>Google Ads</b>, aby mierzyć, które reklamy prowadzą do rejestracji, oraz do remarketingu. W przeciwieństwie do Vercel Web Analytics zapisuje reklamowe pliki cookie (np. _gcl_au, a _gcl_aw, jeśli przychodzisz z reklamy Google). Nie wczytuje się na stronach zaproszenia, nowego hasła ani nieznalezionej strony, ani przez resztę wizyty, która najpierw przeszła przez jedną z nich.",
+      "adsData": "Google otrzymuje adres każdej strony, którą tu otwierasz: przy wczytaniu strony bez parametrów zapytania, fragmentu i tokenów, a z jej parametrami, gdy przechodzisz między stronami bez przeładowania (w tym serwisie zawierają tylko następną stronę, plan, okres lub stan). Otrzymuje też poprzednią stronę (tylko adres serwisu), informację o rozpoczęciu lub wysłaniu formularza (bez tego, co wpisujesz), identyfikator kliknięcia, który Google dodał do linku reklamy, a gdy nowe konto zostaje potwierdzone, wewnętrzny identyfikator konta, aby rejestracja nie została policzona dwa razy."
     },
     "contact": "Pytania i wnioski dotyczące tych danych: <mail>{email}</mail>.",
     "overview": {
@@ -2559,6 +2561,12 @@
         "destination": "Vercel Web Analytics",
         "purpose": "Liczenie wizyt i skopiowań polecenia instalacji",
         "retention": "Tylko zbiorcze liczby: bez plików cookie i danych osobowych"
+      },
+      "ads": {
+        "data": "Tag Google Ads: reklamowe pliki cookie i adres każdej strony",
+        "destination": "Google",
+        "purpose": "Pomiar, które reklamy prowadzą do rejestracji, i remarketing",
+        "retention": "Przechowuje Google; BiVelio widzi w Google Ads sumy konwersji"
       }
     },
     "fields": {

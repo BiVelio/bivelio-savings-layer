@@ -2519,9 +2519,11 @@
       "body": "Tu correo de acceso, tu organización y tus datos de facturación (los pagos los procesa Stripe) se rigen por la <policy>política de privacidad de BiVelio</policy>."
     },
     "website": {
-      "title": "Visitas a esta web",
+      "title": "Medición en esta web",
       "body": "Esta web, no el Software, mide sus propias visitas con <b>Vercel Web Analytics</b>. Cuenta las páginas vistas y tres acciones: copiar un comando de instalación, seguir un enlace a GitHub, npm o PyPI e ir al alta. La medición es agregada y sin cookies, sin datos personales y sin seguimiento entre sitios.",
-      "limits": "Cada vista o acción lleva solo la página y la sección, el sitio del que vienes tal como lo indica tu navegador, y el gestor de paquetes, el destino o el plan; nunca lo que escribes o copias. Vercel deduce el país, el navegador y el tipo de dispositivo de la propia petición. Las direcciones de las páginas se envían sin parámetros de consulta ni tokens."
+      "limits": "Cada vista o acción lleva solo la página y la sección, el sitio del que vienes tal como lo indica tu navegador, y el gestor de paquetes, el destino o el plan; nunca lo que escribes o copias. Vercel deduce el país, el navegador y el tipo de dispositivo de la propia petición. Las direcciones de las páginas se envían sin parámetros de consulta ni tokens.",
+      "ads": "La web también carga la etiqueta de <b>Google Ads</b>, para medir qué anuncios traen altas y para remarketing. A diferencia de Vercel Web Analytics, pone cookies de publicidad (como _gcl_au, y _gcl_aw si llegas desde un anuncio de Google). No se carga en las páginas de invitación, de nueva contraseña ni de página no encontrada, ni en el resto de una visita que pase antes por una de ellas.",
+      "adsData": "Google recibe la dirección de cada página que abres aquí: sin parámetros de consulta, fragmento ni tokens cuando la página se carga, y con sus parámetros cuando pasas de una página a otra sin recargar (en esta web solo llevan la página siguiente, el plan, el periodo o un estado). También recibe la página anterior (solo la dirección de la web), cuándo se empieza o se envía un formulario (no lo que escribes en él), el identificador de clic que Google añadió al enlace del anuncio y, cuando se confirma una cuenta nueva, un identificador interno de la cuenta para no contar el alta dos veces."
     },
     "contact": "Preguntas y solicitudes sobre estos datos: <mail>{email}</mail>.",
     "overview": {
@@ -2559,6 +2561,12 @@
         "destination": "Vercel Web Analytics",
         "purpose": "Contar visitas y copias del comando de instalación",
         "retention": "Solo recuentos agregados: sin cookies ni datos personales"
+      },
+      "ads": {
+        "data": "Etiqueta de Google Ads: cookies de publicidad y la dirección de cada página",
+        "destination": "Google",
+        "purpose": "Medir qué anuncios traen altas, y remarketing",
+        "retention": "Lo guarda Google; BiVelio ve los totales de conversiones en Google Ads"
       }
     },
     "fields": {

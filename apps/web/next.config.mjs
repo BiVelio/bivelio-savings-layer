@@ -105,10 +105,18 @@ const csp = [
   "upgrade-insecure-requests",
 ].join("; ");
 
+// REFERRER-POLICY `strict-origin` (23-11, revisión del PR #618). Antes era
+// `strict-origin-when-cross-origin`: hacia otros sitios, lo mismo (solo el
+// origen); DENTRO del sitio, la URL entera de la página anterior. Esa URL es el
+// `document.referrer` de la siguiente, y la etiqueta de Google Ads lo manda tal
+// cual (`dr` de /ccm/collect), así que llegar al panel desde una invitación
+// le entregaba el token (`/es/invitacion/bvi_…`), y desde un 404, lo que se
+// hubiera tecleado. Con `strict-origin` la página anterior es solo el origen,
+// dentro y fuera. Nada del sitio lee la cabecera Referer (lib/medicion/google-ads.ts).
 const securityHeaders = [
   { key: "X-Content-Type-Options", value: "nosniff" },
   { key: "X-Frame-Options", value: "DENY" },
-  { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+  { key: "Referrer-Policy", value: "strict-origin" },
   { key: "Strict-Transport-Security", value: "max-age=63072000; includeSubDomains; preload" },
   { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=(), interest-cohort=()" },
   { key: "Content-Security-Policy", value: csp },

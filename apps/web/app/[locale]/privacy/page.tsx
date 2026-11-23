@@ -70,6 +70,7 @@ const RESUMEN = [
   { clave: "verification", ancla: "verification" },
   { clave: "account", ancla: "account" },
   { clave: "website", ancla: "website" },
+  { clave: "ads", ancla: "website" },
 ] as const;
 
 /*
@@ -310,14 +311,18 @@ export default async function PrivacyPage({ params }: { params: Promise<{ locale
               </p>
             </section>
 
-            {/* LA MEDICIÓN DE ESTA WEB, no del Software: Vercel Web Analytics,
-                sin cookies y en agregado. Los eventos que dice el texto son los
-                de lib/medicion/eventos.ts (EVENTOS); si se añade uno, se dice
-                aquí en los 12 idiomas. */}
+            {/* LA MEDICIÓN DE ESTA WEB, no del Software. Vercel Web Analytics,
+                sin cookies y en agregado: los eventos que dice el texto son los
+                de lib/medicion/eventos.ts (EVENTOS). Y la etiqueta de Google
+                Ads, con cookies: dónde no se carga y qué recibe es lo que hace
+                lib/medicion/google-ads.ts, medido en Chrome. Si cambia una de
+                las dos cosas, se dice aquí en los 12 idiomas. */}
             <section className="terms-sec" aria-labelledby="website">
               <h2 id="website">{t("website.title")}</h2>
               <p>{t.rich("website.body", { b })}</p>
               <p>{t("website.limits")}</p>
+              <p>{t.rich("website.ads", { b })}</p>
+              <p>{t("website.adsData")}</p>
             </section>
 
             <p className="doc-arriba">
