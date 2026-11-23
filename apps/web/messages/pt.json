@@ -2521,7 +2521,7 @@
     "website": {
       "title": "Visitas a este site",
       "body": "Este site, e não o Software, mede as suas próprias visitas com o <b>Vercel Web Analytics</b>. Conta as páginas vistas e três ações: copiar um comando de instalação, seguir um link para o GitHub, npm ou PyPI e avançar para o registo. A medição é agregada e sem cookies, sem dados pessoais e sem rastreamento entre sites.",
-      "limits": "Cada ação leva apenas a página e a secção, mais o gestor de pacotes, o destino ou o plano; nunca o que escreve ou copia. Os endereços das páginas são enviados sem parâmetros de consulta nem tokens."
+      "limits": "Cada visualização ou ação leva apenas a página e a secção, o site de onde vem, tal como o seu navegador o indica, e o gestor de pacotes, o destino ou o plano; nunca o que escreve ou copia. A Vercel deduz o país, o navegador e o tipo de dispositivo a partir do próprio pedido. Os endereços das páginas são enviados sem parâmetros de consulta nem tokens."
     },
     "contact": "Perguntas e pedidos sobre estes dados: <mail>{email}</mail>.",
     "overview": {
