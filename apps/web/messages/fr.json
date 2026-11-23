@@ -1248,7 +1248,7 @@
       "proofTitle": "Mesuré contre un fournisseur réel",
       "compatibleCon": "Compatible avec",
       "compatibleNota": "Compatible ne veut pas dire mesuré. Le SDK fonctionne avec tout endpoint compatible avec l'API d'OpenAI, plus l'adaptateur natif d'Anthropic et l'adaptateur natif de Gemini (nouveau dans la {gemini}). Avec un chiffre d'économie sur le banc public, aujourd'hui seulement les modèles d'OpenAI et d'Anthropic ; Gemini n'a pas de chiffre d'économie. Ce qui est mesuré pour Gemini : {flash}, par son API native, dans le banc hebdomadaire en direct du {fecha} — les quatre batteries, sans aucune erreur de la couche et sans aucun refus mis en cache ni crédité comme économie. Ce banc vérifie que la couche ne casse rien et ne facture pas en trop ; il ne mesure pas une économie. Également mesuré : {pro}, via son API native, en deux passes partielles le {fechaPro} (son quota quotidien du fournisseur ne permet pas les quatre batteries en un jour) : les quatre batteries, là aussi sans aucune défaillance de la couche et sans aucun refus mis en cache ni compté comme économie.",
-      "ctaOss": "Installer l’open source"
+      "ctaOss": "Installer gratuitement"
     },
     "cascade": {
       "title": "L'exécution la moins chère l'emporte",
@@ -2361,7 +2361,7 @@
     },
     "access": {
       "code": "Voir le code",
-      "install": "Installer l’open source"
+      "install": "Installer gratuitement"
     },
     "modes": {
       "title": "Community et Cloud sont deux choses différentes",

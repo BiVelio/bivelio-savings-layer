@@ -106,17 +106,21 @@ export default async function PricingPage({ params }: { params: Promise<{ locale
             </span>
           </h1>
           <p className="lede">{t("lede")}</p>
+          {/* Tres salidas (dueño, 21-11-2026): instalar gratis (lo que ahorra,
+              sin clave) es la principal; Measure, la segunda; el código, la
+              tercera. Cada posición conserva sus clases: solo cambian texto,
+              destino y orden. */}
           <div className="precios-acciones">
-            <Link className="btn" href="/signup">
+            <Link className="btn" href="/#sdk-install">
+              {t("access.install")}
+            </Link>
+            <Link className="btn ghost" href="/signup">
               {t("cards.medir.cta")}
             </Link>
-            <a className="btn ghost" href={URL_DEL_CODIGO} target="_blank" rel="noopener noreferrer">
+            <a className="btn btn-quiet" href={URL_DEL_CODIGO} target="_blank" rel="noopener noreferrer">
               {t("access.code")}
               <span className="sr-only"> {tn("newTab")}</span>
             </a>
-            <Link className="btn btn-quiet" href="/#sdk-install">
-              {t("access.install")}
-            </Link>
           </div>
           <p className="terms-governs">{t.rich("governs", etiquetasQueRigen(locale))}</p>
         </section>
