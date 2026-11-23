@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import Script from "next/script";
 import { usePathname } from "next/navigation";
 
+import { CONSENTIMIENTO_CONCEDIDO, CONSENTIMIENTO_POR_DEFECTO } from "@/lib/consentimiento/consentimiento";
+import { useConsentimiento } from "@/lib/consentimiento/navegador";
 import {
   ID_GOOGLE_ADS,
   referenteParaGoogle,
@@ -48,6 +50,13 @@ function visitaVetada(): boolean {
  * dueño, 02-09). Los hosts van declarados en la CSP (next.config.mjs). Dónde
  * corre, qué se le da y por qué: lib/medicion/google-ads.ts.
  *
+ *  - SOLO CON CONSENTIMIENTO (modo básico, decisión del dueño del 23-11): hasta
+ *    que quien visita acepta en el aviso (AvisoCookies), y si rechaza, gtag no
+ *    se carga: ni peticiones a Google ni cookies `_gcl_*`. Al aceptar se carga
+ *    con el consentimiento por defecto DENEGADO y enseguida concedido para la
+ *    publicidad, las dos órdenes antes que cualquier otra (lib/consentimiento).
+ *    El veto por token corre igual sin consentimiento: una visita que pasó por
+ *    una invitación sigue vetada aunque acepte después.
  *  - Solo con una URL permitida (páginas públicas sin formularios y la
  *    confirmación del alta) y sin el veto de la visita.
  *  - Antes de cargarlo, la barra se queda solo con los parámetros que la web
@@ -69,6 +78,7 @@ function visitaVetada(): boolean {
  */
 export function EtiquetaGoogleAds() {
   const pathname = usePathname();
+  const consentimiento = useConsentimiento();
   const [cargar, setCargar] = useState(false);
 
   useEffect(() => {
@@ -88,7 +98,7 @@ export function EtiquetaGoogleAds() {
         w.gtag("set", ubicacion);
         return;
       }
-      if (visitaVetada() || !urlPermiteGoogleAds(location.href)) return;
+      if (consentimiento !== "granted" || visitaVetada() || !urlPermiteGoogleAds(location.href)) return;
       // Sin la limpieza calculada no hay gtag: «no se pudo» no es «ya estaba limpia».
       const limpia = urlSinParametrosSobrantes(location.href);
       if (limpia === null) return;
@@ -102,6 +112,8 @@ export function EtiquetaGoogleAds() {
       w.gtag = function gtag() {
         w.dataLayer!.push(arguments);
       };
+      w.gtag("consent", "default", CONSENTIMIENTO_POR_DEFECTO);
+      w.gtag("consent", "update", CONSENTIMIENTO_CONCEDIDO);
       w.gtag("js", new Date());
       // La página va SOLO en `set`: un `page_location` dado en `config` manda
       // sobre `set` y se quedaría pegado a la primera página del documento.
@@ -111,7 +123,7 @@ export function EtiquetaGoogleAds() {
     } catch {
       /* medir nunca rompe la página */
     }
-  }, [pathname]);
+  }, [pathname, consentimiento]);
 
   // Con gtag cargado, los enlaces del sitio hacia páginas donde no puede correr
   // se abren con una carga nueva: así gtag no llega a verlas (ni sus formularios).

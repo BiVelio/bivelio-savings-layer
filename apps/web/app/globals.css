@@ -4672,3 +4672,49 @@ a.ph-insignia:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px
 }
 /* ==== FIN SLOT PRODUCT HUNT ==== */
 
+
+/* ==== AVISO DE COOKIES (AvisoCookies.tsx, 23-11) ============================
+   Una tarjeta abajo, del mismo material que las del sitio (superficie blanca,
+   línea fina, sombra «pop»), sin velo: la página sigue usable. Los dos botones
+   son el mismo `.btn.ghost`, en una rejilla de dos columnas iguales: ninguno
+   pesa más que el otro. La web es solo clara (`color-scheme: light`), así que
+   el aviso también: con el sistema en oscuro se ve igual que el resto.
+   `--aviso-cookies-h` (lo pone el componente mientras se ve) reserva su alto
+   al pie de la página para que no tape lo último. */
+body { padding-bottom: var(--aviso-cookies-h, 0px); }
+.aviso-cookies {
+  position: fixed; z-index: 55;
+  inset-inline: 16px; bottom: max(16px, env(safe-area-inset-bottom));
+  margin-inline: auto; max-width: 760px;
+  display: flex; align-items: center; gap: 14px 20px;
+  padding: 14px 16px 14px 20px;
+  background: var(--surface); color: var(--ink);
+  border: 1px solid var(--line); border-radius: var(--r-card);
+  box-shadow: var(--shadow-pop);
+  font-family: var(--sans); font-size: 13.5px; line-height: 1.5;
+}
+.aviso-cookies:focus { outline: none; }
+.aviso-cookies:focus-visible { outline: 2px solid var(--brand); outline-offset: 3px; }
+.aviso-cookies-texto { flex: 1 1 auto; min-width: 0; }
+.aviso-cookies-t { margin: 0 0 2px; font-size: 14px; font-weight: 600; color: var(--ink); }
+.aviso-cookies-c { margin: 0; color: var(--ink-soft); overflow-wrap: anywhere; }
+.aviso-cookies-c a { color: var(--brand); font-weight: 500; text-underline-offset: 3px; }
+.aviso-cookies-acciones { flex: none; display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.aviso-cookies-acciones .btn { min-width: 108px; }
+@media (max-width: 640px) {
+  .aviso-cookies {
+    flex-direction: column; align-items: stretch; gap: 10px;
+    inset-inline: 10px; bottom: max(10px, env(safe-area-inset-bottom));
+    padding: 12px 14px; font-size: 13px; line-height: 1.45;
+  }
+  .aviso-cookies-t { font-size: 13.5px; }
+  .aviso-cookies-acciones .btn { min-width: 0; }
+}
+/* «Ajustes de cookies» en la fila final del pie: un botón con cara de enlace,
+   como sus vecinos. */
+.lp .ftr-bottom-links .ftr-ajustes-cookies {
+  padding: 0; border: 0; background: none; cursor: pointer;
+  font: inherit; color: var(--ink-soft);
+}
+.lp .ftr-bottom-links .ftr-ajustes-cookies:hover { color: var(--ink); }
+/* ==== FIN AVISO DE COOKIES ==== */

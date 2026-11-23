@@ -4,6 +4,7 @@ import { Link } from "@/i18n/navigation";
 
 import { corporateUrl, LEGAL_DOCS } from "@/lib/corporate";
 
+import { AjustesCookies } from "./AjustesCookies";
 import { NvidiaFooterCard } from "./NvidiaInception";
 import { elegirVariante } from "./franja-lanzamiento";
 import { InsigniaProductHunt } from "./ProductHunt";
@@ -251,6 +252,8 @@ export default async function Footer({ sinGitHub = false }: { sinGitHub?: boolea
               <a href={corporateUrl("/terms", locale)} target="_blank" rel="noopener noreferrer">
                 {t("footer.bottomTerms")}
               </a>
+              {/* Vuelve a abrir el aviso de cookies: cambiar o retirar el consentimiento. */}
+              <AjustesCookies className="ftr-ajustes-cookies" texto={t("footer.cookieSettings")} />
             </div>
           </div>
         </div>
