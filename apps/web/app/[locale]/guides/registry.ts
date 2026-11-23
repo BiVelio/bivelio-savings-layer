@@ -10,7 +10,8 @@ import { absolute } from "@/i18n/site";
  * Esta lista es la ÚNICA fuente de las guías publicadas: el índice, cada página,
  * el sitemap y el test leen de aquí. El texto de cada guía vive en
  * `content/<slug>.md`, en inglés y solo en inglés: las guías no tienen
- * traducción, así que `/<otro idioma>/guides` da 404 en vez de doce copias.
+ * traducción, y bajo cualquier prefijo de idioma se sirve la misma edición
+ * inglesa con el `canonical` en /en (como el paper).
  *
  * Reglas del contenido (las vigila guides.test.ts): cada cifra sale del README
  * o del banco publicado y dice de dónde; cada guía enlaza el banco y el
@@ -84,7 +85,7 @@ export const GUIAS: readonly Guia[] = [
   },
 ];
 
-/** El idioma de las guías: el único en que existen. */
+/** El idioma de las guías: el único en que están escritas, y el de su `canonical`. */
 export const IDIOMA_DE_LAS_GUIAS = "en";
 
 export function guiaPorSlug(slug: string): Guia | undefined {
@@ -97,8 +98,8 @@ export function urlDeGuia(slug?: string): string {
 }
 
 /**
- * Las entradas del sitemap: el índice y cada guía, una sola URL cada una (solo
- * existen en inglés), sin `hreflang` a otros idiomas que darían 404.
+ * Las entradas del sitemap: el índice y cada guía, una sola URL cada una, la
+ * inglesa (su `canonical`). Las copias bajo otros prefijos no se anuncian.
  */
 export function entradasDelSitemap(): MetadataRoute.Sitemap {
   return [

@@ -84,7 +84,7 @@ A bill that went down after a deploy can also be a quiet week. To attribute a sa
 
 [BV-SALA](https://github.com/BiVelio/bivelio-savings-layer) is an Apache-2.0 savings layer, free with no key. Every request returns a `SavingsReport` built for exactly this method:
 
-- `cost.basis` is `measured`, `reference`, `estimated` or `unmeasured`, using the definitions above.
+- `cost.basis` is `measured`, `reference`, `estimated` or `unmeasured`, using the definitions above. A repeat is valued by reference only when the call that ran went directly to OpenAI's, Anthropic's or Google's Gemini API; anywhere else it stays `estimated`.
 - The saving is kept in four separate ledgers that are never summed into one figure: `avoided_calls`, `eliminated_tokens`, `compressed_tokens` and `provider_cached_tokens`.
 - The provider's own cache discount is reported apart, in `report.nativeSavings`, and never counted as the layer's saving.
 - A stream that ends without its usage is `unmeasured`, never priced as zero.

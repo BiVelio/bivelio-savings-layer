@@ -1,8 +1,8 @@
-An OpenAI bill is the sum of a few numbers per request: input tokens, cached input tokens, output tokens (reasoning included) and the price of the model. Every way to reduce it moves one of those numbers. This guide goes through the levers in the order that usually pays off, says when each one does not, and shows how to prove each saving with OpenAI's own usage data rather than a projection. Most of it needs no tool at all; where the open-source BV-SALA SDK automates a lever, you will see how.
+An OpenAI bill is the sum of a few numbers per request: uncached input tokens, cached input tokens, cache writes (on GPT-5.6 and later), output tokens (reasoning included) and the price of the model. Every way to reduce it moves one of those numbers. This guide goes through the levers in the order that usually pays off, says when each one does not, and shows how to prove each saving with OpenAI's own usage data rather than a projection. Most of it needs no tool at all; where the open-source BV-SALA SDK automates a lever, you will see how.
 
 ## Start by measuring per request
 
-Before changing anything, log the `usage` block of every response with the feature or prompt template that produced it: `prompt_tokens`, `prompt_tokens_details.cached_tokens`, `completion_tokens` and, for reasoning models, `completion_tokens_details.reasoning_tokens`. Price each bucket with the rates from OpenAI's pricing page and keep the date you copied them. A week of this answers the only question that matters at the start: **which two or three features make most of the bill.** Optimise those; ignore the rest.
+Before changing anything, log the `usage` block of every response with the feature or prompt template that produced it: `prompt_tokens`, `prompt_tokens_details.cached_tokens`, `cache_write_tokens` where the model reports it, `completion_tokens` and, for reasoning models, `completion_tokens_details.reasoning_tokens`. Price each bucket with the rates from OpenAI's pricing page and keep the date you copied them. On GPT-5.6 and later, cache writes are a bucket of their own: OpenAI bills them at 1.25 times the uncached input rate with the default 30-minute lifetime, and 2.5 times with the 12-hour lifetime ([prompt caching guide](https://developers.openai.com/api/docs/guides/prompt-caching), read on 23 November 2026). Price them as plain input and you undercount. A week of this answers the only question that matters at the start: **which two or three features make most of the bill.** Optimise those; ignore the rest.
 
 ## 1. Do not pay twice for the same request
 
@@ -10,7 +10,7 @@ Retries, double clicks, nightly jobs that re-classify yesterday's items and para
 
 ## 2. Let OpenAI's prompt cache work
 
-Prompts of about 1,024 tokens or more are cached automatically, and cached input tokens are billed at a discount. The cache only matches from the first token, so it works only when the start of your prompt is identical between requests. Put instructions, tool definitions and examples first, and dates, user names and the question last. If `cached_tokens` is stuck at 0, see [why OpenAI's cached_tokens is 0](/en/guides/openai-prompt-caching-cached-tokens).
+Prompts of about 1,024 tokens or more are cached automatically, and cached input tokens are billed at a discount. On GPT-5.6 and later the cache is not free to fill: the part written to it is billed above the uncached rate, as described above, so a prompt that is written and never read again costs more than without the cache, and one that is read again soon costs much less. Earlier models charge nothing extra for writes. The cache only matches from the first token, so it works only when the start of your prompt is identical between requests. Put instructions, tool definitions and examples first, and dates, user names and the question last. If `cached_tokens` is stuck at 0, see [why OpenAI's cached_tokens is 0](/en/guides/openai-prompt-caching-cached-tokens).
 
 ## 3. Send work that can wait to the Batch API
 
@@ -35,7 +35,7 @@ Output tokens usually cost several times more than input tokens, and reasoning t
 - Send structured data compactly: pretty-printed JSON spends tokens on whitespace.
 - Retrieve the three relevant paragraphs instead of pasting the whole document.
 
-Be careful with the last two in long agent loops: editing the middle of a history that OpenAI has already cached makes everything after the edit bill again at full price. Shorten what is new, not what is cached.
+Be careful with the last two in long agent loops: editing the middle of a history that OpenAI has already cached makes everything after the edit bill again, at the uncached rate or, on GPT-5.6 and later, at the higher cache-write rate when it is cached again. Shorten what is new, not what is cached.
 
 ## How BV-SALA automates some of these
 
@@ -67,7 +67,7 @@ Two honest limits. First, traffic that never repeats saves about 0 % from the ca
 
 A saving you cannot check is a projection. For each lever:
 
-1. **Pick the counter it should move.** Caching and deduplication move the number of requests. Prompt caching moves `cached_tokens`. Batch moves the price. Model choice moves the price per token. Output control moves `completion_tokens`.
+1. **Pick the counter it should move.** Caching and deduplication move the number of requests. Prompt caching moves `cached_tokens`, and on GPT-5.6 and later `cache_write_tokens` too. Batch moves the price. Model choice moves the price per token. Output control moves `completion_tokens`.
 2. **Read that counter from OpenAI.** The [Usage API](https://developers.openai.com/api/reference/resources/organization/subresources/usage) returns requests, input, cached input and output tokens per day, model, project and key. The Costs endpoint and the usage dashboard give the money.
 3. **Compare like with like.** Same feature, same weekdays, before and after, or better, two arms of the same traffic at the same time. Look at tokens first and dollars second: dollars also move with prices.
 
