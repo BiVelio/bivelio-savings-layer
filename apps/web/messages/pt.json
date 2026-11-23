@@ -1232,8 +1232,8 @@
     }
   },
   "landing": {
-    "metaTitle": "BiVelio — Verifica a tua poupança em LLM",
-    "metaDescription": "Um SDK que faz a tua app pagar ao fornecedor de LLM só o que precisa, e um gateway que mede o teu agente de código. Open core Apache-2.0: sem chaves, sem conta, sem telemetria — medido com o contador do teu fornecedor; a nuvem opcional é uma taxa fixa sem comissão sobre a tua poupança.",
+    "metaTitle": "Reduz os custos da API de LLM — SDK e gateway open source | BiVelio",
+    "metaDescription": "Reduz os custos das API da OpenAI, Anthropic e Gemini onde o teu tráfego se repete: cache exata, deduplicação, cache de prompts. SDK e gateway local open source; grátis, sem chave.",
     "hero": {
       "title": "Otimiza as tuas chamadas a LLM.",
       "titleAccent": "Comprova cada poupança.",
@@ -1761,8 +1761,8 @@
     "arteAlt": "Ilustração: uma organização e o seu painel Savings Cloud já ligados, e um terceiro círculo que entra no espaço livre."
   },
   "benchmarksPage": {
-    "metaTitle": "Banco público A/B: meça-nos | BiVelio Savings Layer",
-    "metaDescription": "Quatro baterias públicas (GSM8K, BFCL, XSTest e MT-Bench), dois braços medidos com o contador de uso do próprio fornecedor, cada valor com o seu n, o seu intervalo e a sua data. O que economiza, o que não, e os bugs que o banco encontrou.",
+    "metaTitle": "Benchmarks de poupança em LLM: resultados A/B públicos · BiVelio Savings Layer",
+    "metaDescription": "Benchmarks A/B públicos da poupança na API de LLM (GSM8K, BFCL, XSTest, MT-Bench), medidos com o contador de uso do próprio fornecedor. Cada valor com o seu n, o seu intervalo e a sua data.",
     "eyebrow": "Banco público · reproduzível",
     "title": "O nosso banco A/B, em aberto.",
     "titleAccent": "Meça-nos.",
@@ -2114,8 +2114,8 @@
     "tableRegion": "Tabela com deslocamento: {title}"
   },
   "howItWorks": {
-    "metaTitle": "Onde se instala a economia? · BiVelio Savings Layer",
-    "metaDescription": "O BiVelio Savings Layer corre na tua infraestrutura, como SDK ou gateway local. Motor open source e Savings Cloud opcional: o que poupa, onde não e como se mede.",
+    "metaTitle": "Como reduzir os custos da API de LLM: SDK ou gateway local · BiVelio Savings Layer",
+    "metaDescription": "Reduz os custos da API de LLM com um SDK na tua app ou um gateway local para o teu agente de código; as chamadas continuam a ir diretas ao teu fornecedor. O que poupa, os seus limites e como se mede.",
     "eyebrow": "A camada, explicada · sem jargão",
     "title": "Onde se instala",
     "titleAccent": "a economia?",
@@ -2280,8 +2280,8 @@
     }
   },
   "pricingPage": {
-    "metaTitle": "Condições de preço · BiVelio Savings Layer",
-    "metaDescription": "O open core é grátis; Measure, Pro, Team e Enterprise são os planos de nuvem — nenhum leva comissão sobre a tua poupança. Números publicados a partir das mesmas constantes que faturam.",
+    "metaTitle": "Preços: motor open source grátis, nuvem com taxa fixa · BiVelio Savings Layer",
+    "metaDescription": "O motor open source que reduz os custos da API de LLM é grátis e sem chave. Savings Cloud: o Measure é grátis; Pro e Team são uma taxa fixa sem comissão sobre a tua poupança.",
     "eyebrow": "Preços publicados",
     "title": "Motor open source.",
     "titleAccent": "Controlo cloud para a tua equipa.",
