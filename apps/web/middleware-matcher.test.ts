@@ -66,8 +66,18 @@ describe("el matcher del middleware", () => {
       "/_vercel/insights/script.js",
       "/robots.txt",
       "/sitemap.xml",
+      "/llms.txt",
+      "/llms-full.txt",
     ]) {
       expect(pasaPorElMiddleware(ruta), ruta).toBe(false);
+    }
+  });
+
+  it("/llms.txt y /llms-full.txt se excluyen por su ruta exacta, no como prefijo (antes: 307 a /en/llms.txt, un 404)", () => {
+    // Con algo detrás ya no son el fichero: next-intl las lleva a /<idioma>/… y
+    // allí las atrapa la 404 propia, en vez de llegar a [locale] sin idioma.
+    for (const ruta of ["/llms.txt/x", "/llms.txtx", "/llms-full.txt/x", "/en/llms.txt"]) {
+      expect(pasaPorElMiddleware(ruta), ruta).toBe(true);
     }
   });
 
@@ -89,6 +99,12 @@ describe("el matcher del middleware", () => {
     recorrer(WEB + "app", []);
     expect(handlers.length).toBeGreaterThan(3);
     for (const h of handlers) {
+      // Un handler que ES un fichero de la raíz (app/llms.txt/route.ts) sirve
+      // solo esa ruta exacta: se comprueba esa, no un prefijo.
+      if (!h.includes("/") && h.includes(".")) {
+        expect(pasaPorElMiddleware(`/${h}`), `app/${h}/route.ts → /${h}`).toBe(false);
+        continue;
+      }
       const estatico = h.split("/").filter((s, i, a) => !a.slice(0, i + 1).some((x) => x.startsWith("[")));
       const ruta = `/${[...estatico, "x", "y.json"].join("/")}`;
       expect(pasaPorElMiddleware(ruta), `app/${h}/route.ts → ${ruta}`).toBe(false);

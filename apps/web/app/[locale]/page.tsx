@@ -20,6 +20,7 @@ import { CodeFrame, Recibo } from "@/app/components/ui";
 import { Marcado } from "@/app/components/campana/Marcado";
 import { MosaicoDeLlamadas } from "@/app/components/campana/MosaicoDeLlamadas";
 import { CursorGrid } from "@/app/components/CursorGrid";
+import { DatosEstructurados } from "@/app/components/DatosEstructurados";
 import { RevealObserver } from "@/app/components/RevealObserver";
 import { LogoProveedor } from "@/app/components/LogoProveedor";
 import { filaDeLaPalancaTtl, filasDelBancoEnVivo, type FilaMedida } from "@/app/components/MedidoEnVivo";
@@ -33,6 +34,7 @@ import { terminosDeLosPlanes } from "@/lib/legal/precios-publicados";
 import { LIMITES_MEDIR, VERSION_MINIMA_MEDIR } from "@/lib/license/medir-publico";
 import { BANCO_EN_VIVO } from "@/lib/portada/banco-en-vivo";
 import { textosDeTarjeta, type Traductor } from "@/lib/plataformas-de-lanzamiento";
+import { grafoDeLaPortada } from "@/lib/seo/datos-estructurados";
 import { PALANCA_TTL } from "@/lib/portada/palanca-ttl";
 import { GradientText } from "@/vendor/affectui/gradient-text";
 import panelDelBanco from "@/assets/portada/panel-del-banco.png";
@@ -224,6 +226,9 @@ export default async function LandingPage({ params }: { params: Promise<{ locale
 
   return (
     <div className="lp lp2">
+      {/* JSON-LD: el sitio, BiVelio Inc, el motor open source y las preguntas
+          de compra que esta página enseña (las mismas, con su texto exacto). */}
+      <DatosEstructurados datos={grafoDeLaPortada({ locale, descripcion: t("metaDescription"), preguntas: preguntasDeCompra })} />
       <CursorGrid />
       <RevealObserver />
       <EnlacesAntiguos />

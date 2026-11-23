@@ -36,7 +36,11 @@ export const config = {
   // next-intl, que lo lleva a `/<idioma>/…` y allí lo atrapa la 404 propia.
   // Si se añade algo a la raíz de `public/`, hay que añadirlo aquí:
   // middleware-matcher.test.ts lo comprueba leyendo la carpeta.
+  //
+  // `llms.txt` y `llms-full.txt` son route handlers de la raíz (app/llms.txt,
+  // app/llms-full.txt) y se excluyen por su ruta EXACTA, no como prefijo: así
+  // `/llms.txt/loquesea` sigue pasando por next-intl y acaba en la 404 propia.
   matcher: [
-    "/((?!(?:api|auth|licenses|benchmarks/data|_next|_vercel|brand|correo|data|fonts|measure|papers|vendor|videos)/|(?:robots\\.txt|sitemap\\.xml|logo-bivelio\\.png|nvidia-inception-program\\.svg)$).*)",
+    "/((?!(?:api|auth|licenses|benchmarks/data|_next|_vercel|brand|correo|data|fonts|measure|papers|vendor|videos)/|(?:robots\\.txt|sitemap\\.xml|llms\\.txt|llms-full\\.txt|logo-bivelio\\.png|nvidia-inception-program\\.svg)$).*)",
   ],
 };
