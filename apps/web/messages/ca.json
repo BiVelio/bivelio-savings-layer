@@ -2518,6 +2518,11 @@
       "title": "El teu compte en aquest web",
       "body": "El teu correu d'accés, la teva organització i les teves dades de facturació (els pagaments els processa Stripe) es regeixen per la <policy>política de privadesa de BiVelio</policy>."
     },
+    "website": {
+      "title": "Visites a aquest web",
+      "body": "Aquest web, no el Software, mesura les seves pròpies visites amb <b>Vercel Web Analytics</b>. Compta les pàgines vistes i tres accions: copiar una ordre d'instal·lació, seguir un enllaç a GitHub, npm o PyPI i anar a l'alta. La mesura és agregada i sense cookies, sense dades personals i sense seguiment entre llocs.",
+      "limits": "Cada acció porta només la pàgina i la secció, més el gestor de paquets, la destinació o el pla; mai el que escrius o copies. Les adreces de les pàgines s'envien sense paràmetres de consulta ni tokens."
+    },
     "contact": "Preguntes i sol·licituds sobre aquestes dades: <mail>{email}</mail>.",
     "overview": {
       "title": "En resum",
@@ -2548,6 +2553,12 @@
         "destination": "BiVelio; els pagaments els processa Stripe",
         "purpose": "El teu compte en aquest web",
         "retention": "Segons la política de privadesa de BiVelio"
+      },
+      "website": {
+        "data": "Visites a aquest web: pàgines vistes i tres accions",
+        "destination": "Vercel Web Analytics",
+        "purpose": "Comptar visites i còpies de l'ordre d'instal·lació",
+        "retention": "Només recomptes agregats: sense cookies ni dades personals"
       }
     },
     "fields": {

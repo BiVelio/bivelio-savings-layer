@@ -2518,6 +2518,11 @@
       "title": "Your account on this website",
       "body": "Your sign-in e-mail, your organization and your billing details (payments are processed by Stripe) are covered by <policy>BiVelio's privacy policy</policy>."
     },
+    "website": {
+      "title": "Visits to this website",
+      "body": "This website, not the Software, measures its own visits with <b>Vercel Web Analytics</b>. It counts pages viewed and three actions: copying an install command, following a link to GitHub, npm or PyPI, and going to sign-up. The measurement is aggregated and cookieless, with no personal data and no tracking across sites.",
+      "limits": "Each action carries only the page and section, plus the package manager, the destination or the plan; never what you type or copy. Page addresses are sent without query strings or tokens."
+    },
     "contact": "Questions and requests about this data: <mail>{email}</mail>.",
     "overview": {
       "title": "At a glance",
@@ -2548,6 +2553,12 @@
         "destination": "BiVelio; payments are processed by Stripe",
         "purpose": "Your account on this website",
         "retention": "Governed by BiVelio's privacy policy"
+      },
+      "website": {
+        "data": "Visits to this website: pages viewed and three actions",
+        "destination": "Vercel Web Analytics",
+        "purpose": "Counting visits and install-command copies",
+        "retention": "Aggregated counts only: no cookies, no personal data"
       }
     },
     "fields": {

@@ -247,7 +247,7 @@ export default async function LandingPage({ params }: { params: Promise<{ locale
             banco público— y, junto a ella, el recibo verificable de una
             medición, con su clase de evidencia y su procedencia. El h1 pinta
             desde el HTML, sin animación. */}
-        <section className="hero hero-panel">
+        <section className="hero hero-panel" data-medir-zona="hero">
           {/* FIRMA DE CAMPAÑA: el cielo cian de la pieza promocional, en la
               esquina superior derecha, detrás de todo (no es candidato a LCP;
               el contexto de apilamiento lo pone `.lp .hero.hero-panel`). */}
@@ -510,7 +510,7 @@ export default async function LandingPage({ params }: { params: Promise<{ locale
               </label>
             </div>
 
-            <div className="conecta-panel" data-panel="sdk">
+            <div className="conecta-panel" data-panel="sdk" data-medir-zona="sdk">
               <div className="conecta-texto">
                 <p className="conecta-k">{th("ways.sdk.kicker")}</p>
                 <h3>{th("ways.sdk.title")}</h3>
@@ -569,7 +569,7 @@ export default async function LandingPage({ params }: { params: Promise<{ locale
               </div>
             </div>
 
-            <div className="conecta-panel" data-panel="gateway">
+            <div className="conecta-panel" data-panel="gateway" data-medir-zona="gateway">
               <div className="conecta-texto">
                 <p className="conecta-k">{th("ways.gateway.kicker")}</p>
                 <h3>{th("ways.gateway.title")}</h3>
@@ -840,7 +840,7 @@ export default async function LandingPage({ params }: { params: Promise<{ locale
         {/* 8 · CIERRE — Measure + acceso al repositorio, sobre el Gradient
             Floor (tenue y casi quieto). La banda CTA del pie se retira en esta
             página desde la hoja de estilos: diría lo mismo dos veces. */}
-        <section className="cierre-sec">
+        <section className="cierre-sec" data-medir-zona="closing">
           <CierreMeasure
             titulo={t("closing.title")}
             acento={t("closing.titleAccent")}

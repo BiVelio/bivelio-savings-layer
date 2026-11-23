@@ -69,6 +69,7 @@ const RESUMEN = [
   { clave: "usage", ancla: "usage" },
   { clave: "verification", ancla: "verification" },
   { clave: "account", ancla: "account" },
+  { clave: "website", ancla: "website" },
 ] as const;
 
 /*
@@ -150,6 +151,7 @@ export default async function PrivacyPage({ params }: { params: Promise<{ locale
     { id: "retention", texto: t("retention.title") },
     { id: "use", texto: t("use.title") },
     { id: "account", texto: t("account.title") },
+    { id: "website", texto: t("website.title") },
   ];
 
   return (
@@ -306,6 +308,16 @@ export default async function PrivacyPage({ params }: { params: Promise<{ locale
                   email: PRIVACY_EMAIL,
                 })}
               </p>
+            </section>
+
+            {/* LA MEDICIÓN DE ESTA WEB, no del Software: Vercel Web Analytics,
+                sin cookies y en agregado. Los eventos que dice el texto son los
+                de lib/medicion/eventos.ts (EVENTOS); si se añade uno, se dice
+                aquí en los 12 idiomas. */}
+            <section className="terms-sec" aria-labelledby="website">
+              <h2 id="website">{t("website.title")}</h2>
+              <p>{t.rich("website.body", { b })}</p>
+              <p>{t("website.limits")}</p>
             </section>
 
             <p className="doc-arriba">
