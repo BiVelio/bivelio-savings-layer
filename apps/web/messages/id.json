@@ -2521,7 +2521,7 @@
     "website": {
       "title": "Kunjungan ke situs ini",
       "body": "Situs ini, bukan Perangkat Lunak, mengukur kunjungannya sendiri dengan <b>Vercel Web Analytics</b>. Yang dihitung adalah halaman yang dilihat dan tiga tindakan: menyalin perintah instalasi, mengikuti tautan ke GitHub, npm, atau PyPI, dan menuju pendaftaran. Pengukurannya agregat dan tanpa cookie, tanpa data pribadi, dan tanpa pelacakan lintas situs.",
-      "limits": "Setiap tindakan hanya membawa halaman dan bagiannya, serta package manager, tujuan tautan, atau paket yang dipilih; tidak pernah apa yang kamu ketik atau salin. Alamat halaman dikirim tanpa parameter kueri atau token."
+      "limits": "Setiap tampilan halaman atau tindakan hanya membawa halaman dan bagiannya, situs asalmu sebagaimana dilaporkan browser-mu, serta package manager, tujuan tautan, atau paket yang dipilih; tidak pernah apa yang kamu ketik atau salin. Negara, browser, dan jenis perangkat disimpulkan Vercel dari permintaan itu sendiri. Alamat halaman dikirim tanpa parameter kueri atau token."
     },
     "contact": "Pertanyaan dan permintaan tentang data ini: <mail>{email}</mail>.",
     "overview": {

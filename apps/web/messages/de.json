@@ -2521,7 +2521,7 @@
     "website": {
       "title": "Besuche auf dieser Website",
       "body": "Diese Website, nicht die Software, misst ihre eigenen Besuche mit <b>Vercel Web Analytics</b>. Gezählt werden aufgerufene Seiten und drei Aktionen: einen Installationsbefehl kopieren, einem Link zu GitHub, npm oder PyPI folgen und zur Registrierung wechseln. Die Messung ist aggregiert und ohne Cookies, ohne personenbezogene Daten und ohne seitenübergreifendes Tracking.",
-      "limits": "Jede Aktion übermittelt nur Seite und Abschnitt sowie den Paketmanager, das Ziel oder den Tarif; nie, was du eingibst oder kopierst. Seitenadressen werden ohne Query-Parameter und ohne Tokens gesendet."
+      "limits": "Jeder Seitenaufruf und jede Aktion übermittelt nur Seite und Abschnitt, die Website, von der du kommst, so wie dein Browser sie angibt, sowie den Paketmanager, das Ziel oder den Tarif; nie, was du eingibst oder kopierst. Land, Browser und Gerätetyp leitet Vercel aus der Anfrage selbst ab. Seitenadressen werden ohne Query-Parameter und ohne Tokens gesendet."
     },
     "contact": "Fragen und Anfragen zu diesen Daten: <mail>{email}</mail>.",
     "overview": {

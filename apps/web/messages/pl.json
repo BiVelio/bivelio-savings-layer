@@ -2521,7 +2521,7 @@
     "website": {
       "title": "Wizyty w tym serwisie",
       "body": "Ten serwis, a nie Oprogramowanie, mierzy własne wizyty za pomocą <b>Vercel Web Analytics</b>. Liczy wyświetlone strony i trzy działania: skopiowanie polecenia instalacji, kliknięcie linku do GitHub, npm lub PyPI oraz przejście do rejestracji. Pomiar jest zbiorczy i bez plików cookie, bez danych osobowych i bez śledzenia między witrynami.",
-      "limits": "Każde działanie przekazuje tylko stronę i sekcję oraz menedżer pakietów, cel lub plan; nigdy tego, co wpisujesz lub kopiujesz. Adresy stron są wysyłane bez parametrów zapytania i bez tokenów."
+      "limits": "Każde wyświetlenie lub działanie przekazuje tylko stronę i sekcję, witrynę, z której przychodzisz (tak jak podaje ją Twoja przeglądarka), oraz menedżer pakietów, cel lub plan; nigdy tego, co wpisujesz lub kopiujesz. Kraj, przeglądarkę i typ urządzenia Vercel ustala na podstawie samego żądania. Adresy stron są wysyłane bez parametrów zapytania i bez tokenów."
     },
     "contact": "Pytania i wnioski dotyczące tych danych: <mail>{email}</mail>.",
     "overview": {

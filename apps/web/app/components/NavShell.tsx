@@ -26,7 +26,7 @@ function useDesplazado(umbral = 4): boolean {
 export function NavShell({ children }: { children: ReactNode }) {
   const desplazado = useDesplazado();
   return (
-    <header className="site-nav" data-scrolled={desplazado ? "true" : undefined}>
+    <header className="site-nav" data-medir-zona="nav" data-scrolled={desplazado ? "true" : undefined}>
       {children}
     </header>
   );

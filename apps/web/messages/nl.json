@@ -2521,7 +2521,7 @@
     "website": {
       "title": "Bezoeken aan deze website",
       "body": "Deze website, niet de Software, meet haar eigen bezoeken met <b>Vercel Web Analytics</b>. Ze telt bekeken pagina's en drie acties: een installatieopdracht kopiëren, een link naar GitHub, npm of PyPI volgen en naar de aanmelding gaan. De meting is geaggregeerd en zonder cookies, zonder persoonsgegevens en zonder tracking over sites heen.",
-      "limits": "Elke actie bevat alleen de pagina en de sectie, plus de pakketbeheerder, de bestemming of het abonnement; nooit wat je typt of kopieert. Pagina-adressen worden verstuurd zonder queryparameters of tokens."
+      "limits": "Elke paginaweergave of actie bevat alleen de pagina en de sectie, de site waar je vandaan komt zoals je browser die doorgeeft, en de pakketbeheerder, de bestemming of het abonnement; nooit wat je typt of kopieert. Land, browser en apparaattype leidt Vercel af uit het verzoek zelf. Pagina-adressen worden verstuurd zonder queryparameters of tokens."
     },
     "contact": "Vragen en verzoeken over deze gegevens: <mail>{email}</mail>.",
     "overview": {
