@@ -5,7 +5,7 @@ Tous les outils de suivi des coûts LLM affichent un chiffre d'économies. Rares
 L'écart vient presque toujours de l'une de ces causes :
 
 - **Le prix catalogue contre votre prix.** Les outils valorisent les tokens aux prix catalogue publics. Votre facture peut inclure des remises, des contrats d'engagement, des tarifs régionaux ou liés à la résidence des données, des niveaux de priorité et des taxes.
-- **Des estimations présentées comme des mesures.** Si un outil a retiré 2,000 tokens d'un prompt, le fournisseur ne les a jamais comptés. Le chiffre « économisé » est le propre décompte de l'outil, fait avec un tokenizer qui n'est peut-être pas celui du fournisseur.
+- **Des estimations présentées comme des mesures.** Si un outil a retiré 2 000 tokens d'un prompt, le fournisseur ne les a jamais comptés. Le chiffre « économisé » est le propre décompte de l'outil, fait avec un tokenizer qui n'est peut-être pas celui du fournisseur.
 - **La remise du fournisseur revendiquée par l'outil.** Le prompt caching d'OpenAI, d'Anthropic, de DeepSeek ou de Gemini est facturé par le fournisseur à un tarif réduit. Un outil qui compte cette remise comme sa propre économie gonfle son chiffre.
 - **Du trafic que l'outil n'a jamais vu.** Les appels d'un autre service, le script d'un collègue, les requêtes annexes d'un agent de code ou un job batch apparaissent tous sur la facture, et pas dans l'outil.
 - **L'usage manquant.** Une requête en streaming privée de son événement d'usage final n'a aucun nombre de tokens. La compter silencieusement comme zéro fait paraître moins cher tout ce qui en découle.
@@ -124,6 +124,6 @@ Appliquez ensuite l'étape 2 ci-dessus à ces totaux : la dépense `measured` de
 
 ## La même méthode, appliquée en public
 
-Le projet publie ses propres passages A/B sur la [page du banc public](/fr/benchmarks) : deux bras sur les mêmes requêtes, l'un directement vers le fournisseur et l'autre à travers la couche, tous deux mesurés avec le compteur d'usage du fournisseur lui-même, avec des intervalles à 95 %, ainsi que la date et la version de chaque passage. Les résultats qui n'ont rien économisé, ou qui ont coûté plus cher, sont sur la même page. La méthode complète, l'estimateur et ses limites sont dans [l'article de recherche](/fr/paper).
+Le projet publie ses propres passages A/B sur la [page du banc public](/fr/benchmarks) : deux bras sur les mêmes requêtes, l'un directement vers le fournisseur et l'autre à travers la couche, tous deux mesurés avec le compteur d'usage du fournisseur lui-même, avec des intervalles à 95 %, ainsi que la date et la version de chaque passage. Les résultats qui n'ont rien économisé, ou qui ont coûté plus cher, sont sur la même page. La méthode complète, l'estimateur et ses limites sont dans [l'article de recherche](/fr/paper).
 
 Pour les détails propres à chaque fournisseur, voyez [pourquoi cached_tokens vaut 0 chez OpenAI](/fr/guides/openai-prompt-caching-cached-tokens), [pourquoi le prompt caching de Claude ne fonctionne pas](/fr/guides/claude-prompt-caching-not-working) et [mesurer le coût de Claude Code requête par requête](/fr/guides/claude-code-cost-per-request). Le code et les rapports bruts sont sur [GitHub](https://github.com/BiVelio/bivelio-savings-layer).

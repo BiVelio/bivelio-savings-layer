@@ -5,7 +5,7 @@ Totes les eines de costos de LLM mostren una xifra d'estalvi. Poques mostren com
 La diferència gairebé sempre ve d'una d'aquestes causes:
 
 - **Preu de llista davant del teu preu.** Les eines valoren els tokens als preus de llista públics. La teva factura pot incloure descomptes, contractes de consum compromès, tarifes regionals o de residència de dades, nivells de prioritat i impostos.
-- **Estimacions presentades com a mesures.** Si una eina ha tret 2,000 tokens d'un prompt, el proveïdor no els ha comptat mai. La xifra «estalviada» és el recompte de la mateixa eina, fet amb un tokenitzador que pot no ser el del proveïdor.
+- **Estimacions presentades com a mesures.** Si una eina ha tret 2.000 tokens d'un prompt, el proveïdor no els ha comptat mai. La xifra «estalviada» és el recompte de la mateixa eina, fet amb un tokenitzador que pot no ser el del proveïdor.
 - **El descompte del proveïdor atribuït a l'eina.** La memòria cau de prompts d'OpenAI, Anthropic, DeepSeek o Gemini la factura el proveïdor a una tarifa més baixa. Una eina que compta aquest descompte com a estalvi propi n'infla la xifra.
 - **Trànsit que l'eina no ha vist mai.** Les crides d'un altre servei, l'script d'un company, les peticions secundàries d'un agent de programació o un procés batch apareixen totes a la factura i no a l'eina.
 - **Ús que no arriba.** Una petició en streaming sense el seu esdeveniment final d'ús no té cap recompte de tokens. Comptar-la com a zero sense avisar fa que tot el que ve després sembli més barat.
@@ -124,6 +124,6 @@ Després aplica el pas 2 de més amunt a aquests totals: la despesa `measured` d
 
 ## El mateix mètode, aplicat en públic
 
-El projecte publica les seves pròpies execucions A/B a la [pàgina del banc públic](/ca/benchmarks): dos braços amb les mateixes peticions, un directe al proveïdor i un altre a través de la capa, tots dos mesurats amb el comptador d'ús del mateix proveïdor, amb intervals del 95 % i la data i la versió de cada execució. Els resultats que no van estalviar res, o que van costar més, són a la mateixa pàgina. El mètode complet, l'estimador i els seus límits són al [paper](/ca/paper).
+El projecte publica les seves pròpies execucions A/B a la [pàgina del banc públic](/ca/benchmarks): dos braços amb les mateixes peticions, un directe al proveïdor i un altre a través de la capa, tots dos mesurats amb el comptador d'ús del mateix proveïdor, amb intervals del 95 % i la data i la versió de cada execució. Els resultats que no van estalviar res, o que van costar més, són a la mateixa pàgina. El mètode complet, l'estimador i els seus límits són al [paper](/ca/paper).
 
 Per als detalls de cada proveïdor, consulta [per què cached_tokens és 0 a OpenAI](/ca/guides/openai-prompt-caching-cached-tokens), [per què no funciona el prompt caching de Claude](/ca/guides/claude-prompt-caching-not-working) i [com mesurar el cost de Claude Code per petició](/ca/guides/claude-code-cost-per-request). El codi i els informes en brut són a [GitHub](https://github.com/BiVelio/bivelio-savings-layer).

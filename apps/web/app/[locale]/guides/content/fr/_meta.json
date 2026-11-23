@@ -12,7 +12,7 @@
     },
     "claude-prompt-caching-not-working": {
       "title": "Prompt caching de Claude qui ne marche pas ? Pourquoi les lectures restent à 0",
-      "description": "Pourquoi cache_read_input_tokens reste à 0 sur Claude, trouver l'octet qui casse le préfixe et vérifier le taux de succès avec les chiffres d'usage d'Anthropic."
+      "description": "Pourquoi cache_read_input_tokens reste à 0 sur Claude, comment trouver l'octet qui casse le préfixe et vérifier le taux de succès avec l'usage d'Anthropic."
     },
     "claude-code-cost-per-request": {
       "title": "Combien coûte Claude Code ? Mesurez-le requête par requête",

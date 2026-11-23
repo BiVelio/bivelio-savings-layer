@@ -22,8 +22,8 @@ I tre schemi ti dicono dove guardare:
 2. L'ordine è **tool, poi system, poi messaggi**. Una modifica all'elenco dei tool invalida il system prompt e i messaggi successivi.
 3. Puoi mettere fino a **quattro breakpoint**, e da ciascuno l'API guarda indietro di un numero limitato di blocchi alla ricerca di una voce precedente (20 nel momento in cui scriviamo).
 4. Le voci durano **cinque minuti** per impostazione predefinita, e la durata si rinnova a ogni hit. Con `"ttl": "1h"` è disponibile una durata di un'ora.
-5. Scrivere costa più che leggere: una scrittura da cinque minuti è fatturata 1.25 volte il prezzo di input e una da un'ora 2 volte; una lettura costa una piccola frazione del prezzo di input (0.1 volte sulla maggior parte dei modelli). Controlla la [pagina dei prezzi di Anthropic](https://platform.claude.com/docs/en/about-claude/pricing) per il tuo modello.
-6. Esiste una **lunghezza minima per la cache** che dipende dal modello, da 512 a 4,096 token. Sotto quella soglia la richiesta semplicemente non va in cache, senza alcun errore.
+5. Scrivere costa più che leggere: una scrittura da cinque minuti è fatturata 1,25 volte il prezzo di input e una da un'ora 2 volte; una lettura costa una piccola frazione del prezzo di input (0,1 volte sulla maggior parte dei modelli). Controlla la [pagina dei prezzi di Anthropic](https://platform.claude.com/docs/en/about-claude/pricing) per il tuo modello.
+6. Esiste una **lunghezza minima per la cache** che dipende dal modello, da 512 a 4096 token. Sotto quella soglia la richiesta semplicemente non va in cache, senza alcun errore.
 
 Tutto questo è nella [documentazione di Anthropic sul prompt caching](https://platform.claude.com/docs/en/build-with-claude/prompt-caching), la fonte di cui fidarsi quando un numero cambia.
 
@@ -79,7 +79,7 @@ export function cacheHitRate(u: ClaudeUsage): number {
 
 ## Al tuo traffico conviene la cache?
 
-Dato che le scritture costano più dell'input normale, mettere in cache è una scommessa: che il prefisso venga riletto prima di scadere. Con la durata di cinque minuti basta una sola lettura a ripagare la scrittura. Un prefisso scritto e mai letto costa circa il 25 % in più che inviarlo senza marcatore. Ecco perché «mettere `cache_control` ovunque» non è un'impostazione predefinita sicura: conviene sul traffico di chat e di agenti che si ripresenta nel giro di minuti, e ci perde sulle richieste isolate o sui prompt che cambiano ogni volta.
+Dato che le scritture costano più dell'input normale, mettere in cache è una scommessa: che il prefisso venga riletto prima di scadere. Con la durata di cinque minuti basta una sola lettura a ripagare la scrittura. Un prefisso scritto e mai letto costa circa il 25% in più che inviarlo senza marcatore. Ecco perché «mettere `cache_control` ovunque» non è un'impostazione predefinita sicura: conviene sul traffico di chat e di agenti che si ripresenta nel giro di minuti, e ci perde sulle richieste isolate o sui prompt che cambiano ogni volta.
 
 ## Come la gestisce BV-SALA
 
@@ -110,7 +110,7 @@ console.log(report.nativeSavings?.netUsd); // read discount minus write premium;
 
 `report.nativeSavings` è lo sconto di Anthropic, mostrato a parte: il layer non lo conta mai come risparmio proprio, così il tuo report torna con la fattura.
 
-**Il caso in cui conviene disattivare la marcatura.** Senza chiave, se il tuo system prompt cambia a ogni richiesta (un timestamp, un id utente), o se le tue chiamate sono a più di cinque minuti di distanza in processi nuovi, la marcatura predefinita scrive una voce di cache che nessuno legge, e il README dichiara che questo costa circa il 20 % in più che senza layer. Sposta ciò che cambia nel messaggio dell'utente, oppure disattiva la marcatura:
+**Il caso in cui conviene disattivare la marcatura.** Senza chiave, se il tuo system prompt cambia a ogni richiesta (un timestamp, un id utente), o se le tue chiamate sono a più di cinque minuti di distanza in processi nuovi, la marcatura predefinita scrive una voce di cache che nessuno legge, e il README dichiara che questo costa circa il 20% in più che senza layer. Sposta ciò che cambia nel messaggio dell'utente, oppure disattiva la marcatura:
 
 ```ts
 import { createSavingsLayer, AnthropicProvider } from "@bivelio/savings-layer";
@@ -136,7 +136,7 @@ export const reply = await layer.generate({
 });
 ```
 
-Quel riordino opzionale è la leva dietro un test esplorativo dal vivo pubblicato nel README: su `claude-haiku-4-5`, in una sequenza costruita in cui un timestamp avvelenava la cache, ha portato la percentuale di hit dallo 0 % al 95 % e ha ridotto il costo per richiesta dell'82.76 %, rispetto allo stesso layer senza l'opzione, con 20 richieste per braccio, misurato con la versione 1.2.0 il 15 novembre 2026. È un test piccolo e costruito, non una previsione per il tuo traffico.
+Quel riordino opzionale è la leva dietro un test esplorativo dal vivo pubblicato nel README: su `claude-haiku-4-5`, in una sequenza costruita in cui un timestamp avvelenava la cache, ha portato la percentuale di hit dallo 0% al 95% e ha ridotto il costo per richiesta dell'82,76%, rispetto allo stesso layer senza l'opzione, con 20 richieste per braccio, misurato con la versione 1.2.0 il 15 novembre 2026. È un test piccolo e costruito, non una previsione per il tuo traffico.
 
 ## Verifica con i numeri di Anthropic
 

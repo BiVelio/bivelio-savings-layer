@@ -5,7 +5,7 @@ Todas las herramientas de costes de LLM enseñan una cifra de ahorro. Pocas ense
 La diferencia casi siempre viene de una de estas causas:
 
 - **Precio de lista frente a tu precio.** Las herramientas valoran los tokens a los precios de lista públicos. Tu factura puede incluir descuentos, contratos de consumo comprometido, tarifas regionales o de residencia de datos, niveles de prioridad e impuestos.
-- **Estimaciones presentadas como mediciones.** Si una herramienta quitó 2,000 tokens de un prompt, el proveedor nunca los contó. La cifra «ahorrada» es el recuento de la propia herramienta, hecho con un tokenizador que puede no ser el del proveedor.
+- **Estimaciones presentadas como mediciones.** Si una herramienta quitó 2000 tokens de un prompt, el proveedor nunca los contó. La cifra «ahorrada» es el recuento de la propia herramienta, hecho con un tokenizador que puede no ser el del proveedor.
 - **El descuento del proveedor atribuido a la herramienta.** La caché de prompts de OpenAI, Anthropic, DeepSeek o Gemini la factura el proveedor a una tarifa más baja. Una herramienta que cuenta ese descuento como ahorro propio infla su cifra.
 - **Tráfico que la herramienta nunca vio.** Las llamadas de otro servicio, el script de un compañero, las peticiones secundarias de un agente de programación o un proceso batch aparecen todas en la factura y no en la herramienta.
 - **Uso que no llega.** Una petición en streaming sin su evento final de uso no tiene ningún recuento de tokens. Contarla como cero sin avisar hace que todo lo que viene después parezca más barato.
@@ -124,6 +124,6 @@ Después aplica el paso 2 de arriba a estos totales: el gasto `measured` de la c
 
 ## El mismo método, aplicado en público
 
-El proyecto publica sus propias ejecuciones A/B en la [página del banco público](/es/benchmarks): dos brazos con las mismas peticiones, uno directo al proveedor y otro a través de la capa, ambos medidos con el contador de uso del propio proveedor, con intervalos del 95 % y la fecha y la versión de cada ejecución. Los resultados que no ahorraron nada, o que costaron más, están en la misma página. El método completo, el estimador y sus límites están en [el paper](/es/paper).
+El proyecto publica sus propias ejecuciones A/B en la [página del banco público](/es/benchmarks): dos brazos con las mismas peticiones, uno directo al proveedor y otro a través de la capa, ambos medidos con el contador de uso del propio proveedor, con intervalos del 95 % y la fecha y la versión de cada ejecución. Los resultados que no ahorraron nada, o que costaron más, están en la misma página. El método completo, el estimador y sus límites están en [el paper](/es/paper).
 
 Para los detalles de cada proveedor, consulta [por qué cached_tokens es 0 en OpenAI](/es/guides/openai-prompt-caching-cached-tokens), [por qué no funciona el prompt caching de Claude](/es/guides/claude-prompt-caching-not-working) y [cómo medir el coste de Claude Code por petición](/es/guides/claude-code-cost-per-request). El código y los informes en bruto están en [GitHub](https://github.com/BiVelio/bivelio-savings-layer).

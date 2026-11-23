@@ -11,7 +11,7 @@ Her yanıt, girdi token'larından kaçının önbellekten geldiğini söyler:
 
 ## cached_tokens neden 0
 
-1. **Prompt çok kısa.** Önbelleğe alma yaklaşık 1,024 prompt token'ında başlar; tam eşik ve önbellekten gelen sayının nasıl yuvarlandığı modele bağlıdır. 600 token'lık bir sistem prompt'u ve kısa bir soru önbelleğe asla isabet etmez ve hiçbir şey size bunu söylemez.
+1. **Prompt çok kısa.** Önbelleğe alma yaklaşık 1.024 prompt token'ında başlar; tam eşik ve önbellekten gelen sayının nasıl yuvarlandığı modele bağlıdır. 600 token'lık bir sistem prompt'u ve kısa bir soru önbelleğe asla isabet etmez ve hiçbir şey size bunu söylemez.
 2. **Prompt'un başı değişiyor.** Önbellek en ilk token'dan itibaren eşleştirir. İlk mesajdaki bir zaman damgası, bir istek kimliği ya da kullanıcının adı, her isteği ilk token'dan itibaren benzersiz kılar. Araçlar, görseller ve yanıt biçimleri de önekin parçasıdır; bu yüzden farklı sırayla listelenen araçlar ya da farklı serileştirilen bir şema eşleşmeyi bozar.
 3. **Kayıt önbellekten çıkarıldı.** Kayıtlar son kullanımdan sonra kısa bir süre tutulur; trafik sakinken genellikle birkaç dakika. Aralarında bir saat olan istekler nadiren isabet eder.
 4. **Trafik dağınık.** İstekler, prompt'un başının bir hash'ine göre yönlendirilir. Aynı öneke sahip çok yüksek hacim, kaydı tutmayan başka makinelere taşar. OpenAI'ın `prompt_cache_key` parametresi ortak öneki paylaşan istekleri gruplar; rehberin açıkladığı gibi kullanıcı başına değil prompt şablonu başına bir anahtar kullanın ve her anahtarın istek hızını makul düzeyde tutun.
@@ -73,7 +73,7 @@ export function cachedShare(u: OpenAIUsage): number {
 }
 ```
 
-Bunu prompt şablonuna göre gruplayın. Prompt'ları 1,024 token'ın üzerinde olduğu halde payı 0 % seviyesinde kalan bir şablonun başına yakın bir yerde değişen bir şey vardır: İki isteği loglayın ve [bu rehberin Claude sürümünde](/tr/guides/claude-prompt-caching-not-working#önbelleğinizi-bozan-baytı-bulun) gösterildiği gibi karakter karakter karşılaştırın.
+Bunu prompt şablonuna göre gruplayın. Prompt'ları 1.024 token'ın üzerinde olduğu halde payı %0 seviyesinde kalan bir şablonun başına yakın bir yerde değişen bir şey vardır: İki isteği loglayın ve [bu rehberin Claude sürümünde](/tr/guides/claude-prompt-caching-not-working#önbelleğinizi-bozan-baytı-bulun) gösterildiği gibi karakter karakter karşılaştırın.
 
 ## BV-SALA nasıl yardımcı olur
 

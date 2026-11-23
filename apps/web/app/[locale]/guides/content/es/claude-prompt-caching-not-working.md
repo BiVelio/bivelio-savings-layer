@@ -22,8 +22,8 @@ Los tres patrones te dicen dónde mirar:
 2. El orden es **tools, luego system, luego messages**. Un cambio en la lista de herramientas invalida el prompt de sistema y los mensajes que vienen detrás.
 3. Puedes colocar hasta **cuatro puntos de corte**, y desde cada uno la API busca hacia atrás una entrada anterior en un número limitado de bloques (20 en el momento de escribir esto).
 4. Las entradas duran **cinco minutos** por defecto y se renuevan con cada acierto. Con `"ttl": "1h"` tienes una duración de una hora.
-5. Escribir cuesta más que leer: una escritura de cinco minutos se factura a 1.25 veces el precio de entrada y una de una hora a 2 veces; una lectura cuesta una pequeña fracción del precio de entrada (0.1 veces en la mayoría de los modelos). Consulta la [página de precios de Anthropic](https://platform.claude.com/docs/en/about-claude/pricing) para tu modelo.
-6. Hay una **longitud mínima cacheable** que depende del modelo, de 512 a 4,096 tokens. Por debajo, la petición simplemente no se guarda en caché, sin ningún error.
+5. Escribir cuesta más que leer: una escritura de cinco minutos se factura a 1,25 veces el precio de entrada y una de una hora a 2 veces; una lectura cuesta una pequeña fracción del precio de entrada (0,1 veces en la mayoría de los modelos). Consulta la [página de precios de Anthropic](https://platform.claude.com/docs/en/about-claude/pricing) para tu modelo.
+6. Hay una **longitud mínima cacheable** que depende del modelo, de 512 a 4096 tokens. Por debajo, la petición simplemente no se guarda en caché, sin ningún error.
 
 Todo esto está en la [documentación de prompt caching de Anthropic](https://platform.claude.com/docs/en/build-with-claude/prompt-caching), que es la fuente fiable cuando cambia alguna cifra.
 
@@ -79,7 +79,7 @@ export function cacheHitRate(u: ClaudeUsage): number {
 
 ## ¿Te compensa la caché con tu tráfico?
 
-Como las escrituras cuestan más que la entrada normal, usar la caché es apostar a que el prefijo se volverá a leer antes de caducar. Con la duración de cinco minutos, una sola lectura ya paga la escritura. Un prefijo que se escribe y nunca se lee cuesta cerca de un 25 % más que enviarlo sin marca. Por eso «pon `cache_control` en todas partes» no es una opción por defecto segura: compensa en el tráfico de chat y de agentes que vuelve en cuestión de minutos, y sale perdiendo en peticiones sueltas o en prompts que cambian cada vez.
+Como las escrituras cuestan más que la entrada normal, usar la caché es apostar a que el prefijo se volverá a leer antes de caducar. Con la duración de cinco minutos, una sola lectura ya paga la escritura. Un prefijo que se escribe y nunca se lee cuesta cerca de un 25 % más que enviarlo sin marca. Por eso «pon `cache_control` en todas partes» no es una opción por defecto segura: compensa en el tráfico de chat y de agentes que vuelve en cuestión de minutos, y sale perdiendo en peticiones sueltas o en prompts que cambian cada vez.
 
 ## Cómo lo resuelve BV-SALA
 
@@ -110,7 +110,7 @@ console.log(report.nativeSavings?.netUsd); // read discount minus write premium;
 
 `report.nativeSavings` es el descuento de Anthropic, mostrado aparte: la capa nunca lo cuenta como ahorro propio, así que tu informe cuadra con la factura.
 
-**El caso en que conviene desactivar las marcas.** Sin clave, si tu prompt de sistema cambia en cada petición (un timestamp, un id de usuario) o tus llamadas están separadas por más de cinco minutos en procesos nuevos, el marcado por defecto escribe una entrada de caché que nadie lee, y el README indica que eso cuesta cerca de un 20 % más que sin capa. Pasa lo que cambia al mensaje del usuario o desactiva las marcas:
+**El caso en que conviene desactivar las marcas.** Sin clave, si tu prompt de sistema cambia en cada petición (un timestamp, un id de usuario) o tus llamadas están separadas por más de cinco minutos en procesos nuevos, el marcado por defecto escribe una entrada de caché que nadie lee, y el README indica que eso cuesta cerca de un 20 % más que sin capa. Pasa lo que cambia al mensaje del usuario o desactiva las marcas:
 
 ```ts
 import { createSavingsLayer, AnthropicProvider } from "@bivelio/savings-layer";
@@ -136,7 +136,7 @@ export const reply = await layer.generate({
 });
 ```
 
-Esa reordenación opcional es la palanca que hay detrás de una prueba exploratoria en vivo publicada en el README: con `claude-haiku-4-5`, en una secuencia construida en la que un timestamp envenenaba la caché, llevó la tasa de aciertos del 0 % al 95 % y bajó el coste por petición un 82.76 %, frente a la propia capa sin la opción, con 20 peticiones por brazo, medido con la versión 1.2.0 el 15 de noviembre de 2026. Es una prueba pequeña y construida, no una previsión para tu tráfico.
+Esa reordenación opcional es la palanca que hay detrás de una prueba exploratoria en vivo publicada en el README: con `claude-haiku-4-5`, en una secuencia construida en la que un timestamp envenenaba la caché, llevó la tasa de aciertos del 0 % al 95 % y bajó el coste por petición un 82,76 %, frente a la propia capa sin la opción, con 20 peticiones por brazo, medido con la versión 1.2.0 el 15 de noviembre de 2026. Es una prueba pequeña y construida, no una previsión para tu tráfico.
 
 ## Contrasta con las cifras de Anthropic
 

@@ -22,8 +22,8 @@ Les trois profils vous disent où chercher :
 2. L'ordre est **outils, puis système, puis messages**. Un changement dans la liste d'outils invalide le prompt système et les messages qui suivent.
 3. Vous pouvez placer jusqu'à **quatre points d'arrêt**, et l'API remonte un nombre limité de blocs depuis chacun pour trouver une entrée antérieure (20 au moment où nous écrivons).
 4. Les entrées vivent **cinq minutes** par défaut, durée renouvelée à chaque accès au cache. Une durée de vie d'une heure est disponible avec `"ttl": "1h"`.
-5. Écrire coûte plus cher que lire : une écriture de cinq minutes est facturée 1.25 fois le prix d'entrée et une écriture d'une heure 2 fois ; une lecture coûte une petite fraction du prix d'entrée (0.1 fois sur la plupart des modèles). Consultez la [page de tarifs d'Anthropic](https://platform.claude.com/docs/en/about-claude/pricing) pour votre modèle.
-6. Il existe une **longueur minimale pour la mise en cache**, qui dépend du modèle, de 512 à 4,096 tokens. En dessous, la requête n'est tout simplement pas mise en cache, et aucune erreur ne le signale.
+5. Écrire coûte plus cher que lire : une écriture de cinq minutes est facturée 1,25 fois le prix d'entrée et une écriture d'une heure 2 fois ; une lecture coûte une petite fraction du prix d'entrée (0,1 fois sur la plupart des modèles). Consultez la [page de tarifs d'Anthropic](https://platform.claude.com/docs/en/about-claude/pricing) pour votre modèle.
+6. Il existe une **longueur minimale pour la mise en cache**, qui dépend du modèle, de 512 à 4 096 tokens. En dessous, la requête n'est tout simplement pas mise en cache, et aucune erreur ne le signale.
 
 Tout cela figure dans la [documentation d'Anthropic sur le prompt caching](https://platform.claude.com/docs/en/build-with-claude/prompt-caching), la source qui fait foi quand un chiffre change.
 
@@ -79,7 +79,7 @@ export function cacheHitRate(u: ClaudeUsage): number {
 
 ## La mise en cache est-elle rentable pour votre trafic ?
 
-Comme les écritures coûtent plus cher que l'entrée ordinaire, mettre en cache revient à parier que le préfixe sera relu avant d'expirer. Avec la durée de vie de cinq minutes, une seule lecture rembourse déjà l'écriture. Un préfixe écrit et jamais lu coûte environ 25 % de plus que si vous l'envoyiez sans marqueur. Voilà pourquoi « mettre `cache_control` partout » n'est pas un réglage par défaut sûr : c'est rentable sur le trafic de chat et d'agent qui revient dans les minutes qui suivent, et perdant sur les requêtes ponctuelles ou sur les prompts qui changent à chaque fois.
+Comme les écritures coûtent plus cher que l'entrée ordinaire, mettre en cache revient à parier que le préfixe sera relu avant d'expirer. Avec la durée de vie de cinq minutes, une seule lecture rembourse déjà l'écriture. Un préfixe écrit et jamais lu coûte environ 25 % de plus que si vous l'envoyiez sans marqueur. Voilà pourquoi « mettre `cache_control` partout » n'est pas un réglage par défaut sûr : c'est rentable sur le trafic de chat et d'agent qui revient dans les minutes qui suivent, et perdant sur les requêtes ponctuelles ou sur les prompts qui changent à chaque fois.
 
 ## Comment BV-SALA s'en charge
 
@@ -110,7 +110,7 @@ console.log(report.nativeSavings?.netUsd); // read discount minus write premium;
 
 `report.nativeSavings` est la remise d'Anthropic, présentée à part : la couche ne la compte jamais comme sa propre économie, si bien que votre rapport tombe juste avec la facture.
 
-**Le cas où il faut désactiver le marquage.** Sans clé, si votre prompt système change à chaque requête (un horodatage, un id utilisateur), ou si vos appels sont espacés de plus de cinq minutes dans des processus neufs, le marquage par défaut écrit une entrée de cache que personne ne lit, et le README indique que cela coûte environ 20 % de plus que sans la couche. Déplacez ce qui change dans le message utilisateur, ou désactivez le marquage :
+**Le cas où il faut désactiver le marquage.** Sans clé, si votre prompt système change à chaque requête (un horodatage, un id utilisateur), ou si vos appels sont espacés de plus de cinq minutes dans des processus neufs, le marquage par défaut écrit une entrée de cache que personne ne lit, et le README indique que cela coûte environ 20 % de plus que sans la couche. Déplacez ce qui change dans le message utilisateur, ou désactivez le marquage :
 
 ```ts
 import { createSavingsLayer, AnthropicProvider } from "@bivelio/savings-layer";
@@ -136,7 +136,7 @@ export const reply = await layer.generate({
 });
 ```
 
-Cette réorganisation optionnelle est le levier derrière un test exploratoire en conditions réelles publié dans le README : sur `claude-haiku-4-5`, dans une séquence construite où un horodatage empoisonnait le cache, elle a fait passer le taux de succès de 0 % à 95 % et baisser le coût par requête de 82.76 %, par rapport à la couche elle-même sans l'option, avec 20 requêtes par bras, mesuré avec la version 1.2.0 le 15 novembre 2026. C'est un petit test construit, pas une prévision pour votre trafic.
+Cette réorganisation optionnelle est le levier derrière un test exploratoire en conditions réelles publié dans le README : sur `claude-haiku-4-5`, dans une séquence construite où un horodatage empoisonnait le cache, elle a fait passer le taux de succès de 0 % à 95 % et baisser le coût par requête de 82,76 %, par rapport à la couche elle-même sans l'option, avec 20 requêtes par bras, mesuré avec la version 1.2.0 le 15 novembre 2026. C'est un petit test construit, pas une prévision pour votre trafic.
 
 ## Vérifiez avec les chiffres d'Anthropic
 

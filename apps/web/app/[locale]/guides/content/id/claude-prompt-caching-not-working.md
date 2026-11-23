@@ -22,8 +22,8 @@ Tiga pola berikut menunjukkan di mana Anda harus mencari:
 2. Urutannya **tools, lalu system, lalu messages**. Perubahan pada daftar tools membatalkan system prompt dan pesan-pesan sesudahnya.
 3. Anda bisa menempatkan hingga **empat breakpoint**, dan dari masing-masing breakpoint API menengok ke belakang sejumlah blok terbatas untuk mencari entri sebelumnya (20 pada saat panduan ini ditulis).
 4. Entri hidup **lima menit** secara bawaan, dan diperbarui setiap kali kena hit. Masa hidup satu jam tersedia dengan `"ttl": "1h"`.
-5. Menulis lebih mahal daripada membaca: penulisan lima menit ditagih 1.25 kali harga masukan dan penulisan satu jam 2 kali; pembacaan hanya sebagian kecil dari harga masukan (0.1 kali pada sebagian besar model). Periksa [halaman harga Anthropic](https://platform.claude.com/docs/en/about-claude/pricing) untuk model Anda.
-6. Ada **panjang minimum yang bisa di-cache** yang bergantung pada model, dari 512 hingga 4,096 token. Di bawah batas itu, permintaan tidak di-cache begitu saja, tanpa ada error.
+5. Menulis lebih mahal daripada membaca: penulisan lima menit ditagih 1,25 kali harga masukan dan penulisan satu jam 2 kali; pembacaan hanya sebagian kecil dari harga masukan (0,1 kali pada sebagian besar model). Periksa [halaman harga Anthropic](https://platform.claude.com/docs/en/about-claude/pricing) untuk model Anda.
+6. Ada **panjang minimum yang bisa di-cache** yang bergantung pada model, dari 512 hingga 4.096 token. Di bawah batas itu, permintaan tidak di-cache begitu saja, tanpa ada error.
 
 Semua ini ada di [dokumentasi prompt caching Anthropic](https://platform.claude.com/docs/en/build-with-claude/prompt-caching), sumber yang patut dipercaya ketika ada angka yang berubah.
 
@@ -79,7 +79,7 @@ export function cacheHitRate(u: ClaudeUsage): number {
 
 ## Apakah caching sepadan untuk lalu lintas Anda?
 
-Karena penulisan lebih mahal daripada masukan biasa, caching adalah taruhan bahwa prefiks akan dibaca lagi sebelum kedaluwarsa. Dengan masa hidup lima menit, satu pembacaan saja sudah menutup biaya penulisannya. Prefiks yang ditulis dan tidak pernah dibaca harganya sekitar 25 % lebih mahal daripada mengirimnya tanpa penanda. Karena itulah "tambahkan `cache_control` di mana-mana" bukan bawaan yang aman: cara itu menguntungkan pada lalu lintas chat dan agen yang kembali dalam hitungan menit, dan merugi pada permintaan sekali jalan atau pada prompt yang berubah setiap kali.
+Karena penulisan lebih mahal daripada masukan biasa, caching adalah taruhan bahwa prefiks akan dibaca lagi sebelum kedaluwarsa. Dengan masa hidup lima menit, satu pembacaan saja sudah menutup biaya penulisannya. Prefiks yang ditulis dan tidak pernah dibaca harganya sekitar 25% lebih mahal daripada mengirimnya tanpa penanda. Karena itulah "tambahkan `cache_control` di mana-mana" bukan bawaan yang aman: cara itu menguntungkan pada lalu lintas chat dan agen yang kembali dalam hitungan menit, dan merugi pada permintaan sekali jalan atau pada prompt yang berubah setiap kali.
 
 ## Cara BV-SALA menanganinya
 
@@ -110,7 +110,7 @@ console.log(report.nativeSavings?.netUsd); // read discount minus write premium;
 
 `report.nativeSavings` adalah diskon dari Anthropic, ditampilkan terpisah: lapisan ini tidak pernah menghitungnya sebagai penghematannya sendiri, sehingga laporan Anda tetap cocok dengan faktur.
 
-**Kasus ketika Anda sebaiknya mematikan penandaan.** Tanpa kunci, jika system prompt Anda berubah di setiap permintaan (timestamp, id pengguna), atau panggilan Anda berjarak lebih dari lima menit dalam proses yang baru, penandaan bawaan menulis entri cache yang tidak dibaca siapa pun, dan README menyatakan bahwa ini sekitar 20 % lebih mahal daripada tanpa lapisan. Pindahkan yang berubah ke pesan pengguna, atau matikan penandaannya:
+**Kasus ketika Anda sebaiknya mematikan penandaan.** Tanpa kunci, jika system prompt Anda berubah di setiap permintaan (timestamp, id pengguna), atau panggilan Anda berjarak lebih dari lima menit dalam proses yang baru, penandaan bawaan menulis entri cache yang tidak dibaca siapa pun, dan README menyatakan bahwa ini sekitar 20% lebih mahal daripada tanpa lapisan. Pindahkan yang berubah ke pesan pengguna, atau matikan penandaannya:
 
 ```ts
 import { createSavingsLayer, AnthropicProvider } from "@bivelio/savings-layer";
@@ -136,7 +136,7 @@ export const reply = await layer.generate({
 });
 ```
 
-Penyusunan ulang opt-in itulah tuas di balik uji langsung eksploratif yang dipublikasikan di README: pada `claude-haiku-4-5`, dalam urutan yang sengaja disusun dengan timestamp yang meracuni cache, opsi ini menaikkan hit rate dari 0 % ke 95 % dan menurunkan biaya per permintaan sebesar 82.76 %, dibandingkan dengan lapisan itu sendiri tanpa opsi tersebut, 20 permintaan per lengan, diukur dengan versi 1.2.0 pada 15 November 2026. Ini uji kecil yang disusun khusus, bukan perkiraan untuk lalu lintas Anda.
+Penyusunan ulang opt-in itulah tuas di balik uji langsung eksploratif yang dipublikasikan di README: pada `claude-haiku-4-5`, dalam urutan yang sengaja disusun dengan timestamp yang meracuni cache, opsi ini menaikkan hit rate dari 0% ke 95% dan menurunkan biaya per permintaan sebesar 82,76%, dibandingkan dengan lapisan itu sendiri tanpa opsi tersebut, 20 permintaan per lengan, diukur dengan versi 1.2.0 pada 15 November 2026. Ini uji kecil yang disusun khusus, bukan perkiraan untuk lalu lintas Anda.
 
 ## Verifikasi terhadap angka Anthropic
 

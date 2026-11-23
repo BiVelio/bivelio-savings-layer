@@ -5,7 +5,7 @@ Công cụ chi phí LLM nào cũng hiển thị một con số tiết kiệm. R�
 Khoảng chênh gần như luôn đến từ một trong những nguyên nhân sau:
 
 - **Giá niêm yết so với giá của bạn.** Các công cụ tính giá token theo giá niêm yết công khai. Hóa đơn của bạn có thể gồm chiết khấu, hợp đồng cam kết sử dụng, giá theo vùng hoặc theo yêu cầu lưu trú dữ liệu, hạng ưu tiên và thuế.
-- **Ước tính được trình bày như phép đo.** Nếu một công cụ cắt 2,000 token khỏi prompt, nhà cung cấp không bao giờ đếm chúng. Con số "đã tiết kiệm" là số đếm của chính công cụ, tính bằng một tokenizer có thể không phải của nhà cung cấp.
+- **Ước tính được trình bày như phép đo.** Nếu một công cụ cắt 2.000 token khỏi prompt, nhà cung cấp không bao giờ đếm chúng. Con số "đã tiết kiệm" là số đếm của chính công cụ, tính bằng một tokenizer có thể không phải của nhà cung cấp.
 - **Chiết khấu của nhà cung cấp bị nhận là của công cụ.** Prompt caching trên OpenAI, Anthropic, DeepSeek hay Gemini được nhà cung cấp tính giá thấp hơn. Một công cụ tính khoản chiết khấu đó là khoản tiết kiệm của mình sẽ thổi phồng con số.
 - **Lưu lượng mà công cụ không bao giờ thấy.** Lệnh gọi từ một dịch vụ khác, script của đồng nghiệp, các yêu cầu phụ của agent lập trình hay một batch job đều xuất hiện trên hóa đơn mà không có trong công cụ.
 - **Thiếu usage.** Một yêu cầu dạng stream thiếu sự kiện usage cuối cùng thì hoàn toàn không có số token. Âm thầm tính nó bằng không sẽ khiến mọi thứ sau đó trông rẻ hơn.
@@ -124,6 +124,6 @@ Sau đó chạy bước 2 ở trên với các tổng này: chi tiêu `measured`
 
 ## Cùng phương pháp đó, áp dụng công khai
 
-Dự án công bố các lượt chạy A/B của chính mình trên [trang benchmark](/vi/benchmarks): hai nhánh trên cùng các yêu cầu, một đi thẳng tới nhà cung cấp và một đi qua lớp, cả hai được đo bằng chính bộ đếm usage của nhà cung cấp, với khoảng tin cậy 95 % cùng ngày và phiên bản của mỗi lượt chạy. Những kết quả không tiết kiệm được gì, hoặc còn tốn hơn, nằm ngay trên cùng trang. Phương pháp đầy đủ, bộ ước lượng và các giới hạn của nó có trong [bài báo](/vi/paper).
+Dự án công bố các lượt chạy A/B của chính mình trên [trang benchmark](/vi/benchmarks): hai nhánh trên cùng các yêu cầu, một đi thẳng tới nhà cung cấp và một đi qua lớp, cả hai được đo bằng chính bộ đếm usage của nhà cung cấp, với khoảng tin cậy 95% cùng ngày và phiên bản của mỗi lượt chạy. Những kết quả không tiết kiệm được gì, hoặc còn tốn hơn, nằm ngay trên cùng trang. Phương pháp đầy đủ, bộ ước lượng và các giới hạn của nó có trong [bài báo](/vi/paper).
 
 Về chi tiết theo từng nhà cung cấp, xem [vì sao cached_tokens của OpenAI bằng 0](/vi/guides/openai-prompt-caching-cached-tokens), [vì sao prompt caching của Claude không hoạt động](/vi/guides/claude-prompt-caching-not-working) và [đo chi phí Claude Code theo từng yêu cầu](/vi/guides/claude-code-cost-per-request). Mã nguồn và các báo cáo thô có trên [GitHub](https://github.com/BiVelio/bivelio-savings-layer).

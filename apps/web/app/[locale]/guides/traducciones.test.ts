@@ -19,7 +19,9 @@ import { alternativasDe, canonicalDe, GUIAS, guiaEnIdioma, idiomasDe, INDICE, in
  *   en el mismo orden;
  * - los mismos bloques de código, byte a byte, y el mismo código en línea;
  * - las mismas cifras (porcentajes, dólares y números con decimales, que
- *   tienen su fuente en guides.test.ts) y ningún número del original perdido;
+ *   tienen su fuente en guides.test.ts) con el mismo valor, escritas como las
+ *   escribe su idioma («31,50 %», «%31,50», «4.563,61 $», «1 024»), y ningún
+ *   número del original perdido;
  * - las mismas URL externas;
  * - los enlaces internos en SU idioma, a guías y anclas que existen en él;
  * - ningún párrafo que se quedó en inglés (heurística);
@@ -101,12 +103,87 @@ const anclas = (bs: readonly Bloque[]) => new Set(bs.flatMap((b) => (b.t === "ti
 
 const cuenta = (xs: readonly string[]) => [...xs].sort();
 
-/** El regex de cifras de guides.test.ts: porcentajes y dólares, que necesitan fuente. */
-const CIFRA = /[+−-]?\$\d[\d,.]*\d|[+−-]?\d[\d,.]*\s?%/g;
-const DECIMAL = /\d+(?:[.,]\d+)+/g;
-const ENTERO = /\d+/g;
-const cifrasDe = (bs: readonly Bloque[], rx: RegExp) =>
-  cuenta(trozos(bs).flatMap((c) => (prosa(c).match(rx) ?? []).map((x) => x.replace(/\s/g, ""))));
+// ── Las cifras, como las escribe cada idioma ─────────────────────────────────
+
+const NBSP = " "; // espacio no separable
+const NNBSP = " "; // espacio fino no separable (millares en francés)
+
+/**
+ * Cómo escribe cada idioma las cifras de las guías: lo que da
+ * `Intl.NumberFormat(<idioma>)` (CLDR 48) para porcentajes, dólares (USD),
+ * decimales y millares, el mismo `Intl` con que se localizaron. Va escrito
+ * aquí, no calculado, para que el test no dependa del ICU de la máquina que lo
+ * corre. `desde`: dígitos a partir de los que se agrupan millares (el español,
+ * el italiano y el polaco escriben «1024», pero «12.345»). El inglés es el del
+ * original, con «95 %» separado.
+ */
+type Forma = { dec: string; miles: string; desde: number; pct: string; usd: string };
+const FORMA: Record<string, Forma> = {
+  en: { dec: ".", miles: ",", desde: 4, pct: "N %", usd: "$N" },
+  es: { dec: ",", miles: ".", desde: 5, pct: `N${NBSP}%`, usd: `N${NBSP}US$` },
+  ca: { dec: ",", miles: ".", desde: 4, pct: `N${NBSP}%`, usd: `N${NBSP}USD` },
+  pt: { dec: ",", miles: ".", desde: 4, pct: "N%", usd: `US$${NBSP}N` },
+  fr: { dec: ",", miles: NNBSP, desde: 4, pct: `N${NBSP}%`, usd: `N${NBSP}$US` },
+  it: { dec: ",", miles: ".", desde: 5, pct: "N%", usd: `N${NBSP}USD` },
+  nl: { dec: ",", miles: ".", desde: 4, pct: "N%", usd: `US$${NBSP}N` },
+  de: { dec: ",", miles: ".", desde: 4, pct: `N${NBSP}%`, usd: `N${NBSP}$` },
+  pl: { dec: ",", miles: NBSP, desde: 5, pct: "N%", usd: `N${NBSP}USD` },
+  tr: { dec: ",", miles: ".", desde: 4, pct: "%N", usd: "$N" },
+  id: { dec: ",", miles: ".", desde: 4, pct: "N%", usd: "US$N" },
+  vi: { dec: ",", miles: ".", desde: 4, pct: "N%", usd: `N${NBSP}US$` },
+};
+
+/** Una cifra con su valor normalizado: «%:+2.49», «$:4563.61», «n:1.25». */
+type Cifra = { clase: "%" | "$" | "n"; valor: string; texto: string };
+
+const rx = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
+/** Lo que no es una cantidad y se queda tal cual: versiones, ids con guion, nombres de modelo. */
+const IDENTIFICADOR = /(?:Opus|Sonnet|Haiku) \d+(?:\.\d+)*|(?<![\p{L}\p{N}.])v?\d+(?:\.\d+){2,}|(?<=\p{L}-)\d+(?:\.\d+)+/gu;
+
+/** El valor escrito como lo escribe el idioma `f` (signo, millares, decimales, % y US$). */
+function escribir(f: Forma, c: Omit<Cifra, "texto">): string {
+  const signo = c.valor.startsWith("+") ? "+" : "";
+  const [ent = "", dec] = c.valor.replace(/^\+/, "").split(".");
+  const n = (ent.length >= f.desde ? ent.replace(/\B(?=(\d{3})+(?!\d))/g, f.miles) : ent) + (dec === undefined ? "" : f.dec + dec);
+  return signo + (c.clase === "%" ? f.pct : c.clase === "$" ? f.usd : "N").replace("N", n);
+}
+
+/**
+ * Las cifras de un texto en el idioma `l`, normalizadas: porcentajes, dólares y
+ * números con decimales (`cifras`), enteros sin separador de millares
+ * (`enteros`) y lo que no es una cantidad (`ids`, tal cual).
+ */
+function leerCifras(texto: string, l: string): { cifras: Cifra[]; enteros: { valor: string; texto: string }[]; ids: string[] } {
+  const f = FORMA[l]!;
+  const ids = texto.match(IDENTIFICADOR) ?? [];
+  let resto = texto.replace(IDENTIFICADOR, " ");
+  // Un número del idioma: millares agrupados o no, y decimales opcionales.
+  const num = (g: string) => `(?<${g}>\\d{1,3}(?:${rx(f.miles)}\\d{3})+|\\d+)(?:${rx(f.dec)}(?<${g}d>\\d+))?`;
+  // Los espacios del modelo, flexibles al leer (el formato se comprueba después).
+  const molde = (m: string, g: string) => m.split("N").map((p) => rx(p).replace(/[   ]/g, "[ \\u00a0\\u202f]?")).join(num(g));
+  const lector = new RegExp(
+    `(?<![\\p{L}\\p{N}_.,\\-])(?<signo>[+−]?)(?:${molde(f.usd, "u")}|${molde(f.pct, "p")}|${num("n")})(?![.,]?\\d)`,
+    "gu",
+  );
+  const cifras: Cifra[] = [];
+  const enteros: { valor: string; texto: string }[] = [];
+  resto = resto.replace(lector, (m, ...args) => {
+    const g = args.at(-1) as Record<string, string | undefined>;
+    const clase = g.u !== undefined ? "$" : g.p !== undefined ? "%" : "n";
+    const k = clase === "$" ? "u" : clase === "%" ? "p" : "n";
+    const ent = g[k]!.split(f.miles).join("");
+    const dec = g[`${k}d`];
+    if (clase === "n" && dec === undefined && !g.signo) enteros.push({ valor: ent, texto: m });
+    else cifras.push({ clase, valor: `${g.signo ?? ""}${ent}${dec === undefined ? "" : "." + dec}`, texto: m });
+    return " ";
+  });
+  for (const m of resto.match(/\d+/g) ?? []) enteros.push({ valor: m, texto: m });
+  return { cifras, enteros, ids };
+}
+
+const cifrasDe = (bs: readonly Bloque[], l: string) => leerCifras(trozos(bs).map(prosa).join("\n"), l);
+const clave = (c: Omit<Cifra, "texto">) => `${c.clase}:${c.valor}`;
 
 /**
  * Palabras que solo son inglesas (ninguna existe en los otros once idiomas
@@ -276,15 +353,23 @@ describe.each(PARES)("la guía %s/%s", (l, slug) => {
     expect(codigoEnLinea(tr)).toEqual(codigoEnLinea(en));
   });
 
-  it("las mismas cifras: porcentajes, dólares y decimales idénticos, y ningún número del original perdido", () => {
-    expect(cifrasDe(tr, CIFRA)).toEqual(cifrasDe(en, CIFRA));
-    expect(cifrasDe(tr, DECIMAL)).toEqual(cifrasDe(en, DECIMAL));
+  it("las mismas cifras, escritas como las escribe su idioma, y ningún número del original perdido", () => {
+    const a = cifrasDe(en, "en");
+    const b = cifrasDe(tr, l);
+    // Porcentajes, dólares y decimales: los mismos valores, ni uno más ni uno menos.
+    expect(cuenta(b.cifras.map(clave))).toEqual(cuenta(a.cifras.map(clave)));
+    // Y cada uno con el separador, los millares, el % y el US$ de su idioma.
+    for (const c of b.cifras) expect(c.texto, clave(c)).toBe(escribir(FORMA[l]!, c));
+    // Versiones, ids con guion y nombres de modelo: tal cual.
+    expect(cuenta(b.ids)).toEqual(cuenta(a.ids));
     // Enteros: puede haber más (el vietnamita escribe «ngày 23 tháng 11»),
-    // nunca menos.
-    const suyos = cifrasDe(tr, ENTERO);
-    for (const n of cifrasDe(en, ENTERO)) {
-      const i = suyos.indexOf(n);
-      expect(i, `falta el número ${n}`).toBeGreaterThanOrEqual(0);
+    // nunca menos; los que el original agrupa («1,024»), agrupados como en su
+    // idioma («1.024», «1 024»; «1024» en español).
+    const suyos = b.enteros.map((e) => e.texto);
+    for (const e of a.enteros) {
+      const esperado = /\D/.test(e.texto) ? escribir(FORMA[l]!, { clase: "n", valor: e.valor }) : e.valor;
+      const i = suyos.indexOf(esperado);
+      expect(i, `falta el número ${e.texto} («${esperado}»)`).toBeGreaterThanOrEqual(0);
       suyos.splice(i, 1);
     }
   });
@@ -352,6 +437,33 @@ describe("las comprobaciones de las traducciones detectan lo que tienen que dete
       .map(pesoIngles)
       .filter(([, n]) => n >= 8);
     expect(pesos.filter(([p]) => p >= 0.1).length / pesos.length).toBeGreaterThan(0.8);
+  });
+
+  it("las cifras se comparan por su valor y se exigen en la forma de cada idioma", () => {
+    const en = leerCifras("A $4,563.61 bill, net **+2.49 %**, 1.25 times, 1,024 tokens, Opus 5.5, GPT-5.6, 1.2.3, 2026.", "en");
+    expect(en.cifras.map(clave)).toEqual(["$:4563.61", "%:+2.49", "n:1.25"]);
+    expect(cuenta(en.ids)).toEqual(cuenta(["Opus 5.5", "5.6", "1.2.3"]));
+    expect(en.enteros.map((e) => e.texto)).toEqual(["1,024", "2026"]);
+
+    const de = leerCifras(`4.563,61${NBSP}$, netto **+2,49${NBSP}%**, das 1,25-Fache, 1.024 Tokens, Opus 5.5, GPT-5.6, 1.2.3, 2026.`, "de");
+    expect(de.cifras.map(clave)).toEqual(en.cifras.map(clave));
+    for (const c of de.cifras) expect(c.texto).toBe(escribir(FORMA.de!, c));
+    expect(cuenta(de.ids)).toEqual(cuenta(en.ids));
+    expect(de.enteros.map((e) => e.texto)).toEqual(["1.024", "2026"]);
+
+    expect(escribir(FORMA.es!, { clase: "n", valor: "1024" })).toBe("1024");
+    expect(escribir(FORMA.es!, { clase: "$", valor: "4563.61" })).toBe(`4563,61${NBSP}US$`);
+    expect(escribir(FORMA.fr!, { clase: "n", valor: "1024" })).toBe(`1${NNBSP}024`);
+    expect(escribir(FORMA.tr!, { clase: "%", valor: "+2.49" })).toBe("+%2,49");
+    expect(leerCifras("**+%2,49**'u, %30'unun", "tr").cifras.map(clave)).toEqual(["%:+2.49", "%:30"]);
+
+    // La forma inglesa que se quedó en un texto alemán no da el mismo valor…
+    expect(leerCifras("netto +2.49 %, 1,024 Tokens", "de").cifras.map(clave)).not.toContain("%:+2.49");
+    expect(leerCifras("1,024 Tokens", "de").cifras.map(clave)).toEqual(["n:1.024"]);
+    // …y con un espacio normal en vez del no separable, el valor es el mismo pero la forma no.
+    const [c] = leerCifras("31,50 %", "de").cifras;
+    expect(c && clave(c)).toBe("%:31.50");
+    expect(c!.texto).not.toBe(escribir(FORMA.de!, c!));
   });
 
   it("las frases prohibidas se detectan", () => {

@@ -22,8 +22,8 @@ De drie patronen vertellen je waar je moet zoeken:
 2. De volgorde is **tools, dan system, dan messages**. Een wijziging in de toollijst maakt de systeemprompt en de berichten daarna ongeldig.
 3. Je kunt tot **vier breakpoints** plaatsen, en vanaf elk ervan kijkt de API een beperkt aantal blokken terug naar een eerdere entry (20 op het moment van schrijven).
 4. Entries leven standaard **vijf minuten**, en dat wordt bij elke hit ververst. Met `"ttl": "1h"` is een levensduur van een uur beschikbaar.
-5. Schrijven kost meer dan lezen: een schrijfactie van vijf minuten wordt gefactureerd tegen 1.25 keer de inputprijs en een schrijfactie van een uur tegen 2 keer; een lezing kost een kleine fractie van de inputprijs (0.1 keer op de meeste modellen). Kijk op de [prijspagina van Anthropic](https://platform.claude.com/docs/en/about-claude/pricing) voor jouw model.
-6. Er is een **minimale cachebare lengte** die per model verschilt, van 512 tot 4,096 tokens. Daaronder wordt het verzoek gewoon niet gecachet, zonder foutmelding.
+5. Schrijven kost meer dan lezen: een schrijfactie van vijf minuten wordt gefactureerd tegen 1,25 keer de inputprijs en een schrijfactie van een uur tegen 2 keer; een lezing kost een kleine fractie van de inputprijs (0,1 keer op de meeste modellen). Kijk op de [prijspagina van Anthropic](https://platform.claude.com/docs/en/about-claude/pricing) voor jouw model.
+6. Er is een **minimale cachebare lengte** die per model verschilt, van 512 tot 4.096 tokens. Daaronder wordt het verzoek gewoon niet gecachet, zonder foutmelding.
 
 Dit alles staat in de [documentatie van Anthropic over prompt caching](https://platform.claude.com/docs/en/build-with-claude/prompt-caching), de bron om op te vertrouwen als een getal verandert.
 
@@ -79,7 +79,7 @@ export function cacheHitRate(u: ClaudeUsage): number {
 
 ## Loont caching voor jouw verkeer?
 
-Omdat schrijfacties meer kosten dan gewone input, is caching een gok dat de prefix opnieuw wordt gelezen voordat hij verloopt. Met de levensduur van vijf minuten verdient één lezing de schrijfactie al terug. Een prefix die wordt geschreven en nooit gelezen, kost ongeveer 25 % meer dan wanneer je hem zonder markering stuurt. Daarom is “overal `cache_control` toevoegen” geen veilige standaard: het loont bij chat- en agentverkeer dat binnen enkele minuten terugkomt, en het kost geld bij eenmalige verzoeken of bij prompts die elke keer veranderen.
+Omdat schrijfacties meer kosten dan gewone input, is caching een gok dat de prefix opnieuw wordt gelezen voordat hij verloopt. Met de levensduur van vijf minuten verdient één lezing de schrijfactie al terug. Een prefix die wordt geschreven en nooit gelezen, kost ongeveer 25% meer dan wanneer je hem zonder markering stuurt. Daarom is “overal `cache_control` toevoegen” geen veilige standaard: het loont bij chat- en agentverkeer dat binnen enkele minuten terugkomt, en het kost geld bij eenmalige verzoeken of bij prompts die elke keer veranderen.
 
 ## Hoe BV-SALA dit regelt
 
@@ -110,7 +110,7 @@ console.log(report.nativeSavings?.netUsd); // read discount minus write premium;
 
 `report.nativeSavings` is de korting van Anthropic, apart getoond: de laag telt die nooit als zijn eigen besparing, zodat je rapport klopt met de factuur.
 
-**Het geval waarin je de markering moet uitzetten.** Zonder sleutel, als je systeemprompt bij elk verzoek verandert (een tijdstempel, een gebruikers-id), of als je aanroepen meer dan vijf minuten uit elkaar liggen in steeds nieuwe processen, schrijft de standaardmarkering een cache-entry die niemand leest, en volgens de README kost dat ongeveer 20 % meer dan zonder laag. Verplaats wat verandert naar het gebruikersbericht, of zet de markering uit:
+**Het geval waarin je de markering moet uitzetten.** Zonder sleutel, als je systeemprompt bij elk verzoek verandert (een tijdstempel, een gebruikers-id), of als je aanroepen meer dan vijf minuten uit elkaar liggen in steeds nieuwe processen, schrijft de standaardmarkering een cache-entry die niemand leest, en volgens de README kost dat ongeveer 20% meer dan zonder laag. Verplaats wat verandert naar het gebruikersbericht, of zet de markering uit:
 
 ```ts
 import { createSavingsLayer, AnthropicProvider } from "@bivelio/savings-layer";
@@ -136,7 +136,7 @@ export const reply = await layer.generate({
 });
 ```
 
-Die opt-in herordening is de hefboom achter een verkennende live test die in de README is gepubliceerd: op `claude-haiku-4-5`, in een geconstrueerde reeks waarin een tijdstempel de cache vergiftigde, bracht hij de hitrate van 0 % naar 95 % en de kosten per verzoek 82.76 % omlaag, vergeleken met de laag zelf zonder de optie, met 20 verzoeken per arm, gemeten met versie 1.2.0 op 15 november 2026. Het is een kleine, geconstrueerde test, geen voorspelling voor jouw verkeer.
+Die opt-in herordening is de hefboom achter een verkennende live test die in de README is gepubliceerd: op `claude-haiku-4-5`, in een geconstrueerde reeks waarin een tijdstempel de cache vergiftigde, bracht hij de hitrate van 0% naar 95% en de kosten per verzoek 82,76% omlaag, vergeleken met de laag zelf zonder de optie, met 20 verzoeken per arm, gemeten met versie 1.2.0 op 15 november 2026. Het is een kleine, geconstrueerde test, geen voorspelling voor jouw verkeer.
 
 ## Controleer het met de cijfers van Anthropic
 

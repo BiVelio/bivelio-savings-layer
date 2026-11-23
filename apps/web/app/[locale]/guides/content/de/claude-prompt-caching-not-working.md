@@ -22,8 +22,8 @@ An drei Mustern erkennst du, wo du suchen musst:
 2. Die Reihenfolge ist **Tools, dann System, dann Messages**. Eine Änderung in der Tool-Liste macht den System-Prompt und die Messages danach ungültig.
 3. Du kannst bis zu **vier Breakpoints** setzen, und die API sucht von jedem aus eine begrenzte Zahl von Blöcken rückwärts nach einem früheren Eintrag (zum Zeitpunkt des Schreibens 20).
 4. Einträge leben standardmäßig **fünf Minuten** und werden bei jedem Treffer erneuert. Eine Lebensdauer von einer Stunde gibt es mit `"ttl": "1h"`.
-5. Schreiben kostet mehr als Lesen: Ein Schreibvorgang mit fünf Minuten Lebensdauer wird mit dem Faktor 1.25 auf den Eingabepreis berechnet, einer mit einer Stunde mit dem Faktor 2; ein Lesevorgang kostet einen kleinen Bruchteil des Eingabepreises (bei den meisten Modellen den Faktor 0.1). Die Werte für dein Modell stehen auf [Anthropics Preisseite](https://platform.claude.com/docs/en/about-claude/pricing).
-6. Es gibt eine **minimale cachebare Länge**, die vom Modell abhängt, zwischen 512 und 4,096 Tokens. Darunter wird die Anfrage einfach nicht gecacht, ohne jede Fehlermeldung.
+5. Schreiben kostet mehr als Lesen: Ein Schreibvorgang mit fünf Minuten Lebensdauer wird mit dem Faktor 1,25 auf den Eingabepreis berechnet, einer mit einer Stunde mit dem Faktor 2; ein Lesevorgang kostet einen kleinen Bruchteil des Eingabepreises (bei den meisten Modellen den Faktor 0,1). Die Werte für dein Modell stehen auf [Anthropics Preisseite](https://platform.claude.com/docs/en/about-claude/pricing).
+6. Es gibt eine **minimale cachebare Länge**, die vom Modell abhängt, zwischen 512 und 4.096 Tokens. Darunter wird die Anfrage einfach nicht gecacht, ohne jede Fehlermeldung.
 
 All das steht in [Anthropics Dokumentation zum Prompt-Caching](https://platform.claude.com/docs/en/build-with-claude/prompt-caching), der Quelle, auf die du dich verlassen solltest, wenn sich eine Zahl ändert.
 
@@ -79,7 +79,7 @@ export function cacheHitRate(u: ClaudeUsage): number {
 
 ## Lohnt sich Caching für deinen Traffic?
 
-Weil Schreibvorgänge mehr kosten als normale Eingabe, ist Caching eine Wette darauf, dass das Präfix erneut gelesen wird, bevor es abläuft. Bei der Lebensdauer von fünf Minuten bezahlt schon ein einziger Lesevorgang den Schreibvorgang. Ein Präfix, das geschrieben und nie gelesen wird, kostet etwa 25 % mehr, als es ohne Markierung zu senden. Deshalb ist „überall `cache_control` setzen“ kein sicherer Standard: Es zahlt sich bei Chat- und Agent-Traffic aus, der innerhalb von Minuten wiederkommt, und verliert bei einmaligen Anfragen oder bei Prompts, die sich jedes Mal ändern.
+Weil Schreibvorgänge mehr kosten als normale Eingabe, ist Caching eine Wette darauf, dass das Präfix erneut gelesen wird, bevor es abläuft. Bei der Lebensdauer von fünf Minuten bezahlt schon ein einziger Lesevorgang den Schreibvorgang. Ein Präfix, das geschrieben und nie gelesen wird, kostet etwa 25 % mehr, als es ohne Markierung zu senden. Deshalb ist „überall `cache_control` setzen“ kein sicherer Standard: Es zahlt sich bei Chat- und Agent-Traffic aus, der innerhalb von Minuten wiederkommt, und verliert bei einmaligen Anfragen oder bei Prompts, die sich jedes Mal ändern.
 
 ## So geht BV-SALA damit um
 
@@ -110,7 +110,7 @@ console.log(report.nativeSavings?.netUsd); // read discount minus write premium;
 
 `report.nativeSavings` ist Anthropics Rabatt, getrennt ausgewiesen: Die Schicht zählt ihn nie als eigene Einsparung, damit dein Bericht mit der Rechnung übereinstimmt.
 
-**Der Fall, in dem du die Markierung abschalten solltest.** Ohne Schlüssel gilt: Ändert sich dein System-Prompt bei jeder Anfrage (ein Zeitstempel, eine User-ID) oder liegen deine Aufrufe in jeweils neuen Prozessen mehr als fünf Minuten auseinander, schreibt die Standardmarkierung einen Cache-Eintrag, den niemand liest, und laut README kostet das etwa 20 % mehr als ganz ohne Schicht. Verschiebe, was sich ändert, in die User-Nachricht, oder schalte die Markierung ab:
+**Der Fall, in dem du die Markierung abschalten solltest.** Ohne Schlüssel gilt: Ändert sich dein System-Prompt bei jeder Anfrage (ein Zeitstempel, eine User-ID) oder liegen deine Aufrufe in jeweils neuen Prozessen mehr als fünf Minuten auseinander, schreibt die Standardmarkierung einen Cache-Eintrag, den niemand liest, und laut README kostet das etwa 20 % mehr als ganz ohne Schicht. Verschiebe, was sich ändert, in die User-Nachricht, oder schalte die Markierung ab:
 
 ```ts
 import { createSavingsLayer, AnthropicProvider } from "@bivelio/savings-layer";
@@ -136,7 +136,7 @@ export const reply = await layer.generate({
 });
 ```
 
-Dieses optionale Umordnen ist der Hebel hinter einem explorativen Live-Test, der im README veröffentlicht ist: Auf `claude-haiku-4-5` hob es in einer konstruierten Sequenz, in der ein Zeitstempel den Cache vergiftete, die Trefferquote von 0 % auf 95 % und senkte die Kosten pro Anfrage um 82.76 %, verglichen mit der Schicht selbst ohne die Option, 20 Anfragen pro Arm, gemessen mit Version 1.2.0 am 15. November 2026. Es ist ein kleiner, konstruierter Test, keine Prognose für deinen Traffic.
+Dieses optionale Umordnen ist der Hebel hinter einem explorativen Live-Test, der im README veröffentlicht ist: Auf `claude-haiku-4-5` hob es in einer konstruierten Sequenz, in der ein Zeitstempel den Cache vergiftete, die Trefferquote von 0 % auf 95 % und senkte die Kosten pro Anfrage um 82,76 %, verglichen mit der Schicht selbst ohne die Option, 20 Anfragen pro Arm, gemessen mit Version 1.2.0 am 15. November 2026. Es ist ein kleiner, konstruierter Test, keine Prognose für deinen Traffic.
 
 ## Gleiche mit Anthropics Zahlen ab
 

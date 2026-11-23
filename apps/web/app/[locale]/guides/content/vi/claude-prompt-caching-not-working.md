@@ -22,8 +22,8 @@ Ba kiểu kết quả sau cho bạn biết cần tìm ở đâu:
 2. Thứ tự là **tools, rồi system, rồi messages**. Một thay đổi trong danh sách tools làm mất hiệu lực system prompt và các message phía sau.
 3. Bạn có thể đặt tối đa **bốn breakpoint**, và từ mỗi breakpoint, API chỉ dò ngược một số block giới hạn để tìm mục cache trước đó (20 vào thời điểm viết bài).
 4. Mục cache sống **năm phút** theo mặc định, được làm mới mỗi lần trúng. Có thời gian sống một giờ với `"ttl": "1h"`.
-5. Ghi đắt hơn đọc: ghi năm phút tính 1.25 lần giá đầu vào và ghi một giờ tính 2 lần; đọc chỉ tốn một phần nhỏ giá đầu vào (0.1 lần trên hầu hết các mô hình). Xem [trang giá của Anthropic](https://platform.claude.com/docs/en/about-claude/pricing) cho mô hình của bạn.
-6. Có một **độ dài tối thiểu để được cache**, tùy mô hình, từ 512 đến 4,096 token. Dưới mức đó, yêu cầu đơn giản là không được cache, và không có lỗi nào.
+5. Ghi đắt hơn đọc: ghi năm phút tính 1,25 lần giá đầu vào và ghi một giờ tính 2 lần; đọc chỉ tốn một phần nhỏ giá đầu vào (0,1 lần trên hầu hết các mô hình). Xem [trang giá của Anthropic](https://platform.claude.com/docs/en/about-claude/pricing) cho mô hình của bạn.
+6. Có một **độ dài tối thiểu để được cache**, tùy mô hình, từ 512 đến 4.096 token. Dưới mức đó, yêu cầu đơn giản là không được cache, và không có lỗi nào.
 
 Tất cả đều có trong [tài liệu prompt caching của Anthropic](https://platform.claude.com/docs/en/build-with-claude/prompt-caching), nguồn đáng tin nhất khi có con số thay đổi.
 
@@ -79,7 +79,7 @@ export function cacheHitRate(u: ClaudeUsage): number {
 
 ## Caching có đáng với lưu lượng của bạn không?
 
-Vì ghi đắt hơn đầu vào thường, caching là một ván cược rằng tiền tố sẽ được đọc lại trước khi hết hạn. Với thời gian sống năm phút, chỉ một lần đọc đã đủ bù cho lần ghi. Một tiền tố được ghi mà không bao giờ được đọc tốn hơn khoảng 25 % so với gửi nó không kèm đánh dấu. Đó là lý do "thêm `cache_control` ở mọi nơi" không phải là một mặc định an toàn: nó có lời với lưu lượng chat và agent quay lại trong vòng vài phút, và lỗ với các yêu cầu chỉ chạy một lần hoặc các prompt thay đổi mỗi lần.
+Vì ghi đắt hơn đầu vào thường, caching là một ván cược rằng tiền tố sẽ được đọc lại trước khi hết hạn. Với thời gian sống năm phút, chỉ một lần đọc đã đủ bù cho lần ghi. Một tiền tố được ghi mà không bao giờ được đọc tốn hơn khoảng 25% so với gửi nó không kèm đánh dấu. Đó là lý do "thêm `cache_control` ở mọi nơi" không phải là một mặc định an toàn: nó có lời với lưu lượng chat và agent quay lại trong vòng vài phút, và lỗ với các yêu cầu chỉ chạy một lần hoặc các prompt thay đổi mỗi lần.
 
 ## BV-SALA xử lý việc này ra sao
 
@@ -110,7 +110,7 @@ console.log(report.nativeSavings?.netUsd); // read discount minus write premium;
 
 `report.nativeSavings` là khoản chiết khấu của Anthropic, hiển thị riêng: lớp này không bao giờ tính nó là khoản tiết kiệm của mình, nên báo cáo của bạn cộng lại khớp với hóa đơn.
 
-**Trường hợp bạn nên tắt việc đánh dấu.** Khi không có khóa, nếu system prompt của bạn thay đổi ở mỗi yêu cầu (một timestamp, một user id), hoặc các lệnh gọi cách nhau hơn năm phút trong các tiến trình mới, việc đánh dấu mặc định sẽ ghi một mục cache mà không ai đọc, và README nêu rõ rằng điều này tốn hơn khoảng 20 % so với không dùng lớp. Hãy chuyển phần thay đổi vào message của người dùng, hoặc tắt việc đánh dấu:
+**Trường hợp bạn nên tắt việc đánh dấu.** Khi không có khóa, nếu system prompt của bạn thay đổi ở mỗi yêu cầu (một timestamp, một user id), hoặc các lệnh gọi cách nhau hơn năm phút trong các tiến trình mới, việc đánh dấu mặc định sẽ ghi một mục cache mà không ai đọc, và README nêu rõ rằng điều này tốn hơn khoảng 20% so với không dùng lớp. Hãy chuyển phần thay đổi vào message của người dùng, hoặc tắt việc đánh dấu:
 
 ```ts
 import { createSavingsLayer, AnthropicProvider } from "@bivelio/savings-layer";
@@ -136,7 +136,7 @@ export const reply = await layer.generate({
 });
 ```
 
-Việc sắp xếp lại opt-in đó chính là đòn bẩy đứng sau một thử nghiệm thực tế mang tính thăm dò được công bố trong README: trên `claude-haiku-4-5`, trong một chuỗi được dựng sẵn mà timestamp đầu độc cache, nó đưa tỷ lệ trúng cache từ 0 % lên 95 % và giảm chi phí mỗi yêu cầu 82.76 %, so với chính lớp này khi không bật tùy chọn, 20 yêu cầu mỗi nhánh, đo bằng phiên bản 1.2.0 ngày 15 tháng 11 năm 2026. Đây là một thử nghiệm nhỏ và được dựng sẵn, không phải dự báo cho lưu lượng của bạn.
+Việc sắp xếp lại opt-in đó chính là đòn bẩy đứng sau một thử nghiệm thực tế mang tính thăm dò được công bố trong README: trên `claude-haiku-4-5`, trong một chuỗi được dựng sẵn mà timestamp đầu độc cache, nó đưa tỷ lệ trúng cache từ 0% lên 95% và giảm chi phí mỗi yêu cầu 82,76%, so với chính lớp này khi không bật tùy chọn, 20 yêu cầu mỗi nhánh, đo bằng phiên bản 1.2.0 ngày 15 tháng 11 năm 2026. Đây là một thử nghiệm nhỏ và được dựng sẵn, không phải dự báo cho lưu lượng của bạn.
 
 ## Đối chiếu với số liệu của Anthropic
 

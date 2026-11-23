@@ -5,7 +5,7 @@ Jedes Tool für LLM-Kosten zeigt eine Einsparung an. Nur wenige zeigen, wie man 
 Die Lücke kommt fast immer aus einer dieser Quellen:
 
 - **Listenpreis gegen deinen Preis.** Tools bepreisen Tokens zu öffentlichen Listenpreisen. Deine Rechnung kann Rabatte, Verträge mit Mindestabnahme, regionale Tarife oder Tarife für Datenresidenz, Priority Tiers und Steuern enthalten.
-- **Schätzungen, die als Messungen ausgegeben werden.** Hat ein Tool 2,000 Tokens aus einem Prompt entfernt, hat der Anbieter sie nie gezählt. Die „gesparte“ Zahl ist die eigene Zählung des Tools, gemacht mit einem Tokenizer, der vielleicht nicht der des Anbieters ist.
+- **Schätzungen, die als Messungen ausgegeben werden.** Hat ein Tool 2.000 Tokens aus einem Prompt entfernt, hat der Anbieter sie nie gezählt. Die „gesparte“ Zahl ist die eigene Zählung des Tools, gemacht mit einem Tokenizer, der vielleicht nicht der des Anbieters ist.
 - **Der Rabatt des Anbieters als Leistung des Tools.** Prompt-Caching bei OpenAI, Anthropic, DeepSeek oder Gemini rechnet der Anbieter zu einem niedrigeren Tarif ab. Ein Tool, das diesen Rabatt als eigene Einsparung zählt, bläht seine Zahl auf.
 - **Traffic, den das Tool nie gesehen hat.** Aufrufe aus einem anderen Service, das Skript eines Teamkollegen, Nebenanfragen eines Coding-Agents oder ein Batch-Job erscheinen alle auf der Rechnung und nicht im Tool.
 - **Fehlende Nutzungsdaten.** Eine gestreamte Anfrage ohne ihr abschließendes Usage-Event hat überhaupt keine Token-Zahlen. Wird sie stillschweigend als null gezählt, sieht alles danach günstiger aus.
@@ -124,6 +124,6 @@ Wende dann Schritt 2 auf diese Summen an: Die `measured`-Ausgaben der Schicht so
 
 ## Dieselbe Methode, öffentlich angewendet
 
-Das Projekt veröffentlicht seine eigenen A/B-Läufe auf der [Benchmark-Seite](/de/benchmarks): zwei Arme mit denselben Anfragen, einer direkt zum Anbieter und einer durch die Schicht, beide mit dem eigenen Nutzungszähler des Anbieters gemessen, mit 95 %-Intervallen sowie Datum und Version jedes Laufs. Ergebnisse, die nichts gespart oder mehr gekostet haben, stehen auf derselben Seite. Die vollständige Methode, der Schätzer und seine Grenzen stehen im [Paper](/de/paper).
+Das Projekt veröffentlicht seine eigenen A/B-Läufe auf der [Benchmark-Seite](/de/benchmarks): zwei Arme mit denselben Anfragen, einer direkt zum Anbieter und einer durch die Schicht, beide mit dem eigenen Nutzungszähler des Anbieters gemessen, mit 95 %-Intervallen sowie Datum und Version jedes Laufs. Ergebnisse, die nichts gespart oder mehr gekostet haben, stehen auf derselben Seite. Die vollständige Methode, der Schätzer und seine Grenzen stehen im [Paper](/de/paper).
 
 Die anbieterspezifischen Details findest du unter [warum cached_tokens bei OpenAI 0 ist](/de/guides/openai-prompt-caching-cached-tokens), [warum Claudes Prompt-Caching nicht funktioniert](/de/guides/claude-prompt-caching-not-working) und [die Kosten von Claude Code pro Anfrage messen](/de/guides/claude-code-cost-per-request). Code und Rohberichte liegen auf [GitHub](https://github.com/BiVelio/bivelio-savings-layer).

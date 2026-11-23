@@ -5,7 +5,7 @@ Elke tool voor LLM-kosten toont een besparingscijfer. Weinig tools laten zien ho
 Het verschil komt bijna altijd uit een van deze hoeken:
 
 - **Lijstprijs tegenover jouw prijs.** Tools beprijzen tokens tegen openbare lijstprijzen. Je factuur kan kortingen, contracten met afnameverplichting, regionale tarieven of tarieven voor dataresidentie, prioriteitsniveaus en belastingen bevatten.
-- **Schattingen gepresenteerd als metingen.** Als een tool 2,000 tokens uit een prompt heeft gehaald, heeft de provider die nooit geteld. Het “bespaarde” getal is de eigen telling van de tool, gemaakt met een tokenizer die misschien niet die van de provider is.
+- **Schattingen gepresenteerd als metingen.** Als een tool 2.000 tokens uit een prompt heeft gehaald, heeft de provider die nooit geteld. Het “bespaarde” getal is de eigen telling van de tool, gemaakt met een tokenizer die misschien niet die van de provider is.
 - **De korting van de provider opgeëist door de tool.** Prompt caching bij OpenAI, Anthropic, DeepSeek of Gemini wordt door de provider tegen een lager tarief gefactureerd. Een tool die die korting als eigen besparing telt, blaast zijn getal op.
 - **Verkeer dat de tool nooit heeft gezien.** Aanroepen vanuit een andere service, het script van een collega, de bijverzoeken van een coding-agent of een batchjob staan allemaal op de factuur en niet in de tool.
 - **Ontbrekende usage.** Een gestreamd verzoek zonder het afsluitende usage-event heeft helemaal geen tokentellingen. Het stilzwijgend als nul tellen laat alles wat erna komt goedkoper lijken.
@@ -124,6 +124,6 @@ Pas daarna stap 2 hierboven toe op deze totalen: de `measured`-uitgaven van de l
 
 ## Dezelfde methode, in het openbaar toegepast
 
-Het project publiceert zijn eigen A/B-runs op de [benchmarkpagina](/nl/benchmarks): twee armen op dezelfde verzoeken, één rechtstreeks naar de provider en één via de laag, beide gemeten met de eigen gebruiksteller van de provider, met 95 %-intervallen en de datum en versie van elke run. Resultaten die niets bespaarden, of meer kostten, staan op dezelfde pagina. De volledige methode, de schatter en de beperkingen ervan staan in [de paper](/nl/paper).
+Het project publiceert zijn eigen A/B-runs op de [benchmarkpagina](/nl/benchmarks): twee armen op dezelfde verzoeken, één rechtstreeks naar de provider en één via de laag, beide gemeten met de eigen gebruiksteller van de provider, met 95%-intervallen en de datum en versie van elke run. Resultaten die niets bespaarden, of meer kostten, staan op dezelfde pagina. De volledige methode, de schatter en de beperkingen ervan staan in [de paper](/nl/paper).
 
 Voor de providerspecifieke details, zie [waarom cached_tokens van OpenAI 0 is](/nl/guides/openai-prompt-caching-cached-tokens), [waarom prompt caching van Claude niet werkt](/nl/guides/claude-prompt-caching-not-working) en [de kosten van Claude Code per verzoek meten](/nl/guides/claude-code-cost-per-request). De code en de ruwe rapporten staan op [GitHub](https://github.com/BiVelio/bivelio-savings-layer).

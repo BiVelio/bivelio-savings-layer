@@ -11,7 +11,7 @@ Les tokens en cache font partie du total d'entrée, ils ne s'y ajoutent pas. Le 
 
 ## Pourquoi cached_tokens vaut 0
 
-1. **Le prompt est trop court.** La mise en cache démarre à environ 1,024 tokens de prompt ; le seuil exact et l'arrondi du nombre de tokens en cache dépendent du modèle. Un prompt système de 600 tokens suivi d'une question courte n'atteint jamais le cache, et rien ne vous le signale.
+1. **Le prompt est trop court.** La mise en cache démarre à environ 1 024 tokens de prompt ; le seuil exact et l'arrondi du nombre de tokens en cache dépendent du modèle. Un prompt système de 600 tokens suivi d'une question courte n'atteint jamais le cache, et rien ne vous le signale.
 2. **Le début du prompt change.** Le cache compare à partir du tout premier token. Un horodatage, un identifiant de requête ou le nom de l'utilisateur dans le premier message rend chaque requête unique dès le premier token. Les outils, les images et les formats de réponse font aussi partie du préfixe : des outils listés dans un autre ordre, ou un schéma sérialisé différemment, cassent la correspondance.
 3. **L'entrée a été évincée du cache.** Les entrées sont conservées peu de temps après leur dernière utilisation, généralement quelques minutes quand le trafic est calme. Des requêtes espacées d'une heure tombent rarement dans le cache.
 4. **Le trafic est dispersé.** Les requêtes sont routées selon un hash du début du prompt. Un très gros volume avec le même préfixe déborde vers d'autres machines qui ne détiennent pas l'entrée. Le paramètre `prompt_cache_key` d'OpenAI regroupe les requêtes qui partagent un préfixe ; utilisez une clé par template de prompt, pas par utilisateur, et gardez un débit modéré pour chaque clé, comme l'explique le guide.
@@ -73,7 +73,7 @@ export function cachedShare(u: OpenAIUsage): number {
 }
 ```
 
-Regroupez-la par template de prompt. Un template dont la part reste à 0 % alors que ses prompts dépassent 1,024 tokens a quelque chose qui change près du début : enregistrez deux requêtes et comparez-les caractère par caractère, comme le montre [la version Claude de ce guide](/fr/guides/claude-prompt-caching-not-working#trouvez-loctet-qui-casse-votre-cache).
+Regroupez-la par template de prompt. Un template dont la part reste à 0 % alors que ses prompts dépassent 1 024 tokens a quelque chose qui change près du début : enregistrez deux requêtes et comparez-les caractère par caractère, comme le montre [la version Claude de ce guide](/fr/guides/claude-prompt-caching-not-working#trouvez-loctet-qui-casse-votre-cache).
 
 ## Comment BV-SALA aide
 

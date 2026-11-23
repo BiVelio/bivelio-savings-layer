@@ -11,7 +11,7 @@ Els tokens en memòria cau formen part del total d'entrada; no s'hi sumen. La [g
 
 ## Per què cached_tokens és 0
 
-1. **El prompt és massa curt.** La memòria cau comença a partir d'uns 1,024 tokens de prompt; el llindar exacte i com s'arrodoneix el recompte en memòria cau depenen del model. Un prompt de sistema de 600 tokens i una pregunta curta no encerten mai a la memòria cau, i res no te n'avisa.
+1. **El prompt és massa curt.** La memòria cau comença a partir d'uns 1.024 tokens de prompt; el llindar exacte i com s'arrodoneix el recompte en memòria cau depenen del model. Un prompt de sistema de 600 tokens i una pregunta curta no encerten mai a la memòria cau, i res no te n'avisa.
 2. **Canvia el principi del prompt.** La memòria cau coincideix des del mateix primer token. Un timestamp, un id de petició o el nom de l'usuari al primer missatge fan que cada petició sigui única des del primer token. Les eines, les imatges i els formats de resposta també formen part del prefix, així que unes eines llistades en un altre ordre, o un schema serialitzat d'una altra manera, trenquen la coincidència.
 3. **L'entrada s'ha expulsat de la memòria cau.** Les entrades es conserven poc temps després de l'últim ús, normalment minuts quan hi ha poc trànsit. Les peticions separades per una hora rarament encerten.
 4. **El trànsit es reparteix.** Les peticions s'encaminen segons un hash del principi del prompt. Un volum molt alt amb el mateix prefix es desborda cap a altres màquines que no tenen l'entrada. El paràmetre `prompt_cache_key` d'OpenAI agrupa les peticions que comparteixen prefix; fes servir una clau per plantilla de prompt, no per usuari, i mantén moderat el ritme de peticions de cada clau, com explica la guia.
@@ -19,7 +19,7 @@ Els tokens en memòria cau formen part del total d'entrada; no s'hi sumen. La [g
 
 ## Prova-ho en dos minuts
 
-Abans de depurar la teva aplicació, comprova primer de tot que la memòria cau funciona amb el teu compte i el teu model. Envia el mateix prompt llarg dues vegades, amb uns segons de diferència, i llegeix l'ús de cada resposta:
+Abans de depurar la teva aplicació, comprova que la memòria cau arriba a funcionar amb el teu compte i el teu model. Envia el mateix prompt llarg dues vegades, amb uns segons de diferència, i llegeix l'ús de cada resposta:
 
 ```bash
 # A system prompt well above the threshold, sent twice. The second answer should report cached tokens.
@@ -73,7 +73,7 @@ export function cachedShare(u: OpenAIUsage): number {
 }
 ```
 
-Agrupa aquesta proporció per plantilla de prompt. Una plantilla amb una proporció que es queda al 0 % tot i que els seus prompts superen els 1,024 tokens té alguna cosa que canvia a prop del principi: registra dues peticions i compara-les caràcter a caràcter, com es mostra a [la versió d'aquesta guia per a Claude](/ca/guides/claude-prompt-caching-not-working#troba-el-byte-que-trenca-la-memòria-cau).
+Agrupa aquesta proporció per plantilla de prompt. Una plantilla amb una proporció que es queda al 0 % tot i que els seus prompts superen els 1.024 tokens té alguna cosa que canvia a prop del principi: registra dues peticions i compara-les caràcter a caràcter, com es mostra a [la versió d'aquesta guia per a Claude](/ca/guides/claude-prompt-caching-not-working#troba-el-byte-que-trenca-la-memòria-cau).
 
 ## Com hi ajuda BV-SALA
 

@@ -11,7 +11,7 @@ I token in cache fanno parte del totale di input, non si sommano a esso. La [gui
 
 ## Perché cached_tokens è 0
 
-1. **Il prompt è troppo corto.** La cache parte da circa 1,024 token di prompt; la soglia esatta e il modo in cui viene arrotondato il conteggio in cache dipendono dal modello. Un system prompt da 600 token più una domanda breve non arriva mai in cache, e niente te lo segnala.
+1. **Il prompt è troppo corto.** La cache parte da circa 1024 token di prompt; la soglia esatta e il modo in cui viene arrotondato il conteggio in cache dipendono dal modello. Un system prompt da 600 token più una domanda breve non arriva mai in cache, e niente te lo segnala.
 2. **L'inizio del prompt cambia.** La cache cerca la corrispondenza a partire dal primissimo token. Un timestamp, un id di richiesta o il nome dell'utente nel primo messaggio rende ogni richiesta unica fin dal primo token. Anche tool, immagini e formati di risposta fanno parte del prefisso, quindi tool elencati in un ordine diverso, o uno schema serializzato in modo diverso, rompono la corrispondenza.
 3. **La voce è stata rimossa dalla cache.** Le voci vengono conservate per poco tempo dopo l'ultimo utilizzo, di solito qualche minuto quando il traffico è basso. Richieste a un'ora di distanza raramente trovano la cache.
 4. **Il traffico è sparpagliato.** Le richieste vengono instradate in base a un hash dell'inizio del prompt. Volumi molto alti con lo stesso prefisso traboccano su altre macchine che non hanno la voce. Il parametro `prompt_cache_key` di OpenAI raggruppa le richieste che condividono un prefisso; usa una chiave per template di prompt, non per utente, e mantieni moderato il ritmo di richieste di ciascuna chiave, come spiega la guida.
@@ -73,7 +73,7 @@ export function cachedShare(u: OpenAIUsage): number {
 }
 ```
 
-Raggruppala per template di prompt. Un template la cui quota resta allo 0 % mentre i suoi prompt superano i 1,024 token ha qualcosa che cambia vicino all'inizio: registra due richieste e confrontale carattere per carattere, come mostrato nella [versione Claude di questa guida](/it/guides/claude-prompt-caching-not-working#trova-il-byte-che-rompe-la-cache).
+Raggruppala per template di prompt. Un template la cui quota resta allo 0% mentre i suoi prompt superano i 1024 token ha qualcosa che cambia vicino all'inizio: registra due richieste e confrontale carattere per carattere, come mostrato nella [versione Claude di questa guida](/it/guides/claude-prompt-caching-not-working#trova-il-byte-che-rompe-la-cache).
 
 ## Come aiuta BV-SALA
 
