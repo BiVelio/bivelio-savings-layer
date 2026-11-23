@@ -55,6 +55,7 @@ const CIFRAS_CON_FUENTE: Record<string, string> = {
   "$30": "code.claude.com/docs/en/costs: el 90 % por debajo de esto al día",
   "$113.45": "/benchmarks#gateway-ttl: neto del replay en dólares",
   "$4,563.61": "/benchmarks#gateway-ttl: factura a precio de lista de las peticiones simuladas",
+  "$0.003": "catálogo 1.2.3 (cachedInputPer1k 3e-6 en deepseek-flash y deepseek-v4-pro) y api-docs.deepseek.com/quick_start/pricing (acierto fuera de punta de deepseek-flash), leído el 2026-11-23",
 };
 
 function enlaces(bloques: readonly Bloque[]): string[] {
@@ -157,6 +158,59 @@ describe.each(GUIAS.map((g) => g.slug))("la guía %s", (slug) => {
     for (const c of cifras) {
       const normal = c.replace(/(\d)%$/, "$1 %");
       expect(Object.keys(CIFRAS_CON_FUENTE), `cifra sin fuente: «${c}»`).toContain(normal);
+    }
+  });
+});
+
+/**
+ * Lo que encontró la revisión del PR #620 (2026-11-23), comprobado contra el
+ * paquete 1.2.3 y la documentación oficial de cada proveedor. Cada línea fija
+ * una frase que fue falsa para que no vuelva.
+ */
+describe("lo que corrigió la revisión del PR #620", () => {
+  it("el envoltorio `qwen` no se vende para modelos Qwen: la ruta es el modo OpenAI de Qwen Code contra el gateway", () => {
+    const t = fuente("deepseek-qwen-api-cost-local-gateway");
+    expect(t).not.toMatch(/`npx @bivelio\/savings-layer qwen` launches it through the gateway/);
+    expect(t).toMatch(/OPENAI_BASE_URL=http:\/\/127\.0\.0\.1:8404\/compatible-mode\/v1/);
+  });
+
+  it("un stream sin include_usage no se mide en la 1.2.3, y la guía da la salida (BVSALA_GATEWAY_USAGE_INJECT=1)", () => {
+    expect(fuente("deepseek-qwen-api-cost-local-gateway")).toMatch(/BVSALA_GATEWAY_USAGE_INJECT=1/);
+  });
+
+  it("el catálogo no se describe «a precio de punta»: el acierto de caché de DeepSeek está por debajo", () => {
+    expect(fuente("deepseek-qwen-api-cost-local-gateway")).not.toMatch(/priced at the peak rate/);
+  });
+
+  it("`reference` solo en las tres API propias (OpenAI, Anthropic, Gemini); DeepSeek es `estimated`", () => {
+    for (const slug of ["deduplicate-llm-requests", "verify-llm-savings-against-provider-bill"]) {
+      expect(fuente(slug)).toMatch(/OpenAI's, Anthropic's or Google's/);
+    }
+    expect(fuente("deduplicate-llm-requests")).toMatch(/generativelanguage\.googleapis\.com/);
+    expect(fuente("deduplicate-llm-requests")).not.toMatch(/went to the provider's own API/);
+  });
+
+  it("Claude Code: la 1.2.3 no avisa de que no ahorra; el modo rápido pasa por el gateway; tool search depende de la versión", () => {
+    const t = fuente("claude-code-cost-per-request");
+    expect(t).not.toMatch(/saves nothing, and it says so/);
+    expect(t).not.toMatch(/fast mode and the WebFetch safety check go straight/);
+    expect(t).toMatch(/fast-mode availability check/);
+    expect(t).toMatch(/v2\.1\.304/);
+  });
+
+  it("OpenAI: las escrituras de caché de GPT-5.6 en adelante se registran y se pagan", () => {
+    const t = fuente("reduce-openai-api-costs");
+    expect(t).toMatch(/cache_write_tokens/);
+    expect(t).toMatch(/1\.25 times/);
+    expect(t).not.toMatch(/bill again at full price/);
+  });
+
+  it("ninguna página de guías da 404 por idioma: se sirven en inglés bajo cualquier prefijo, con el canonical en /en", () => {
+    const dir = dirname(fileURLToPath(import.meta.url));
+    for (const f of ["page.tsx", join("[slug]", "page.tsx")]) {
+      const src = readFileSync(join(dir, f), "utf8");
+      expect(src, f).not.toMatch(/locale\s*!==\s*IDIOMA_DE_LAS_GUIAS\)\s*(notFound|return)/);
+      expect(src, f).toMatch(/canonical: url, languages: \{ en: url, "x-default": url \}/);
     }
   });
 });

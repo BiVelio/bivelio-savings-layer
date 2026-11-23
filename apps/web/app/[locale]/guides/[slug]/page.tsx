@@ -17,14 +17,13 @@ import { datosEstructurados, fechaLegible, minutosDeLectura } from "../articulo"
 import { GUIAS, IDIOMA_DE_LAS_GUIAS, guiaPorSlug, urlDeGuia } from "../registry";
 
 /**
- * /en/guides/<slug> — UNA GUÍA. Solo existe en inglés: en los otros once
- * idiomas la página llama a `notFound()`, y `dynamicParams = false` deja en 404
- * cualquier slug que no esté en el registro.
- *
- * Por qué los slugs se generan para TODOS los idiomas y no solo para `en`: si
- * esta función devuelve `[]` para un idioma, Next (15.5) pasa los parámetros
- * del padre sin `slug` y la ruta entera se queda sin páginas, también en
- * inglés. Generar las doce y dar 404 en once es lo que funciona.
+ * /<idioma>/guides/<slug> — UNA GUÍA. El texto solo existe en inglés y se sirve
+ * igual bajo los doce prefijos, como el paper y la guía de migración: con
+ * `lang="en"` en el artículo, una línea que lo dice fuera de /en, y el
+ * `canonical` (y los `hreflang` de la página) en /en. Así ni el selector de
+ * idioma ni la cabecera `Link:` que añade el middleware de next-intl llevan
+ * nunca a un 404. `dynamicParams = false` deja en 404 cualquier slug que no
+ * esté en el registro.
  *
  * El texto es `../content/<slug>.md`, leído al construir. La forma es la de la
  * guía de migración (cabecera con la firma de campaña, índice a la izquierda,
@@ -42,15 +41,16 @@ export function generateStaticParams() {
 type Params = { params: Promise<{ locale: string; slug: string }> };
 
 export async function generateMetadata({ params }: Params): Promise<Metadata> {
-  const { locale, slug } = await params;
+  const { slug } = await params;
   const guia = guiaPorSlug(slug);
-  if (!guia || locale !== IDIOMA_DE_LAS_GUIAS) return {};
+  if (!guia) return {};
   const url = urlDeGuia(slug);
   const social = tarjetaSocial(IDIOMA_DE_LAS_GUIAS, guia.title);
   return {
     title: `${guia.title} · BiVelio`,
     description: guia.description,
-    alternates: { canonical: url },
+    // Una sola edición: la inglesa. Las otras once URL son la misma página.
+    alternates: { canonical: url, languages: { en: url, "x-default": url } },
     authors: [{ name: "BiVelio" }],
     openGraph: {
       title: guia.title,
@@ -70,7 +70,7 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
 export default async function GuidePage({ params }: Params) {
   const { locale, slug } = await params;
   const guia = guiaPorSlug(slug);
-  if (!guia || locale !== IDIOMA_DE_LAS_GUIAS) notFound();
+  if (!guia) notFound();
   setRequestLocale(locale);
   const t = await getTranslations("docsPage");
   const tu = await getTranslations("ui");
@@ -115,6 +115,12 @@ export default async function GuidePage({ params }: Params) {
                 ) : null}{" "}
                 · {minutosDeLectura(bloques)} min read
               </p>
+              {/* Interfaz, no artículo: va en el idioma de quien lee. */}
+              {locale === IDIOMA_DE_LAS_GUIAS ? null : (
+                <p className="doc-nota" lang={locale}>
+                  {t("englishOnly")}
+                </p>
+              )}
               <Bloques bloques={entradilla} copiar={copiar} />
             </section>
           </GridBackground>

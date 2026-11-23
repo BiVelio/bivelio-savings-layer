@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
-import { notFound } from "next/navigation";
-import { setRequestLocale } from "next-intl/server";
+import { getTranslations, setRequestLocale } from "next-intl/server";
 
 import { HeroeDeCampana } from "@/app/components/campana/HeroeDeCampana";
 import { Migas } from "@/app/components/docs/Migas";
@@ -13,9 +12,11 @@ import { fechaLegible } from "./articulo";
 import { GUIAS, IDIOMA_DE_LAS_GUIAS, urlDeGuia } from "./registry";
 
 /**
- * /en/guides — EL ÍNDICE DE LAS GUÍAS. Solo en inglés: en cualquier otro idioma
- * la página llama a `notFound()`, así que esas once URL son 404 (el sitemap no
- * las anuncia). La lista sale de `registry.ts`.
+ * /<idioma>/guides — EL ÍNDICE DE LAS GUÍAS. Las guías están en inglés y se
+ * sirven igual bajo los doce prefijos, con el `canonical` en /en (como el
+ * paper): el selector de idioma y la cabecera `Link:` del middleware nunca
+ * llevan a un 404, y el sitemap anuncia solo /en. La lista sale de
+ * `registry.ts`.
  */
 export const dynamic = "force-static";
 
@@ -23,15 +24,13 @@ const TITULO = "Guides to cutting your LLM API bill";
 const DESCRIPCION =
   "Practical guides to lower OpenAI, Anthropic, DeepSeek and Qwen API costs: caching, deduplication, Claude Code spend per request, and how to verify savings on your bill.";
 
-export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
-  const { locale } = await params;
-  if (locale !== IDIOMA_DE_LAS_GUIAS) return {};
+export function generateMetadata(): Metadata {
   const url = urlDeGuia();
   const social = tarjetaSocial(IDIOMA_DE_LAS_GUIAS, TITULO);
   return {
     title: `${TITULO} · BiVelio`,
     description: DESCRIPCION,
-    alternates: { canonical: url },
+    alternates: { canonical: url, languages: { en: url, "x-default": url } },
     openGraph: { title: TITULO, description: DESCRIPCION, url, siteName: "BiVelio Savings Layer", type: "website", ...social.openGraph },
     twitter: { ...social.twitter, title: TITULO, description: DESCRIPCION },
   };
@@ -39,8 +38,8 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
 
 export default async function GuidesIndexPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
-  if (locale !== IDIOMA_DE_LAS_GUIAS) notFound();
   setRequestLocale(locale);
+  const t = await getTranslations("docsPage");
 
   return (
     <div className="lp terms-page doc-page">
@@ -51,6 +50,11 @@ export default async function GuidesIndexPage({ params }: { params: Promise<{ lo
               <Migas actual="Guides" lang="en" />
               <span className="eyebrow">Guides · LLM API costs</span>
               <h1>{TITULO}</h1>
+              {locale === IDIOMA_DE_LAS_GUIAS ? null : (
+                <p className="doc-nota" lang={locale}>
+                  {t("englishOnly")}
+                </p>
+              )}
               <p>
                 Practical, provider-neutral guides for developers who pay a per-token bill. Each one teaches the
                 technique first, so it is useful without any tool; then shows how the open-source BV-SALA layer does it,

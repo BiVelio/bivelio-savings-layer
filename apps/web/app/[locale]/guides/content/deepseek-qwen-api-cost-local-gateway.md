@@ -89,6 +89,8 @@ The same works for Qwen with the other gateway and `OpenAI(base_url="https://das
 
 Any other language or tool works too: point its OpenAI base URL at the gateway, and each request becomes one line in the gateway's log, with the model, the cost at list price and the input split into full-price tokens and cache reads (`cache↓`).
 
+One exception matters for chat tools and agents. A **streamed** request that does not ask for usage (`stream_options: {"include_usage": true}`) gets no usage from the provider, so version 1.2.3 logs it as `not metered: the request did not ask for usage`, with no cost. Either ask for usage in your client, as the Python example in the README does, or start the gateway with `BVSALA_GATEWAY_USAGE_INJECT=1`, which adds that option to streamed requests that lack it. With injection on, the last chunk of those streams has an empty `choices` list, which code that reads `choices[0]` without checking does not expect.
+
 ## Coding agents on DeepSeek or Qwen
 
 DeepSeek also publishes an Anthropic-format endpoint, and documents how to use it with Claude Code. With `--upstream deepseek`, the gateway sends Anthropic-format requests to that endpoint by itself:
@@ -98,16 +100,25 @@ npx @bivelio/savings-layer gateway --upstream deepseek --port 8402
 ANTHROPIC_BASE_URL=http://127.0.0.1:8402 ANTHROPIC_AUTH_TOKEN="$DEEPSEEK_API_KEY" ANTHROPIC_MODEL=deepseek-flash claude
 ```
 
-Running a non-Claude model behind Claude Code is DeepSeek's integration, not a setup Anthropic supports, and the quality of the model for your work is yours to judge. For Qwen Code, `npx @bivelio/savings-layer qwen` launches it through the gateway.
+Running a non-Claude model behind Claude Code is DeepSeek's integration, not a setup Anthropic supports, and the quality of the model for your work is yours to judge.
+
+**Qwen Code on Qwen models** needs a different route. The package's `qwen` wrapper does not cover it: in version 1.2.3, `npx @bivelio/savings-layer qwen` runs Qwen Code with its Anthropic auth type and forwards to Anthropic's API, so it only meters Claude models used with an Anthropic key, and it refuses a DashScope Anthropic-format base URL. For Qwen models, use Qwen Code's OpenAI-compatible mode, which [its documentation](https://qwenlm.github.io/qwen-code-docs/en/users/configuration/auth/) configures with `OPENAI_API_KEY`, `OPENAI_BASE_URL` and `OPENAI_MODEL`, and point that base URL at a gateway:
+
+```bash
+npx @bivelio/savings-layer gateway --upstream https://dashscope-intl.aliyuncs.com --port 8404
+OPENAI_BASE_URL=http://127.0.0.1:8404/compatible-mode/v1 OPENAI_API_KEY="$DASHSCOPE_API_KEY" OPENAI_MODEL=qwen-plus qwen
+```
+
+We checked the gateway side of this route with version 1.2.3, not Qwen Code itself, so read the gateway's log: each request should be one line with a cost. If the lines say `not metered`, they say why. Two reasons are likely: streams that do not ask for usage (restart the gateway with `BVSALA_GATEWAY_USAGE_INJECT=1`, as above), or a model with no row in the 1.2.3 catalog, which has `qwen-plus`, `qwen-flash`, `qwen3.7-flash`, `qwen3.8-flash` and `qwen3.8-max`. A model without a row, such as `qwen3-coder-plus` from Qwen Code's own configuration examples, is forwarded and not metered.
 
 ## What the gateway measures, and what it does not
 
-- **Metering is at list price.** The gateway prices each request with a versioned catalog. In version 1.2.3 it has rows for `deepseek-flash` and `deepseek-v4-pro`, priced at the peak rate, so off-peak traffic shows a higher cost than DeepSeek bills. The classic `deepseek-chat` alias has no row: it is forwarded, and the log says it was not metered.
-- **It does not change these requests.** On OpenAI-compatible traffic the gateway measures and forwards; its saving levers are for Anthropic-format traffic. The saving on DeepSeek and Qwen comes from their own caches, which is why the hit count is the number to watch.
+- **The dollar figure comes from a catalog, not from DeepSeek's time-of-day prices.** Version 1.2.3 has rows for `deepseek-flash` and `deepseek-v4-pro`. For cache misses and output they use DeepSeek's peak price, so in off-peak hours those buckets show twice what DeepSeek bills. For cache hits both rows use $0.003 per million tokens, which is DeepSeek's off-peak hit price for `deepseek-flash` (its peak hit price is twice that) and below both hit prices DeepSeek publishes for `deepseek-v4-pro` ([pricing page](https://api-docs.deepseek.com/quick_start/pricing), read on 23 November 2026). Depending on the hour and on how much of your input hits the cache, the gateway's total can come out above or below the bill. The token counts are exact; compare those first. The classic `deepseek-chat` alias has no row: it is forwarded, and the log says it was not metered.
+- **It does not change these requests.** On OpenAI-compatible traffic the gateway measures and forwards (the only exception is the opt-in usage injection above); its saving levers are for Anthropic-format traffic. The saving on DeepSeek and Qwen comes from their own caches, which is why the hit count is the number to watch.
 
 ## If you call DeepSeek or Qwen from TypeScript
 
-The BV-SALA SDK talks to any OpenAI-compatible endpoint and skips exact repeats and identical requests in flight, free and with no key ([how that works](/en/guides/deduplicate-llm-requests)). One caution for agent loops: its default trimming of superseded tool results rewrites the middle of the history, and on a provider that caches the whole prompt by itself that can cost more than it saves. The project's changelog reports +166 % on a 60-step agent loop on DeepSeek, measured against a fake provider with versions 1.2.3 and 1.2.4 and no key. For agent loops, switch it off per request:
+The BV-SALA SDK talks to any OpenAI-compatible endpoint and skips exact repeats and identical requests in flight, free and with no key ([how that works](/en/guides/deduplicate-llm-requests)). On DeepSeek those avoided calls are reported as `estimated`, not `reference`: version 1.2.3 values a repeat by reference only when the call that ran went to OpenAI's, Anthropic's or Google's own API. One caution for agent loops: its default trimming of superseded tool results rewrites the middle of the history, and on a provider that caches the whole prompt by itself that can cost more than it saves. The project's changelog reports +166 % on a 60-step agent loop on DeepSeek, measured against a fake provider with versions 1.2.3 and 1.2.4 and no key. For agent loops, switch it off per request:
 
 ```ts
 // npm i @bivelio/savings-layer   (ESM: a "type": "module" project or a .mts file)
@@ -127,4 +138,4 @@ console.log(text, report.tokens.providerCachedInput, report.cost.basis);
 
 ## Check the numbers against your provider
 
-Once a day, compare the gateway's totals per model (input, cache hits, output) with the usage page of the DeepSeek platform or Model Studio for the same key. Token counts should match. Dollar amounts can differ for a known reason: the catalog's list price against your real price (off-peak hours, regional prices, discounts). For a step-by-step method, see [how to verify LLM savings against your provider's bill](/en/guides/verify-llm-savings-against-provider-bill). The gateway's code and its per-terminal guides are on [GitHub](https://github.com/BiVelio/bivelio-savings-layer), and what the project has measured, and what it has not, is on the [benchmarks page](/en/benchmarks).
+Once a day, compare the gateway's totals per model (input, cache hits, output) with the usage page of the DeepSeek platform or Model Studio for the same key. Token counts should match. Dollar amounts can differ, in either direction, for known reasons: the catalog's prices are not DeepSeek's time-of-day prices (see above), and regional prices or discounts change the money too. For a step-by-step method, see [how to verify LLM savings against your provider's bill](/en/guides/verify-llm-savings-against-provider-bill). The gateway's code and its per-terminal guides are on [GitHub](https://github.com/BiVelio/bivelio-savings-layer), and what the project has measured, and what it has not, is on the [benchmarks page](/en/benchmarks).
