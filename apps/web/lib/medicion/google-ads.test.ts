@@ -111,9 +111,20 @@ describe("los parámetros que gtag llega a ver", () => {
     // Un `next` con más de lo que hace falta pierde lo que sobra; uno ajeno, entero.
     expect(urlSinParametrosSobrantes(`${O}/es/signup/success?next=%2Fes%2Fdashboard%3Femail%3Da%2540b.c`)).toBe("/es/signup/success?next=%2Fes%2Fdashboard");
     expect(urlSinParametrosSobrantes(`${O}/es/signup/success?next=https%3A%2F%2Fevil.example%2F`)).toBe("/es/signup/success");
-    expect(urlSinParametrosSobrantes(`${O}/es/pricing?plan=pro`)).toBeNull();
+    expect(urlSinParametrosSobrantes(`${O}/es/pricing?plan=pro`)).toBe("/es/pricing?plan=pro");
     expect(urlSinParametrosSobrantes(`${O}/es/pricing?plan=ana%40example.com`)).toBe("/es/pricing");
-    expect(urlSinParametrosSobrantes(`${O}/es/pricing`)).toBeNull();
+    expect(urlSinParametrosSobrantes(`${O}/es/pricing`)).toBe("/es/pricing");
+    expect(urlSinParametrosSobrantes("no es una url")).toBeNull();
+  });
+
+  it("un `next` que no se puede leer se quita y la limpieza sigue (revisión 3)", () => {
+    for (const next of ["http:", "https://", "http://[", "https://host:99999/", "//evil.example"]) {
+      const href = `${O}/es/pricing?next=${encodeURIComponent(next)}&fbclid=abc&email=x%40y.z&utm_source=boletin`;
+      expect(() => urlSinParametrosSobrantes(href), next).not.toThrow();
+      expect(urlSinParametrosSobrantes(href), next).toBe("/es/pricing");
+    }
+    // Sin codificar, tal como llega en un enlace.
+    expect(urlSinParametrosSobrantes(`${O}/es/pricing?next=http://[&email=ana.prueba%40example.com&utm_source=boletin`)).toBe("/es/pricing");
   });
 
   it("se quedan todos los que leen las páginas donde corre gtag", () => {
@@ -134,6 +145,9 @@ describe("los parámetros que gtag llega a ver", () => {
   it("la etiqueta limpia la barra ANTES de definir gtag, da la página solo con set y no puede lanzar", () => {
     const src = leer("app/components/EtiquetaGoogleAds.tsx");
     expect(src.indexOf("history.replaceState(history.state")).toBeLessThan(src.indexOf("w.gtag = function gtag()"));
+    // Si la limpieza no se puede calcular, no se carga (antes, null se tomaba por «ya limpia»).
+    expect(src).toContain("if (limpia === null) return;");
+    expect(src.indexOf("if (limpia === null) return;")).toBeLessThan(src.indexOf("w.gtag = function gtag()"));
     // La página va solo en `set` (el `page_location` de `config` se quedaría pegado a la primera).
     expect(src).toContain('w.gtag("config", ID_GOOGLE_ADS);');
     expect(src).not.toMatch(/w\.gtag\("config", ID_GOOGLE_ADS, /);
