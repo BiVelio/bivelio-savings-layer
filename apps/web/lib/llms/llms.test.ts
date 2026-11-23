@@ -69,7 +69,16 @@ describe("llms.txt (formato de llmstxt.org)", () => {
     }
     expect(RESUMEN).toMatch(/Its TypeScript SDK cuts LLM API spend/);
     expect(RESUMEN).toMatch(/prompt-cache placement on Anthropic/);
-    expect(RESUMEN).toMatch(/a local gateway that meters coding agents/);
+    expect(RESUMEN).toMatch(/a local\s+gateway that meters coding agents/);
+    // 1.2.3: un modelo local no tiene precio de lista; el gateway lo reenvía y
+    // no lo mide en dólares (`bvsala doctor` lo dice). No entra en «meters».
+    expect(RESUMEN).toMatch(/MiniMax or OpenRouter, for models with a list price in its catalog;/);
+    expect(RESUMEN).toMatch(/forwards to a local server \(Ollama, vLLM, LM Studio\), whose models have no list price and are not metered in dollars/);
+    expect(RESUMEN).not.toMatch(/OpenRouter or a local server/);
+    // Cada cifra con su etiqueta: solo measured y reference salen del contador del proveedor.
+    expect(RESUMEN).not.toMatch(/each request's report is valued with the provider's own usage counter/);
+    expect(RESUMEN).toMatch(/labels every figure `measured`, `reference` or `estimated`; only measured and reference figures come from the provider's own usage counter/);
+    expect(readme).toMatch(/Only `measured` and `reference` figures are credited/);
     expect(RESUMEN).toMatch(/Python package \(`bivelio-savings-layer` on PyPI\) is a measurement client/);
     expect(indice).toMatch(/The local gateway measures by default\. It has no exact cache/);
     expect(indice).toContain("`BVSALA_GATEWAY_COALESCE=1`");
