@@ -22,8 +22,8 @@ Els tres patrons et diuen on mirar:
 2. L'ordre és **tools, després system, després messages**. Un canvi a la llista d'eines invalida el prompt de sistema i els missatges que hi ha darrere.
 3. Pots col·locar fins a **quatre punts de tall**, i des de cadascun l'API busca enrere una entrada anterior en un nombre limitat de blocs (20 en el moment d'escriure això).
 4. Les entrades duren **cinc minuts** per defecte i es renoven amb cada encert. Amb `"ttl": "1h"` tens una durada d'una hora.
-5. Escriure costa més que llegir: una escriptura de cinc minuts es factura a 1.25 vegades el preu d'entrada i una d'una hora a 2 vegades; una lectura costa una petita fracció del preu d'entrada (0.1 vegades en la majoria de models). Consulta la [pàgina de preus d'Anthropic](https://platform.claude.com/docs/en/about-claude/pricing) per al teu model.
-6. Hi ha una **longitud mínima per entrar a la memòria cau** que depèn del model, de 512 a 4,096 tokens. Per sota, la petició simplement no es desa a la memòria cau, sense cap error.
+5. Escriure costa més que llegir: una escriptura de cinc minuts es factura a 1,25 vegades el preu d'entrada i una d'una hora a 2 vegades; una lectura costa una petita fracció del preu d'entrada (0,1 vegades en la majoria de models). Consulta la [pàgina de preus d'Anthropic](https://platform.claude.com/docs/en/about-claude/pricing) per al teu model.
+6. Hi ha una **longitud mínima per entrar a la memòria cau** que depèn del model, de 512 a 4.096 tokens. Per sota, la petició simplement no es desa a la memòria cau, sense cap error.
 
 Tot això és a la [documentació de prompt caching d'Anthropic](https://platform.claude.com/docs/en/build-with-claude/prompt-caching), que és la font fiable quan canvia alguna xifra.
 
@@ -79,7 +79,7 @@ export function cacheHitRate(u: ClaudeUsage): number {
 
 ## Et surt a compte la memòria cau amb el teu trànsit?
 
-Com que les escriptures costen més que l'entrada normal, fer servir la memòria cau és apostar que el prefix es tornarà a llegir abans de caducar. Amb la durada de cinc minuts, una sola lectura ja paga l'escriptura. Un prefix que s'escriu i no es llegeix mai costa prop d'un 25 % més que enviar-lo sense marca. Per això «posa `cache_control` a tot arreu» no és una opció per defecte segura: surt a compte en el trànsit de xat i d'agents que torna al cap de pocs minuts, i hi surt perdent en peticions soltes o en prompts que canvien cada vegada.
+Com que les escriptures costen més que l'entrada normal, fer servir la memòria cau és apostar que el prefix es tornarà a llegir abans de caducar. Amb la durada de cinc minuts, una sola lectura ja paga l'escriptura. Un prefix que s'escriu i no es llegeix mai costa prop d'un 25 % més que enviar-lo sense marca. Per això «posa `cache_control` a tot arreu» no és una opció per defecte segura: surt a compte en el trànsit de xat i d'agents que torna al cap de pocs minuts, i hi surt perdent en peticions soltes o en prompts que canvien cada vegada.
 
 ## Com ho resol BV-SALA
 
@@ -110,7 +110,7 @@ console.log(report.nativeSavings?.netUsd); // read discount minus write premium;
 
 `report.nativeSavings` és el descompte d'Anthropic, mostrat a part: la capa no el compta mai com a estalvi propi, de manera que el teu informe quadra amb la factura.
 
-**El cas en què convé desactivar les marques.** Sense clau, si el teu prompt de sistema canvia a cada petició (un timestamp, un id d'usuari) o les teves crides estan separades per més de cinc minuts en processos nous, el marcatge per defecte escriu una entrada de memòria cau que ningú no llegeix, i el README indica que això costa prop d'un 20 % més que sense capa. Passa el que canvia al missatge de l'usuari o desactiva les marques:
+**El cas en què convé desactivar les marques.** Sense clau, si el teu prompt de sistema canvia a cada petició (un timestamp, un id d'usuari) o les teves crides estan separades per més de cinc minuts en processos nous, el marcatge per defecte escriu una entrada de memòria cau que ningú no llegeix, i el README indica que això costa prop d'un 20 % més que sense capa. Passa el que canvia al missatge de l'usuari o desactiva les marques:
 
 ```ts
 import { createSavingsLayer, AnthropicProvider } from "@bivelio/savings-layer";
@@ -136,7 +136,7 @@ export const reply = await layer.generate({
 });
 ```
 
-Aquesta reordenació opcional és la palanca que hi ha darrere d'una prova exploratòria en viu publicada al README: amb `claude-haiku-4-5`, en una seqüència construïda en què un timestamp enverinava la memòria cau, va portar la taxa d'encerts del 0 % al 95 % i va abaixar el cost per petició un 82.76 %, en comparació amb la mateixa capa sense l'opció, amb 20 peticions per braç, mesurat amb la versió 1.2.0 el 15 de novembre de 2026. És una prova petita i construïda, no una previsió per al teu trànsit.
+Aquesta reordenació opcional és la palanca que hi ha darrere d'una prova exploratòria en viu publicada al README: amb `claude-haiku-4-5`, en una seqüència construïda en què un timestamp enverinava la memòria cau, va portar la taxa d'encerts del 0 % al 95 % i va abaixar el cost per petició un 82,76 %, en comparació amb la mateixa capa sense l'opció, amb 20 peticions per braç, mesurat amb la versió 1.2.0 el 15 de novembre de 2026. És una prova petita i construïda, no una previsió per al teu trànsit.
 
 ## Contrasta-ho amb les xifres d'Anthropic
 

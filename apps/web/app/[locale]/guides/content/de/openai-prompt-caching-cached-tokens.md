@@ -11,7 +11,7 @@ Die gecachten Tokens sind in der Eingabesumme enthalten, nicht zusätzlich. Open
 
 ## Warum cached_tokens 0 ist
 
-1. **Der Prompt ist zu kurz.** Caching beginnt bei etwa 1,024 Prompt-Tokens; die genaue Schwelle und wie die gecachte Zahl gerundet wird, hängen vom Modell ab. Ein System-Prompt mit 600 Tokens und eine kurze Frage treffen den Cache nie, und nichts weist dich darauf hin.
+1. **Der Prompt ist zu kurz.** Caching beginnt bei etwa 1.024 Prompt-Tokens; die genaue Schwelle und wie die gecachte Zahl gerundet wird, hängen vom Modell ab. Ein System-Prompt mit 600 Tokens und eine kurze Frage treffen den Cache nie, und nichts weist dich darauf hin.
 2. **Der Anfang des Prompts ändert sich.** Der Cache vergleicht ab dem allerersten Token. Ein Zeitstempel, eine Request-ID oder der Name des Nutzers in der ersten Nachricht macht jede Anfrage ab Token eins einzigartig. Tools, Bilder und Antwortformate gehören ebenfalls zum Präfix: Tools in anderer Reihenfolge oder ein anders serialisiertes Schema brechen die Übereinstimmung.
 3. **Der Cache wurde geräumt.** Einträge werden nach der letzten Nutzung nur kurz aufbewahrt, bei ruhigem Traffic typischerweise Minuten. Anfragen im Abstand von einer Stunde treffen den Cache selten.
 4. **Der Traffic ist verteilt.** Anfragen werden über einen Hash des Prompt-Anfangs geroutet. Sehr hohes Volumen mit demselben Präfix läuft auf andere Maschinen über, die den Eintrag nicht haben. OpenAIs Parameter `prompt_cache_key` gruppiert Anfragen mit gemeinsamem Präfix; nutze einen Schlüssel pro Prompt-Template, nicht pro Nutzer, und halte die Anfragerate pro Schlüssel moderat, wie der Leitfaden erklärt.
@@ -73,7 +73,7 @@ export function cachedShare(u: OpenAIUsage): number {
 }
 ```
 
-Gruppiere ihn nach Prompt-Template. Ein Template, dessen Anteil bei 0 % bleibt, obwohl seine Prompts über 1,024 Tokens liegen, hat irgendwo nahe am Anfang etwas, das sich ändert: Protokolliere zwei Anfragen und vergleiche sie Zeichen für Zeichen, wie in [der Claude-Version dieses Leitfadens](/de/guides/claude-prompt-caching-not-working#finde-das-byte-das-deinen-cache-bricht) gezeigt.
+Gruppiere ihn nach Prompt-Template. Ein Template, dessen Anteil bei 0 % bleibt, obwohl seine Prompts über 1.024 Tokens liegen, hat irgendwo nahe am Anfang etwas, das sich ändert: Protokolliere zwei Anfragen und vergleiche sie Zeichen für Zeichen, wie in [der Claude-Version dieses Leitfadens](/de/guides/claude-prompt-caching-not-working#finde-das-byte-das-deinen-cache-bricht) gezeigt.
 
 ## Wie BV-SALA hilft
 

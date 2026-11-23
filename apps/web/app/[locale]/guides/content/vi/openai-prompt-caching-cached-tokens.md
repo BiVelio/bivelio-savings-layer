@@ -7,14 +7,14 @@ Mỗi phản hồi đều cho biết bao nhiêu token đầu vào đến từ ca
 - **Chat Completions:** `usage.prompt_tokens_details.cached_tokens`, trên tổng `usage.prompt_tokens`.
 - **Responses API:** `usage.input_tokens_details.cached_tokens`, trên tổng `usage.input_tokens`.
 
-Token từ cache là một phần của tổng đầu vào, không cộng thêm vào đó. [Hướng dẫn prompt caching](https://developers.openai.com/api/docs/guides/prompt-caching) của OpenAI là tài liệu tham chiếu cho các quy tắc hiện hành. Hướng dẫn này giờ phân biệt các mô hình mới hơn, vốn cũng báo cáo và tính phí ghi cache và chấp nhận các tùy chọn cache tường minh, với các mô hình cũ hơn, nơi việc ghi vào cache là miễn phí. Hãy kiểm tra phần dành cho mô hình bạn dùng.
+Token từ cache là một phần của tổng đầu vào, không cộng thêm vào đó. [Hướng dẫn prompt caching](https://developers.openai.com/api/docs/guides/prompt-caching) của OpenAI là tài liệu tham chiếu cho các quy tắc hiện hành. Tài liệu đó của OpenAI giờ phân biệt các mô hình mới hơn, vốn cũng báo cáo và tính phí ghi cache và chấp nhận các tùy chọn cache tường minh, với các mô hình cũ hơn, nơi việc ghi vào cache là miễn phí. Hãy xem phần dành cho mô hình bạn dùng trong tài liệu đó.
 
 ## Vì sao cached_tokens bằng 0
 
-1. **Prompt quá ngắn.** Caching bắt đầu từ khoảng 1,024 token prompt; ngưỡng chính xác và cách làm tròn số token từ cache phụ thuộc vào mô hình. Một system prompt 600 token cộng một câu hỏi ngắn sẽ không bao giờ trúng cache, và không có gì báo cho bạn biết.
+1. **Prompt quá ngắn.** Caching bắt đầu từ khoảng 1.024 token prompt; ngưỡng chính xác và cách làm tròn số token từ cache phụ thuộc vào mô hình. Một system prompt 600 token cộng một câu hỏi ngắn sẽ không bao giờ trúng cache, và không có gì báo cho bạn biết.
 2. **Phần đầu prompt thay đổi.** Cache khớp từ token đầu tiên. Một timestamp, một request id hay tên người dùng trong message đầu tiên khiến mọi yêu cầu khác nhau ngay từ token thứ nhất. Tools, hình ảnh và response format cũng là một phần của tiền tố, nên tools được liệt kê theo thứ tự khác, hay một schema được tuần tự hóa khác đi, đều làm hỏng việc so khớp.
 3. **Cache đã bị loại bỏ (evict).** Các mục được giữ một thời gian ngắn sau lần dùng cuối, thường là vài phút khi lưu lượng thưa. Các yêu cầu cách nhau một giờ hiếm khi trúng.
-4. **Lưu lượng bị phân tán.** Các yêu cầu được định tuyến theo hash của phần đầu prompt. Lưu lượng rất lớn với cùng một tiền tố sẽ tràn sang các máy khác không giữ mục cache đó. Tham số `prompt_cache_key` của OpenAI gom các yêu cầu có chung tiền tố; hãy dùng một key cho mỗi template prompt, không phải cho mỗi người dùng, và giữ tốc độ yêu cầu của mỗi key ở mức vừa phải, như hướng dẫn giải thích.
+4. **Lưu lượng bị phân tán.** Các yêu cầu được định tuyến theo hash của phần đầu prompt. Lưu lượng rất lớn với cùng một tiền tố sẽ tràn sang các máy khác không giữ mục cache đó. Tham số `prompt_cache_key` của OpenAI gom các yêu cầu có chung tiền tố; hãy dùng một key cho mỗi template prompt, không phải cho mỗi người dùng, và giữ tốc độ yêu cầu của mỗi key ở mức vừa phải, như hướng dẫn của OpenAI giải thích.
 5. **Bạn không đọc trường đó.** Một yêu cầu Chat Completions dạng stream hoàn toàn không mang usage trừ khi bạn yêu cầu bằng `stream_options: { include_usage: true }`. Nhiều wrapper bỏ mất `prompt_tokens_details`. Một số nhà cung cấp tương thích OpenAI và một số deployment Azure báo cáo caching theo cách khác hoặc không báo cáo gì.
 
 ## Kiểm tra trong hai phút
@@ -73,7 +73,7 @@ export function cachedShare(u: OpenAIUsage): number {
 }
 ```
 
-Hãy nhóm theo template prompt. Một template mà tỷ lệ này cứ ở 0 % trong khi prompt dài hơn 1,024 token là đang có thứ gì đó thay đổi gần phần đầu: hãy ghi lại hai yêu cầu và so sánh từng ký tự, như trong [phiên bản Claude của hướng dẫn này](/vi/guides/claude-prompt-caching-not-working#tìm-byte-làm-hỏng-cache-của-bạn).
+Hãy nhóm theo template prompt. Một template mà tỷ lệ này cứ ở 0% trong khi prompt dài hơn 1.024 token là đang có thứ gì đó thay đổi gần phần đầu: hãy ghi lại hai yêu cầu và so sánh từng ký tự, như trong [phiên bản Claude của hướng dẫn này](/vi/guides/claude-prompt-caching-not-working#tìm-byte-làm-hỏng-cache-của-bạn).
 
 ## BV-SALA giúp gì
 

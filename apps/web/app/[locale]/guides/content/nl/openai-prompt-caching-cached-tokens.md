@@ -11,7 +11,7 @@ De gecachete tokens maken deel uit van het inputtotaal; ze komen er niet bij. De
 
 ## Waarom cached_tokens 0 is
 
-1. **De prompt is te kort.** Caching begint bij ongeveer 1,024 prompttokens; de exacte drempel en hoe het gecachete aantal wordt afgerond, hangen af van het model. Een systeemprompt van 600 tokens plus een korte vraag raakt de cache nooit, en niets vertelt je dat.
+1. **De prompt is te kort.** Caching begint bij ongeveer 1.024 prompttokens; de exacte drempel en hoe het gecachete aantal wordt afgerond, hangen af van het model. Een systeemprompt van 600 tokens plus een korte vraag raakt de cache nooit, en niets vertelt je dat.
 2. **Het begin van de prompt verandert.** De cache zoekt een overeenkomst vanaf het allereerste token. Een tijdstempel, een request-id of de naam van de gebruiker in het eerste bericht maakt elk verzoek vanaf token één uniek. Tools, afbeeldingen en responsformaten horen ook bij de prefix, dus tools in een andere volgorde, of een schema dat anders is geserialiseerd, breken de overeenkomst.
 3. **De cache-entry is verwijderd.** Entries worden kort bewaard na het laatste gebruik, meestal enkele minuten als het rustig is. Verzoeken die een uur uit elkaar liggen, raken de cache zelden.
 4. **Het verkeer is verspreid.** Verzoeken worden gerouteerd op basis van een hash van het begin van de prompt. Een heel hoog volume met dezelfde prefix loopt over naar andere machines die de entry niet hebben. De parameter `prompt_cache_key` van OpenAI groepeert verzoeken die een prefix delen; gebruik één sleutel per prompttemplate, niet per gebruiker, en houd het aantal verzoeken per sleutel gematigd, zoals de gids uitlegt.
@@ -33,7 +33,7 @@ done
 
 Toont de tweede regel gecachete tokens, dan werkt de kant van de provider en zit het probleem in hoe je applicatie haar prompts opbouwt: lees verder. Toont hij er geen, probeer het dan een paar keer opnieuw (caching is best effort, en het eerste verzoek kan op een andere machine belanden) en kijk daarna bij het model in de caching-gids van OpenAI. Vervang het model door het model dat je in productie gebruikt; een test op een ander model bewijst weinig.
 
-Deze test geeft je ook een uitgangspunt voor de volgende secties. Zodra je de volgorde van je prompt verandert of een `prompt_cache_key` toevoegt, doe je dezelfde vergelijking op een echt template uit je applicatie en bewaar je de cijfers. Een hitrate die vóór en na de wijziging is gemeten, op een template dat je gebruikers echt raken, is een resultaat dat je kunt laten zien; “caching zou moeten helpen” is dat niet.
+Deze test geeft je ook een uitgangspunt voor de volgende secties. Zodra je de volgorde van je prompt verandert of een `prompt_cache_key` toevoegt, doe je dezelfde vergelijking op een echt template uit je applicatie en bewaar je de cijfers. Een hitrate die vóór en na de wijziging is gemeten, op een template dat je gebruikers echt gebruiken, is een resultaat dat je kunt laten zien; “caching zou moeten helpen” is dat niet.
 
 ## Zet wat verandert achteraan
 
@@ -73,7 +73,7 @@ export function cachedShare(u: OpenAIUsage): number {
 }
 ```
 
-Groepeer het per prompttemplate. Een template waarvan het aandeel op 0 % blijft terwijl de prompts boven de 1,024 tokens zitten, heeft iets dat dicht bij het begin verandert: log twee verzoeken en vergelijk ze teken voor teken, zoals in [de Claude-versie van deze gids](/nl/guides/claude-prompt-caching-not-working#vind-de-byte-die-je-cache-breekt).
+Groepeer het per prompttemplate. Een template waarvan het aandeel op 0% blijft terwijl de prompts boven de 1.024 tokens zitten, heeft iets dat dicht bij het begin verandert: log twee verzoeken en vergelijk ze teken voor teken, zoals in [de Claude-versie van deze gids](/nl/guides/claude-prompt-caching-not-working#vind-de-byte-die-je-cache-breekt).
 
 ## Hoe BV-SALA helpt
 

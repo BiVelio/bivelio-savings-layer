@@ -5,7 +5,7 @@ Setiap alat biaya LLM menampilkan angka penghematan. Hanya sedikit yang menunjuk
 Selisihnya hampir selalu berasal dari salah satu hal berikut:
 
 - **Harga daftar versus harga Anda.** Alat-alat itu menghitung biaya token dengan harga daftar publik. Faktur Anda bisa mencakup diskon, kontrak committed-use, tarif regional atau data residency, priority tier, dan pajak.
-- **Estimasi yang disajikan sebagai pengukuran.** Jika sebuah alat menghapus 2,000 token dari prompt, penyedia tidak pernah menghitungnya. Angka "dihemat" itu adalah hitungan alat itu sendiri, dibuat dengan tokenizer yang belum tentu milik penyedia.
+- **Estimasi yang disajikan sebagai pengukuran.** Jika sebuah alat menghapus 2.000 token dari prompt, penyedia tidak pernah menghitungnya. Angka "dihemat" itu adalah hitungan alat itu sendiri, dibuat dengan tokenizer yang belum tentu milik penyedia.
 - **Diskon penyedia diklaim sebagai milik alat.** Prompt caching di OpenAI, Anthropic, DeepSeek, atau Gemini ditagih penyedia dengan tarif lebih rendah. Alat yang menghitung diskon itu sebagai penghematannya sendiri menggelembungkan angkanya.
 - **Lalu lintas yang tidak pernah dilihat alat itu.** Panggilan dari layanan lain, skrip rekan tim, permintaan sampingan agen pemrograman, atau job batch semuanya muncul di tagihan tetapi tidak di alat.
 - **Usage yang hilang.** Permintaan yang di-stream tanpa event usage terakhirnya sama sekali tidak punya jumlah token. Diam-diam menghitungnya sebagai nol membuat semua yang ada sesudahnya tampak lebih murah.
@@ -124,6 +124,6 @@ Lalu jalankan langkah 2 di atas terhadap total ini: pengeluaran `measured` dari 
 
 ## Metode yang sama, diterapkan secara terbuka
 
-Proyek ini memublikasikan run A/B-nya sendiri di [halaman benchmark](/id/benchmarks): dua lengan pada permintaan yang sama, satu langsung ke penyedia dan satu melalui lapisan, keduanya diukur dengan penghitung penggunaan milik penyedia, dengan interval 95 % serta tanggal dan versi setiap run. Hasil yang tidak menghemat apa pun, atau malah lebih mahal, ada di halaman yang sama. Metode lengkap, estimator, dan batasannya ada di [makalah](/id/paper).
+Proyek ini memublikasikan run A/B-nya sendiri di [halaman benchmark](/id/benchmarks): dua lengan pada permintaan yang sama, satu langsung ke penyedia dan satu melalui lapisan, keduanya diukur dengan penghitung penggunaan milik penyedia, dengan interval 95% serta tanggal dan versi setiap run. Hasil yang tidak menghemat apa pun, atau malah lebih mahal, ada di halaman yang sama. Metode lengkap, estimator, dan batasannya ada di [makalah](/id/paper).
 
 Untuk detail khusus per penyedia, lihat [mengapa cached_tokens OpenAI bernilai 0](/id/guides/openai-prompt-caching-cached-tokens), [mengapa prompt caching Claude tidak berfungsi](/id/guides/claude-prompt-caching-not-working), dan [mengukur biaya Claude Code per permintaan](/id/guides/claude-code-cost-per-request). Kode dan laporan mentahnya ada di [GitHub](https://github.com/BiVelio/bivelio-savings-layer).

@@ -11,7 +11,7 @@ Los tokens en caché forman parte del total de entrada; no se suman a él. La [g
 
 ## Por qué cached_tokens es 0
 
-1. **El prompt es demasiado corto.** La caché empieza a partir de unos 1,024 tokens de prompt; el umbral exacto y cómo se redondea el recuento en caché dependen del modelo. Un prompt de sistema de 600 tokens y una pregunta corta nunca aciertan en la caché, y nada te avisa.
+1. **El prompt es demasiado corto.** La caché empieza a partir de unos 1024 tokens de prompt; el umbral exacto y cómo se redondea el recuento en caché dependen del modelo. Un prompt de sistema de 600 tokens y una pregunta corta nunca aciertan en la caché, y nada te avisa.
 2. **Cambia el principio del prompt.** La caché coincide desde el primerísimo token. Un timestamp, un id de petición o el nombre del usuario en el primer mensaje hacen que cada petición sea única desde el primer token. Las herramientas, las imágenes y los formatos de respuesta también forman parte del prefijo, así que unas herramientas listadas en otro orden, o un schema serializado de otra forma, rompen la coincidencia.
 3. **La entrada se ha expulsado de la caché.** Las entradas se guardan poco tiempo tras el último uso, normalmente minutos cuando hay poco tráfico. Las peticiones separadas por una hora rara vez aciertan.
 4. **El tráfico se reparte.** Las peticiones se enrutan según un hash del principio del prompt. Un volumen muy alto con el mismo prefijo se desborda a otras máquinas que no tienen la entrada. El parámetro `prompt_cache_key` de OpenAI agrupa las peticiones que comparten prefijo; usa una clave por plantilla de prompt, no por usuario, y mantén moderado el ritmo de peticiones de cada clave, como explica la guía.
@@ -19,7 +19,7 @@ Los tokens en caché forman parte del total de entrada; no se suman a él. La [g
 
 ## Pruébalo en dos minutos
 
-Antes de depurar tu aplicación, comprueba antes de nada que la caché funciona con tu cuenta y tu modelo. Envía el mismo prompt largo dos veces, con unos segundos de diferencia, y lee el uso de cada respuesta:
+Antes de depurar tu aplicación, comprueba que la caché llega a funcionar con tu cuenta y tu modelo. Envía el mismo prompt largo dos veces, con unos segundos de diferencia, y lee el uso de cada respuesta:
 
 ```bash
 # A system prompt well above the threshold, sent twice. The second answer should report cached tokens.
@@ -73,7 +73,7 @@ export function cachedShare(u: OpenAIUsage): number {
 }
 ```
 
-Agrupa esa proporción por plantilla de prompt. Una plantilla cuya proporción sigue en el 0 % aunque sus prompts superen los 1,024 tokens tiene algo que cambia cerca del principio: registra dos peticiones y compáralas carácter a carácter, como se muestra en [la versión de esta guía para Claude](/es/guides/claude-prompt-caching-not-working#encuentra-el-byte-que-rompe-tu-caché).
+Agrupa esa proporción por plantilla de prompt. Una plantilla cuya proporción sigue en el 0 % aunque sus prompts superen los 1024 tokens tiene algo que cambia cerca del principio: registra dos peticiones y compáralas carácter a carácter, como se muestra en [la versión de esta guía para Claude](/es/guides/claude-prompt-caching-not-working#encuentra-el-byte-que-rompe-tu-caché).
 
 ## Cómo ayuda BV-SALA
 

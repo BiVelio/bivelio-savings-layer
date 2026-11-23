@@ -5,7 +5,7 @@ Her LLM maliyet aracı bir tasarruf rakamı gösterir. Pek azı bunun nasıl kon
 Fark neredeyse her zaman bunlardan birinden gelir:
 
 - **Liste fiyatı ile sizin fiyatınız.** Araçlar token'ları herkese açık liste fiyatlarıyla fiyatlar. Faturanız indirimler, taahhütlü kullanım sözleşmeleri, bölgesel ya da veri yerleşimi tarifeleri, öncelik katmanları ve vergiler içerebilir.
-- **Ölçüm gibi sunulan tahminler.** Bir araç bir prompt'tan 2,000 token çıkardıysa sağlayıcı onları hiç saymadı. "Tasarruf edilen" rakam, aracın kendi sayımıdır ve sağlayıcınınki olmayabilecek bir tokenizer ile yapılmıştır.
+- **Ölçüm gibi sunulan tahminler.** Bir araç bir prompt'tan 2.000 token çıkardıysa sağlayıcı onları hiç saymadı. "Tasarruf edilen" rakam, aracın kendi sayımıdır ve sağlayıcınınki olmayabilecek bir tokenizer ile yapılmıştır.
 - **Aracın hanesine yazılan sağlayıcı indirimi.** OpenAI, Anthropic, DeepSeek ya da Gemini'deki prompt caching, sağlayıcı tarafından daha düşük bir tarifeyle faturalanır. Bu indirimi kendi tasarrufu olarak sayan bir araç rakamını şişirir.
 - **Aracın hiç görmediği trafik.** Başka bir servisten gelen çağrılar, bir ekip arkadaşının betiği, bir kodlama ajanının yan istekleri ya da bir batch işi faturada görünür, araçta görünmez.
 - **Eksik kullanım verisi.** Son kullanım olayı gelmeyen bir akış isteğinin hiç token sayısı yoktur. Onu sessizce sıfır saymak, sonrasındaki her şeyi daha ucuz gösterir.
@@ -124,6 +124,6 @@ Ardından yukarıdaki 2. adımı bu toplamlara uygulayın: Katmanın `measured` 
 
 ## Aynı yöntem, herkesin önünde
 
-Proje kendi A/B çalıştırmalarını [benchmark sayfasında](/tr/benchmarks) yayımlıyor: aynı istekler üzerinde iki kol, biri doğrudan sağlayıcıya, diğeri katmanın içinden; ikisi de sağlayıcının kendi kullanım sayacıyla ölçülüyor, 95 % aralıklarıyla ve her çalıştırmanın tarihi ve sürümüyle birlikte. Hiçbir şey kazandırmayan ya da daha pahalıya gelen sonuçlar da aynı sayfada. Yöntemin tamamı, tahmin edici ve sınırları [makalede](/tr/paper) yer alıyor.
+Proje kendi A/B çalıştırmalarını [benchmark sayfasında](/tr/benchmarks) yayımlıyor: aynı istekler üzerinde iki kol, biri doğrudan sağlayıcıya, diğeri katmanın içinden; ikisi de sağlayıcının kendi kullanım sayacıyla ölçülüyor, %95 aralıklarıyla ve her çalıştırmanın tarihi ve sürümüyle birlikte. Hiçbir şey kazandırmayan ya da daha pahalıya gelen sonuçlar da aynı sayfada. Yöntemin tamamı, tahmin edici ve sınırları [makalede](/tr/paper) yer alıyor.
 
 Sağlayıcıya özgü ayrıntılar için [OpenAI'da cached_tokens neden 0](/tr/guides/openai-prompt-caching-cached-tokens), [Claude prompt caching neden çalışmıyor](/tr/guides/claude-prompt-caching-not-working) ve [Claude Code maliyetini istek başına ölçme](/tr/guides/claude-code-cost-per-request) rehberlerine bakın. Kod ve ham raporlar [GitHub](https://github.com/BiVelio/bivelio-savings-layer)'da.

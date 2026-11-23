@@ -11,7 +11,7 @@ Tokeny z cache są częścią sumy wejścia, a nie są do niej doliczane. [Przew
 
 ## Dlaczego cached_tokens wynosi 0
 
-1. **Prompt jest za krótki.** Cache'owanie zaczyna się od około 1,024 tokenów promptu; dokładny próg i sposób zaokrąglania liczby tokenów z cache zależą od modelu. Prompt systemowy z 600 tokenami i krótkie pytanie nigdy nie trafiają w cache i nic Cię o tym nie informuje.
+1. **Prompt jest za krótki.** Cache'owanie zaczyna się od około 1024 tokenów promptu; dokładny próg i sposób zaokrąglania liczby tokenów z cache zależą od modelu. Prompt systemowy z 600 tokenami i krótkie pytanie nigdy nie trafiają w cache i nic Cię o tym nie informuje.
 2. **Początek promptu się zmienia.** Cache dopasowuje od pierwszego tokena. Znacznik czasu, identyfikator żądania albo imię użytkownika w pierwszej wiadomości sprawiają, że każde żądanie jest unikalne od pierwszego tokena. Narzędzia, obrazy i formaty odpowiedzi też są częścią prefiksu, więc narzędzia wymienione w innej kolejności albo inaczej zserializowany schemat psują dopasowanie.
 3. **Wpis został usunięty z cache.** Wpisy są przechowywane krótko po ostatnim użyciu, przy spokojnym ruchu zwykle przez kilka minut. Żądania oddalone o godzinę rzadko trafiają w cache.
 4. **Ruch jest rozproszony.** Żądania są kierowane według hasha początku promptu. Bardzo duży wolumen z tym samym prefiksem przelewa się na inne maszyny, które nie mają tego wpisu. Parametr `prompt_cache_key` w OpenAI grupuje żądania o wspólnym prefiksie; używaj jednego klucza na szablon promptu, a nie na użytkownika, i utrzymuj umiarkowane tempo żądań na klucz, jak wyjaśnia przewodnik.
@@ -73,7 +73,7 @@ export function cachedShare(u: OpenAIUsage): number {
 }
 ```
 
-Grupuj to według szablonu promptu. Szablon, którego udział stoi na 0 %, choć jego prompty mają ponad 1,024 tokenów, ma coś zmiennego blisko początku: zaloguj dwa żądania i porównaj je znak po znaku, jak pokazano w [wersji tego poradnika dla Claude](/pl/guides/claude-prompt-caching-not-working#znajdź-bajt-który-psuje-twój-cache).
+Grupuj to według szablonu promptu. Szablon, którego udział stoi na 0%, choć jego prompty mają ponad 1024 tokenów, ma coś zmiennego blisko początku: zaloguj dwa żądania i porównaj je znak po znaku, jak pokazano w [wersji tego poradnika dla Claude](/pl/guides/claude-prompt-caching-not-working#znajdź-bajt-który-psuje-twój-cache).
 
 ## Jak pomaga BV-SALA
 

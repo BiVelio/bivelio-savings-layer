@@ -2,7 +2,7 @@
 
 ## Wat het volgens Anthropic kost
 
-De eigen [kostenpagina van Claude Code](https://code.claude.com/docs/en/costs) van Anthropic geeft gemiddelden van implementaties bij bedrijven: ongeveer $13 per ontwikkelaar per actieve dag en $150 tot $250 per ontwikkelaar per maand, waarbij 90 % van de gebruikers onder $30 per actieve dag blijft. Dat zijn gemiddelden over veel teams. Jouw getal hangt af van het model dat je kiest, de grootte van je repository en hoe je werkt, en daarom gaat de rest van deze gids over meten.
+De eigen [kostenpagina van Claude Code](https://code.claude.com/docs/en/costs) van Anthropic geeft gemiddelden van implementaties bij bedrijven: ongeveer US$ 13 per ontwikkelaar per actieve dag en US$ 150 tot US$ 250 per ontwikkelaar per maand, waarbij 90% van de gebruikers onder US$ 30 per actieve dag blijft. Dat zijn gemiddelden over veel teams. Jouw getal hangt af van het model dat je kiest, de grootte van je repository en hoe je werkt, en daarom gaat de rest van deze gids over meten.
 
 ## De ingebouwde tools, en wat ze niet laten zien
 
@@ -16,7 +16,7 @@ Wat geen van deze makkelijk maakt, is het **zicht per verzoek**: welke beurt was
 - **Een modelwissel.** Elk model heeft zijn eigen cache, dus midden in een sessie van model wisselen verwerkt alles opnieuw.
 - **Enorme toolresultaten.** Een testlog of een groot bestand dat één keer is gelezen, zit in de context van elke latere beurt.
 - **Te veel tooldefinities.** MCP-servers kunnen vele kilobytes aan definities aan elk verzoek toevoegen.
-- **Compaction.** Een lang gesprek samenvatten is zelf een groot verzoek.
+- **Compacteren.** Een lang gesprek samenvatten is zelf een groot verzoek.
 
 ## Meet elk verzoek met een lokale gateway
 
@@ -61,14 +61,14 @@ Lees van links naar rechts: het model, de kosten tegen de standaard lijstprijs v
 
 - **Hij stuurt door wat Claude Code stuurt.** Als er geen hefboom op een verzoek werkt, komt de body byte voor byte bij Anthropic aan, inclusief `cache_control`-markeringen en de `anthropic-beta`-header, dus caching werkt precies zoals zonder de gateway. Een test in de repository controleert dat bij elke wijziging tegen een nep-upstream.
 - **Twee kleine aanroepen gaan eromheen.** Volgens de [gids voor gatewaycompatibiliteit](https://code.claude.com/docs/en/llm-gateway-protocol) van Claude Code roepen de beschikbaarheidscheck van fast mode en de domeinveiligheidscheck van WebFetch rechtstreeks `api.anthropic.com` aan in plaats van `ANTHROPIC_BASE_URL` te volgen. Geen van beide is een modelverzoek: de inferentie in fast mode zelf volgt de base URL en gaat door de gateway.
-- **Beurten in fast mode worden gelogd tegen de standaardprijs.** Anthropic markeert een fast-mode-verzoek met `speed: "fast"` en rekent er een toeslag voor: $8 input en $40 output per miljoen tokens op Claude Opus 5.5, het dubbele van het standaardtarief, met de cachevermenigvuldigers erbovenop ([documentatie over fast mode](https://platform.claude.com/docs/en/build-with-claude/fast-mode)). Versie 1.2.3 van de gateway leest `speed` niet, dus hij telt die tokens correct maar beprijst ze als standaardbeurten: op Opus 5.5 de helft van wat Anthropic factureert. Gebruik je `/fast`, dan is het totaal van de gateway voor die beurten te laag.
+- **Beurten in fast mode worden gelogd tegen de standaardprijs.** Anthropic markeert een fast-mode-verzoek met `speed: "fast"` en rekent er een toeslag voor: US$ 8 input en US$ 40 output per miljoen tokens op Claude Opus 5.5, het dubbele van het standaardtarief, met de cachevermenigvuldigers erbovenop ([documentatie over fast mode](https://platform.claude.com/docs/en/build-with-claude/fast-mode)). Versie 1.2.3 van de gateway leest `speed` niet, dus hij telt die tokens correct maar beprijst ze als standaardbeurten: op Opus 5.5 de helft van wat Anthropic factureert. Gebruik je `/fast`, dan is het totaal van de gateway voor die beurten te laag.
 - **Abonnementsverkeer wordt gemeten, niet gefactureerd.** Bij een login met Claude Pro of Max is er geen factuur per token; de gateway beprijst dat verkeer tegen het equivalent in lijstprijs zodat je het kunt zien, en schrijft er geen besparing op bij.
 
 ## Bespaart de gateway ook geld?
 
-Standaard, met Claude Code op een API-sleutel, meet hij en bespaart hij niets. Lees de opstartmelding van versie 1.2.3 niet als een belofte: die zegt dat elke lokale besparingshefboom aan staat, en de samenvatting bij het afsluiten telt alleen de verzoeken die hij heeft gemeten, dus geen van beide vertelt je dat de besparing nul was. De standaardhefboom van de gateway verlaagt de levensduur van cache-schrijfacties van een uur naar vijf minuten bij beurten waarin een groot deel van het verzoek nieuw is, omdat een schrijfactie van een uur twee keer de inputprijs kost en een van vijf minuten 1.25 keer. Claude Code op een API-sleutel vraagt al om vijf minuten, tenzij je `promptCacheTtl` op `1h` zet, dus er valt niets te verlagen.
+Standaard, met Claude Code op een API-sleutel, meet hij en bespaart hij niets. Lees de opstartmelding van versie 1.2.3 niet als een belofte: die zegt dat elke lokale besparingshefboom aan staat, en de samenvatting bij het afsluiten telt alleen de verzoeken die hij heeft gemeten, dus geen van beide vertelt je dat de besparing nul was. De standaardhefboom van de gateway verlaagt de levensduur van cache-schrijfacties van een uur naar vijf minuten bij beurten waarin een groot deel van het verzoek nieuw is, omdat een schrijfactie van een uur twee keer de inputprijs kost en een van vijf minuten 1,25 keer. Claude Code op een API-sleutel vraagt al om vijf minuten, tenzij je `promptCacheTtl` op `1h` zet, dus er valt niets te verlagen.
 
-Als de cache van een uur meespeelt, is de besparing klein en hangt ze af van je verkeer. De [benchmarkpagina](/nl/benchmarks#gateway-ttl) publiceert een replay van het eigen Claude Code-verkeer van één organisatie: netto **+2.49 %** van de factuur tegen lijstprijs ($113.45 van $4,563.61), met een 95 %-interval van +1.50 % tot +3.57 % bij hersampling per sessie, en een plafond van 7.2 % voor elk beleid van dit type. Op één model was het resultaat bijna nul, en in één periode kostte het geld. Het is een replay met een deels gereconstrueerde baseline, geen factuur, en de pagina somt elke beperking op.
+Als de cache van een uur meespeelt, is de besparing klein en hangt ze af van je verkeer. De [benchmarkpagina](/nl/benchmarks#gateway-ttl) publiceert een replay van het eigen Claude Code-verkeer van één organisatie: netto **+2,49%** van de factuur tegen lijstprijs (US$ 113,45 van US$ 4.563,61), met een 95%-interval van +1,50% tot +3,57% bij hersampling per sessie, en een plafond van 7,2% voor elk beleid van dit type. Op één model was het resultaat bijna nul, en in één periode kostte het geld. Het is een replay met een deels gereconstrueerde baseline, geen factuur, en de pagina somt elke beperking op.
 
 ## Stem de cijfers van de gateway af op je factuur
 

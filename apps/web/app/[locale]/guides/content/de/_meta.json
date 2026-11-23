@@ -1,7 +1,7 @@
 {
   "index": {
     "title": "Leitfäden: So senkst du deine LLM-API-Kosten",
-    "description": "Praxisleitfäden gegen hohe API-Kosten bei OpenAI, Anthropic, DeepSeek und Qwen: Caching, Deduplizierung, Claude Code pro Anfrage und Einsparungen prüfen.",
+    "description": "Praxisleitfäden gegen hohe API-Kosten bei OpenAI, Anthropic, DeepSeek und Qwen: Caching, Deduplizierung, Claude-Code-Kosten pro Anfrage, Einsparungen prüfen.",
     "intro": "Praxisnahe, anbieterneutrale Leitfäden für alle, die pro Token bezahlen. Jeder erklärt zuerst die Technik, damit er auch ohne Werkzeug nützt; dann, wie die Open-Source-Sparschicht BV-SALA das umsetzt, kostenlos und ohne Schlüssel; und schließlich, wie du die Einsparung mit den Nutzungszählern deines eigenen Anbieters prüfst.",
     "sources": "Jede Zahl stammt aus der Dokumentation des Anbieters oder von unserer [Benchmark-Seite](/de/benchmarks) und nennt ihre Quelle. Der Code liegt auf [GitHub](https://github.com/BiVelio/bivelio-savings-layer)."
   },

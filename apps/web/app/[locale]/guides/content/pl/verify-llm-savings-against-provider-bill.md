@@ -5,7 +5,7 @@ Każde narzędzie do kosztów LLM pokazuje jakąś liczbę oszczędności. Niewi
 Rozbieżność prawie zawsze wynika z jednej z tych przyczyn:
 
 - **Cena katalogowa a Twoja cena.** Narzędzia wyceniają tokeny po publicznych cenach katalogowych. Twoja faktura może uwzględniać rabaty, umowy z zobowiązaniem wykorzystania, stawki regionalne lub za rezydencję danych, poziomy priorytetowe i podatki.
-- **Szacunki podawane jako pomiary.** Jeśli narzędzie usunęło z promptu 2,000 tokenów, dostawca nigdy ich nie policzył. „Zaoszczędzona” liczba to własne wyliczenie narzędzia, zrobione tokenizerem, który może nie być tokenizerem dostawcy.
+- **Szacunki podawane jako pomiary.** Jeśli narzędzie usunęło z promptu 2000 tokenów, dostawca nigdy ich nie policzył. „Zaoszczędzona” liczba to własne wyliczenie narzędzia, zrobione tokenizerem, który może nie być tokenizerem dostawcy.
 - **Rabat dostawcy przypisany narzędziu.** Prompt caching w OpenAI, Anthropic, DeepSeek czy Gemini jest rozliczany przez dostawcę po niższej stawce. Narzędzie, które liczy ten rabat jako własną oszczędność, zawyża swoją liczbę.
 - **Ruch, którego narzędzie nigdy nie widziało.** Wywołania z innej usługi, skrypt kolegi z zespołu, poboczne żądania agenta programistycznego czy zadanie wsadowe pojawiają się na rachunku, a nie w narzędziu.
 - **Brakujące dane o użyciu.** Strumieniowane żądanie bez końcowego zdarzenia z danymi o użyciu w ogóle nie ma liczby tokenów. Jeśli po cichu policzyć je jako zero, wszystko dalej wygląda taniej.
@@ -85,7 +85,7 @@ Rachunek, który spadł po wdrożeniu, może też oznaczać spokojny tydzień. �
 [BV-SALA](https://github.com/BiVelio/bivelio-savings-layer) to warstwa oszczędności na licencji Apache-2.0, darmowa i bez klucza. Każde żądanie zwraca `SavingsReport` zbudowany dokładnie pod tę metodę:
 
 - `cost.basis` ma wartość `measured`, `reference`, `estimated` albo `unmeasured`, zgodnie z powyższymi definicjami. Powtórzenie jest wyceniane przez odniesienie tylko wtedy, gdy wywołanie, które się odbyło, trafiło bezpośrednio do API OpenAI, Anthropic albo Google Gemini; w każdym innym przypadku pozostaje `estimated`.
-- Oszczędność jest prowadzona w czterech osobnych księgach, których nigdy nie sumuje się w jedną liczbę: `avoided_calls`, `eliminated_tokens`, `compressed_tokens` i `provider_cached_tokens`.
+- Oszczędności są ewidencjonowane w czterech osobnych księgach, których nigdy nie sumuje się w jedną liczbę: `avoided_calls`, `eliminated_tokens`, `compressed_tokens` i `provider_cached_tokens`.
 - Rabat za cache od samego dostawcy jest raportowany osobno, w `report.nativeSavings`, i nigdy nie jest liczony jako oszczędność warstwy.
 - Strumień, który kończy się bez danych o użyciu, ma status `unmeasured` i nigdy nie jest wyceniany jako zero.
 
@@ -124,6 +124,6 @@ Następnie wykonaj krok 2 na tych sumach: wydatki `measured` warstwy powinny zga
 
 ## Ta sama metoda, stosowana publicznie
 
-Projekt publikuje własne przebiegi A/B na [stronie benchmarków](/pl/benchmarks): dwa ramiona na tych samych żądaniach, jedno prosto do dostawcy, drugie przez warstwę, oba mierzone licznikiem użycia samego dostawcy, z przedziałami 95 % oraz datą i wersją każdego przebiegu. Wyniki, które nic nie zaoszczędziły albo kosztowały więcej, są na tej samej stronie. Pełna metoda, estymator i jego ograniczenia są opisane w [artykule](/pl/paper).
+Projekt publikuje własne przebiegi A/B na [stronie benchmarków](/pl/benchmarks): dwa ramiona na tych samych żądaniach, jedno prosto do dostawcy, drugie przez warstwę, oba mierzone licznikiem użycia samego dostawcy, z przedziałami 95% oraz datą i wersją każdego przebiegu. Wyniki, które nic nie zaoszczędziły albo kosztowały więcej, są na tej samej stronie. Pełna metoda, estymator i jego ograniczenia są opisane w [artykule](/pl/paper).
 
 Szczegóły dla poszczególnych dostawców opisują poradniki [dlaczego cached_tokens w OpenAI wynosi 0](/pl/guides/openai-prompt-caching-cached-tokens), [dlaczego prompt caching w Claude nie działa](/pl/guides/claude-prompt-caching-not-working) i [jak mierzyć koszt Claude Code dla każdego żądania](/pl/guides/claude-code-cost-per-request). Kod i surowe raporty są na [GitHubie](https://github.com/BiVelio/bivelio-savings-layer).

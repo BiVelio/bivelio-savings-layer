@@ -11,7 +11,7 @@ Token dari cache adalah bagian dari total masukan, bukan tambahan di atasnya. [P
 
 ## Mengapa cached_tokens bernilai 0
 
-1. **Prompt-nya terlalu pendek.** Caching dimulai dari sekitar 1,024 token prompt; ambang persisnya dan cara pembulatan jumlah token dari cache bergantung pada model. System prompt 600 token dan pertanyaan singkat tidak akan pernah kena cache, dan tidak ada yang memberi tahu Anda.
+1. **Prompt-nya terlalu pendek.** Caching dimulai dari sekitar 1.024 token prompt; ambang persisnya dan cara pembulatan jumlah token dari cache bergantung pada model. System prompt 600 token dan pertanyaan singkat tidak akan pernah kena cache, dan tidak ada yang memberi tahu Anda.
 2. **Awal prompt-nya berubah.** Cache mencocokkan mulai dari token pertama. Timestamp, id permintaan, atau nama pengguna di pesan pertama membuat setiap permintaan unik sejak token pertama. Tools, gambar, dan format respons juga bagian dari prefiks, jadi tools yang urutannya berbeda, atau skema yang diserialisasi secara berbeda, merusak kecocokannya.
 3. **Cache-nya sudah di-evict.** Entri disimpan sebentar setelah terakhir dipakai, biasanya hitungan menit saat lalu lintas sepi. Permintaan yang berjarak satu jam jarang kena hit.
 4. **Lalu lintasnya tersebar.** Permintaan dirutekan berdasarkan hash dari awal prompt. Volume yang sangat tinggi dengan prefiks yang sama meluap ke mesin lain yang tidak menyimpan entri itu. Parameter `prompt_cache_key` milik OpenAI mengelompokkan permintaan yang berbagi prefiks; gunakan satu key per templat prompt, bukan per pengguna, dan jaga laju permintaan setiap key tetap moderat, seperti dijelaskan dalam panduan tersebut.
@@ -73,7 +73,7 @@ export function cachedShare(u: OpenAIUsage): number {
 }
 ```
 
-Kelompokkan berdasarkan templat prompt. Templat yang porsinya tetap 0 % padahal prompt-nya di atas 1,024 token punya sesuatu yang berubah di dekat awal: catat dua permintaan dan bandingkan karakter demi karakter, seperti ditunjukkan di [versi Claude dari panduan ini](/id/guides/claude-prompt-caching-not-working#temukan-byte-yang-merusak-cache-anda).
+Kelompokkan berdasarkan templat prompt. Templat yang porsinya tetap 0% padahal prompt-nya di atas 1.024 token punya sesuatu yang berubah di dekat awal: catat dua permintaan dan bandingkan karakter demi karakter, seperti ditunjukkan di [versi Claude dari panduan ini](/id/guides/claude-prompt-caching-not-working#temukan-byte-yang-merusak-cache-anda).
 
 ## Bagaimana BV-SALA membantu
 
@@ -114,7 +114,7 @@ Tuas milik lapisan ini sendiri (melewati pengulangan persis dan permintaan ident
 ## Verifikasi terhadap angka OpenAI
 
 1. **Per permintaan:** catat `cached_tokens` dan total masukan dari setiap respons, atau `report.tokens.providerCachedInput` jika memakai lapisan ini.
-2. **Per hari:** [Usage API](https://developers.openai.com/api/reference/resources/organization/subresources/usage) OpenAI mengembalikan penggunaan completions dalam bucket harian yang mencakup token masukan dari cache, per model dan, jika Anda minta, per kunci API atau proyek. Jumlahkan log Anda untuk kunci, model, dan hari UTC yang sama: total yang di-cache dan yang tidak harus cocok.
+2. **Per hari:** [Usage API](https://developers.openai.com/api/reference/resources/organization/subresources/usage) OpenAI mengembalikan penggunaan completions dalam bucket harian yang mencakup token masukan dari cache, per model dan, jika Anda minta, per kunci API atau proyek. Jumlahkan log Anda untuk kunci, model, dan hari UTC yang sama: total masukan dari cache dan total masukan tanpa cache harus sama dengan angka OpenAI.
 3. **Dalam uang:** hitung harga masukan dari cache dan tanpa cache secara terpisah. Pada model yang menagih penulisan cache, sertakan juga penulisan itu, atau estimasi penghematan Anda akan terlalu tinggi.
 
 Untuk metode lengkapnya, baca [cara memverifikasi penghematan LLM terhadap tagihan penyedia Anda](/id/guides/verify-llm-savings-against-provider-bill). Untuk tuas lain pada tagihan OpenAI, lihat [cara mengurangi biaya API OpenAI](/id/guides/reduce-openai-api-costs). Hasil yang terukur, termasuk di mana lapisan ini tidak menghemat apa pun, ada di [halaman benchmark](/id/benchmarks), dan kodenya ada di [GitHub](https://github.com/BiVelio/bivelio-savings-layer).

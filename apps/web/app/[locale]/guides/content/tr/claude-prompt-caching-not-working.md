@@ -22,8 +22,8 @@ Her Messages API yanıtı önbelleğe ne olduğunu söyler. `usage` içindeki ü
 2. Sıra **önce tools, sonra system, sonra messages** şeklindedir. Araç listesindeki bir değişiklik, sistem prompt'unu ve ondan sonraki mesajları geçersiz kılar.
 3. En fazla **dört breakpoint** koyabilirsiniz ve API her birinden geriye doğru, sınırlı sayıda blok boyunca önceki bir kaydı arar (bu yazının yazıldığı sırada 20).
 4. Kayıtlar varsayılan olarak **beş dakika** yaşar ve her isabette yenilenir. `"ttl": "1h"` ile bir saatlik ömür de kullanılabilir.
-5. Yazmak okumaktan pahalıdır: Beş dakikalık bir yazma girdi fiyatının 1.25 katı, bir saatlik yazma 2 katı üzerinden faturalanır; okuma ise girdi fiyatının küçük bir kısmına mal olur (çoğu modelde 0.1 katı). Modeliniz için [Anthropic'in fiyatlandırma sayfasına](https://platform.claude.com/docs/en/about-claude/pricing) bakın.
-6. Modele bağlı, 512 ile 4,096 token arasında değişen bir **önbelleğe alınabilir minimum uzunluk** vardır. Bunun altında istek, hiçbir hata vermeden, basitçe önbelleğe alınmaz.
+5. Yazmak okumaktan pahalıdır: Beş dakikalık bir yazma girdi fiyatının 1,25 katı, bir saatlik yazma 2 katı üzerinden faturalanır; okuma ise girdi fiyatının küçük bir kısmına mal olur (çoğu modelde 0,1 katı). Modeliniz için [Anthropic'in fiyatlandırma sayfasına](https://platform.claude.com/docs/en/about-claude/pricing) bakın.
+6. Modele bağlı, 512 ile 4.096 token arasında değişen bir **önbelleğe alınabilir minimum uzunluk** vardır. Bunun altında istek, hiçbir hata vermeden, basitçe önbelleğe alınmaz.
 
 Bunların hepsi, bir sayı değiştiğinde güvenmeniz gereken kaynak olan [Anthropic'in prompt caching belgelerinde](https://platform.claude.com/docs/en/build-with-claude/prompt-caching) yer alıyor.
 
@@ -79,7 +79,7 @@ export function cacheHitRate(u: ClaudeUsage): number {
 
 ## Önbelleğe almak sizin trafiğinizde kârlı mı?
 
-Yazmalar normal girdiden pahalı olduğu için önbelleğe almak, önekin süresi dolmadan yeniden okunacağına dair bir bahistir. Beş dakikalık ömürde tek bir okuma bile yazmanın maliyetini çıkarır. Yazılıp hiç okunmayan bir önek, işaretsiz gönderilmesine göre yaklaşık 25 % daha pahalıya gelir. Bu yüzden "her yere `cache_control` ekle" güvenli bir varsayılan değildir: Birkaç dakika içinde geri dönen sohbet ve ajan trafiğinde kazandırır, tek seferlik isteklerde ya da her seferinde değişen prompt'larda kaybettirir.
+Yazmalar normal girdiden pahalı olduğu için önbelleğe almak, önekin süresi dolmadan yeniden okunacağına dair bir bahistir. Beş dakikalık ömürde tek bir okuma bile yazmanın maliyetini çıkarır. Yazılıp hiç okunmayan bir önek, işaretsiz gönderilmesine göre yaklaşık %25 daha pahalıya gelir. Bu yüzden "her yere `cache_control` ekle" güvenli bir varsayılan değildir: Birkaç dakika içinde geri dönen sohbet ve ajan trafiğinde kazandırır, tek seferlik isteklerde ya da her seferinde değişen prompt'larda kaybettirir.
 
 ## BV-SALA bunu nasıl ele alıyor
 
@@ -110,7 +110,7 @@ console.log(report.nativeSavings?.netUsd); // read discount minus write premium;
 
 `report.nativeSavings`, ayrı gösterilen Anthropic indirimidir: Katman bunu asla kendi tasarrufu olarak saymaz, böylece raporunuz faturayla tutar.
 
-**İşaretlemeyi kapatmanız gereken durum.** Anahtarsız kullanımda, sistem prompt'unuz her istekte değişiyorsa (bir zaman damgası, bir kullanıcı kimliği) ya da çağrılarınız yeni süreçlerde beş dakikadan uzun aralıklarla geliyorsa, varsayılan işaretleme kimsenin okumadığı bir önbellek kaydı yazar ve README'ye göre bu, katmansız duruma kıyasla yaklaşık 20 % daha pahalıya gelir. Değişen kısmı kullanıcı mesajına taşıyın ya da işaretlemeyi kapatın:
+**İşaretlemeyi kapatmanız gereken durum.** Anahtarsız kullanımda, sistem prompt'unuz her istekte değişiyorsa (bir zaman damgası, bir kullanıcı kimliği) ya da çağrılarınız yeni süreçlerde beş dakikadan uzun aralıklarla geliyorsa, varsayılan işaretleme kimsenin okumadığı bir önbellek kaydı yazar ve README'ye göre bu, katmansız duruma kıyasla yaklaşık %20 daha pahalıya gelir. Değişen kısmı kullanıcı mesajına taşıyın ya da işaretlemeyi kapatın:
 
 ```ts
 import { createSavingsLayer, AnthropicProvider } from "@bivelio/savings-layer";
@@ -136,7 +136,7 @@ export const reply = await layer.generate({
 });
 ```
 
-Bu isteğe bağlı yeniden sıralama, README'de yayımlanan keşif amaçlı bir canlı testin arkasındaki kaldıraçtır: `claude-haiku-4-5` üzerinde, bir zaman damgasının önbelleği zehirlediği kurgusal bir dizide isabet oranını 0 % seviyesinden 95 % seviyesine çıkardı ve istek başına maliyeti, katmanın bu seçenek olmadan çalışan haline kıyasla 82.76 % düşürdü; kol başına 20 istek, 1.2.0 sürümüyle 15 Kasım 2026'da ölçüldü. Küçük ve kurgusal bir test; sizin trafiğiniz için bir öngörü değil.
+Bu isteğe bağlı yeniden sıralama, README'de yayımlanan keşif amaçlı bir canlı testin arkasındaki kaldıraçtır: `claude-haiku-4-5` üzerinde, bir zaman damgasının önbelleği zehirlediği kurgusal bir dizide isabet oranını %0 seviyesinden %95 seviyesine çıkardı ve istek başına maliyeti, katmanın bu seçenek olmadan çalışan haline kıyasla %82,76 düşürdü; kol başına 20 istek, 1.2.0 sürümüyle 15 Kasım 2026'da ölçüldü. Küçük ve kurgusal bir test; sizin trafiğiniz için bir öngörü değil.
 
 ## Anthropic'in sayılarıyla doğrulayın
 
