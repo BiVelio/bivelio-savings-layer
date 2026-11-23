@@ -102,3 +102,39 @@ export const CONSENTIMIENTO_RETIRADO = {
   ad_user_data: "denied",
   ad_personalization: "denied",
 } as const;
+
+/**
+ * La elección vigente mirando, por orden, la cookie, la copia de la sesión
+ * (sessionStorage, por si el navegador bloquea las cookies del sitio) y la de
+ * la memoria del documento (por si también bloquea sessionStorage). La de la
+ * sesión tiene el mismo formato y la misma caducidad que la cookie.
+ */
+export function eleccionVigente(fuentes: { cookies: string; sesion: string | null; memoria: Eleccion | null }, ahora: Date): Eleccion | null {
+  return (
+    leerEleccion(fuentes.cookies, ahora) ??
+    (fuentes.sesion ? leerEleccion(`${COOKIE_CONSENTIMIENTO}=${fuentes.sesion}`, ahora) : null) ??
+    fuentes.memoria
+  );
+}
+
+/**
+ * El guion previo al primer pintado (va en el <head>): si ya hay una elección
+ * válida en la cookie o en la sesión, adopta una hoja que esconde el aviso.
+ * Así el aviso sale en el HTML de las páginas estáticas para quien aún no ha
+ * elegido, sin parpadeo ni salto para quien sí. Se hace con una hoja adoptada
+ * y no con un atributo en <html>, para no desajustar la hidratación (como el
+ * guion previo de la franja, franja-lanzamiento.ts). Misma regla que
+ * `leerEleccion`; lo prueba consentimiento.test.ts ejecutándolo.
+ */
+export function guionPrevioDelAviso(): string {
+  const n = JSON.stringify(COOKIE_CONSENTIMIENTO);
+  return (
+    `try{var n=${n},v=function(x){var m=/^(granted|denied)\\.(\\d{4}-\\d{2}-\\d{2})$/.exec(x||"");` +
+    `if(!m)return!1;var d=(Date.now()-Date.parse(m[2]+"T00:00:00Z"))/864e5;return d>=-1&&d<=${DIAS_DE_VALIDEZ}},` +
+    `c=document.cookie.split(";"),e=!1,i,k,s=null;for(i=0;i<c.length;i++){k=c[i].indexOf("=");` +
+    `if(k>0&&c[i].slice(0,k).trim()===n){e=v(c[i].slice(k+1).trim());break}}` +
+    `if(!e){try{s=sessionStorage.getItem(n)}catch(x){}e=v(s)}` +
+    `if(e){var h=new CSSStyleSheet();h.replaceSync(".aviso-cookies:not([data-reabierto]){display:none}");` +
+    `document.adoptedStyleSheets=document.adoptedStyleSheets.concat(h)}}catch(x){}`
+  );
+}
