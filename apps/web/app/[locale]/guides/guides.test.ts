@@ -328,14 +328,15 @@ describe("el índice de las guías: la rejilla de tarjetas", () => {
     expect(lista.length).toBeGreaterThan(0);
     expect(lista.match(/<Link\b/g)).toHaveLength(1);
     expect(lista).toMatch(/<h2 id=\{`guia-\$\{g\.slug\}`\} className="guia-tarjeta-titulo">\s*<Link href=\{`\/guides\/\$\{g\.slug\}`\}>\{g\.title\}<\/Link>/);
-    expect(lista).toMatch(/<span className="guia-tarjeta-leer" aria-hidden="true">/);
+    expect(lista).toMatch(/<span className="guia-tarjeta-leer" aria-hidden="true">\s*<span className="guia-tarjeta-leer-texto">\{tg\("readGuide"\)\}<\/span>/);
     expect(pagina).not.toMatch(/readAria/);
     for (const l of locales) expect(mensajes(l), l).not.toHaveProperty("readAria");
   });
 
   it("la semántica de antes: cada guía con su titular por nombre, en su idioma, con la fecha y los minutos de lectura", () => {
-    expect(lista).toMatch(/<article className="guia-tarjeta" aria-labelledby=\{`guia-\$\{g\.slug\}`\} lang=\{g\.idioma\}>/);
-    expect(lista).toMatch(/<time dateTime=\{g\.date\}>\{fechaLegible\(g\.date, lang\)\}<\/time>/);
+    expect(lista).toMatch(/<article\s+className=\{[^}]*"guia-tarjeta"\}\s+aria-labelledby=\{`guia-\$\{g\.slug\}`\}\s+lang=\{g\.idioma\}\s*>/);
+    // La fecha corta («23 Nov 2026»): el pie cabe en una fila también en el móvil.
+    expect(lista).toMatch(/<time dateTime=\{g\.date\}>\{fechaLegible\(g\.date, lang, "short"\)\}<\/time>/);
     // Los mismos minutos que la cabecera de cada guía: el texto que se sirve en ese idioma.
     expect(lista).toMatch(/tg\("minRead", \{ n: minutosDeLectura\(cargarTexto\(g\.slug, locale\)\) \}\)/);
     expect(lista).toMatch(/tg\(`topics\.\$\{g\.tema\}`\)/);
@@ -345,7 +346,9 @@ describe("el índice de las guías: la rejilla de tarjetas", () => {
     expect(slot.length).toBeGreaterThan(0);
     expect(slot).toMatch(/\.guias-indice \{ padding-top: clamp\(40px, 5\.5vw, 72px\); \}/);
     expect(slot).toMatch(/\.guias-lista \{ display: grid; grid-template-columns: repeat\(2, minmax\(0, 1fr\)\);/);
-    expect(slot).toMatch(/@media \(max-width: 719\.98px\) \{\s*\.guias-lista \{ grid-template-columns: minmax\(0, 1fr\); \}/);
+    // Una columna por debajo de 960 px: a 720–768 (el iPad vertical) las dos columnas daban tarjetas más estrechas que la del móvil.
+    expect(slot).toMatch(/@media \(max-width: 959\.98px\) \{\s*\.guias-lista \{ grid-template-columns: minmax\(0, 1fr\); \}/);
+    expect(slot).not.toMatch(/(?:max|min)-width: 72\d/);
     expect(slot).toMatch(/\.guia-tarjeta-titulo a::after \{ content: ""; position: absolute; inset: 0;/);
     expect(slot).toMatch(/\.guia-tarjeta-titulo a:focus-visible::after \{ outline: 2px solid var\(--brand\);/);
     // Todo `translate` de la tarjeta vive dentro del bloque sin reduced-motion.
@@ -353,5 +356,30 @@ describe("el índice de las guías: la rejilla de tarjetas", () => {
     const conTransform = slot.split("\n").filter((l) => /transform: translate/.test(l));
     expect(conTransform.length).toBeGreaterThan(0);
     for (const l of conTransform) expect(sinMovimiento, l).toContain(l);
+  });
+
+  it("el titular, de la familia editorial (800) y sin tope en ch: nunca más estrecho que la descripción", () => {
+    const titulo = slot.slice(slot.indexOf(".lp .guia-tarjeta .guia-tarjeta-titulo {"));
+    const regla = titulo.slice(0, titulo.indexOf("}"));
+    expect(regla).toMatch(/font-weight: 800;/);
+    expect(regla).toMatch(/max-width: none;/);
+    expect(regla).toMatch(/text-wrap: balance;/);
+    expect(slot).not.toMatch(/guia-tarjeta-titulo[^{]*\{[^}]*max-width: \d+ch/);
+  });
+
+  it("la destacada: una guía elegida en lista.ts, no por cuántas haya; desde 960 px, con su propia composición", () => {
+    expect(GUIAS.filter((g) => g.destacada)).toHaveLength(1);
+    expect(lista).toMatch(/className=\{g\.destacada \? "guias-item guias-item--destacada" : "guias-item"\}/);
+    expect(lista).toMatch(/className=\{g\.destacada \? "guia-tarjeta guia-tarjeta--destacada" : "guia-tarjeta"\}/);
+    expect(slot).not.toMatch(/nth-last-child|nth-child/);
+    expect(slot).toMatch(/\.guias-item--destacada \{ grid-column: 1 \/ -1; \}/);
+    const ancho = slot.slice(slot.indexOf("@media (min-width: 960px) {"));
+    expect(ancho).toMatch(/^@media \(min-width: 960px\) \{\s*\.guia-tarjeta--destacada \{\s*display: grid; grid-template-columns: minmax\(0, 1\.25fr\) minmax\(0, 1fr\);/);
+    expect(ancho).toMatch(/grid-template-areas: "tema \." "titulo resumen" "titulo pie";/);
+  });
+
+  it("en el móvil, el pie en una fila: sin el texto de la señal, solo la flecha", () => {
+    const movil = slot.slice(slot.indexOf("@media (max-width: 479.98px) {"));
+    expect(movil).toMatch(/^@media \(max-width: 479\.98px\) \{\s*\.guia-tarjeta-pie \{ flex-wrap: nowrap; \}\s*\.guia-tarjeta-leer-texto \{ display: none; \}/);
   });
 });

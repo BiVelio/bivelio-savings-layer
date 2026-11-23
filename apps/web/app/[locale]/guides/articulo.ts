@@ -63,11 +63,13 @@ export function minutosDeLectura(bloques: readonly Bloque[]): number {
 
 /**
  * «23 November 2026», «23 de noviembre de 2026», «23. November 2026»: la fecha
- * en el idioma del texto, sin depender de la zona del servidor.
+ * en el idioma del texto, sin depender de la zona del servidor. Con `mes:
+ * "short"`, la corta del pie de las tarjetas del índice: «23 Nov 2026»,
+ * «23 nov 2026», «23. Nov. 2026».
  */
-export function fechaLegible(iso: string, idioma: string = "en"): string {
+export function fechaLegible(iso: string, idioma: string = "en", mes: "long" | "short" = "long"): string {
   const local = idioma === "en" ? "en-GB" : idioma;
-  return new Date(`${iso}T12:00:00Z`).toLocaleDateString(local, { day: "numeric", month: "long", year: "numeric", timeZone: "UTC" });
+  return new Date(`${iso}T12:00:00Z`).toLocaleDateString(local, { day: "numeric", month: mes, year: "numeric", timeZone: "UTC" });
 }
 
 /**
