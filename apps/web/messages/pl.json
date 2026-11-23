@@ -1232,8 +1232,8 @@
     }
   },
   "landing": {
-    "metaTitle": "Obniż koszty API LLM — SDK i bramka open source | BiVelio",
-    "metaDescription": "Obniż koszty API OpenAI, Anthropic i Gemini tam, gdzie Twój ruch się powtarza: dokładny cache, deduplikacja, cache promptów. SDK i lokalna bramka open source; za darmo, bez klucza.",
+    "metaTitle": "Obniż koszty API LLM dzięki SDK open source | BiVelio",
+    "metaDescription": "SDK w TypeScripcie, który obniża koszty API OpenAI, Anthropic i Gemini tam, gdzie ruch się powtarza: dokładny cache, deduplikacja, cache promptów Anthropic. Bramka mierzy Twojego agenta kodowania.",
     "hero": {
       "title": "Optymalizuj wywołania LLM.",
       "titleAccent": "Sprawdź każdą oszczędność.",
@@ -2114,8 +2114,8 @@
     "tableRegion": "Przewijana tabela: {title}"
   },
   "howItWorks": {
-    "metaTitle": "Jak obniżyć koszty API LLM: SDK lub lokalny gateway · BiVelio Savings Layer",
-    "metaDescription": "Obniż koszty API LLM dzięki SDK w Twojej aplikacji lub lokalnemu gatewayowi dla Twojego agenta kodowania; wywołania nadal trafiają prosto do dostawcy. Co oszczędza, gdzie nie, jak mierzymy.",
+    "metaTitle": "Jak obniżyć koszty API LLM dzięki SDK · BiVelio Savings Layer",
+    "metaDescription": "Obniż koszty API LLM dzięki SDK w Twojej aplikacji; mierz swojego agenta kodowania lokalnym gatewayem. Wywołania nigdy nie przechodzą przez BiVelio. Co oszczędza, gdzie nie, jak mierzymy.",
     "eyebrow": "Warstwa, wyjaśniona · bez żargonu",
     "title": "Gdzie instaluje się",
     "titleAccent": "oszczędność?",

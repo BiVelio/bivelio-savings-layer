@@ -1232,8 +1232,8 @@
     }
   },
   "landing": {
-    "metaTitle": "Giảm chi phí API LLM — SDK và gateway mã nguồn mở | BiVelio",
-    "metaDescription": "Giảm chi phí API của OpenAI, Anthropic và Gemini ở nơi lưu lượng của bạn lặp lại: cache chính xác, khử trùng lặp, prompt caching. SDK và gateway cục bộ mã nguồn mở; miễn phí, không cần khóa.",
+    "metaTitle": "Giảm chi phí API LLM bằng SDK mã nguồn mở | BiVelio",
+    "metaDescription": "SDK TypeScript giúp giảm chi phí API của OpenAI, Anthropic và Gemini ở nơi lưu lượng lặp lại: cache chính xác, khử trùng lặp, prompt caching của Anthropic. Gateway đo lường agent lập trình của bạn.",
     "hero": {
       "title": "Tối ưu các lệnh gọi LLM.",
       "titleAccent": "Kiểm chứng từng khoản tiết kiệm.",
@@ -2114,8 +2114,8 @@
     "tableRegion": "Bảng có thể cuộn: {title}"
   },
   "howItWorks": {
-    "metaTitle": "Cách giảm chi phí API LLM: SDK hoặc gateway cục bộ · BiVelio Savings Layer",
-    "metaDescription": "Giảm chi phí API LLM bằng SDK trong ứng dụng của bạn hoặc gateway cục bộ cho agent lập trình; các lệnh gọi vẫn đi thẳng tới nhà cung cấp của bạn. Tiết kiệm gì, ở đâu không, đo ra sao.",
+    "metaTitle": "Cách giảm chi phí API LLM bằng SDK · BiVelio Savings Layer",
+    "metaDescription": "Giảm chi phí API LLM bằng SDK trong ứng dụng của bạn; đo agent lập trình bằng gateway cục bộ. Các lệnh gọi không bao giờ đi qua BiVelio. Tiết kiệm gì, ở đâu không, đo ra sao.",
     "eyebrow": "Lớp tiết kiệm, giải thích · không thuật ngữ",
     "title": "Khoản tiết kiệm",
     "titleAccent": "được cài ở đâu?",
