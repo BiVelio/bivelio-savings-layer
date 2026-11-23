@@ -14,6 +14,7 @@
     "@sjmc11/tourguidejs": "0.0.27",
     "@supabase/ssr": "^0.12.3",
     "@supabase/supabase-js": "^2.110.7",
+    "@vercel/analytics": "2.0.1",
     "gpt-tokenizer": "^3.4.0",
     "katex": "0.19.1",
     "next": "^15.5.29",

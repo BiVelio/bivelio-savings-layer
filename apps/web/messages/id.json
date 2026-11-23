@@ -2517,6 +2517,11 @@
       "title": "Akunmu di situs ini",
       "body": "Email masukmu, organisasimu, dan detail penagihanmu (pembayaran diproses oleh Stripe) diatur oleh <policy>kebijakan privasi BiVelio</policy>."
     },
+    "website": {
+      "title": "Kunjungan ke situs ini",
+      "body": "Situs ini, bukan Perangkat Lunak, mengukur kunjungannya sendiri dengan <b>Vercel Web Analytics</b>. Yang dihitung adalah halaman yang dilihat dan tiga tindakan: menyalin perintah instalasi, mengikuti tautan ke GitHub, npm, atau PyPI, dan menuju pendaftaran. Pengukurannya agregat dan tanpa cookie, tanpa data pribadi, dan tanpa pelacakan lintas situs.",
+      "limits": "Setiap tindakan hanya membawa halaman dan bagiannya, serta package manager, tujuan tautan, atau paket yang dipilih; tidak pernah apa yang kamu ketik atau salin. Alamat halaman dikirim tanpa parameter kueri atau token."
+    },
     "contact": "Pertanyaan dan permintaan tentang data ini: <mail>{email}</mail>.",
     "overview": {
       "title": "Sekilas",
@@ -2547,6 +2552,12 @@
         "destination": "BiVelio; pembayaran diproses oleh Stripe",
         "purpose": "Akunmu di situs ini",
         "retention": "Sesuai kebijakan privasi BiVelio"
+      },
+      "website": {
+        "data": "Kunjungan ke situs ini: halaman yang dilihat dan tiga tindakan",
+        "destination": "Vercel Web Analytics",
+        "purpose": "Menghitung kunjungan dan salinan perintah instalasi",
+        "retention": "Hanya hitungan agregat: tanpa cookie, tanpa data pribadi"
       }
     },
     "fields": {

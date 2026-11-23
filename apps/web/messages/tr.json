@@ -2517,6 +2517,11 @@
       "title": "Bu sitedeki hesabın",
       "body": "Giriş e-postan, kuruluşun ve fatura bilgilerin (ödemeleri Stripe işler) <policy>BiVelio gizlilik politikası</policy> kapsamındadır."
     },
+    "website": {
+      "title": "Bu sitenin ziyaretleri",
+      "body": "Yazılım değil, bu site kendi ziyaretlerini <b>Vercel Web Analytics</b> ile ölçer. Görüntülenen sayfaları ve üç eylemi sayar: bir kurulum komutunu kopyalamak, GitHub, npm veya PyPI bağlantısını izlemek ve kayda geçmek. Ölçüm toplu ve çerezsizdir; kişisel veri içermez ve siteler arası izleme yapmaz.",
+      "limits": "Her eylem yalnızca sayfayı ve bölümü, ayrıca paket yöneticisini, hedefi veya planı taşır; yazdığın ya da kopyaladığın şeyi asla taşımaz. Sayfa adresleri sorgu parametreleri ve token olmadan gönderilir."
+    },
     "contact": "Bu verilerle ilgili sorular ve talepler: <mail>{email}</mail>.",
     "overview": {
       "title": "Özetle",
@@ -2547,6 +2552,12 @@
         "destination": "BiVelio; ödemeleri Stripe işler",
         "purpose": "Bu sitedeki hesabın",
         "retention": "BiVelio gizlilik politikasına göre"
+      },
+      "website": {
+        "data": "Bu sitenin ziyaretleri: görüntülenen sayfalar ve üç eylem",
+        "destination": "Vercel Web Analytics",
+        "purpose": "Ziyaretleri ve kurulum komutu kopyalarını saymak",
+        "retention": "Yalnızca toplu sayımlar: çerez yok, kişisel veri yok"
       }
     },
     "fields": {

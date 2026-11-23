@@ -2517,6 +2517,11 @@
       "title": "Tài khoản của bạn trên trang web này",
       "body": "Email đăng nhập, tổ chức và thông tin thanh toán của bạn (thanh toán do Stripe xử lý) thuộc phạm vi <policy>chính sách quyền riêng tư của BiVelio</policy>."
     },
+    "website": {
+      "title": "Lượt truy cập trang web này",
+      "body": "Trang web này, không phải Phần mềm, tự đo lượt truy cập của mình bằng <b>Vercel Web Analytics</b>. Nó đếm các trang được xem và ba thao tác: sao chép lệnh cài đặt, mở liên kết tới GitHub, npm hoặc PyPI, và chuyển tới trang đăng ký. Việc đo lường là tổng hợp và không dùng cookie, không có dữ liệu cá nhân và không theo dõi giữa các trang web.",
+      "limits": "Mỗi thao tác chỉ mang theo trang và mục, cùng trình quản lý gói, đích đến hoặc gói dịch vụ đã chọn; không bao giờ là những gì bạn nhập hoặc sao chép. Địa chỉ trang được gửi đi không kèm tham số truy vấn hay token."
+    },
     "contact": "Câu hỏi và yêu cầu về dữ liệu này: <mail>{email}</mail>.",
     "overview": {
       "title": "Tóm tắt",
@@ -2547,6 +2552,12 @@
         "destination": "BiVelio; thanh toán do Stripe xử lý",
         "purpose": "Tài khoản của bạn trên trang này",
         "retention": "Theo chính sách quyền riêng tư của BiVelio"
+      },
+      "website": {
+        "data": "Lượt truy cập trang web này: trang đã xem và ba thao tác",
+        "destination": "Vercel Web Analytics",
+        "purpose": "Đếm lượt truy cập và số lần sao chép lệnh cài đặt",
+        "retention": "Chỉ số liệu tổng hợp: không cookie, không dữ liệu cá nhân"
       }
     },
     "fields": {

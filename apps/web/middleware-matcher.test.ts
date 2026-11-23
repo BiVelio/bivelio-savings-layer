@@ -64,6 +64,10 @@ describe("el matcher del middleware", () => {
       "/licenses/revocations",
       "/_next/static/chunks/main.js",
       "/_vercel/insights/script.js",
+      // Los envíos de Vercel Web Analytics (lib/medicion/eventos.ts → RUTAS_DE_VERCEL):
+      // sin punto, así que solo los salva el prefijo `_vercel/`.
+      "/_vercel/insights/view",
+      "/_vercel/insights/event",
       "/robots.txt",
       "/sitemap.xml",
     ]) {
