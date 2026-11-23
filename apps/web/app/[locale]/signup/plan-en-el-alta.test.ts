@@ -7,7 +7,7 @@ import { describe, expect, it, vi } from "vitest";
 import { planDelDestino, type PlanDeAlta } from "@/app/components/acceso/plan-de-alta";
 import type { TarifasDeLosPlanes } from "@/lib/stripe/pricing";
 import { terminosDeLosPlanes } from "@/lib/legal/precios-publicados";
-import { LIMITES_MEDIR } from "@/lib/license/medir-publico";
+import { LIMITES_MEDIR, VERSION_MEDIR_AHORRA } from "@/lib/license/medir-publico";
 
 /**
  * m26 · EL ALTA DICE QUÉ PLAN SE ELIGIÓ Y CUÁNTO CUESTA.
@@ -125,7 +125,7 @@ describe("m26 · /signup con y sin plan elegido, en los 12 idiomas", () => {
     const t = createTranslator({ locale: loc, messages: m, namespace: "auth", onError: lanzar });
     const planes = terminosDeLosPlanes(loc, TARIFAS);
     const nombres = { pro: m.pricingPage.plans.pro!.name, equipo: m.pricingPage.plans.team!.name };
-    const medir = t("signupMedir", { seats: LIMITES_MEDIR.asientos, requests: LIMITES_MEDIR.peticionesDiarias.toLocaleString(loc) });
+    const medir = t("signupMedir", { seats: LIMITES_MEDIR.asientos, requests: LIMITES_MEDIR.peticionesDiarias.toLocaleString(loc), saves: VERSION_MEDIR_AHORRA });
     const pro = t("signupPlanPro", { plan: nombres.pro, price: planes.pro.mensual });
     const team = t("signupPlanTeam", { plan: nombres.equipo, price: planes.equipo.mensual, seats: planes.equipo.incluidos });
 

@@ -9,7 +9,7 @@ import { Icono } from "@/app/components/acceso/iconos";
 import { PanelDeMarca } from "@/app/components/acceso/PanelDeMarca";
 import { PlanElegidoEnAlta, SoloSinPlanElegido } from "@/app/components/acceso/PlanElegidoEnAlta";
 import { terminosDeLosPlanes } from "@/lib/legal/precios-publicados";
-import { LIMITES_MEDIR } from "@/lib/license/medir-publico";
+import { LIMITES_MEDIR, VERSION_MEDIR_AHORRA } from "@/lib/license/medir-publico";
 import { tarifasDeLosPlanes } from "@/lib/stripe/pricing";
 
 // Las dos hojas de las páginas de acceso (el marco, la tarjeta, los campos y
@@ -64,13 +64,15 @@ export default async function SignupPage({ params }: { params: Promise<{ locale:
       </p>
       <div className="acc-notas">
         {/* También se puede empezar gratis con Medir: límites desde las
-            constantes que aplica la ingesta (lib/license/medir.ts). Quien llega
-            con Pro o Team elegido no la ve: ya ha decidido pagar. */}
+            constantes que aplica la ingesta (lib/license/medir.ts), y desde qué
+            versión del paquete ahorra (las anteriores solo observan). Quien
+            llega con Pro o Team elegido no la ve: ya ha decidido pagar. */}
         <SoloSinPlanElegido>
           <p className="acc-nota">
             {t("signupMedir", {
               seats: LIMITES_MEDIR.asientos,
               requests: LIMITES_MEDIR.peticionesDiarias.toLocaleString(locale),
+              saves: VERSION_MEDIR_AHORRA,
             })}
           </p>
         </SoloSinPlanElegido>

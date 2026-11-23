@@ -120,6 +120,15 @@ export const PRECIOS_DE_LOS_PLANES = {
  */
 export const ASIENTOS_INCLUIDOS_EQUIPO = PRECIOS_DE_LOS_PLANES.equipo.monthly.asientosIncluidos;
 
+/**
+ * LA DEVOLUCIÓN (decisión del dueño, 21-11-2026): en la PRIMERA compra mensual
+ * se puede pedir la devolución durante estos días. No la aplica ningún código:
+ * se hace a mano en Stripe cuando el cliente escribe. Vive aquí para que
+ * /pricing la publique por parámetro (sus mensajes no llevan dígitos) y para
+ * que la respuesta de soporte y la web digan la misma cifra.
+ */
+export const DIAS_DE_DEVOLUCION_PRIMERA_COMPRA_MENSUAL = 14;
+
 /** La tarifa de un plan por asiento puro, a partir del importe unitario de su Price. */
 export function tarifaPorAsiento(importe: ImporteEnCentimos): TarifaDePlan {
   return { fijaCentimos: 0, asientosIncluidos: 0, asientoCentimos: importe.amount, currency: importe.currency };

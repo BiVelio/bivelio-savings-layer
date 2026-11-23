@@ -36,6 +36,8 @@ describe("m27 · sin números de versión que caducan", () => {
     it(`${loc}: pie, tarjeta de Measure, alta, banda final y panel`, () => {
       const d = cargar(loc);
       // Ninguna versión escrita: ni en el enlace del pie, ni donde se ofrece Measure.
+      // (El alta lleva `{saves}`, la versión fija desde la que Measure ahorra,
+      // por parámetro: no caduca con cada release. instalar-gratis-y-measure.test.ts.)
       for (const k of ["landing.footer.migrate", "pricingPage.cards.medir.version", "auth.signupMedir", "landing.footer.ctaSub"]) {
         expect(d[k], `${loc} ${k}`).toBeTruthy();
         expect(d[k], `${loc} ${k}`).not.toMatch(/\d+\.\d+|\{version\}/);

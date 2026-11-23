@@ -150,10 +150,11 @@
     "createAnAccount": "Crea un compte",
     "backToVerifier": "← Torna a l'inici",
     "createYourAccount": "Crea el teu compte Cloud",
-    "signupSubtitle": "Un compte BiVelio per a tota la suite. Crea'l per fer servir el núvol: tauler, memòries cau compartides i gestió de llicències. El paquet no necessita compte — l'open core corre sense clau.",
+    "signupSubtitle": "Un compte BiVelio per a tota la suite. Crea'l per fer servir el núvol: tauler d'equip, mesurament compartit, seients i llicències. El paquet no necessita compte — l'open core corre sense clau.",
     "alreadyHaveAccount": "Ja tens un compte de BiVelio?",
     "signIn": "Inicia la sessió",
     "workEmail": "Correu de la feina",
+    "emailPlaceholder": "tu@empresa.com",
     "password": "Contrasenya",
     "createAccountCta": "Crea el compte →",
     "signupLegal": "En crear el compte acceptes les <terms>condicions de Savings Cloud</terms> i la <privacy>política de privadesa</privacy>.",
@@ -194,7 +195,7 @@
       "network": "Sense connexió. Comprova la xarxa i torna-ho a intentar.",
       "missingFields": "Escriu el teu correu i la contrasenya."
     },
-    "signupMedir": "O comença gratis amb Measure: el pla de núvol gratuït, sense targeta, mode ombra, fins a {seats} seients i {requests} peticions al dia. Funciona amb la darrera versió de @bivelio/savings-layer.",
+    "signupMedir": "O comença gratis amb Measure: el pla de núvol gratuït per a equips petits, sense targeta, fins a {seats} seients i {requests} peticions al dia, amb exactament les mateixes palanques que sense clau i el teu estalvi real al tauler. Estalvia amb @bivelio/savings-layer {saves} o posterior; les versions anteriors només observen.",
     "signupPlanPro": "Has triat {plan} — {price} per seient i mes. Crea el compte, confirma el correu i pagaràs des del panell, amb Stripe.",
     "signupPlanTeam": "Has triat {plan} — {price} al mes, amb {seats} seients inclosos. Crea el compte, confirma el correu i pagaràs des del panell, amb Stripe.",
     "openSourceQuestion": "Només vols el motor open source?",
@@ -570,7 +571,7 @@
       "coveragePartial": "Cobertura parcial: el desglossament inclou {attributed} de {total} peticions SHADOW ({coverage}); l'històric sense model queda fora.",
       "coverageUnavailable": "La cobertura no està disponible perquè no s'ha pogut llegir el total diari SHADOW.",
       "note": "Estimació hipotètica: baseline − cost SHADOW. Mai mesurada, mai facturada i mai sumada a l'estalvi acreditat.",
-      "action": "Revisa Compte per activar les palanques disponibles o completa la instal·lació SDK/gateway. Palanca i superfície no estan disponibles: el wire actual no les conserva; requereixen un canvi servidor-primer.",
+      "action": "Per estalviar-ho de debò, actualitza aquestes màquines o apaga el mode només-observar: les palanques no necessiten cap pla. Aquesta taula no pot dir de quina palanca ni de quina superfície surt cada xifra: els registres d'ús no les porten.",
       "accountCta": "Revisar Compte",
       "installCta": "Completar instal·lació",
       "exportCsv": "Exportar CSV",
@@ -734,7 +735,7 @@
     "installLicensePanel": {
       "eyebrow": "Comença",
       "heading": "Tres passos. Els teus prompts mai no toquen els nostres servidors.",
-      "step1": "<b>1 · Les teves claus (opcionals)</b> — el SDK és open core: sense clau corre en mode Community (totes les palanques incloses i gratis, zero telemetria). Per defecte van activades: memòria cau exacta, deduplicació, resolutors locals, col·locació de la memòria cau del proveïdor i retallada de resultats d'eines substituïts; la resta s'activa. Una clau posada però invàlida continua fail-closed. Es passa com a <code>licenseKey</code>.",
+      "step1": "<b>1 · Les teves claus (opcionals)</b> — el SDK és open core: sense clau corre en mode Community (totes les palanques incloses i gratis, zero telemetria). Per defecte van activades: memòria cau exacta, deduplicació, resolutors locals, col·locació de la memòria cau del proveïdor, retallada de resultats d'eines substituïts i serialització compacta de les dades estructurades que passes; la resta s'activa. Una clau posada però invàlida continua fail-closed. Es passa com a <code>licenseKey</code>.",
       "step2": "<b>2 · Crea i verifica una clau de compte de servei</b> — una credencial de màquina (<code>bvk_…</code>) que fa dues feines: informa de l'ús de només recomptes (els teus seients i estalvi) i permet que l'SDK i el gateway recullin <b>tots sols la teva llicència renovada</b> cada període de facturació. És independent de la clau de llicència; només se n'emmagatzema el hash. Crea'n una i després prem <b>Prova la meva clau</b> per confirmar que està activa.",
       "currentKey": "clau de compte de servei actual",
       "noneYet": "encara cap: fes clic a dalt",
@@ -744,11 +745,11 @@
       "initNote": "Llegeix el teu <code>package.json</code> (Next.js, Express, Vercel AI SDK, Mastra, LangChain.js, l'SDK d'Anthropic o el d'OpenAI) i imprimeix el que necessita la teva pila: la línia d'instal·lació per al teu gestor de paquets, les claus que encara falten, el codi exacte del teu adaptador i una comprovació que no gasta tokens — la respon la capa a la teva màquina, sense cridar el model. No escriu res: <code>--write</code> només crea fitxers nous, després de preguntar-t'ho, i mai no en sobreescriu cap d'existent.",
       "manualInstall": "<b>Prefereixes connectar-ho a mà?</b> Instal·la el paquet — públic a npm, sense token, sense configuració:",
       "manualWire": "…i després connecta el teu proveïdor i llegeix el SavingsReport:",
-      "gatewayNote": "<b>Agent de codi en comptes d'una app?</b> El mateix paquet porta un gateway mesurador local: <code>bvsala claude</code> llança Claude Code a través seu i aquest tauler mostra la despesa, token a token. Arrenca sense cap clau (mode Community); la clau de servei opcional del pas 2 afegeix aquest tauler i els entitlements de l'org.",
+      "gatewayNote": "<b>Agent de codi en comptes d'una app?</b> El mateix paquet porta un gateway mesurador local: <code>bvsala claude</code> llança Claude Code a través seu i aquest tauler mostra la despesa, token a token. Arrenca sense cap clau (mode Community); la clau de servei opcional del pas 2 afegeix aquest tauler i els entitlements de l'org. Amb aquesta clau, el gateway necessita savings.bivelio.com per arrencar; un cop en marxa, continua servint sense ell.",
       "doctorComment": "altres agents i SDK: la configuració exacta de cadascun",
       "agentsNote": "Cada envoltorio prepara el seu agent només per a aquesta sessió — no canvia res de la seva configuració — i en sortir et diu quantes peticions va mesurar, quines no va poder mesurar i per què. <code>bvsala copilot</code> necessita la teva pròpia clau d'Anthropic (BYOK): els models allotjats per GitHub no passen per un base URL, així que no hi ha res a mesurar. Per a Crush, Droid, Cline, Continue o Copilot al VS Code, <code>bvsala doctor</code> imprimeix la configuració exacta. <b>Cursor (BYOK)</b>: funciona amb l'override de base URL d'OpenAI i la teva pròpia clau; els seus models propis no arriben a un gateway a la teva màquina. <b>Gemini CLI</b>: llança-la amb <code>bvsala gemini</code>.",
       "pythonNote": "<b>Python?</b> El client <code>bvsala</code> per a Python fa passar els SDK oficials d'OpenAI i d'Anthropic per aquest mateix gateway (<code>bvsala gateway</code>) i retorna al teu codi l'informe de cada petició — les mateixes xifres que rep aquest tauler. Necessita Python 3.10 o posterior. S'instal·la des de PyPI amb <code>pip install bivelio-savings-layer</code>; al teu codi, <code>import bvsala</code>.",
-      "finalNote": "Això és tot. Una clau posada però invàlida → <code>generate()</code> es rebutja. Si cancel·les el teu pla, el SDK s'atura en uns 15 min mitjançant <code>licenseServerUrl</code> — sense reiniciar, i mai no inutilitza la teva producció si no ens podem connectar. Treu les claus i la capa torna a funcionar en mode Community.",
+      "finalNote": "Això és tot. Una clau posada però invàlida → <code>generate()</code> es rebutja. Si cancel·les el teu pla, el SDK s'atura en uns 15 min mitjançant <code>licenseServerUrl</code>, sense reiniciar. Si no pot contactar amb nosaltres continua funcionant, però després de 72 hores sense resposta cada crida falla amb <code>LicenseError</code> fins que en rebi una. Treu les claus i la capa torna a funcionar en mode Community.",
       "terminal": "Terminal",
       "sdkEyebrow": "Aplicació",
       "sdkTitle": "Integrar una aplicació (SDK)",
@@ -757,7 +758,7 @@
       "gatewayTitle": "Connectar un agent (gateway)",
       "gatewayLede": "Llança el teu agent de codi a través del gateway local, sense tocar-ne el codi.",
       "modeLocalTitle": "Mode local",
-      "modeLocalBody": "El motor obert funciona sense compte ni claus: totes les palanques incloses i gratis, zero telemetria. Per defecte van activades: memòria cau exacta, deduplicació, resolutors locals, col·locació de la memòria cau del proveïdor i retallada de resultats d'eines substituïts; la resta s'activa. L'informe es queda a la teva màquina.",
+      "modeLocalBody": "El motor obert funciona sense compte ni claus: totes les palanques incloses i gratis, zero telemetria. Per defecte van activades: memòria cau exacta, deduplicació, resolutors locals, col·locació de la memòria cau del proveïdor, retallada de resultats d'eines substituïts i serialització compacta de les dades estructurades que passes; la resta s'activa. L'informe es queda a la teva màquina.",
       "modeCloudTitle": "Connexió Cloud",
       "modeCloudBody": "Amb llicència i clau de servei, aquest panell rep recomptes i costos —mai els teus prompts— i la teva organització comparteix mesura i seients.",
       "modeCloudLink": "Anar a les credencials",
@@ -980,7 +981,7 @@
     "sombraElision": {
       "title": "Elisió en ombra (hipotètic)",
       "detalle": "≈{usd} en {requests} peticions simulades",
-      "nota": "El que hauria estalviat l'elisió de context amb el teu trànsit real, calculat pel gateway sense tocar ni un byte. No se suma mai al titular ni compta com a estalvi acreditat: la palanca només s'encendrà quan aquesta xifra ho justifiqui.",
+      "nota": "El que hauria estalviat l'elisió de context amb el teu trànsit real, calculat pel gateway sense tocar ni un byte. No se suma mai al titular ni compta com a estalvi acreditat: la palanca continua apagada tret que l'encenguis amb la seva pròpia variable.",
       "notaNegativa": "Amb el teu trànsit, l'elisió hauria costat diners: reescriure blocs invalida la memòria cau de prefix del proveïdor. Aquest carril existeix exactament per veure això abans d'encendre res — i per això segueix apagada."
     },
     "elisionProveedor": {
@@ -1038,7 +1039,7 @@
       "colComision": "Comissió",
       "estimadoExcluido": "Estalvi estimat exclòs de la base (context, mai facturable): {usd}.",
       "sombraElision": "Carril ombra: l'elisió hauria estalviat {usd} en {requests} peticions simulades. Hipotètic — mai no entra a la base.",
-      "sombraElisionNegativa": "Carril ombra: l'elisió hauria costat {usd} de més en {requests} peticions simulades. Per això està apagada: només s'encén el que estalvia de veritat.",
+      "sombraElisionNegativa": "Carril ombra: l'elisió hauria costat {usd} de més en {requests} peticions simulades. Continua apagada tret que l'encenguis; amb aquest trànsit, deixa-la apagada.",
       "elisionProveedor": "Carril de l'esborrat del proveïdor: {requests} peticions en què els nostres dials van fer que el proveïdor esborrés context. Un recompte, no un estalvi — mai no entra a la base.",
       "referencia": "Mesurat per referència: {usd} en {requests, plural, one {# petició repetida que es va servir} other {# peticions repetides que es van servir}} sense cridar el teu proveïdor. Cadascuna es valora amb el comptador que el teu proveïdor va retornar per a la petició idèntica que ja es va executar —és a l'informe d'aquella petició i a l'ús del teu proveïdor d'aquell dia— al preu d'entrada en memòria cau, el més baix que el teu proveïdor cobra per repetir un prompt; la sortida només compta si el mostreig era determinista i la petició que es va executar no va portar raonament ocult (el teu proveïdor va declarar zero tokens de raonament o, si no els desglossa, la seva resposta no duia cap bloc de raonament). Entra a la base.",
       "referenciaExcluida": "Mesurat per referència: {usd} en {requests, plural, one {# petició repetida} other {# peticions repetides}}. Es mostra com a context: de moment queda fora de la base.",
@@ -1273,7 +1274,7 @@
         },
         {
           "title": "Open core: estalvia sense claus",
-          "body": "Instal·la el paquet i les palanques estan enceses: el mode Community corre cada palanca local amb zero telemetria, i una clau posada però invàlida continua fail-closed. El núvol és opcional: tauler d'equip, memòries cau compartides i gestió de llicències per una quota fixa per seient, estalviïs o no — i sense comissió sobre el teu estalvi."
+          "body": "Totes les palanques venen incloses i gratis, sense clau. Enceses per defecte: memòria cau exacta, deduplicació de peticions simultànies, resolutors locals, col·locació de la memòria cau de prompt, retall de resultats d'eines ja substituïts i serialització compacta de les dades estructurades que passes. La resta s'encén amb una línia cadascuna. Dues màquines poden compartir memòria cau gratis amb un magatzem teu (Redis, per exemple). Zero telemetria, i una clau posada però invàlida continua fail-closed. El núvol és opcional: tauler d'equip, mesurament compartit, seients i llicències — gratis amb Measure, i amb Pro i Team una quota fixa, estalviïs o no, sense comissió sobre el teu estalvi."
         }
       ],
       "nota": "Les animacions il·lustren la idea. Les xifres de debò — mesurades contra proveïdors reals — són just a sota."
@@ -1348,31 +1349,31 @@
       "title": "Claude Code amb clau d'API? Mira la despesa real, token a token.",
       "body": "Una sola ordre posa un mesurador local davant del teu terminal, sense tocar el teu codi i sense clau: arrenques el teu agent amb bvsala. Afegeix una clau de servei només si vols veure la despesa al teu tauler de Savings Cloud. Els teus prompts no passen pels servidors de BiVelio: van al proveïdor que configuris, i al teu tauler només hi arriben recomptes i cost.",
       "note": "El gateway mesura, amb el comptador del teu proveïdor, cada petició de la qual aquest informa l'ús (en els models del nostre catàleg de preus) i, com l'SDK, arrenca sense cap clau (mode Community): una clau de servei opcional afegeix el tauler i els entitlements de l'org. En models d'Anthropic aplica a més una palanca per defecte, sense llicència ni compte: passa les escriptures de la memòria cau del TTL d'una hora al de cinc minuts només en els torns en què una part gran del prompt és nova —com el primer d'una sessió o una compactació— i deixa com estan els torns encadenats. Això canvia el preu, mai el contingut que llegeix el model. Només té alguna cosa a rebaixar quan el teu client paga per token i demana la memòria cau d'una hora: Claude Code amb clau d'API demana la de cinc minuts si no ho canvies, i aleshores el gateway només mesura. La resta de palanques van apagades fins que les encens. L'skill savings-mode està disponible per als teus topalls, amb l'efecte pendent de mesurar. El gateway funciona també amb Codex CLI, Goose, Qwen Code, opencode, Kilo, Aider i, amb la teva pròpia clau d'Anthropic, GitHub Copilot CLI; per a d'altres, com Cline o Continue, bvsala doctor imprimeix la configuració exacta. Cursor funciona amb el seu override de base URL i la teva pròpia clau, i la Gemini CLI s'envolta amb bvsala gemini.",
-      "pythonNote": "Python o qualsevol altre llenguatge? Apunta l'SDK oficial d'OpenAI o d'Anthropic al gateway i cada petició de la qual el proveïdor informi l'ús, d'un model amb preu de llista, queda registrada en aquest tauler a aquest preu; el log del gateway avisa quan una no es mesura. bvsala doctor imprimeix el base URL de cada SDK. En streaming amb OpenAI, demana l'ús a la petició (stream_options.include_usage).",
+      "pythonNote": "Python o qualsevol altre llenguatge? Apunta l'SDK oficial d'OpenAI o d'Anthropic al gateway i cada petició de la qual el proveïdor informi l'ús, d'un model amb preu de llista, es mesura a aquest preu a la teva màquina, i també al teu tauler de Savings Cloud si afegeixes una clau de servei; el log del gateway avisa quan una no es mesura. bvsala doctor imprimeix el base URL de cada SDK. En streaming amb OpenAI, demana l'ús a la petició (stream_options.include_usage).",
       "cta": "Mira com funciona →"
     },
     "integrate": {
       "eyebrow": "Cinc línies per començar",
       "title": "Executa'l a la teva pròpia app. Els teus prompts mai no toquen els nostres servidors.",
       "body": "Col·loca el SDK davant del teu proveïdor. Cada resposta porta un SavingsReport complet que pots representar en gràfics — les mateixes xifres que llegeix el tauler.",
-      "initNote": "<b>O deixa que una ordre ho adapti al teu stack.</b> <code>init</code> llegeix el teu <code>package.json</code> (Next.js, Express, el Vercel AI SDK, Mastra, LangChain.js, l'SDK d'Anthropic o el d'OpenAI) i imprimeix la línia d'instal·lació, el codi exacte per al teu adaptador i una comprovació que no gasta tokens: sense cap clau, la capa la respon a la teva màquina, sense cridar el model. No escriu res si no ho demanes."
+      "initNote": "<b>O deixa que una ordre ho adapti al teu stack.</b> <code>init</code> llegeix el teu <code>package.json</code> (Next.js, Express, el Vercel AI SDK, Mastra, LangChain.js, l'SDK d'Anthropic o el d'OpenAI) i imprimeix la línia d'instal·lació, el codi exacte per al teu adaptador i una comprovació que no gasta tokens: sense cap clau de BiVelio, la capa la respon a la teva màquina, sense cridar el model. No escriu res si no ho demanes."
     },
     "pricing": {
       "eyebrow": "Plans",
       "title": "Motor open source. Control cloud per al teu equip.",
-      "body": "El paquet és open core Apache-2.0: sense claus, totes les palanques locals enceses, zero telemetria. El núvol és opcional — Measure és el pla gratuït, Pro i Team es facturen per seient, en {currency}, estalviïs o no, i sense comissió sobre el teu estalvi.",
+      "body": "El paquet és open core Apache-2.0: totes les palanques incloses i gratis, sense clau, i zero telemetria. El núvol és opcional — Measure és el pla gratuït, Pro es factura per seient i Team és una quota fixa amb seients inclosos, en {currency}, estalviïs o no, i sense comissió sobre el teu estalvi.",
       "amount": "{amount}",
       "per": "/ seient / mes",
       "plans": {
         "medir": {
           "name": "Measure",
           "price": "Gratis",
-          "body": "Gratis, sense targeta. El pla de NÚVOL gratuït: mode ombra per a una organització, fins a {seats} seients i {requests} peticions al dia — res del que envies canvia, res se serveix de la memòria cau, mai entra en cap comissió, i el teu tauler mostra què hauria estalviat. Les palanques locals no el necessiten: l'open core corre sense cap clau. Necessita @bivelio/savings-layer {version} o posterior.",
+          "body": "Gratis, sense targeta. El pla de NÚVOL gratuït, per a equips petits: una organització, fins a {seats} seients i {requests} peticions al dia. Exactament les mateixes palanques que l'open core sense clau, més el tauler amb el teu estalvi real; mai no entra en cap comissió. Estalvia amb @bivelio/savings-layer {saves} o posterior; les versions des de la {version} fins abans de la {saves} només observen.",
           "cta": "Comença gratis →"
         },
         "pro": {
           "name": "Pro",
-          "note": "O <b>{yearly} / seient / any</b>. Totes les optimitzacions, el rebut per petició i el panell. Sense comissió.",
+          "note": "O <b>{yearly} / seient / any</b>. Tauler d'equip, mesurament compartit, seients i llicències. Sense comissió.",
           "cta": "Tria Pro →"
         },
         "team": {
@@ -1390,7 +1391,7 @@
       "legacy": "Ja tens la modalitat anterior, amb comissió sobre l’estalvi mesurat? La conserves sense canvis; les seves condicions són als <terms>termes de preu</terms>.",
       "seatNote": "Un seient és una <b>màquina o identitat de servei</b>, no una persona. Pagues els seients que cobreix la teva subscripció; el teu tauler mostra quants n'hi ha hagut en ús aquest mes (actius com a mínim {dias} dies; la CI i els executors efímers no compten).",
       "features": [
-        "Cada optimització de BV‑SALA, sense límit",
+        "Tauler d'equip i mesurament compartit per a cada seient",
         "Rebut per petició: SavingsReport amb quatre llibres comptables, mesurat i estimat per separat",
         "Taulers d'estalvi i analítiques d'equip",
         "Els teus prompts no passen pels servidors de BiVelio: s’envien al proveïdor que configuris"
@@ -1421,7 +1422,7 @@
     },
     "footer": {
       "ctaTitle": "Mesura-ho amb el teu propi trànsit",
-      "ctaSub": "Un cop instal·lat, cada trucada retorna el seu SavingsReport, amb el mesurat i l'estimat separats. L'open core no necessita claus: les palanques corren en local amb zero telemetria. El núvol opcional comença gratis amb Measure i es factura per seient, sense comissió sobre el teu estalvi.",
+      "ctaSub": "Un cop instal·lat, cada trucada retorna el seu SavingsReport, amb el mesurat i l'estimat separats. L'open core no necessita claus: les palanques corren en local amb zero telemetria. El núvol opcional comença gratis amb Measure; els seus plans de pagament són una quota fixa, sense comissió sobre el teu estalvi.",
       "ctaStart": "Comença",
       "tagline": "<b>BiVelio Savings Layer</b> és un optimitzador de cost de LLM neutral respecte al proveïdor — cada xifra mesurada ho és contra el comptador del proveïdor; l'estimat i el simulat es mostren a part, dits com a tals, i mai no es facturen.",
       "badge": "BV‑SALA · Savings Layer",
@@ -1486,7 +1487,7 @@
         },
         {
           "title": "El teu trànsit continua anant directe",
-          "body": "L'SDK embolcalla la crida dins del teu procés. Els teus prompts no passen per BiVelio: a nosaltres només ens arriben recomptes i cost.",
+          "body": "L'SDK embolcalla la crida dins del teu procés. Els teus prompts no passen per BiVelio: sense clau no ens arriba res; amb una clau del núvol, només recomptes i cost.",
           "mono": "app → provider api"
         },
         {
@@ -1639,7 +1640,7 @@
       "items": [
         {
           "q": "Què es paga exactament?",
-          "a": "El motor open source és gratuït. Savings Cloud té un pla gratuït, Measure, i dos plans de quota fixa per seient, Pro i Team. La quota es paga hi hagi estalvi o no, no porta comissió sobre l’estalvi i no inclou el consum del teu proveïdor de LLM: aquest el continues pagant tu, amb les seves condicions."
+          "a": "El motor open source és gratuït. Savings Cloud té un pla gratuït, Measure, i dos plans de quota fixa: Pro, per seient, i Team, amb seients inclosos i seients extra a part. La quota es paga hi hagi estalvi o no, no porta comissió sobre l’estalvi i no inclou el consum del teu proveïdor de LLM: aquest el continues pagant tu, amb les seves condicions."
         },
         {
           "q": "Què és un seient?",
@@ -1647,7 +1648,7 @@
         },
         {
           "q": "En què es diferencien Measure i Community?",
-          "a": "Community és el motor open source a la teva infraestructura: sense compte, sense clau de BiVelio i sense telemetria per defecte. Measure és el pla gratuït de Savings Cloud: necessita compte i funciona en mode ombra, de manera que no canvia les teves peticions ni serveix respostes des de la memòria cau; el teu tauler mostra el que s’hauria estalviat."
+          "a": "Community és el motor open source a la teva infraestructura: sense compte, sense clau de BiVelio, sense telemetria per defecte i sense dependre dels servidors de BiVelio. Measure és el pla gratuït de Savings Cloud per a equips petits: necessita compte i clau, aplica exactament les mateixes palanques que Community i hi afegeix el tauler amb el teu estalvi real; amb aquesta clau, una capa que passa tres dies sense resposta de savings.bivelio.com rebutja totes les crides fins que la rep o treus la clau. Amb versions antigues del paquet només observa; la pàgina de preus diu des de quina versió estalvia."
         },
         {
           "q": "Serveix per a una subscripció com ChatGPT Plus?",
@@ -1663,7 +1664,7 @@
         },
         {
           "q": "Garantiu un estalvi?",
-          "a": "No. El que estalviïs depèn del teu trànsit; per exemple, de quant es repeteix. Publiquem cada mesurament amb el seu model, la seva mostra i el seu interval, i Measure et deixa veure el que s’hauria estalviat amb el teu propi trànsit abans de pagar res."
+          "a": "No. El que estalviïs depèn del teu trànsit; per exemple, de quant es repeteix. Publiquem cada mesura amb el seu model, la seva mostra i el seu interval, i l'open core t'ensenya amb el teu propi trànsit, petició a petició, el que estalvia abans que paguis res."
         }
       ]
     },
@@ -1671,7 +1672,7 @@
       "title": "Mesura primer.",
       "titleAccent": "Decideix després.",
       "titleMark": "després",
-      "sub": "Measure és gratuït i no demana targeta: funciona en mode ombra i t’ensenya el que s’hauria estalviat amb el teu propi trànsit. El motor és open source i el seu codi és a la vista.",
+      "sub": "Measure és gratuït i no demana targeta: exactament les mateixes palanques que el motor open source, més el tauler amb el que estalvies de veritat amb el teu propi trànsit. El motor és open source i el seu codi és a la vista.",
       "repo": "Veure el repositori"
     },
     "layer": {
@@ -1690,7 +1691,7 @@
       "srcAgent": "El teu agent",
       "srcAgentVia": "gateway local",
       "memoryLabel": "Memòria de peticions recents",
-      "compactLabel": "Compactació de dades",
+      "compactLabel": "Format compacte",
       "providersLabel": "El proveïdor que configuris",
       "nativeAdapter": "adaptador natiu",
       "compatName": "Qualsevol endpoint compatible amb l'API d'OpenAI",
@@ -1698,13 +1699,13 @@
       "step1Body": "Surt de la teva app o del teu agent sense abandonar la teva infraestructura.",
       "step2Title": "Repetida · resposta sense cridar el proveïdor",
       "step2Body": "La capa la reconeix a la seva memòria i retorna la resposta desada.",
-      "step3Title": "Dades compactades · menys tokens",
-      "step3Body": "Una petició nova viatja més lleugera al proveïdor que configuris i la resposta torna per la capa.",
+      "step3Title": "Nova · més lleugera on es pot",
+      "step3Body": "Una petició nova va al proveïdor que configuris: les dades estructurades en un format compacte i els resultats d'eines ja substituïts, retallats. Compactar les sortides d'eines és una palanca que encens tu. La resposta torna per la capa.",
       "step4Title": "Només recomptes i costos · mai prompts",
       "step4Body": "Savings Cloud és opcional: si el connectes, rep xifres, no contingut.",
       "legendRepeat": "Repetides",
       "legendRepeatTo": "sense cridar el proveïdor",
-      "legendData": "Dades compactades",
+      "legendData": "Dades estructurades",
       "legendDataTo": "menys tokens",
       "legendCache": "Memòria cau del proveïdor",
       "legendCacheTo": "entrada més barata",
@@ -2143,7 +2144,7 @@
     "caseClaudeSub": "claude.ai, gratis o de pagament",
     "caseClaudeBody": "Subscripció fixa: sense factura de tokens a mesurar — però amb topalls (la finestra de cinc hores i el setmanal). Justament per a això hi ha l'skill savings-mode: gratuït, es puja a claude.ai en un minut i ataca les dues masses que cremen topall. El seu efecte es publicarà quan estigui mesurat — mai abans.",
     "caseCodeSub": "terminal, amb clau d'API",
-    "caseCodeBody": "Amb subscripció la quota és fixa — però amb topalls: el mateix skill s'instal·la amb una sola ordre i estira el mateix topall setmanal. Amb clau d'API hi ha una factura per tokens real — i el mesurador ja està en marxa: sense cap clau de BiVelio, «bvsala claude» llança Claude Code a través del gateway local, sense tocar una línia de codi. El gateway mesura a la teva màquina el que hi passa, amb l'ús que declara el teu proveïdor, i en sortir et diu quantes peticions ha mesurat, quines no i per què. En models d'Anthropic passa a més les escriptures de la memòria cau del TTL d'una hora al de cinc minuts només en els torns en què una part gran del prompt és nova (el primer d'una sessió, una compactació): un estalvi calculat sobre el recompte de tokens del teu propi proveïdor, mai sobre una estimació. Per a això Claude Code ha de demanar la memòria cau d'una hora, i amb clau d'API no la demana si no ho configures: per defecte el gateway només mesura. Amb una clau de Savings Cloud veus també la teva despesa al tauler, token a token.",
+    "caseCodeBody": "Amb subscripció la quota és fixa, i per defecte el gateway no canvia res del teu trànsit: mesura a la teva màquina, gratis, el que gasta cada sessió a preu de llista. Per als topalls hi ha l'skill savings-mode, gratis, amb el seu efecte encara sense mesurar. Amb clau d'API hi ha una factura per tokens real — i el mesurador ja està en marxa: sense cap clau de BiVelio, «bvsala claude» llança Claude Code a través del gateway local, sense tocar una línia de codi. El gateway mesura a la teva màquina el que hi passa, amb l'ús que declara el teu proveïdor, i en sortir et diu quant ha gastat a preu de llista, quant ha estalviat segons la seva base (mesurat o estimat), quantes peticions ha mesurat, quines no i per què. En models d'Anthropic passa a més les escriptures de la memòria cau del TTL d'una hora al de cinc minuts només en els torns en què una part gran del prompt és nova (el primer d'una sessió, una compactació): un estalvi calculat sobre el recompte de tokens del teu propi proveïdor, mai sobre una estimació. Per a això Claude Code ha de demanar la memòria cau d'una hora, i amb clau d'API no la demana si no ho configures: per defecte el gateway només mesura. Amb una clau de Savings Cloud veus també la teva despesa al tauler, token a token.",
     "caseAppName": "La teva aplicació",
     "caseAppSub": "el teu codi + la teva clau d'API",
     "caseAppBody": "El cas per al qual existeix Savings Layer. La teva app crida l'API amb la teva clau, el proveïdor factura cada token, i la capa s'instal·la en dos passos: el paquet i embolicar la trucada. Des de la primera petició retorna un <b>SavingsReport</b> amb l'estalvi, separat en mesurat i estimat.",
@@ -2157,7 +2158,7 @@
     "s3Sub": "El producte té dues xifres diferents i convé no barrejar-les.",
     "mBeforeK": "Abans d'instal·lar",
     "mBeforeV": "Estimació",
-    "mBeforeBody": "El pla de núvol gratuït executa la capa en mode ombra sobre el teu propi trànsit i mostra què hauria estalviat, petició a petició. No canvia res i no aplica res — per això porta l'etiqueta d'«estimació». Sense pla? Open core: les palanques locals corren sense clau i amb zero telemetria.",
+    "mBeforeBody": "Abans d'instal·lar, qualsevol xifra és una estimació: el banc públic mostra com es comporta cada palanca amb el seu trànsit, no amb el teu. Per començar no cal cap pla: a l'open core totes les palanques són gratis, sense clau i amb zero telemetria; el pla gratuït Measure hi afegeix el tauler.",
     "mAfterK": "Després d'instal·lar",
     "mAfterV": "Mesurament real",
     "mAfterBody": "Cada crida retorna un SavingsReport: les crides que mai no vas pagar i l'estalvi net per petició. Auditable, petició a petició, a la teva pròpia infraestructura.",
@@ -2173,7 +2174,7 @@
     "billWith": "Depèn",
     "billDepends": "de quant es repeteixi el teu trànsit",
     "hero": {
-      "ctaInstall": "Instal·lar open source",
+      "ctaInstall": "Instal·lar gratis",
       "ctaResults": "Veure resultats reproduïbles"
     },
     "beam": {
@@ -2262,7 +2263,7 @@
         "hint": "opcional",
         "what": "Centralitza la mesura i la gestió del teu equip: organització, llicències i seients.",
         "where": "A Savings Cloud, allotjat per BiVelio. Rep les dades que defineix la pàgina de privadesa.",
-        "account": "Sí. Measure és el pla gratuït, en mode ombra."
+        "account": "Sí. Measure és el pla gratuït, per a equips petits."
       },
       "evidence": {
         "name": "Evidència",
@@ -2291,15 +2292,16 @@
     "lede": "El motor és open source: no necessita claus. Aquesta pàgina posa preu a Savings Cloud, el núvol opcional — Measure gratuït, després Pro per seient o un pla Team, sense comissió sobre el teu estalvi. Cada xifra d'aquesta pàgina es llegeix del mateix codi que et factura, així que canvia quan canvia el preu.",
     "plans": {
       "title": "Plans",
-      "intro": "Quatre plans, de menys a més. Pro i Team es paguen per seient i no porten comissió.",
+      "intro": "Quatre plans, de menys a més. Pro es paga per seient, Team amb una quota fixa amb seients inclosos més cada seient extra, i cap dels dos porta comissió.",
       "medir": {
         "name": "Measure",
-        "body": "<b>Gratis, sense targeta.</b> El pla de NÚVOL gratuït: la capa corre en mode ombra per a una organització, fins a <b>{seats} seients</b> i <b>{requests} peticions al dia</b>: cada petició arriba al teu proveïdor exactament com la vas construir, res se serveix de la memòria cau i cap palanca s'aplica. El teu tauler mostra què hauria estalviat — una estimació que mai no porta comissió. Necessita <b>@bivelio/savings-layer {version} o posterior</b>. Les palanques locals no necessiten cap pla: l'open core corre sense clau; les palanques de núvol necessiten Pro o Team."
+        "body": "<b>Gratis, sense targeta.</b> El pla de NÚVOL gratuït, per a equips petits: una organització, fins a <b>{seats} seients</b> i <b>{requests} peticions al dia</b>. Aplica exactament les mateixes palanques que l'open core sense clau, també el retall de resultats d'eines ja substituïts, i hi afegeix el tauler amb el teu estalvi real, amb el que s'ha mesurat i el que s'ha estimat per separat; mai no porta comissió. Estalvia amb <b>@bivelio/savings-layer {saves} o posterior</b>. Les versions des de la {version} fins abans de la {saves} només observen amb una clau de Measure: mode ombra, cap palanca aplicada, i el tauler mostra què s'hauria estalviat. Les palanques en si no necessiten cap pla: l'open core corre sense clau."
       },
       "pro": {
         "name": "Pro",
         "amount": "<b>{monthly}</b> per seient i mes, o <b>{yearly}</b> per seient i any, en {currency}.",
-        "body": "Totes les optimitzacions de la capa, el rebut per petició i el tauler. <b>Sense comissió</b> sobre l’estalvi: pagues els seients, estalviïs o no."
+        "body": "Tot el de Measure, per a més màquines i peticions: tauler d'equip, mesurament compartit, seients i llicències. El motor i les seves palanques continuen gratis sense clau. A l'SDK, amb una llicència de pagament, el retall de resultats d'eines ja substituïts només actua dins d'un bucle d'eines a Anthropic. Al gateway local, cada palanca necessita a més que la llicència de la teva organització la inclogui, comprovat fail-closed: si aquesta comprovació no es pot fer, les peticions viatgen intactes. <b>Sense comissió</b> sobre l’estalvi: pagues els seients, estalviïs o no.",
+        "refund": "<b>Devolució:</b> en la primera compra mensual pots demanar la devolució en un termini de {days} dies <contact>escrivint-nos</contact>."
       },
       "team": {
         "name": "Team",
@@ -2375,7 +2377,7 @@
       "cloud": {
         "tag": "Opcional · amb plans",
         "name": "Savings Cloud",
-        "body": "El tauler, el mesurament compartit, l’organització i les llicències. Measure n’és el pla gratuït, en mode ombra; Pro i Team es paguen amb una quota fixa per seient, sense comissió sobre l’estalvi."
+        "body": "El tauler, el mesurament compartit, l’organització i les llicències. Measure n’és el pla gratuït, per a equips petits; Pro es paga amb una quota fixa per seient i Team amb una quota fixa amb seients inclosos, sense comissió sobre l’estalvi. Una clau, també la gratuïta de Measure, lliga la capa a savings.bivelio.com: amb licenseServerUrl configurat, com el deixa el tauler, una capa que passa {horas} hores sense resposta rebutja totes les crides (LicenseError) fins que la rep o treus la clau. Community no té aquesta dependència."
       }
     },
     "cards": {
@@ -2408,13 +2410,13 @@
       "terms": "Veure condicions",
       "provider": "La quota no inclou el consum del teu proveïdor de LLM: el continues pagant tu, amb les seves condicions. Imports sense IVA.",
       "medir": {
-        "unit": "Pla cloud gratuït, en mode ombra.",
-        "summary": "Mesura sense canviar res: les teves peticions arriben al teu proveïdor tal com les construeixes i el tauler mostra el que s’hauria estalviat.",
+        "unit": "El pla gratuït del núvol, per a equips petits.",
+        "summary": "El tauler amb el que estalvies de veritat, i exactament les mateixes palanques que sense clau. Estalvia amb @bivelio/savings-layer {saves} o posterior; les versions anteriors només observen.",
         "cta": "Comença amb Measure",
         "version": "Funciona amb la darrera versió de @bivelio/savings-layer."
       },
       "pro": {
-        "summary": "Totes les optimitzacions, el rebut per petició i el tauler. Quota fixa: es paga hi hagi estalvi o no.",
+        "summary": "El núvol de Measure, per a més màquines i peticions: tauler d'equip, mesurament compartit, seients i llicències. El motor i les seves palanques continuen gratis sense clau. Quota fixa: es paga hi hagi estalvi o no.",
         "cta": "Tria Pro"
       },
       "team": {

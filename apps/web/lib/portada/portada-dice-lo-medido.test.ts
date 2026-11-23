@@ -516,8 +516,10 @@ describe("Medir: sus límites donde se ofrece, y su versión mínima en sus cond
 
   // La versión mínima (VERSION_MINIMA_MEDIR) es una CONDICIÓN de Measure y se
   // queda en sus condiciones (/pricing#medir). Donde Measure se ofrece —la
-  // tarjeta, el alta y la banda final— se dice «la última versión del paquete»,
-  // que no caduca con cada release (m27, 2026-11-21).
+  // tarjeta, el alta y la banda final— no se escribe ninguna versión que
+  // caduque con cada release (m27, 2026-11-21). El alta sí dice desde qué
+  // versión AHORRA (`{saves}`, VERSION_MEDIR_AHORRA): es un umbral fijo, no «la
+  // última», y llega por parámetro.
   const CON_VERSION = ["landing.pricing.plans.medir.body", "pricingPage.plans.medir.body"];
   const SIN_VERSION = ["auth.signupMedir", "pricingPage.cards.medir.version", "landing.footer.ctaSub"];
   for (const loc of LOCALES) {
@@ -559,11 +561,12 @@ describe("los textos nuevos se formatean en los 12 idiomas (ICU sin errores)", (
     "landing.step2.plain": { rep: "30 %", punto: "31,5 %", bajo: "25,7 %", alto: "36,7 %" },
     "landing.ledgersHead.providerNote": { fecha: "2026-09-28" },
     "landing.hero.compatibleNota": { gemini: "0.4.33", flash: "Gemini 3.8 Flash", pro: "Gemini 3.1 Pro", fecha: "1 October 2026", fechaPro: "1–2 October 2026" },
-    "landing.pricing.plans.medir.body": { seats: 5, requests: "20.000", version: "0.4.33" },
+    // Desde la 1.2.5 dice desde qué versión ahorra (`{saves}`), como las condiciones de /pricing.
+    "landing.pricing.plans.medir.body": { seats: 5, requests: "20.000", version: "0.4.33", saves: "1.2.5" },
     "landing.footer.ctaSub": {},
     "howItWorks.billWith": {},
     "howItWorks.billDepends": {},
-    "auth.signupMedir": { seats: 5, requests: "20.000" },
+    "auth.signupMedir": { seats: 5, requests: "20.000", saves: "1.2.5" },
   };
   for (const loc of LOCALES) {
     it(`${loc}`, () => {
@@ -587,8 +590,12 @@ describe("los textos nuevos se formatean en los 12 idiomas (ICU sin errores)", (
         seats: 5,
         requests: "20.000",
         version: "0.4.33",
+        // Desde la 1.2.5 Measure ahorra: las condiciones dicen desde qué versión (2026-11-21;
+        // la 1.2.4 no llegó a publicarse en npm).
+        saves: "1.2.5",
       });
       expect(JSON.stringify(medir)).toContain("0.4.33");
+      expect(JSON.stringify(medir)).toContain("1.2.5");
     });
   }
 });

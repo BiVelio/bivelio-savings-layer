@@ -27,3 +27,23 @@ export const LIMITES_MEDIR = {
  * arranca.
  */
 export const VERSION_MINIMA_MEDIR = "0.4.33";
+
+/**
+ * La primera versión del paquete en la que la licencia Medir AHORRA: aplica las
+ * mismas palancas que sin clave y el panel enseña el ahorro real (dueño,
+ * 21-11-2026). Las anteriores, desde VERSION_MINIMA_MEDIR, reconocen la
+ * licencia pero solo observan (modo sombra). La tarjeta de Measure y sus
+ * condiciones la reciben por parámetro, nunca escrita en el texto.
+ */
+export const VERSION_MEDIR_AHORRA = "1.2.5";
+
+/**
+ * LO QUE ATA UNA CLAVE, también la gratuita de Medir: con `licenseServerUrl`
+ * (la receta del panel y de `init`), una capa que pasa estas horas sin respuesta
+ * de savings.bivelio.com falla cerrada con `LicenseError` en cada llamada hasta
+ * que la recibe o se quita la clave. Sin clave no hay esa dependencia (README de
+ * la 1.2.4). ESPEJO de `DEFAULT_MAX_STALENESS_SECONDS` en
+ * src/pipeline/create.ts (un test fija que coinciden). /pricing y el panel la
+ * reciben por parámetro: los mensajes de /pricing no llevan dígitos.
+ */
+export const HORAS_SIN_RESPUESTA_CON_CLAVE = 72;

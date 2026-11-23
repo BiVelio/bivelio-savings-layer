@@ -107,7 +107,8 @@ describe("el panel no promete lo que no hay", () => {
     for (const k of ["dashboard.installLicensePanel.step1", "dashboard.installLicensePanel.modeLocalBody"]) {
       expect(en[k], k).toContain("every lever included and free");
       expect(en[k], k).toContain(
-        "On by default: exact cache, deduplication, local resolvers, provider cache placement and trimming of superseded tool results; the rest you switch on.",
+        // La lista entera, la del README de la 1.2.4: también la serialización compacta.
+        "On by default: exact cache, deduplication, local resolvers, provider cache placement, trimming of superseded tool results and compact serialization of the structured data you pass; the rest you switch on.",
       );
     }
     // 1.2.4 · decisión del dueño (21-11-2026, 21:45 UTC): Measure aplica
