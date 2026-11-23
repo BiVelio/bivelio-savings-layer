@@ -1232,8 +1232,8 @@
     }
   },
   "landing": {
-    "metaTitle": "BiVelio — Xác minh mức tiết kiệm LLM của bạn",
-    "metaDescription": "SDK giúp ứng dụng của bạn chỉ trả nhà cung cấp LLM đúng phần cần thiết, và gateway đo lường agent lập trình của bạn. Open core Apache-2.0: không khóa, không tài khoản, không telemetry — đo bằng chính bộ đếm của nhà cung cấp; cloud tùy chọn là phí cố định, không hoa hồng trên khoản tiết kiệm của bạn.",
+    "metaTitle": "Giảm chi phí API LLM — SDK và gateway mã nguồn mở | BiVelio",
+    "metaDescription": "Giảm chi phí API của OpenAI, Anthropic và Gemini ở nơi lưu lượng của bạn lặp lại: cache chính xác, khử trùng lặp, prompt caching. SDK và gateway cục bộ mã nguồn mở; miễn phí, không cần khóa.",
     "hero": {
       "title": "Tối ưu các lệnh gọi LLM.",
       "titleAccent": "Kiểm chứng từng khoản tiết kiệm.",
@@ -1760,8 +1760,8 @@
     "arteAlt": "Hình minh họa: một tổ chức và bảng điều khiển Savings Cloud đã kết nối, cùng một vòng tròn thứ ba đi vào ô trống."
   },
   "benchmarksPage": {
-    "metaTitle": "Bài kiểm tra A/B công khai: hãy đo chúng tôi | BiVelio Savings Layer",
-    "metaDescription": "Bốn bộ kiểm tra công khai (GSM8K, BFCL, XSTest và MT-Bench), hai nhánh được đo bằng bộ đếm sử dụng của chính nhà cung cấp, mỗi con số kèm n, khoảng tin cậy và ngày của nó. Những gì tiết kiệm được, những gì không, và các lỗi mà bài kiểm tra đã tìm ra.",
+    "metaTitle": "Benchmark tiết kiệm LLM: kết quả A/B công khai · BiVelio Savings Layer",
+    "metaDescription": "Benchmark A/B công khai về mức tiết kiệm API LLM (GSM8K, BFCL, XSTest, MT-Bench), đo bằng bộ đếm sử dụng của chính nhà cung cấp. Mỗi con số kèm n, khoảng tin cậy và ngày của nó.",
     "eyebrow": "Bài kiểm tra công khai · có thể tái lập",
     "title": "Bài kiểm tra A/B của chúng tôi, công khai.",
     "titleAccent": "Hãy đo chúng tôi.",
@@ -2113,8 +2113,8 @@
     "tableRegion": "Bảng có thể cuộn: {title}"
   },
   "howItWorks": {
-    "metaTitle": "Khoản tiết kiệm được cài ở đâu? · BiVelio Savings Layer",
-    "metaDescription": "BiVelio Savings Layer chạy trong hạ tầng của bạn, dưới dạng SDK hoặc gateway cục bộ. Động cơ mã nguồn mở, Savings Cloud tùy chọn: tiết kiệm gì, ở đâu không, đo ra sao.",
+    "metaTitle": "Cách giảm chi phí API LLM: SDK hoặc gateway cục bộ · BiVelio Savings Layer",
+    "metaDescription": "Giảm chi phí API LLM bằng SDK trong ứng dụng của bạn hoặc gateway cục bộ cho agent lập trình; các lệnh gọi vẫn đi thẳng tới nhà cung cấp của bạn. Tiết kiệm gì, ở đâu không, đo ra sao.",
     "eyebrow": "Lớp tiết kiệm, giải thích · không thuật ngữ",
     "title": "Khoản tiết kiệm",
     "titleAccent": "được cài ở đâu?",
@@ -2279,8 +2279,8 @@
     }
   },
   "pricingPage": {
-    "metaTitle": "Điều khoản giá · BiVelio Savings Layer",
-    "metaDescription": "Open core miễn phí; Measure, Pro, Team và Enterprise là các gói cloud — không gói nào mang hoa hồng trên khoản tiết kiệm của bạn. Số liệu công bố từ chính các hằng số dùng để tính phí.",
+    "metaTitle": "Giá: động cơ mã nguồn mở miễn phí, cloud phí cố định · BiVelio Savings Layer",
+    "metaDescription": "Động cơ mã nguồn mở giúp giảm chi phí API LLM miễn phí và không cần khóa. Savings Cloud: Measure miễn phí; Pro và Team là phí cố định, không hoa hồng trên khoản tiết kiệm của bạn.",
     "eyebrow": "Bảng giá công bố",
     "title": "Engine mã nguồn mở.",
     "titleAccent": "Kiểm soát trên cloud cho nhóm của bạn.",

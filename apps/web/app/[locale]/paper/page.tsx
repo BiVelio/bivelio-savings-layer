@@ -52,9 +52,13 @@ const URL_LATEX = "https://github.com/BiVelio/bivelio-savings-layer/blob/main/do
 const E = EDICION_PAPER;
 
 export async function generateMetadata(): Promise<Metadata> {
-  const title = `${CABECERA.titulo} — ${CABECERA.subtitulo} · Preprint`;
+  // El título del navegador y del buscador es el CORTO con el que el README
+  // cita el artículo («…in LLM Applications»): «LLM» es lo que se busca, y el
+  // completo («…in Large Language Model Applications — Open-Core Edition»)
+  // pasaba de 100 caracteres. El H1 de la página sigue siendo el completo.
+  const title = "Verifiable Measurement of Cost Savings in LLM Applications — Preprint";
   const description =
-    "BV-SALA preprint: verifiable measurement of LLM cost savings. Paired live double-runs, percentile cluster bootstrap, four never-summed ledgers, measured/reference/estimated labels, and the open-core edition.";
+    "Preprint on measuring LLM API cost savings you can verify: paired live A/B runs on the provider's own usage counter, cluster-bootstrap intervals and four never-summed ledgers.";
   const url = absolute("/en/paper");
   const social = tarjetaSocial("en", CABECERA.titulo);
   return {

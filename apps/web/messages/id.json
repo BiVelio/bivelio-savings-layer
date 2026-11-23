@@ -1232,8 +1232,8 @@
     }
   },
   "landing": {
-    "metaTitle": "BiVelio — Verifikasi Penghematan LLM Anda",
-    "metaDescription": "SDK yang membuat aplikasi Anda membayar penyedia LLM hanya untuk yang dibutuhkan, dan gateway yang mengukur agen coding Anda. Open core Apache-2.0: tanpa kunci, tanpa akun, tanpa telemetri — diukur dengan penghitung penyedia Anda; cloud opsional adalah biaya tetap tanpa komisi atas penghematan Anda.",
+    "metaTitle": "Kurangi Biaya API LLM — SDK dan Gateway Open Source | BiVelio",
+    "metaDescription": "Kurangi biaya API OpenAI, Anthropic, dan Gemini di bagian trafik Anda yang berulang: cache persis, deduplikasi, prompt caching. SDK dan gateway lokal open source; gratis, tanpa kunci.",
     "hero": {
       "title": "Optimalkan panggilan LLM Anda.",
       "titleAccent": "Periksa setiap penghematan.",
@@ -1760,8 +1760,8 @@
     "arteAlt": "Ilustrasi: sebuah organisasi dan dasbor Savings Cloud-nya yang sudah terhubung, serta lingkaran ketiga yang masuk ke slot kosong."
   },
   "benchmarksPage": {
-    "metaTitle": "Uji A/B publik: ukur kami | BiVelio Savings Layer",
-    "metaDescription": "Empat baterai publik (GSM8K, BFCL, XSTest, dan MT-Bench), dua lengan yang diukur dengan penghitung penggunaan milik penyedia sendiri, setiap angka dengan n, interval, dan tanggalnya. Apa yang menghemat, apa yang tidak, dan bug yang ditemukan uji ini.",
+    "metaTitle": "Benchmark penghematan LLM: hasil A/B publik · BiVelio Savings Layer",
+    "metaDescription": "Benchmark A/B publik atas penghematan API LLM (GSM8K, BFCL, XSTest, MT-Bench), diukur dengan penghitung penggunaan milik penyedia sendiri. Setiap angka dengan n, interval, dan tanggalnya.",
     "eyebrow": "Uji publik · dapat direproduksi",
     "title": "Uji A/B kami, secara terbuka.",
     "titleAccent": "Ukur kami.",
@@ -2113,8 +2113,8 @@
     "tableRegion": "Tabel yang dapat digulir: {title}"
   },
   "howItWorks": {
-    "metaTitle": "Di mana penghematan dipasang? · BiVelio Savings Layer",
-    "metaDescription": "BiVelio Savings Layer berjalan di infrastruktur Anda sebagai SDK atau gateway lokal. Mesin open source, Savings Cloud opsional: penghematan, batasan, cara mengukurnya.",
+    "metaTitle": "Cara mengurangi biaya API LLM: SDK atau gateway lokal · BiVelio Savings Layer",
+    "metaDescription": "Kurangi biaya API LLM dengan SDK di aplikasi Anda atau gateway lokal untuk agen coding Anda; panggilan tetap langsung ke penyedia Anda. Penghematan, batasan, dan cara mengukurnya.",
     "eyebrow": "Lapisannya, dijelaskan · tanpa jargon",
     "title": "Di mana",
     "titleAccent": "penghematan dipasang?",
@@ -2279,8 +2279,8 @@
     }
   },
   "pricingPage": {
-    "metaTitle": "Ketentuan harga · BiVelio Savings Layer",
-    "metaDescription": "Open core gratis; Measure, Pro, Team, dan Enterprise adalah paket cloud — tidak ada yang membawa komisi atas penghematan Anda. Angka diterbitkan dari konstanta yang sama yang menagih.",
+    "metaTitle": "Harga: mesin open source gratis, cloud dengan biaya tetap · BiVelio Savings Layer",
+    "metaDescription": "Mesin open source yang mengurangi biaya API LLM gratis dan tanpa kunci. Savings Cloud: Measure gratis; Pro dan Team adalah biaya tetap tanpa komisi atas penghematan Anda.",
     "eyebrow": "Harga yang diterbitkan",
     "title": "Mesin open source.",
     "titleAccent": "Kendali cloud untuk tim Anda.",

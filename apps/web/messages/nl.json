@@ -1232,8 +1232,8 @@
     }
   },
   "landing": {
-    "metaTitle": "BiVelio — Verifieer je LLM-besparingen",
-    "metaDescription": "Een SDK die jouw app de LLM-provider alleen laat betalen voor wat ze nodig heeft, en een gateway die je coding-agent meet. Apache-2.0 open core: geen sleutel, geen account, geen telemetrie — gemeten met de teller van je provider; de optionele cloud is een vast bedrag zonder commissie op je besparing.",
+    "metaTitle": "Verlaag je LLM-API-kosten — open-source SDK en gateway | BiVelio",
+    "metaDescription": "Verlaag je API-kosten bij OpenAI, Anthropic en Gemini waar je verkeer zich herhaalt: exacte cache, deduplicatie, prompt caching. Open-source SDK en lokale gateway; gratis, zonder sleutel.",
     "hero": {
       "title": "Optimaliseer je LLM-aanroepen.",
       "titleAccent": "Controleer elke besparing.",
@@ -1760,8 +1760,8 @@
     "arteAlt": "Illustratie: een organisatie en haar Savings Cloud-dashboard die al verbonden zijn, en een derde cirkel die de vrije plek inneemt."
   },
   "benchmarksPage": {
-    "metaTitle": "Openbare A/B-benchmark: meet ons | BiVelio Savings Layer",
-    "metaDescription": "Vier openbare batterijen (GSM8K, BFCL, XSTest en MT-Bench), twee armen gemeten met de eigen gebruiksteller van de provider, elk cijfer met zijn n, zijn interval en zijn datum. Wat het bespaart, wat niet, en de bugs die de benchmark vond.",
+    "metaTitle": "LLM-besparingsbenchmarks: openbare A/B-resultaten · BiVelio Savings Layer",
+    "metaDescription": "Openbare A/B-benchmarks van besparingen op LLM-API's (GSM8K, BFCL, XSTest, MT-Bench), gemeten met de eigen gebruiksteller van de provider. Elk cijfer met zijn n, zijn interval en zijn datum.",
     "eyebrow": "Openbare benchmark · reproduceerbaar",
     "title": "Onze A/B-benchmark, in het open.",
     "titleAccent": "Meet ons.",
@@ -2113,8 +2113,8 @@
     "tableRegion": "Scrollbare tabel: {title}"
   },
   "howItWorks": {
-    "metaTitle": "Waar wordt de besparing geïnstalleerd? · BiVelio Savings Layer",
-    "metaDescription": "BiVelio Savings Layer draait in je infrastructuur, als SDK of lokale gateway. Open-source engine, optionele Savings Cloud: wat het bespaart, waar niet, hoe we meten.",
+    "metaTitle": "Zo verlaag je LLM-API-kosten: SDK of lokale gateway · BiVelio Savings Layer",
+    "metaDescription": "Verlaag LLM-API-kosten met een SDK in je app of een lokale gateway voor je coding-agent; de aanroepen gaan nog steeds rechtstreeks naar je provider. Wat het bespaart, waar niet, hoe we meten.",
     "eyebrow": "De laag, uitgelegd · zonder jargon",
     "title": "Waar wordt",
     "titleAccent": "de besparing geïnstalleerd?",
@@ -2279,8 +2279,8 @@
     }
   },
   "pricingPage": {
-    "metaTitle": "Prijsvoorwaarden · BiVelio Savings Layer",
-    "metaDescription": "Open core is gratis; Measure, Pro, Team en Enterprise zijn de cloud-plannen — geen ervan draagt een commissie op je besparing. Cijfers gepubliceerd vanuit dezelfde constanten die factureren.",
+    "metaTitle": "Prijzen: open-source engine gratis, cloud tegen vast bedrag · BiVelio Savings Layer",
+    "metaDescription": "De open-source engine die LLM-API-kosten verlaagt is gratis, zonder sleutel. Savings Cloud: Measure is gratis; Pro en Team zijn een vast bedrag zonder commissie op je besparing.",
     "eyebrow": "Gepubliceerde prijzen",
     "title": "Open-source-engine.",
     "titleAccent": "Cloudcontrole voor je team.",

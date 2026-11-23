@@ -1232,8 +1232,8 @@
     }
   },
   "landing": {
-    "metaTitle": "BiVelio — Verifica el teu estalvi en LLM",
-    "metaDescription": "Un SDK que fa que la teva app pagui al proveïdor d'LLM només pel que necessita, i un gateway que mesura el teu agent de codi. Open core Apache-2.0: sense claus, sense registre, sense telemetria — mesurat amb el comptador del teu proveïdor; el núvol opcional és una quota fixa sense comissió sobre el teu estalvi.",
+    "metaTitle": "Redueix el cost de l'API d'LLM — SDK i gateway open source | BiVelio",
+    "metaDescription": "Retalla el cost de les API d'OpenAI, Anthropic i Gemini on el teu trànsit es repeteix: memòria cau exacta, deduplicació, memòria cau de prompts. SDK i gateway local open source; gratuït, sense clau.",
     "hero": {
       "title": "Optimitza les teves crides a LLM.",
       "titleAccent": "Comprova cada estalvi.",
@@ -1760,8 +1760,8 @@
     "arteAlt": "Il·lustració: una organització i el seu tauler de Savings Cloud ja connectats, i un tercer cercle que entra a l'espai lliure."
   },
   "benchmarksPage": {
-    "metaTitle": "Banc públic A/B: mesura'ns | BiVelio Savings Layer",
-    "metaDescription": "Quatre bateries públiques (GSM8K, BFCL, XSTest i MT-Bench), dos braços mesurats amb el comptador d'ús del mateix proveïdor, cada xifra amb la seva n, el seu interval i la seva data. El que estalvia, el que no, i els errors que el banc ha trobat.",
+    "metaTitle": "Benchmarks d'estalvi en LLM: resultats A/B públics · BiVelio Savings Layer",
+    "metaDescription": "Benchmarks A/B públics de l'estalvi en l'API d'LLM (GSM8K, BFCL, XSTest, MT-Bench), mesurats amb el comptador d'ús del mateix proveïdor. Cada xifra amb la seva n, el seu interval i la seva data.",
     "eyebrow": "Banc públic · reproduïble",
     "title": "El nostre banc A/B, obert.",
     "titleAccent": "Mesura'ns.",
@@ -2113,8 +2113,8 @@
     "tableRegion": "Taula desplaçable: {title}"
   },
   "howItWorks": {
-    "metaTitle": "On s'instal·la l'estalvi? · BiVelio Savings Layer",
-    "metaDescription": "BiVelio Savings Layer s'executa a la teva infraestructura, com a SDK o gateway local. Motor open source i Savings Cloud opcional: què estalvia, on no i com es mesura.",
+    "metaTitle": "Com reduir el cost de l'API d'LLM: SDK o gateway local · BiVelio Savings Layer",
+    "metaDescription": "Redueix el cost de l'API d'LLM amb un SDK a la teva app o un gateway local per al teu agent de codi; les crides continuen anant directes al teu proveïdor. Què estalvia, els seus límits i com es mesura.",
     "eyebrow": "La capa, explicada · sense argot",
     "title": "On s'instal·la",
     "titleAccent": "l'estalvi?",
@@ -2279,8 +2279,8 @@
     }
   },
   "pricingPage": {
-    "metaTitle": "Termes de preu · BiVelio Savings Layer",
-    "metaDescription": "L'open core és gratuït; Measure, Pro, Team i Enterprise són els plans de núvol — cap no porta comissió sobre el teu estalvi. Xifres publicades des de les mateixes constants que facturen.",
+    "metaTitle": "Preus: motor open source gratuït, núvol amb quota fixa · BiVelio Savings Layer",
+    "metaDescription": "El motor open source que redueix el cost de l'API d'LLM és gratuït i sense clau. Savings Cloud: Measure és gratuït; Pro i Team són una quota fixa sense comissió sobre el teu estalvi.",
     "eyebrow": "Preus publicats",
     "title": "Motor open source.",
     "titleAccent": "Control cloud per al teu equip.",
