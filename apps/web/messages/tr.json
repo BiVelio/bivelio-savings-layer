@@ -1232,8 +1232,8 @@
     }
   },
   "landing": {
-    "metaTitle": "LLM API Maliyetlerini Düşürün — Açık Kaynak SDK ve Ağ Geçidi | BiVelio",
-    "metaDescription": "OpenAI, Anthropic ve Gemini API maliyetlerinizi trafiğinizin tekrarlandığı yerde düşürün: birebir önbellek, tekilleştirme, prompt önbelleği. Açık kaynak SDK ve yerel ağ geçidi; ücretsiz, anahtarsız.",
+    "metaTitle": "Açık Kaynak SDK ile LLM API Maliyetlerini Düşürün | BiVelio",
+    "metaDescription": "OpenAI, Anthropic ve Gemini API maliyetlerini trafiğin tekrarlandığı yerde düşüren TypeScript SDK: birebir önbellek, tekilleştirme, Anthropic prompt önbelleği. Bir ağ geçidi kodlama aracınızı ölçer.",
     "hero": {
       "title": "LLM çağrılarınızı optimize edin.",
       "titleAccent": "Her tasarrufu doğrulayın.",
@@ -2113,8 +2113,8 @@
     "tableRegion": "Kaydırılabilir tablo: {title}"
   },
   "howItWorks": {
-    "metaTitle": "LLM API maliyetleri nasıl düşürülür: SDK veya yerel gateway · BiVelio Savings Layer",
-    "metaDescription": "LLM API maliyetlerini uygulamanızdaki bir SDK veya kodlama aracınız için yerel bir gateway ile düşürün; çağrılar yine doğrudan sağlayıcınıza gider. Ne tasarruf eder, nerede etmez, nasıl ölçülür.",
+    "metaTitle": "SDK ile LLM API maliyetleri nasıl düşürülür · BiVelio Savings Layer",
+    "metaDescription": "LLM API maliyetlerini uygulamanızdaki bir SDK ile düşürün; kodlama aracınızı yerel bir gateway ile ölçün. Çağrılar asla BiVelio üzerinden geçmez. Ne tasarruf eder, nerede etmez, nasıl ölçülür.",
     "eyebrow": "Katman, açıklandı · jargonsuz",
     "title": "Tasarruf",
     "titleAccent": "nereye kurulur?",

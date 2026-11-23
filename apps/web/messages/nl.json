@@ -1232,8 +1232,8 @@
     }
   },
   "landing": {
-    "metaTitle": "Verlaag je LLM-API-kosten — open-source SDK en gateway | BiVelio",
-    "metaDescription": "Verlaag je API-kosten bij OpenAI, Anthropic en Gemini waar je verkeer zich herhaalt: exacte cache, deduplicatie, prompt caching. Open-source SDK en lokale gateway; gratis, zonder sleutel.",
+    "metaTitle": "Verlaag je LLM-API-kosten met een open-source SDK | BiVelio",
+    "metaDescription": "TypeScript-SDK die je API-kosten bij OpenAI, Anthropic en Gemini verlaagt waar verkeer zich herhaalt: exacte cache, deduplicatie, Anthropic-prompt caching. Een gateway meet je coding-agent.",
     "hero": {
       "title": "Optimaliseer je LLM-aanroepen.",
       "titleAccent": "Controleer elke besparing.",
@@ -2113,8 +2113,8 @@
     "tableRegion": "Scrollbare tabel: {title}"
   },
   "howItWorks": {
-    "metaTitle": "Zo verlaag je LLM-API-kosten: SDK of lokale gateway · BiVelio Savings Layer",
-    "metaDescription": "Verlaag LLM-API-kosten met een SDK in je app of een lokale gateway voor je coding-agent; de aanroepen gaan nog steeds rechtstreeks naar je provider. Wat het bespaart, waar niet, hoe we meten.",
+    "metaTitle": "Zo verlaag je LLM-API-kosten met een SDK · BiVelio Savings Layer",
+    "metaDescription": "Verlaag LLM-API-kosten met een SDK in je app; meet je coding-agent met een lokale gateway. Aanroepen gaan nooit via BiVelio. Wat het bespaart, waar niet, hoe we meten.",
     "eyebrow": "De laag, uitgelegd · zonder jargon",
     "title": "Waar wordt",
     "titleAccent": "de besparing geïnstalleerd?",

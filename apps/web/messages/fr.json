@@ -1232,8 +1232,8 @@
     }
   },
   "landing": {
-    "metaTitle": "Réduisez vos coûts d'API LLM — SDK et passerelle open source | BiVelio",
-    "metaDescription": "Réduisez vos coûts d'API OpenAI, Anthropic et Gemini là où votre trafic se répète : cache exact, déduplication, cache de prompts. SDK et passerelle locale open source ; gratuit, sans clé.",
+    "metaTitle": "Réduisez vos coûts d'API LLM avec un SDK open source | BiVelio",
+    "metaDescription": "SDK TypeScript qui réduit vos coûts d'API OpenAI, Anthropic et Gemini là où le trafic se répète : cache exact, déduplication, cache de prompts Anthropic. Une passerelle mesure votre agent de code.",
     "hero": {
       "title": "Optimisez vos appels LLM.",
       "titleAccent": "Vérifiez chaque économie.",
@@ -2113,8 +2113,8 @@
     "tableRegion": "Tableau défilant : {title}"
   },
   "howItWorks": {
-    "metaTitle": "Comment réduire vos coûts d'API LLM : SDK ou passerelle locale · BiVelio Savings Layer",
-    "metaDescription": "Réduisez vos coûts d'API LLM avec un SDK dans votre app ou une passerelle locale pour votre agent de code ; les appels vont toujours directement à votre fournisseur. Gains, limites et mesure réelle.",
+    "metaTitle": "Comment réduire vos coûts d'API LLM avec un SDK · BiVelio Savings Layer",
+    "metaDescription": "Réduisez vos coûts d'API LLM avec un SDK dans votre app ; mesurez votre agent de code avec une passerelle locale. Les appels ne passent jamais par BiVelio. Gains, limites et mesure réelle.",
     "eyebrow": "La couche, expliquée · sans jargon",
     "title": "Où s'installe",
     "titleAccent": "l'économie ?",

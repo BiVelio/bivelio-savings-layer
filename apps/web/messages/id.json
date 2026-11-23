@@ -1232,8 +1232,8 @@
     }
   },
   "landing": {
-    "metaTitle": "Kurangi Biaya API LLM — SDK dan Gateway Open Source | BiVelio",
-    "metaDescription": "Kurangi biaya API OpenAI, Anthropic, dan Gemini di bagian trafik Anda yang berulang: cache persis, deduplikasi, prompt caching. SDK dan gateway lokal open source; gratis, tanpa kunci.",
+    "metaTitle": "Kurangi Biaya API LLM dengan SDK Open Source | BiVelio",
+    "metaDescription": "SDK TypeScript yang mengurangi biaya API OpenAI, Anthropic, dan Gemini di bagian trafik yang berulang: cache persis, deduplikasi, prompt caching Anthropic. Gateway mengukur agen coding Anda.",
     "hero": {
       "title": "Optimalkan panggilan LLM Anda.",
       "titleAccent": "Periksa setiap penghematan.",
@@ -2113,8 +2113,8 @@
     "tableRegion": "Tabel yang dapat digulir: {title}"
   },
   "howItWorks": {
-    "metaTitle": "Cara mengurangi biaya API LLM: SDK atau gateway lokal · BiVelio Savings Layer",
-    "metaDescription": "Kurangi biaya API LLM dengan SDK di aplikasi Anda atau gateway lokal untuk agen coding Anda; panggilan tetap langsung ke penyedia Anda. Penghematan, batasan, dan cara mengukurnya.",
+    "metaTitle": "Cara mengurangi biaya API LLM dengan SDK · BiVelio Savings Layer",
+    "metaDescription": "Kurangi biaya API LLM dengan SDK di aplikasi Anda; ukur agen coding Anda dengan gateway lokal. Panggilan tidak pernah melewati BiVelio. Penghematan, batasan, dan cara mengukurnya.",
     "eyebrow": "Lapisannya, dijelaskan · tanpa jargon",
     "title": "Di mana",
     "titleAccent": "penghematan dipasang?",

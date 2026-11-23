@@ -1232,8 +1232,8 @@
     }
   },
   "landing": {
-    "metaTitle": "Riduci i costi delle API LLM — SDK e gateway open source | BiVelio",
-    "metaDescription": "Riduci i costi delle API di OpenAI, Anthropic e Gemini dove il tuo traffico si ripete: cache esatta, deduplicazione, prompt caching. SDK e gateway locale open source; gratis, senza chiave.",
+    "metaTitle": "Riduci i costi delle API LLM con un SDK open source | BiVelio",
+    "metaDescription": "SDK TypeScript che riduce i costi delle API di OpenAI, Anthropic e Gemini dove il traffico si ripete: cache esatta, deduplicazione, prompt caching di Anthropic. Un gateway misura il tuo agente di codice.",
     "hero": {
       "title": "Ottimizza le tue chiamate LLM.",
       "titleAccent": "Verifica ogni risparmio.",
@@ -2113,8 +2113,8 @@
     "tableRegion": "Tabella scorrevole: {title}"
   },
   "howItWorks": {
-    "metaTitle": "Come ridurre i costi delle API LLM: SDK o gateway locale · BiVelio Savings Layer",
-    "metaDescription": "Riduci i costi delle API LLM con un SDK nella tua app o un gateway locale per il tuo agente di codice; le chiamate vanno sempre dirette al tuo provider. Cosa risparmia, i suoi limiti e come si misura.",
+    "metaTitle": "Come ridurre i costi delle API LLM con un SDK · BiVelio Savings Layer",
+    "metaDescription": "Riduci i costi delle API LLM con un SDK nella tua app; misura il tuo agente di codice con un gateway locale. Le chiamate non passano mai da BiVelio. Cosa risparmia, i suoi limiti e come si misura.",
     "eyebrow": "Lo strato, spiegato · senza gergo",
     "title": "Dove si installa",
     "titleAccent": "il risparmio?",

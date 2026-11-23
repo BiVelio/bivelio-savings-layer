@@ -1232,8 +1232,8 @@
     }
   },
   "landing": {
-    "metaTitle": "Redueix el cost de l'API d'LLM — SDK i gateway open source | BiVelio",
-    "metaDescription": "Retalla el cost de les API d'OpenAI, Anthropic i Gemini on el teu trànsit es repeteix: memòria cau exacta, deduplicació, memòria cau de prompts. SDK i gateway local open source; gratuït, sense clau.",
+    "metaTitle": "Redueix el cost de l'API d'LLM amb un SDK open source | BiVelio",
+    "metaDescription": "SDK de TypeScript que redueix el cost de les API d'OpenAI, Anthropic i Gemini on el trànsit es repeteix: memòria cau exacta, deduplicació, memòria cau de prompts d'Anthropic. Un gateway mesura el teu agent de codi.",
     "hero": {
       "title": "Optimitza les teves crides a LLM.",
       "titleAccent": "Comprova cada estalvi.",
@@ -2113,8 +2113,8 @@
     "tableRegion": "Taula desplaçable: {title}"
   },
   "howItWorks": {
-    "metaTitle": "Com reduir el cost de l'API d'LLM: SDK o gateway local · BiVelio Savings Layer",
-    "metaDescription": "Redueix el cost de l'API d'LLM amb un SDK a la teva app o un gateway local per al teu agent de codi; les crides continuen anant directes al teu proveïdor. Què estalvia, els seus límits i com es mesura.",
+    "metaTitle": "Com reduir el cost de l'API d'LLM amb un SDK · BiVelio Savings Layer",
+    "metaDescription": "Redueix el cost de l'API d'LLM amb un SDK a la teva app; mesura el teu agent de codi amb un gateway local. Les crides mai no passen per BiVelio. Què estalvia, els seus límits i com es mesura.",
     "eyebrow": "La capa, explicada · sense argot",
     "title": "On s'instal·la",
     "titleAccent": "l'estalvi?",
