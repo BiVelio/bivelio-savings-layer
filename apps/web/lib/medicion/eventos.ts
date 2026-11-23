@@ -1,6 +1,7 @@
 import type { ComponentProps } from "react";
 import type { Analytics, BeforeSendEvent } from "@vercel/analytics/react";
 
+import { GUIAS } from "@/app/[locale]/guides/registry";
 import { locales } from "@/i18n/config";
 
 /**
@@ -82,6 +83,8 @@ export const RUTAS = [
   "dashboard/team",
   "dashboard/verify",
   "dashboard/your-bench",
+  "guides",
+  "guides/[slug]",
   "how-it-works",
   "invitacion/[token]",
   "kit",
@@ -96,6 +99,18 @@ export const RUTAS = [
 ] as const;
 
 const IDIOMAS: readonly string[] = locales;
+
+/**
+ * Segmentos dinámicos cuyo valor es PÚBLICO y conocido: el slug de una guía
+ * (registry.ts). Solo un slug de la lista empareja la ruta (otro es un 404 y va
+ * a `[...rest]`), y ese slug se queda en el camino que se manda a Vercel
+ * (`/en/guides/reduce-openai-api-costs`), para saber qué guía se lee; la
+ * plantilla de `route` sigue siendo `/[locale]/guides/[slug]`. Un token de
+ * invitación, en cambio, se tapa siempre.
+ */
+const VALORES_PUBLICOS: Readonly<Record<string, ReadonlySet<string>>> = {
+  "guides/[slug]": new Set(GUIAS.map((g) => g.slug)),
+};
 
 /** El paquete de npm o el de PyPI: un comando que no los nombra no es «instalar BV-SALA». */
 const PAQUETE = /@bivelio\/savings-layer|bivelio-savings-layer/;
@@ -146,15 +161,19 @@ export function destinoExterno(href: string): Destino | null {
 }
 
 /** Separa el idioma de la ruta y empareja el resto con RUTAS. */
-function analizar(pathname: string): { idioma: string | null; ruta: string | null } {
+function analizar(pathname: string): { idioma: string | null; ruta: string | null; camino: string | null } {
   const trozos = pathname.split("/").filter(Boolean);
   const idioma = trozos.length > 0 && IDIOMAS.includes(trozos[0]!) ? trozos.shift()! : null;
   for (const ruta of RUTAS) {
     const patron = ruta ? ruta.split("/") : [];
     if (patron.length !== trozos.length) continue;
-    if (patron.every((p, i) => p.startsWith("[") || p === trozos[i])) return { idioma, ruta };
+    if (!patron.every((p, i) => p.startsWith("[") || p === trozos[i])) continue;
+    const publicos = VALORES_PUBLICOS[ruta];
+    if (!publicos) return { idioma, ruta, camino: ruta };
+    const valor = trozos[patron.findIndex((p) => p.startsWith("["))]!;
+    if (publicos.has(valor)) return { idioma, ruta, camino: trozos.join("/") };
   }
-  return { idioma, ruta: null };
+  return { idioma, ruta: null, camino: null };
 }
 
 /**
@@ -205,11 +224,12 @@ export function paginaDe(pathname: string): string {
  * solo a la URL.
  */
 export function rutaParaVercel(pathname: string): { route: string; path: string } {
-  const { idioma, ruta } = analizar(pathname);
-  const resto = ruta === null ? "/[...rest]" : ruta ? `/${ruta}` : "";
+  const { idioma, ruta, camino } = analizar(pathname);
+  const plantilla = ruta === null ? "/[...rest]" : ruta ? `/${ruta}` : "";
+  const real = camino === null ? "/[...rest]" : camino ? `/${camino}` : "";
   return {
-    route: `${idioma ? "/[locale]" : ""}${resto}` || "/",
-    path: `${idioma ? `/${idioma}` : ""}${resto}` || "/",
+    route: `${idioma ? "/[locale]" : ""}${plantilla}` || "/",
+    path: `${idioma ? `/${idioma}` : ""}${real}` || "/",
   };
 }
 
