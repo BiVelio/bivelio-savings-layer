@@ -1,5 +1,15 @@
 # Changelog
 
+## 1.2.6 — 2026-11-23 — documentation only
+
+No code changes: same surface as 1.2.5. This release refreshes the README that npm
+shows. The one published with 1.2.5 said that saving with a Measure key was "new in
+1.2.4", but 1.2.4 was never published: those changes reached users in 1.2.5, and the
+README now says so. The Python client moves to 1.2.6 only to keep the two versions
+the same; its README does not change.
+
+Upgrading from 1.2.3, read the 1.2.5 and 1.2.4 entries below.
+
 ## 1.2.5 — 2026-11-22 — fixes from an end-to-end test of the 1.2.4 package, run like a new user
 
 We installed the 1.2.4 tarball in clean projects and followed every README and guide
