@@ -2584,6 +2584,7 @@
   "cookieBanner": {
     "title": "Werbe-Cookies",
     "body": "Wenn du zustimmst, setzt Google Ads Cookies, um zu messen, welche Anzeigen zu Registrierungen führen, und für Remarketing. Bevor du entscheidest, wird Google Ads nicht geladen. Unsere eigene Besuchszählung nutzt keine Cookies.",
+    "bodyShort": "Google Ads nur mit deiner Zustimmung: zur Anzeigenmessung und für Remarketing.",
     "accept": "Akzeptieren",
     "reject": "Ablehnen",
     "privacy": "Datenschutzdetails"

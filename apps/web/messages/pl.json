@@ -2584,6 +2584,7 @@
   "cookieBanner": {
     "title": "Reklamowe pliki cookie",
     "body": "Jeśli zaakceptujesz, Google Ads zapisze pliki cookie, aby mierzyć, które reklamy prowadzą do rejestracji, oraz do remarketingu. Dopóki nie wybierzesz, Google Ads się nie wczytuje. Nasze własne liczenie wizyt nie używa plików cookie.",
+    "bodyShort": "Google Ads tylko za Twoją zgodą: do pomiaru reklam i remarketingu.",
     "accept": "Akceptuj",
     "reject": "Odrzuć",
     "privacy": "Szczegóły prywatności"

@@ -2584,6 +2584,7 @@
   "cookieBanner": {
     "title": "Cookie iklan",
     "body": "Jika kamu menerima, Google Ads memasang cookie untuk mengukur iklan mana yang menghasilkan pendaftaran dan untuk pemasaran ulang. Google Ads tidak dimuat sebelum kamu memilih. Penghitungan kunjungan kami sendiri tidak memakai cookie.",
+    "bodyShort": "Google Ads, hanya jika kamu menerima: untuk mengukur iklan dan pemasaran ulang.",
     "accept": "Terima",
     "reject": "Tolak",
     "privacy": "Detail privasi"

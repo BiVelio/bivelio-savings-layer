@@ -9,7 +9,8 @@ import { EVENTO_ABRIR_AVISO, guardarEleccion, useConsentimiento } from "@/lib/co
 import { rutaParaVercel } from "@/lib/medicion/eventos";
 import { RUTAS_CON_GOOGLE_ADS } from "@/lib/medicion/google-ads";
 
-export type TextosDelAviso = { titulo: string; cuerpo: string; aceptar: string; rechazar: string; privacidad: string };
+/** `cuerpoCorto`: la primera capa en pantallas estrechas (< 640 px); dice lo mismo, más corto. */
+export type TextosDelAviso = { titulo: string; cuerpo: string; cuerpoCorto: string; aceptar: string; rechazar: string; privacidad: string };
 
 /**
  * EL AVISO DE COOKIES DE PUBLICIDAD (decisión del dueño, 23-11).
@@ -96,7 +97,8 @@ export function AvisoCookies({ textos, idContenido }: { textos: TextosDelAviso; 
           <strong className="aviso-cookies-t" id={idTitulo}>
             {textos.titulo}.
           </strong>{" "}
-          {textos.cuerpo}{" "}
+          <span className="aviso-cookies-largo">{textos.cuerpo}</span>
+          <span className="aviso-cookies-corto">{textos.cuerpoCorto}</span>{" "}
           <Link href="/privacy#website">{textos.privacidad}</Link>
         </p>
         <div className="aviso-cookies-acciones">

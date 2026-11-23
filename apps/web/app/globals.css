@@ -4697,10 +4697,21 @@ a.ph-insignia:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px
 .aviso-cookies-c a { color: var(--brand); font-weight: 500; text-underline-offset: 3px; white-space: nowrap; }
 .aviso-cookies-acciones { flex: none; display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
 .aviso-cookies-acciones .btn { min-width: 104px; }
-@media (max-width: 720px) {
-  .aviso-cookies { font-size: 13px; line-height: 1.45; }
-  .aviso-cookies-in { flex-direction: column; align-items: stretch; gap: 10px; padding-block: 12px; }
-  .aviso-cookies-acciones .btn { min-width: 0; }
+.aviso-cookies-corto { display: none; }
+/* Pantallas estrechas: la versión compacta (unos 100 px a 390 px). Texto corto
+   a la izquierda y los dos botones, iguales, uno sobre otro a la derecha: el
+   mismo `.btn.ghost`, más bajo, como los del menú (`.nav-cta`: 40 px con
+   puntero grueso). */
+@media (max-width: 639.98px) {
+  .aviso-cookies { font-size: 12.5px; line-height: 1.4; }
+  .aviso-cookies-largo { display: none; }
+  .aviso-cookies-corto { display: inline; }
+  .aviso-cookies-in { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 12px; padding: 8px 16px; }
+  .aviso-cookies-acciones { grid-template-columns: 1fr; gap: 6px; }
+  .aviso-cookies-acciones .btn { min-width: 88px; min-height: 36px; padding: 6px 12px; font-size: 13.5px; }
+}
+@media (max-width: 639.98px) and (pointer: coarse) {
+  .aviso-cookies-acciones .btn { min-height: 40px; }
 }
 /* «Ajustes de cookies» en la fila final del pie: un botón con cara de enlace,
    como sus vecinos. */
