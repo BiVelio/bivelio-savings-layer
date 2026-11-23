@@ -175,11 +175,15 @@ describe("llms-full.txt sale del README", () => {
     // tiene describe algo que quien instala no recibe. VERSION_EN_NPM se sube a
     // mano cuando la versión nueva es `latest`; hasta entonces, este test falla.
     const encima = (t: string) => versiones(t).filter((v) => mayor(v, VERSION_EN_NPM));
-    expect(versiones(completo).length).toBeGreaterThan(0); // la sección de licencias nombra la 1.2.3 y la 1.2.4
+    expect(versiones(completo).length).toBeGreaterThan(0); // el README nombra versiones (la 1.2.3, al menos)
     expect(encima(completo)).toEqual([]);
     expect(encima(indice)).toEqual([]);
     // Y el guardián funciona: un README que nombra una versión futura no pasa.
-    expect(encima(llmsFull(readme.replace("This is new in 1.2.4", "This is new in 9.9.9")))).toEqual(["9.9.9"]);
+    // Se ancla en «**Pricing.** », que no nombra versión: así no depende de cómo
+    // cuente el README la 1.2.4 o la 1.2.5 (#627 reescribe esa frase).
+    const futuro = readme.replace("**Pricing.** ", "**Pricing.** From 9.9.9: ");
+    expect(futuro).not.toBe(readme);
+    expect(encima(llmsFull(futuro))).toEqual(["9.9.9"]);
     // Una IP no es una versión.
     expect(versiones("http://127.0.0.1:8403 and 1.2.3.")).toEqual(["1.2.3"]);
   });
