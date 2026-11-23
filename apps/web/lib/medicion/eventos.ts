@@ -1,7 +1,7 @@
 import type { ComponentProps } from "react";
 import type { Analytics, BeforeSendEvent } from "@vercel/analytics/react";
 
-import { GUIAS } from "@/app/[locale]/guides/registry";
+import { GUIAS } from "@/app/[locale]/guides/lista";
 import { locales } from "@/i18n/config";
 
 /**

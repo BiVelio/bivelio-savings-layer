@@ -2,7 +2,7 @@
 
 ## Anthropic'e göre Claude Code ne kadar tutar
 
-Anthropic'in kendi [Claude Code maliyet sayfası](https://code.claude.com/docs/en/costs), kurumsal kurulumlardan alınmış ortalamalar veriyor: geliştirici başına aktif gün başına yaklaşık $13 ve geliştirici başına aylık $150 ile $250 arası; kullanıcıların %90 kadarı aktif gün başına $30 altında kalıyor. Bunlar birçok ekibin ortalamaları. Sizin sayınız seçtiğiniz modele, deponuzun büyüklüğüne ve çalışma biçiminize bağlı; bu rehberin geri kalanı da bu yüzden onu ölçmekle ilgili.
+Anthropic'in kendi [Claude Code maliyet sayfası](https://code.claude.com/docs/en/costs), kurumsal kurulumlardan alınmış ortalamalar veriyor: geliştirici başına aktif gün başına yaklaşık $13 ve geliştirici başına aylık $150 ile $250 arası; kullanıcıların %90'ı aktif gün başına $30 altında kalıyor. Bunlar birçok ekibin ortalamaları. Sizin sayınız seçtiğiniz modele, deponuzun büyüklüğüne ve çalışma biçiminize bağlı; bu rehberin geri kalanı da bu yüzden onu ölçmekle ilgili.
 
 ## Yerleşik araçlar ve göstermedikleri
 
