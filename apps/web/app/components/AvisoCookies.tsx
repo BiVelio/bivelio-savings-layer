@@ -5,31 +5,39 @@ import { usePathname } from "next/navigation";
 
 import { Link } from "@/i18n/navigation";
 import type { Eleccion } from "@/lib/consentimiento/consentimiento";
-import { EVENTO_ABRIR_AVISO, gtagCargado, guardarEleccion, useConsentimiento } from "@/lib/consentimiento/navegador";
+import { EVENTO_ABRIR_AVISO, guardarEleccion, useConsentimiento } from "@/lib/consentimiento/navegador";
+import { rutaParaVercel } from "@/lib/medicion/eventos";
+import { RUTAS_CON_GOOGLE_ADS } from "@/lib/medicion/google-ads";
 
 export type TextosDelAviso = { titulo: string; cuerpo: string; aceptar: string; rechazar: string; privacidad: string };
 
 /**
  * EL AVISO DE COOKIES DE PUBLICIDAD (decisión del dueño, 23-11).
  *
- * Una tarjeta abajo, sin velo ni bloqueo: la página se puede usar sin elegir,
- * y mientras no se elige Google Ads no se carga (lib/consentimiento). «Aceptar»
- * y «Rechazar» son el mismo botón con distinto texto: misma clase, mismo
- * tamaño, uno al lado del otro. No hay casillas, ni marcadas ni sin marcar.
+ * UNA FRANJA EN EL FLUJO, justo bajo la cabecera, no un elemento fijo: nunca
+ * tapa nada (ni el botón principal del héroe en un móvil con las barras del
+ * navegador, ni un control con el foco: WCAG 2.4.11). Empuja la página hacia
+ * abajo mientras se ve y desaparece al elegir. Sin velo ni bloqueo: la página
+ * se puede usar sin elegir, y mientras no se elige Google Ads no se carga
+ * (lib/consentimiento). «Aceptar» y «Rechazar» son el mismo botón con distinto
+ * texto. No hay casillas.
  *
- * Foco: en la primera visita no se roba (no es un diálogo), pero el aviso va
- * en el documento justo tras la cabecera, así que el tabulador lo alcanza
- * enseguida; se pinta abajo porque es fijo. Al reabrirlo con «Ajustes de
- * cookies» el foco va al aviso, y al elegir vuelve al botón que lo abrió; si
- * se eligió en la primera visita, al destino de «Saltar al contenido»
- * (`idContenido`, el ID_DEL_CONTENIDO que pasa el layout). Escape cierra el
- * aviso reabierto sin cambiar nada.
+ * DÓNDE SALE: solo en las páginas donde Google Ads puede correr
+ * (RUTAS_CON_GOOGLE_ADS). En el alta, el acceso, el panel… no hay nada que
+ * consentir, y no debe empujar su formulario. Al reabrirlo con «Ajustes de
+ * cookies» sale donde se pida.
  *
- * Mientras se ve, `--aviso-cookies-h` reserva su alto al pie del <body>, para
- * que no tape lo último de la página.
+ * SIN SALTOS: en las páginas estáticas el aviso va en el HTML (estado
+ * `pendiente`); si ya hay una elección, el guion previo del <head>
+ * (guionPrevioDelAviso) lo esconde antes del primer pintado, y al hidratar el
+ * componente lo quita.
  *
- * No sale en las páginas de captura (`/captura-*`): las usa el script que hace
- * las capturas del producto.
+ * Foco: en la primera visita no se roba (no es un diálogo); va tras la
+ * cabecera, así que el tabulador lo alcanza enseguida. Al reabrirlo, el foco va
+ * al aviso, y al elegir vuelve al botón que lo abrió; si se eligió en la
+ * primera visita, al destino de «Saltar al contenido» (`idContenido`, el
+ * ID_DEL_CONTENIDO que pasa el layout). Escape cierra el aviso reabierto sin
+ * cambiar nada.
  */
 export function AvisoCookies({ textos, idContenido }: { textos: TextosDelAviso; idContenido: string }) {
   const estado = useConsentimiento();
@@ -48,29 +56,12 @@ export function AvisoCookies({ textos, idContenido }: { textos: TextosDelAviso; 
     return () => window.removeEventListener(EVENTO_ABRIR_AVISO, abrir);
   }, []);
 
-  const deCaptura = /^\/[a-z]{2}\/captura-/.test(pathname ?? "");
-  const visible = !deCaptura && (estado === "sin-eleccion" || reabierto);
+  const aqui = (RUTAS_CON_GOOGLE_ADS as readonly string[]).includes(rutaParaVercel(pathname ?? "/").route);
+  const visible = reabierto || (aqui && (estado === "sin-eleccion" || estado === "pendiente"));
 
   useEffect(() => {
     if (visible && reabierto) seccion.current?.focus();
   }, [visible, reabierto]);
-
-  useEffect(() => {
-    const raiz = document.documentElement;
-    const el = seccion.current;
-    if (!visible || !el) {
-      raiz.style.removeProperty("--aviso-cookies-h");
-      return;
-    }
-    const medir = () => raiz.style.setProperty("--aviso-cookies-h", `${Math.ceil(el.getBoundingClientRect().height) + 16}px`);
-    medir();
-    const ro = new ResizeObserver(medir);
-    ro.observe(el);
-    return () => {
-      ro.disconnect();
-      raiz.style.removeProperty("--aviso-cookies-h");
-    };
-  }, [visible]);
 
   if (!visible) return null;
 
@@ -84,13 +75,8 @@ export function AvisoCookies({ textos, idContenido }: { textos: TextosDelAviso; 
 
   const elegir = (eleccion: Eleccion) => {
     const dentro = !!seccion.current?.contains(document.activeElement);
-    // Retirar el consentimiento con gtag ya cargado: se recarga para que deje de correr YA.
-    const recargar = eleccion === "denied" && gtagCargado();
+    // Si gtag estaba cargado y se rechaza, EtiquetaGoogleAds recarga la página.
     guardarEleccion(eleccion);
-    if (recargar) {
-      location.reload();
-      return;
-    }
     cerrar(dentro);
   };
 
@@ -100,26 +86,27 @@ export function AvisoCookies({ textos, idContenido }: { textos: TextosDelAviso; 
       className="aviso-cookies"
       aria-labelledby={idTitulo}
       tabIndex={-1}
+      data-reabierto={reabierto ? "" : undefined}
       onKeyDown={(e) => {
         if (e.key === "Escape" && reabierto && estado !== "sin-eleccion") cerrar(true);
       }}
     >
-      <div className="aviso-cookies-texto">
-        <p className="aviso-cookies-t" id={idTitulo}>
-          {textos.titulo}
-        </p>
+      <div className="aviso-cookies-in">
         <p className="aviso-cookies-c">
+          <strong className="aviso-cookies-t" id={idTitulo}>
+            {textos.titulo}.
+          </strong>{" "}
           {textos.cuerpo}{" "}
           <Link href="/privacy#website">{textos.privacidad}</Link>
         </p>
-      </div>
-      <div className="aviso-cookies-acciones">
-        <button type="button" className="btn ghost" onClick={() => elegir("denied")}>
-          {textos.rechazar}
-        </button>
-        <button type="button" className="btn ghost" onClick={() => elegir("granted")}>
-          {textos.aceptar}
-        </button>
+        <div className="aviso-cookies-acciones">
+          <button type="button" className="btn ghost" onClick={() => elegir("denied")}>
+            {textos.rechazar}
+          </button>
+          <button type="button" className="btn ghost" onClick={() => elegir("granted")}>
+            {textos.aceptar}
+          </button>
+        </div>
       </div>
     </section>
   );

@@ -21,6 +21,7 @@ import { ID_DEL_CONTENIDO, SkipLink, SkipTarget } from "@/app/components/SkipLin
 import { routing } from "@/i18n/routing";
 import { metaFor } from "@/i18n/locale-meta";
 import { MensajesCliente } from "@/i18n/MensajesCliente";
+import { guionPrevioDelAviso } from "@/lib/consentimiento/consentimiento";
 
 // Pre-render one static shell per live locale.
 export function generateStaticParams() {
@@ -57,6 +58,10 @@ export default async function LocaleLayout({
             si la página los usa. */}
         <link rel="preload" href="/fonts/geist-latin-wght-normal.woff2" as="font" type="font/woff2" crossOrigin="anonymous" />
         <link rel="preload" href="/fonts/plus-jakarta-sans-latin-wght-normal.woff2" as="font" type="font/woff2" crossOrigin="anonymous" />
+        {/* Antes del primer pintado: si ya se eligió en el aviso de cookies, se
+            esconde (va en el HTML de las páginas estáticas para quien aún no
+            ha elegido). Ver guionPrevioDelAviso. */}
+        <script dangerouslySetInnerHTML={{ __html: guionPrevioDelAviso() }} />
       </head>
       <body>
         {/* Al navegador va solo lo que piden los componentes cliente de la

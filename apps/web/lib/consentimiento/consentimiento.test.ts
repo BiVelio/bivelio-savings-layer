@@ -13,6 +13,8 @@ import {
   borradosDeCookie,
   cookieDeConsentimiento,
   cookiesDeGoogleAds,
+  eleccionVigente,
+  guionPrevioDelAviso,
   leerEleccion,
   valorDeConsentimiento,
 } from "./consentimiento";
@@ -146,5 +148,76 @@ describe("el aviso", () => {
       expect(m.privacyPage.website.consent, l).toContain(COOKIE_CONSENTIMIENTO);
       expect(m.privacyPage.website.settings, l).toBe(m.landing.footer.cookieSettings);
     }
+  });
+});
+
+describe("revisión del PR #622", () => {
+  const valido = `granted.${HOY.toISOString().slice(0, 10)}`;
+
+  it("con las cookies bloqueadas la elección vale para la sesión, y si no, para el documento", () => {
+    expect(eleccionVigente({ cookies: `${COOKIE_CONSENTIMIENTO}=denied.2026-11-23`, sesion: valido, memoria: "granted" }, HOY)).toBe("denied");
+    expect(eleccionVigente({ cookies: "", sesion: valido, memoria: null }, HOY)).toBe("granted");
+    expect(eleccionVigente({ cookies: "", sesion: "basura", memoria: "denied" }, HOY)).toBe("denied");
+    expect(eleccionVigente({ cookies: "", sesion: null, memoria: null }, HOY)).toBeNull();
+  });
+
+  it("el guion previo esconde el aviso antes de pintar solo si ya hay una elección válida (cookie o sesión)", () => {
+    function correr(cookie: string, sesion: string | null | Error) {
+      const adoptadas: unknown[] = [];
+      const documento = { cookie, adoptedStyleSheets: adoptadas };
+      class HojaFalsa {
+        texto = "";
+        replaceSync(t: string) {
+          this.texto = t;
+        }
+      }
+      const almacen = {
+        getItem: () => {
+          if (sesion instanceof Error) throw sesion;
+          return sesion;
+        },
+      };
+      new Function("document", "sessionStorage", "CSSStyleSheet", guionPrevioDelAviso())(documento, almacen, HojaFalsa);
+      return documento.adoptedStyleSheets as { texto: string }[];
+    }
+    const hoy = new Date().toISOString().slice(0, 10);
+    expect(correr(`a=1; ${COOKIE_CONSENTIMIENTO}=denied.${hoy}`, null)).toHaveLength(1);
+    expect(correr(`a=1; ${COOKIE_CONSENTIMIENTO}=denied.${hoy}`, null)[0]!.texto).toBe(".aviso-cookies:not([data-reabierto]){display:none}");
+    expect(correr("", `granted.${hoy}`)).toHaveLength(1);
+    expect(correr(`${COOKIE_CONSENTIMIENTO}=granted.2020-01-01`, null)).toHaveLength(0);
+    expect(correr("a=1", null)).toHaveLength(0);
+    expect(correr("a=1", new Error("bloqueado"))).toHaveLength(0);
+  });
+
+  it("retirar el consentimiento para gtag en todas partes: la página que lo tiene se recarga", () => {
+    const etiqueta = leer("app/components/EtiquetaGoogleAds.tsx");
+    // En la rama de gtag ya cargado, sin consentimiento → recarga, antes de nada más.
+    const rama = etiqueta.slice(etiqueta.indexOf("if (w.gtag) {"));
+    expect(rama.indexOf('consentimiento === "denied" || consentimiento === "sin-eleccion"')).toBeGreaterThan(-1);
+    expect(rama.indexOf("location.reload()")).toBeLessThan(rama.indexOf('w.gtag("set"'));
+    // Antes de un clic o de un paso atrás/adelante se relee el consentimiento, síncrono.
+    expect(etiqueta).toContain('return eleccionActual() !== "granted";');
+    expect(etiqueta).toContain('window.addEventListener("popstate", alHistorial, true);');
+    expect(etiqueta).toMatch(/if \(sinConsentimiento\(\)\) \{\s*e\.preventDefault\(\);\s*e\.stopPropagation\(\);\s*location\.reload\(\);/);
+    // Y el estado se relee al llegar el aviso de otra pestaña, al volver de la caché y al volver a la pestaña.
+    const navegador = leer("lib/consentimiento/navegador.ts");
+    for (const senal of ["new BroadcastChannel(CANAL)", 'addEventListener("pageshow"', 'addEventListener("visibilitychange"', 'addEventListener("focus"', "postMessage(eleccion)"]) {
+      expect(navegador, senal).toContain(senal);
+    }
+  });
+
+  it("el aviso va en el flujo (nunca tapa nada) y solo donde Google Ads puede correr", () => {
+    const css = leer("app/globals.css");
+    const bloque = css.slice(css.indexOf("/* ==== AVISO DE COOKIES"), css.indexOf("/* ==== FIN AVISO DE COOKIES"));
+    expect(bloque).not.toMatch(/position:\s*(fixed|sticky)/);
+    expect(bloque).not.toContain("--aviso-cookies-h");
+    expect(css).not.toContain("--aviso-cookies-h");
+    const aviso = leer("app/components/AvisoCookies.tsx");
+    expect(aviso).toContain("RUTAS_CON_GOOGLE_ADS");
+    // Va en el layout tras la cabecera y antes de la página; el guion previo, en el <head>.
+    const layout = leer("app/[locale]/layout.tsx");
+    expect(layout.indexOf("</SiteNavGate>")).toBeLessThan(layout.indexOf("<AvisoCookies"));
+    expect(layout.indexOf("<AvisoCookies")).toBeLessThan(layout.indexOf("{children}"));
+    expect(layout.indexOf("guionPrevioDelAviso()")).toBeLessThan(layout.indexOf("</head>"));
   });
 });
