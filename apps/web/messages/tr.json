@@ -2522,8 +2522,8 @@
       "title": "Bu sitede ölçüm",
       "body": "Yazılım değil, bu site kendi ziyaretlerini <b>Vercel Web Analytics</b> ile ölçer. Görüntülenen sayfaları ve üç eylemi sayar: bir kurulum komutunu kopyalamak, GitHub, npm veya PyPI bağlantısını izlemek ve kayda geçmek. Ölçüm toplu ve çerezsizdir; kişisel veri içermez ve siteler arası izleme yapmaz.",
       "limits": "Her sayfa görüntüleme veya eylem yalnızca sayfayı ve bölümü, tarayıcının bildirdiği şekliyle geldiğin siteyi ve paket yöneticisini, hedefi veya planı taşır; yazdığın ya da kopyaladığın şeyi asla taşımaz. Ülkeyi, tarayıcıyı ve cihaz türünü Vercel isteğin kendisinden çıkarır. Sayfa adresleri sorgu parametreleri ve token olmadan gönderilir.",
-      "ads": "Site ayrıca hangi reklamların kayıt getirdiğini ölçmek ve yeniden pazarlama için <b>Google Ads</b> etiketini yükler. Vercel Web Analytics'in aksine reklam çerezleri yerleştirir (örneğin _gcl_au ve bir Google reklamından geldiysen _gcl_aw). Davet, yeni şifre ve bulunamayan sayfa sayfalarında yüklenmez; önce bunlardan birinden geçen bir ziyaretin geri kalanında da yüklenmez.",
-      "adsData": "Google burada açtığın her sayfanın adresini alır: sayfa yüklenirken sorgu parametreleri, parça ve token olmadan; yeniden yüklemeden sayfadan sayfaya geçtiğinde ise parametreleriyle (bu sitede bunlar yalnızca sonraki sayfayı, planı, dönemi veya bir durumu içerir). Ayrıca önceki sayfayı (yalnızca sitenin adresi), bir formun başlatıldığını veya gönderildiğini (yazdıklarını değil), Google'ın reklam bağlantısına eklediği tıklama kimliğini ve yeni bir hesap onaylandığında kaydın iki kez sayılmaması için dahili bir hesap kimliğini alır."
+      "ads": "Site ayrıca hangi reklamların kayıt getirdiğini ölçmek ve yeniden pazarlama için <b>Google Ads</b> etiketini yükler. Reklam çerezleri yerleştirir (örneğin _gcl_au ve bir Google reklamından geldiysen _gcl_aw). Yalnızca herkese açık sayfalarda (ana sayfa, nasıl çalışır, fiyatlar, karşılaştırmalar, makale, geçiş kılavuzu ve bu sayfa) ve yeni bir hesabı onaylayan sayfada çalışır. Kayıt, giriş, şifre, davet ve bulunamayan sayfa sayfalarında ve panelde hiçbir zaman çalışmaz: etiketli bir sayfadan bunlardan birine giden bağlantı, sayfayı etiket olmadan yeniden yükleyerek açar. Adresinde token veya kod bulunan bir sayfadan (bir davet ya da yeni şifre) veya bulunamayan bir sayfadan sonra, o tarayıcı sekmesindeki ziyaretin geri kalanında bir daha çalışmaz.",
+      "adsData": "Etiket yüklenmeden önce sitenin kullanmadığı tüm parametreler adresten çıkarılır; yalnızca kayıttan sonraki hedef, seçilen plan ve Google'ın kendi tıklama kimliği kalır. Ardından Google burada açtığın her sayfanın adresini, tarayıcının bildirdiği şekliyle geldiğin sayfayı (bu siteden yalnızca adresini), Google'ın reklam bağlantısına eklediği tıklama kimliğini ve yeni bir hesap onaylandığında kaydın iki kez sayılmaması için dahili bir hesap kimliğini alır. Etiket, çalıştığı sayfalarda yazdıklarına da bakar: bir e-posta adresi yazarsan, örneğin ana sayfadaki görüşme ayarlama formuna, bunu Google'a karma ({hash}) olarak gönderebilir."
     },
     "contact": "Bu verilerle ilgili sorular ve talepler: <mail>{email}</mail>.",
     "overview": {
@@ -2563,7 +2563,7 @@
         "retention": "Yalnızca toplu sayımlar: çerez yok, kişisel veri yok"
       },
       "ads": {
-        "data": "Google Ads etiketi: reklam çerezleri ve her sayfanın adresi",
+        "data": "Google Ads etiketi, yalnızca herkese açık sayfalarda: reklam çerezleri, her sayfanın adresi ve orada yazılan e-posta, karma olarak",
         "destination": "Google",
         "purpose": "Hangi reklamların kayıt getirdiğini ölçmek ve yeniden pazarlama",
         "retention": "Google saklar; BiVelio dönüşüm toplamlarını Google Ads'te görür"

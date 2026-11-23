@@ -322,7 +322,7 @@ export default async function PrivacyPage({ params }: { params: Promise<{ locale
               <p>{t.rich("website.body", { b })}</p>
               <p>{t("website.limits")}</p>
               <p>{t.rich("website.ads", { b })}</p>
-              <p>{t("website.adsData")}</p>
+              <p>{t("website.adsData", { hash: "SHA-256" })}</p>
             </section>
 
             <p className="doc-arriba">
