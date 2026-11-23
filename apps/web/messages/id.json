@@ -1248,7 +1248,7 @@
       "proofTitle": "Diukur terhadap penyedia nyata",
       "compatibleCon": "Kompatibel dengan",
       "compatibleNota": "Kompatibel tidak sama dengan terukur. SDK bekerja dengan endpoint apa pun yang kompatibel dengan API OpenAI, ditambah adaptor native Anthropic dan adaptor native Gemini (baru di {gemini}). Dengan angka penghematan di bangku uji publik, saat ini hanya model OpenAI dan Anthropic; Gemini tidak memiliki angka penghematan. Yang terukur untuk Gemini: {flash}, melalui API native-nya, di bench mingguan langsung {fecha} — keempat baterai, tanpa kegagalan lapisan dan tanpa penolakan yang di-cache atau dikreditkan sebagai penghematan. Bench itu memeriksa bahwa lapisan tidak merusak apa pun dan tidak menagih lebih; bench itu tidak mengukur penghematan. Juga terukur: {pro}, melalui API native-nya, dalam dua putaran parsial pada {fechaPro} (kuota harian penyedianya tidak cukup untuk keempat baterai dalam satu hari): keempat baterai, juga tanpa kegagalan lapisan dan tanpa penolakan yang di-cache atau dihitung sebagai penghematan.",
-      "ctaOss": "Pasang open source"
+      "ctaOss": "Pasang gratis"
     },
     "cascade": {
       "title": "Eksekusi termurah menang",
@@ -2361,7 +2361,7 @@
     },
     "access": {
       "code": "Lihat kodenya",
-      "install": "Pasang open source"
+      "install": "Pasang gratis"
     },
     "modes": {
       "title": "Community dan Cloud adalah dua hal berbeda",

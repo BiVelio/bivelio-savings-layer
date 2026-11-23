@@ -1248,7 +1248,7 @@
       "proofTitle": "Gemeten tegen een echte provider",
       "compatibleCon": "Compatibel met",
       "compatibleNota": "Compatibel is niet gemeten. De SDK werkt met elk endpoint dat compatibel is met de OpenAI-API, plus de native Anthropic-adapter en de native Gemini-adapter (nieuw in {gemini}). Met een besparingscijfer op de publieke benchmark zijn vandaag alleen modellen van OpenAI en Anthropic gemeten; Gemini heeft geen besparingscijfer. Wat voor Gemini gemeten is: {flash}, via zijn native API, in de wekelijkse live bench van {fecha} — alle vier batterijen, zonder fouten van de laag en zonder weigering in de cache of als besparing gecrediteerd. Die bench controleert dat de laag niets breekt en niet te veel rekent; hij meet geen besparing. Ook gemeten: {pro}, via zijn native API, in twee gedeeltelijke runs op {fechaPro} (zijn dagelijkse providerquotum volstaat niet voor alle vier batterijen op één dag): alle vier batterijen, eveneens zonder fouten van de laag en zonder gecachte of als besparing geboekte weigering.",
-      "ctaOss": "Open source installeren"
+      "ctaOss": "Gratis installeren"
     },
     "cascade": {
       "title": "De goedkoopste uitvoering wint",
@@ -2361,7 +2361,7 @@
     },
     "access": {
       "code": "Code bekijken",
-      "install": "Open source installeren"
+      "install": "Gratis installeren"
     },
     "modes": {
       "title": "Community en Cloud zijn verschillende dingen",

@@ -230,8 +230,11 @@ export default async function LandingPage({ params }: { params: Promise<{ locale
       <main className="wrap">
         {/* 2 · HÉROE (rediseño 2026-11, guía §2.3 y §6). El mensaje: optimiza
             tus llamadas, comprueba cada ahorro. Tres salidas, por este orden:
-            Measure (el alta), el motor open source (#sdk-install, sin pasar
-            por registro) y, de apoyo, los resultados reproducibles. La frase
+            instalar gratis el motor open source (#sdk-install, sin registro ni
+            clave: es lo que ahorra), Measure (el alta en la nube gratis) y, de
+            apoyo, los resultados reproducibles. El 21-11-2026 el dueño cambió
+            el orden de las dos primeras sin tocar el diseño: cada posición
+            conserva sus clases y solo cambian texto y destino. La frase
             de acento es texto real (Gradient Text de affectUI: se selecciona y
             se lee; con movimiento reducido el degradado queda quieto).
             Debajo, el paisaje de la marca madre DETRÁS de una tarjeta blanca
@@ -263,12 +266,12 @@ export default async function LandingPage({ params }: { params: Promise<{ locale
             </h1>
             <p className="lede">{t("hero.sub")}</p>
             <div className="hero-cta">
-              <Link className="btn" href="/signup">
-                {t("hero.ctaStart")}
-              </Link>
-              <a className="btn ghost hero-oss" href="#sdk-install">
+              <a className="btn" href="#sdk-install">
                 {t("hero.ctaOss")}
               </a>
+              <Link className="btn ghost hero-oss" href="/signup">
+                {t("hero.ctaStart")}
+              </Link>
               <span className="hero-apoyo">
                 <Link className="btn ghost" href="/benchmarks">
                   {t("hero.ctaBench")}
