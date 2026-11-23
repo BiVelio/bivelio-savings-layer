@@ -199,6 +199,19 @@ describe("la página y la URL que salen", () => {
     for (const f of fuentes()) expect(leer(f), f).not.toMatch(/from\s+["']@vercel\/analytics\/next["']/);
   });
 
+  it("las guías: un slug publicado se queda en el camino (es público); uno que no existe es un 404", () => {
+    expect(propsDeAnalytics("/en/guides")).toMatchObject({ route: "/[locale]/guides", path: "/en/guides" });
+    expect(propsDeAnalytics("/en/guides/reduce-openai-api-costs")).toMatchObject({
+      route: "/[locale]/guides/[slug]",
+      path: "/en/guides/reduce-openai-api-costs",
+    });
+    expect(propsDeAnalytics("/en/guides/alguien@example.com")).toMatchObject({ route: "/[locale]/[...rest]", path: "/en/[...rest]" });
+    expect(paginaDe("/en/guides/reduce-openai-api-costs")).toBe("guides");
+    expect(urlSinDatos("https://savings.bivelio.com/en/guides/deduplicate-llm-requests?utm_source=x#lever")).toBe(
+      "https://savings.bivelio.com/en/guides/deduplicate-llm-requests",
+    );
+  });
+
   it("todo idioma de la web se reconoce como idioma", () => {
     for (const l of locales) expect(paginaDe(`/${l}/privacy`), l).toBe("privacy");
   });

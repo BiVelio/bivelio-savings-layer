@@ -45,6 +45,8 @@ export const RUTAS_CON_GOOGLE_ADS = [
   "/[locale]/paper",
   "/[locale]/privacy",
   "/[locale]/migrate-to-0.5",
+  "/[locale]/guides",
+  "/[locale]/guides/[slug]",
   "/[locale]/signup/success",
 ] as const;
 

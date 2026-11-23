@@ -38,6 +38,8 @@ describe("dónde corre gtag", () => {
       "/es/paper",
       "/es/privacy",
       "/en/migrate-to-0.5",
+      "/en/guides",
+      "/en/guides/reduce-openai-api-costs",
       "/es/signup/success?next=%2Fes%2Fdashboard",
     ]) {
       expect(urlPermiteGoogleAds(O + ruta), ruta).toBe(true);
@@ -57,9 +59,12 @@ describe("dónde corre gtag", () => {
       "/es/kit",
       "/es/captura-panel",
       "/es/alguien@example.com",
+      // Una guía que no existe es un 404: veta, como cualquier otro.
+      "/en/guides/alguien@example.com",
     ]) {
       expect(urlPermiteGoogleAds(O + ruta), ruta).toBe(false);
     }
+    expect(urlVetaLaVisita(`${O}/en/guides/no-such-guide`)).toBe(true);
   });
 
   it("nunca con un token o un código en la URL; esas URL y los 404 vetan el resto de la visita", () => {
@@ -130,7 +135,7 @@ describe("los parámetros que gtag llega a ver", () => {
   it("se quedan todos los que leen las páginas donde corre gtag", () => {
     // Las páginas permitidas y lo que leen de la query (servidor y cliente).
     const leidos = new Set<string>();
-    for (const f of ["app/[locale]/page.tsx", "app/[locale]/how-it-works/page.tsx", "app/[locale]/pricing/page.tsx", "app/[locale]/benchmarks/page.tsx", "app/[locale]/paper/page.tsx", "app/[locale]/privacy/page.tsx", "app/[locale]/migrate-to-0.5/page.tsx", "app/[locale]/signup/success/page.tsx"]) {
+    for (const f of ["app/[locale]/page.tsx", "app/[locale]/how-it-works/page.tsx", "app/[locale]/pricing/page.tsx", "app/[locale]/benchmarks/page.tsx", "app/[locale]/paper/page.tsx", "app/[locale]/privacy/page.tsx", "app/[locale]/migrate-to-0.5/page.tsx", "app/[locale]/guides/page.tsx", "app/[locale]/guides/[slug]/page.tsx", "app/[locale]/signup/success/page.tsx"]) {
       const src = leer(f);
       for (const m of src.matchAll(/searchParams\??\.get\("(\w+)"\)/g)) leidos.add(m[1]!);
       for (const m of src.matchAll(/searchParams: Promise<\{([^}]*)\}>/g)) for (const k of m[1]!.matchAll(/(\w+)\?:/g)) leidos.add(k[1]!);
@@ -138,7 +143,7 @@ describe("los parámetros que gtag llega a ver", () => {
     expect([...leidos].sort()).toEqual(["next", "plan"]);
     for (const p of leidos) expect(PARAMETROS_QUE_SE_QUEDAN as readonly string[]).toContain(p);
     expect([...RUTAS_CON_GOOGLE_ADS].sort()).toEqual(
-      ["/[locale]", "/[locale]/benchmarks", "/[locale]/how-it-works", "/[locale]/migrate-to-0.5", "/[locale]/paper", "/[locale]/pricing", "/[locale]/privacy", "/[locale]/signup/success"].sort(),
+      ["/[locale]", "/[locale]/benchmarks", "/[locale]/guides", "/[locale]/guides/[slug]", "/[locale]/how-it-works", "/[locale]/migrate-to-0.5", "/[locale]/paper", "/[locale]/pricing", "/[locale]/privacy", "/[locale]/signup/success"].sort(),
     );
   });
 
