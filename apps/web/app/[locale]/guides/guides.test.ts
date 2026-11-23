@@ -4,6 +4,7 @@ import { fileURLToPath } from "node:url";
 
 import { describe, expect, it } from "vitest";
 
+import { locales } from "@/i18n/config";
 import { idDeTitulo, leerMarkdown, type Bloque } from "@/lib/guia-migracion/markdown";
 
 import sitemap from "../../sitemap";
@@ -292,5 +293,65 @@ describe("el sitemap", () => {
 
   it("los ids de los títulos son los de GitHub (las anclas que enlazan otras guías)", () => {
     expect(idDeTitulo("Find the byte that breaks your cache")).toBe("find-the-byte-that-breaks-your-cache");
+  });
+});
+
+/**
+ * El índice /guides como rejilla de tarjetas (dueño, 2026-11-23: «darle un
+ * poco de espacio y modernizar el estilo»). Lo que no puede volver atrás sin
+ * que nadie lo note: el tema de cada tarjeta en los doce idiomas, un solo
+ * enlace por guía con su titular por nombre, la semántica de antes (h2 con su
+ * id, `aria-labelledby`, `lang` de la guía, `<time>`) y, en la hoja, el aire
+ * bajo el héroe, el enlace estirado con su anillo de foco y la subida al pasar
+ * solo sin reduced-motion.
+ */
+describe("el índice de las guías: la rejilla de tarjetas", () => {
+  const dir = dirname(fileURLToPath(import.meta.url));
+  const pagina = readFileSync(join(dir, "page.tsx"), "utf8");
+  const lista = pagina.slice(pagina.indexOf('<ul className="guias-lista"'), pagina.indexOf("</ul>"));
+  const css = readFileSync(join(dir, "..", "..", "globals.css"), "utf8");
+  const slot = css.slice(css.indexOf("/* ==== SLOT ÍNDICE DE GUÍAS ==== */"), css.indexOf("/* ==== FIN SLOT ÍNDICE DE GUÍAS ==== */"));
+  const mensajes = (l: string) =>
+    (JSON.parse(readFileSync(join(dir, "..", "..", "..", "messages", `${l}.json`), "utf8")) as { guidesPage: Record<string, unknown> })
+      .guidesPage;
+
+  it("cada guía tiene su tema, y cada tema su etiqueta en los doce idiomas (ni una de más)", () => {
+    const temas = new Set(GUIAS.map((g) => g.tema));
+    for (const l of locales) {
+      const topics = mensajes(l).topics as Record<string, string>;
+      expect(new Set(Object.keys(topics)), l).toEqual(temas);
+      for (const t of temas) expect(topics[t]?.trim(), `${l} ${t}`).toBeTruthy();
+    }
+  });
+
+  it("un solo enlace por tarjeta, el del titular; el «Leer la guía» del pie es solo visual", () => {
+    expect(lista.length).toBeGreaterThan(0);
+    expect(lista.match(/<Link\b/g)).toHaveLength(1);
+    expect(lista).toMatch(/<h2 id=\{`guia-\$\{g\.slug\}`\} className="guia-tarjeta-titulo">\s*<Link href=\{`\/guides\/\$\{g\.slug\}`\}>\{g\.title\}<\/Link>/);
+    expect(lista).toMatch(/<span className="guia-tarjeta-leer" aria-hidden="true">/);
+    expect(pagina).not.toMatch(/readAria/);
+    for (const l of locales) expect(mensajes(l), l).not.toHaveProperty("readAria");
+  });
+
+  it("la semántica de antes: cada guía con su titular por nombre, en su idioma, con la fecha y los minutos de lectura", () => {
+    expect(lista).toMatch(/<article className="guia-tarjeta" aria-labelledby=\{`guia-\$\{g\.slug\}`\} lang=\{g\.idioma\}>/);
+    expect(lista).toMatch(/<time dateTime=\{g\.date\}>\{fechaLegible\(g\.date, lang\)\}<\/time>/);
+    // Los mismos minutos que la cabecera de cada guía: el texto que se sirve en ese idioma.
+    expect(lista).toMatch(/tg\("minRead", \{ n: minutosDeLectura\(cargarTexto\(g\.slug, locale\)\) \}\)/);
+    expect(lista).toMatch(/tg\(`topics\.\$\{g\.tema\}`\)/);
+  });
+
+  it("la hoja: aire bajo el héroe, dos columnas que pasan a una, enlace estirado con anillo de foco, subida solo sin reduced-motion", () => {
+    expect(slot.length).toBeGreaterThan(0);
+    expect(slot).toMatch(/\.guias-indice \{ padding-top: clamp\(40px, 5\.5vw, 72px\); \}/);
+    expect(slot).toMatch(/\.guias-lista \{ display: grid; grid-template-columns: repeat\(2, minmax\(0, 1fr\)\);/);
+    expect(slot).toMatch(/@media \(max-width: 719\.98px\) \{\s*\.guias-lista \{ grid-template-columns: minmax\(0, 1fr\); \}/);
+    expect(slot).toMatch(/\.guia-tarjeta-titulo a::after \{ content: ""; position: absolute; inset: 0;/);
+    expect(slot).toMatch(/\.guia-tarjeta-titulo a:focus-visible::after \{ outline: 2px solid var\(--brand\);/);
+    // Todo `translate` de la tarjeta vive dentro del bloque sin reduced-motion.
+    const sinMovimiento = slot.slice(slot.indexOf("@media (hover: hover) and (prefers-reduced-motion: no-preference)"));
+    const conTransform = slot.split("\n").filter((l) => /transform: translate/.test(l));
+    expect(conTransform.length).toBeGreaterThan(0);
+    for (const l of conTransform) expect(sinMovimiento, l).toContain(l);
   });
 });

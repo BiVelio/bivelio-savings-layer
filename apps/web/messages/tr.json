@@ -2617,7 +2617,14 @@
     "minRead": "{n} dk okuma",
     "moreGuides": "Diğer rehberler",
     "readGuide": "Rehberi okuyun",
-    "readAria": "Okuyun: {title}",
+    "topics": {
+      "openai": "OpenAI",
+      "anthropic": "Anthropic",
+      "claudeCode": "Claude Code",
+      "deepseekQwen": "DeepSeek & Qwen",
+      "deduplication": "Tekilleştirme",
+      "verification": "Doğrulama"
+    },
     "table": "Tablo"
   },
   "paperCard": {
