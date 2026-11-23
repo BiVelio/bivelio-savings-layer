@@ -99,18 +99,25 @@ export function urlPermiteGoogleAds(href: string): boolean {
 
 /** El `next` que se queda: una ruta de este sitio, conocida, sin más query que un plan. */
 function nextLimpio(valor: string, origen: string): string | null {
-  const destino = new URL(valor, origen);
-  if (destino.origin !== origen || !valor.startsWith("/") || valor.startsWith("//")) return null;
-  const { route, path } = rutaParaVercel(destino.pathname);
-  if (route.endsWith("[...rest]") || path.includes("[")) return null;
-  const plan = destino.searchParams.get("plan");
-  return plan && PLANES.has(plan) ? `${path}?plan=${plan}` : path;
+  // Un `next` que no es una ruta de este sitio, o que ni se puede leer
+  // (`http:`, `https://`, `http://[`), se quita; la limpieza sigue con el resto.
+  if (!valor.startsWith("/") || valor.startsWith("//")) return null;
+  try {
+    const destino = new URL(valor, origen);
+    if (destino.origin !== origen) return null;
+    const { route, path } = rutaParaVercel(destino.pathname);
+    if (route.endsWith("[...rest]") || path.includes("[")) return null;
+    const plan = destino.searchParams.get("plan");
+    return plan && PLANES.has(plan) ? `${path}?plan=${plan}` : path;
+  } catch {
+    return null;
+  }
 }
 
 /**
- * La URL de la barra sin los parámetros que la web no usa, o `null` si ya está
- * así (o no se puede leer: entonces gtag tampoco se carga). El fragmento se
- * queda: son anclas de la página.
+ * La URL de la barra (ruta, query y fragmento) con solo los parámetros que la
+ * web usa, esté ya limpia o no; `null` solo si no se puede calcular, y entonces
+ * gtag NO se carga (EtiquetaGoogleAds). El fragmento se queda: son anclas.
  */
 export function urlSinParametrosSobrantes(href: string): string | null {
   try {
@@ -127,8 +134,7 @@ export function urlSinParametrosSobrantes(href: string): string | null {
       }
     }
     const query = limpia.toString();
-    const nueva = `${url.pathname}${query ? `?${query}` : ""}${url.hash}`;
-    return nueva === `${url.pathname}${url.search}${url.hash}` ? null : nueva;
+    return `${url.pathname}${query ? `?${query}` : ""}${url.hash}`;
   } catch {
     return null;
   }

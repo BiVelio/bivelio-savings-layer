@@ -89,8 +89,10 @@ export function EtiquetaGoogleAds() {
         return;
       }
       if (visitaVetada() || !urlPermiteGoogleAds(location.href)) return;
+      // Sin la limpieza calculada no hay gtag: «no se pudo» no es «ya estaba limpia».
       const limpia = urlSinParametrosSobrantes(location.href);
-      if (limpia) history.replaceState(history.state, "", limpia);
+      if (limpia === null) return;
+      if (limpia !== location.pathname + location.search + location.hash) history.replaceState(history.state, "", limpia);
       const ubicacion = {
         page_location: ubicacionParaGoogle(location.href),
         page_referrer: referenteParaGoogle(document.referrer, location.origin),
