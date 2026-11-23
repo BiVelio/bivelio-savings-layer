@@ -19,7 +19,7 @@ import { MosaicoDeLlamadas } from "./MosaicoDeLlamadas";
  * Nada de esto es candidato a LCP ni oculta el titular: el cielo es el
  * degradado de un elemento vacío y el mosaico un SVG en línea.
  */
-const SEMILLAS = { benchmarks: 83, pricing: 47, howItWorks: 31, paper: 59, migrate: 71 } as const;
+const SEMILLAS = { benchmarks: 83, pricing: 47, howItWorks: 31, paper: 59, migrate: 71, guides: 97 } as const;
 const FILAS = 3;
 
 export type PaginaConHeroe = keyof typeof SEMILLAS;

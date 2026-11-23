@@ -54,10 +54,17 @@ function Column({ head, links }: { head: string; links: string[][] }) {
     <div className="ftr-col">
       <h3>{head}</h3>
       <ul>
-        {links.map(([label, href]) => (
+        {links.map(([label, href, hrefLang]) => (
           <li key={href}>
             {href.startsWith("http") ? (
               <a href={href} target="_blank" rel="noopener noreferrer">
+                {label}
+              </a>
+            ) : hrefLang ? (
+              // A page that exists in one language only (the guides, in
+              // English): a plain link to that edition, never the
+              // locale-prefixing Link, which would send /es to a 404.
+              <a href={href} hrefLang={hrefLang}>
                 {label}
               </a>
             ) : href.startsWith("/") ? (
@@ -141,6 +148,9 @@ export default async function Footer({ sinGitHub = false }: { sinGitHub?: boolea
     // La guía 0.4 → 0.5 (/migrate-to-0.5). Sin este enlace, quien actualiza
     // desde la 0.4 solo llegaba a ella desde npm o GitHub.
     [t("footer.migrate"), "/migrate-to-0.5"],
+    // Las guías prácticas, solo en inglés (/en/guides): el tercer elemento es
+    // ese idioma, para que el enlace no lleve el prefijo del idioma actual.
+    [t("footer.guides"), "/en/guides", "en"],
     [t("footer.pricing"), "/#pricing"],
     // El repositorio del motor open source, visible también en el pie (guía
     // §6, fila 10). Solo deja de pintarse si el pie recibe `sinGitHub`, que hoy
