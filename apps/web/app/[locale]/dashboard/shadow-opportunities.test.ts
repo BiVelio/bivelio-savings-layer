@@ -153,7 +153,7 @@ describe("ShadowOpportunitiesCard", () => {
     expect(html).toContain('href="/dashboard/install"');
     // Sin atribuir palancas, y dicho sin jerga interna: la tabla no sabe de qué
     // palanca ni de qué superficie sale cada cifra. Y las palancas no se activan
-    // en Cuenta: con la 1.2.4 la sombra solo viene de máquinas que observan.
+    // en Cuenta: con la 1.2.5 la sombra solo viene de máquinas que observan.
     expect(html).toContain("cannot say which lever or surface each figure comes from");
     expect(html).toContain("update those machines or turn observe-only off: the levers need no plan.");
     expect(html).not.toContain("Account to activate");

@@ -35,7 +35,7 @@ export const VERSION_MINIMA_MEDIR = "0.4.33";
  * licencia pero solo observan (modo sombra). La tarjeta de Measure y sus
  * condiciones la reciben por parámetro, nunca escrita en el texto.
  */
-export const VERSION_MEDIR_AHORRA = "1.2.4";
+export const VERSION_MEDIR_AHORRA = "1.2.5";
 
 /**
  * LO QUE ATA UNA CLAVE, también la gratuita de Medir: con `licenseServerUrl`

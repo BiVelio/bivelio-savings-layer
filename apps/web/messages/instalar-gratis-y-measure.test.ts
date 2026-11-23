@@ -13,7 +13,7 @@ import { VERSION_MEDIR_AHORRA, VERSION_MINIMA_MEDIR } from "@/lib/license/medir-
  *   · El botón principal instala el open source GRATIS y sin clave, que es lo
  *     que ahorra; Measure pasa a segundo (portada y /pricing). Solo cambian
  *     texto, destino y orden: cada posición conserva sus clases.
- *   · Con @bivelio/savings-layer 1.2.4, Measure ahorra: las mismas palancas que
+ *   · Con @bivelio/savings-layer 1.2.5, Measure ahorra: las mismas palancas que
  *     sin clave y el panel con el ahorro real. Las versiones anteriores solo
  *     observan (modo sombra). La versión llega por parámetro.
  *   · Pro no vende «todas las optimizaciones»: las palancas son gratis sin
@@ -112,9 +112,11 @@ describe("los botones: instalar gratis primero, Measure después, mismas clases"
   });
 });
 
-describe("Measure con la 1.2.4: ahorra, y las versiones anteriores solo observan", () => {
-  it("la versión que ahorra es la 1.2.4 y la mínima que reconoce la licencia sigue siendo la 0.4.33", () => {
-    expect(VERSION_MEDIR_AHORRA).toBe("1.2.4");
+describe("Measure con la 1.2.5: ahorra, y las versiones anteriores solo observan", () => {
+  it("la versión que ahorra es la 1.2.5 y la mínima que reconoce la licencia sigue siendo la 0.4.33", () => {
+    // La 1.2.4 no llegó a publicarse en npm: la primera publicada en la que
+    // Measure ahorra es la 1.2.5.
+    expect(VERSION_MEDIR_AHORRA).toBe("1.2.5");
     expect(VERSION_MINIMA_MEDIR).toBe("0.4.33");
   });
 
@@ -134,7 +136,7 @@ describe("Measure con la 1.2.4: ahorra, y las versiones anteriores solo observan
       expect(d["pricingPage.plans.medir.body"]).toContain("{version}");
       const t = createTranslator({ locale: loc, messages: crudo(loc), onError: (e) => { throw e; } });
       const tarjeta = (t as unknown as (k: string, p: object) => string)("pricingPage.cards.medir.summary", { saves: VERSION_MEDIR_AHORRA });
-      expect(tarjeta).toContain("@bivelio/savings-layer 1.2.4");
+      expect(tarjeta).toContain("@bivelio/savings-layer 1.2.5");
       const condiciones = JSON.stringify(
         (t as unknown as { rich: (k: string, p: object) => unknown }).rich("pricingPage.plans.medir.body", {
           b: (c: unknown) => c,
@@ -144,7 +146,7 @@ describe("Measure con la 1.2.4: ahorra, y las versiones anteriores solo observan
           saves: VERSION_MEDIR_AHORRA,
         }),
       );
-      for (const v of ["1.2.4", "0.4.33", "20.000"]) expect(condiciones, `${loc} ${v}`).toContain(v);
+      for (const v of ["1.2.5", "0.4.33", "20.000"]) expect(condiciones, `${loc} ${v}`).toContain(v);
     });
   }
 
@@ -167,7 +169,7 @@ describe("Measure con la 1.2.4: ahorra, y las versiones anteriores solo observan
   });
 });
 
-describe("revisión de #610: el alta y «cómo funciona» dicen lo que hace Measure con la 1.2.4", () => {
+describe("revisión de #610: el alta y «cómo funciona» dicen lo que hace Measure con la 1.2.5", () => {
   /** La frase de #608 que cerraba el alta: «funciona con la última versión», sin decir desde cuál ahorra. */
   const ULTIMA: Record<Loc, string> = {
     ca: "Funciona amb la darrera versió",
@@ -202,7 +204,7 @@ describe("revisión de #610: el alta y «cómo funciona» dicen lo que hace Meas
       expect(alta.endsWith(desdeTarjeta), `${loc}: ${alta}`).toBe(true);
       const t = createTranslator({ locale: loc, messages: crudo(loc), onError: (e) => { throw e; } });
       const pintado = (t as unknown as (k: string, p: object) => string)("auth.signupMedir", { seats: 5, requests: "20.000", saves: VERSION_MEDIR_AHORRA });
-      expect(pintado).toContain("@bivelio/savings-layer 1.2.4");
+      expect(pintado).toContain("@bivelio/savings-layer 1.2.5");
     });
   }
 
@@ -510,7 +512,7 @@ describe("verificación final de la 1.2.4 (#614): lo que quedaba en la web", () 
         version: VERSION_MINIMA_MEDIR,
         saves: VERSION_MEDIR_AHORRA,
       });
-      expect(pintado).toContain("@bivelio/savings-layer 1.2.4");
+      expect(pintado).toContain("@bivelio/savings-layer 1.2.5");
       expect(pintado).toContain("0.4.33");
     });
 
