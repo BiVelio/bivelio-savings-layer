@@ -102,14 +102,18 @@ ANTHROPIC_BASE_URL=http://127.0.0.1:8402 ANTHROPIC_AUTH_TOKEN="$DEEPSEEK_API_KEY
 
 Running a non-Claude model behind Claude Code is DeepSeek's integration, not a setup Anthropic supports, and the quality of the model for your work is yours to judge.
 
-**Qwen Code on Qwen models** needs a different route. The package's `qwen` wrapper does not cover it: in version 1.2.3, `npx @bivelio/savings-layer qwen` runs Qwen Code with its Anthropic auth type and forwards to Anthropic's API, so it only meters Claude models used with an Anthropic key, and it refuses a DashScope Anthropic-format base URL. For Qwen models, use Qwen Code's OpenAI-compatible mode, which [its documentation](https://qwenlm.github.io/qwen-code-docs/en/users/configuration/auth/) configures with `OPENAI_API_KEY`, `OPENAI_BASE_URL` and `OPENAI_MODEL`, and point that base URL at a gateway:
+**Qwen Code on Qwen models** needs a different route. The package's `qwen` wrapper does not cover it: in version 1.2.3, `npx @bivelio/savings-layer qwen` runs Qwen Code with its Anthropic auth type and forwards to Anthropic's API, so it only meters Claude models used with an Anthropic key, and it refuses a DashScope Anthropic-format base URL. For Qwen models, use Qwen Code's OpenAI-compatible mode, which [its documentation](https://qwenlm.github.io/qwen-code-docs/en/users/configuration/auth/) configures with `OPENAI_API_KEY`, `OPENAI_BASE_URL` and `OPENAI_MODEL`, and point that base URL at a gateway. Set `DASHSCOPE_PROXY_BASE_URL` to exactly the same URL:
 
 ```bash
 npx @bivelio/savings-layer gateway --upstream https://dashscope-intl.aliyuncs.com --port 8404
-OPENAI_BASE_URL=http://127.0.0.1:8404/compatible-mode/v1 OPENAI_API_KEY="$DASHSCOPE_API_KEY" OPENAI_MODEL=qwen-plus qwen
+
+GW=http://127.0.0.1:8404/compatible-mode/v1
+OPENAI_BASE_URL="$GW" DASHSCOPE_PROXY_BASE_URL="$GW" OPENAI_API_KEY="$DASHSCOPE_API_KEY" OPENAI_MODEL=qwen-plus qwen
 ```
 
-We checked the gateway side of this route with version 1.2.3, not Qwen Code itself, so read the gateway's log: each request should be one line with a cost. If the lines say `not metered`, they say why. Two reasons are likely: streams that do not ask for usage (restart the gateway with `BVSALA_GATEWAY_USAGE_INJECT=1`, as above), or a model with no row in the 1.2.3 catalog, which has `qwen-plus`, `qwen-flash`, `qwen3.7-flash`, `qwen3.8-flash` and `qwen3.8-max`. A model without a row, such as `qwen3-coder-plus` from Qwen Code's own configuration examples, is forwarded and not metered.
+The second variable matters for the bill. Qwen Code decides from the base URL's host whether it is talking to DashScope, and `127.0.0.1` is not a DashScope host. Without the variable it falls back to its generic OpenAI provider, which sends no explicit-cache markers (`cache_control` and the `X-DashScope-CacheControl` header). Your requests then fall back to Model Studio's implicit cache, where hits typically cost 20 % of the input price and are best effort, instead of the explicit cache's 10 % ([context cache](https://www.alibabacloud.com/help/en/model-studio/context-cache)). Qwen Code treats a base URL that matches `DASHSCOPE_PROXY_BASE_URL` exactly as DashScope, and keeps the markers ([its DashScope provider](https://github.com/QwenLM/qwen-code/blob/8fab857da5/packages/core/src/core/openaiContentGenerator/provider/dashscope.ts), read on 23 November 2026). The gateway forwards both unchanged: we checked that with version 1.2.3.
+
+We checked the gateway side of this route with version 1.2.3, not Qwen Code itself, so read the gateway's log: each request should be one line with a cost. If the lines say `not metered`, they say why. Two reasons are likely: streams that do not ask for usage (restart the gateway with `BVSALA_GATEWAY_USAGE_INJECT=1`, as above), or a model with no row in the 1.2.3 catalog, which has `qwen-plus`, `qwen-flash`, `qwen3.7-flash`, `qwen3.8-flash` and `qwen3.8-max`. A model without a row, such as `qwen3-coder-plus` from Qwen Code's own configuration examples, is forwarded and not metered. One more pricing detail: the 1.2.3 catalog prices `qwen-plus` cache hits at the explicit cache's 10 %, so implicit-cache hits (billed at about 20 %) are logged at about half their cost.
 
 ## What the gateway measures, and what it does not
 
