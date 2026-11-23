@@ -227,8 +227,8 @@ the Published Pricing it refers to,
 requests a day: the layer applies exactly the same levers as with no key, and your
 dashboard shows the real savings — never billed, never part of any commission. What a paid
 plan adds is the cloud beyond those limits (more seats and more volume), not the saving.
-This is new in 1.2.4: up to 1.2.3 a Measure key ran the layer in shadow mode, so update
-to save with it. When you move from Measure to a paid plan, a layer started with
+Up to 1.2.3 a Measure key ran the layer in shadow mode: update to 1.2.5 or later (1.2.4
+was never published) to save with it. When you move from Measure to a paid plan, a layer started with
 `licenseKey`, `serviceAccountKey` and `licenseServerUrl` picks up the new license by
 itself, without a restart.
 

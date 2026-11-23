@@ -111,6 +111,9 @@ the trimming and what a valid key unlocks behave as in 1.2.4.
 
 ## 1.2.4 — 2026-11-21 — the free Measure plan saves exactly like no key, paid plans trim Anthropic tool loops, honest texts
 
+1.2.4 was never published to npm or PyPI: its changes reach users in 1.2.5. Upgrading
+from 1.2.3, read this entry and the 1.2.5 one above.
+
 ### Changed: what you will notice after upgrading
 
 - **A Measure license now applies the levers.** Up to 1.2.3 the free Measure
