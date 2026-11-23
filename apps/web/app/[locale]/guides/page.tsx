@@ -3,14 +3,16 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 
 import { HeroeDeCampana } from "@/app/components/campana/HeroeDeCampana";
 import Footer from "@/app/components/Footer";
+import { ArrowRightIcon } from "@/app/components/icons";
 import { Link } from "@/i18n/navigation";
 import { tarjetaSocial } from "@/i18n/site";
 import { leerEnLinea } from "@/lib/guia-migracion/markdown";
 import { Breadcrumb } from "@/vendor/affectui/breadcrumb-clean";
 import { GridBackground } from "@/vendor/affectui/grid-background";
 
-import { fechaLegible } from "./articulo";
+import { fechaLegible, minutosDeLectura } from "./articulo";
 import { EnLineaR } from "./Bloques";
+import { cargarTexto } from "./cargar";
 import { alternativasDe, canonicalDe, GUIAS, guiaEnIdioma, indiceEnIdioma } from "./registry";
 
 /**
@@ -23,6 +25,14 @@ import { alternativasDe, canonicalDe, GUIAS, guiaEnIdioma, indiceEnIdioma } from
  * `canonical` en su propia URL y `hreflang` de todas las ediciones (registry:
  * `alternativasDe`), los mismos que anuncia el sitemap. Un idioma sin índice
  * traducido sirve el inglés con su nota y el `canonical` en /en.
+ *
+ * La lista es una rejilla de tarjetas (dos columnas en escritorio, una en
+ * móvil; dueño, 2026-11-23: «darle espacio y modernizar»): el tema, el titular,
+ * la descripción y un pie con la fecha, los minutos de lectura (los mismos que
+ * da la cabecera de la guía) y «Leer la guía →». UN solo enlace por tarjeta, el
+ * del titular, estirado sobre toda ella con `::after`: un lector de pantalla
+ * oye un enlace por guía con su titular por nombre, y el «Leer la guía» del pie
+ * es solo la señal visual (`aria-hidden`).
  */
 export const dynamic = "force-static";
 
@@ -79,24 +89,36 @@ export default async function GuidesIndexPage({ params }: { params: Promise<{ lo
             </section>
           </GridBackground>
         </HeroeDeCampana>
-        <div className="doc-body">
-          {GUIAS.map((guia) => {
-            const g = guiaEnIdioma(guia, locale);
-            return (
-              <section key={g.slug} className="terms-sec" aria-labelledby={`guia-${g.slug}`} lang={g.idioma}>
-                <h2 id={`guia-${g.slug}`}>
-                  <Link href={`/guides/${g.slug}`}>{g.title}</Link>
-                </h2>
-                <p>{g.description}</p>
-                <p lang={lang}>
-                  <time dateTime={g.date}>{fechaLegible(g.date, lang)}</time> ·{" "}
-                  <Link href={`/guides/${g.slug}`} aria-label={tg("readAria", { title: g.title })}>
-                    {tg("readGuide")}
-                  </Link>
-                </p>
-              </section>
-            );
-          })}
+        <div className="guias-indice">
+          <ul className="guias-lista" role="list">
+            {GUIAS.map((guia) => {
+              const g = guiaEnIdioma(guia, locale);
+              return (
+                <li key={g.slug} className="guias-item">
+                  <article className="guia-tarjeta" aria-labelledby={`guia-${g.slug}`} lang={g.idioma}>
+                    <p className="guia-tarjeta-tema" lang={lang}>
+                      {tg(`topics.${g.tema}`)}
+                    </p>
+                    <h2 id={`guia-${g.slug}`} className="guia-tarjeta-titulo">
+                      <Link href={`/guides/${g.slug}`}>{g.title}</Link>
+                    </h2>
+                    <p className="guia-tarjeta-resumen">{g.description}</p>
+                    <div className="guia-tarjeta-pie" lang={lang}>
+                      <p className="guia-tarjeta-datos">
+                        <time dateTime={g.date}>{fechaLegible(g.date, lang)}</time>
+                        <span aria-hidden="true">·</span>
+                        <span>{tg("minRead", { n: minutosDeLectura(cargarTexto(g.slug, locale)) })}</span>
+                      </p>
+                      <span className="guia-tarjeta-leer" aria-hidden="true">
+                        {tg("readGuide")}
+                        <ArrowRightIcon />
+                      </span>
+                    </div>
+                  </article>
+                </li>
+              );
+            })}
+          </ul>
         </div>
       </main>
       <Footer />

@@ -2617,7 +2617,14 @@
     "minRead": "{n} min de lecture",
     "moreGuides": "Autres guides",
     "readGuide": "Lire le guide",
-    "readAria": "Lire : {title}",
+    "topics": {
+      "openai": "OpenAI",
+      "anthropic": "Anthropic",
+      "claudeCode": "Claude Code",
+      "deepseekQwen": "DeepSeek & Qwen",
+      "deduplication": "Déduplication",
+      "verification": "Vérification"
+    },
     "table": "Tableau"
   },
   "paperCard": {
