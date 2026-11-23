@@ -150,10 +150,11 @@
     "createAnAccount": "Crea un account",
     "backToVerifier": "← Torna alla home",
     "createYourAccount": "Crea il tuo account Cloud",
-    "signupSubtitle": "Un account BiVelio per tutta la suite. Crealo per il cloud: dashboard, cache condivise e gestione licenze. Il pacchetto non ha bisogno di account — l'open core gira senza chiave.",
+    "signupSubtitle": "Un account BiVelio per tutta la suite. Crealo per il cloud: dashboard di team, misurazione condivisa, postazioni e licenze. Il pacchetto non ha bisogno di account — l'open core gira senza chiave.",
     "alreadyHaveAccount": "Hai già un account BiVelio?",
     "signIn": "Accedi",
     "workEmail": "Email di lavoro",
+    "emailPlaceholder": "tu@azienda.com",
     "password": "Password",
     "createAccountCta": "Crea account →",
     "signupLegal": "Creando l'account accetti le <terms>condizioni di Savings Cloud</terms> e l'<privacy>informativa sulla privacy</privacy>.",
@@ -194,7 +195,7 @@
       "network": "Nessuna connessione. Controlla la rete e riprova.",
       "missingFields": "Inserisci email e password."
     },
-    "signupMedir": "Oppure parti gratis con Measure: il piano cloud gratuito, senza carta, modalità ombra, fino a {seats} postazioni e {requests} richieste al giorno. Funziona con l'ultima versione di @bivelio/savings-layer.",
+    "signupMedir": "Oppure parti gratis con Measure: il piano cloud gratuito per team piccoli, senza carta, fino a {seats} postazioni e {requests} richieste al giorno, con esattamente le stesse leve che senza chiave e il tuo risparmio reale nella dashboard. Risparmia con @bivelio/savings-layer {saves} o successivo; le versioni precedenti osservano soltanto.",
     "signupPlanPro": "Hai scelto {plan} — {price} per postazione al mese. Crea il tuo account, conferma la tua email e pagherai nella dashboard tramite Stripe.",
     "signupPlanTeam": "Hai scelto {plan} — {price} al mese, {seats} postazioni incluse. Crea il tuo account, conferma la tua email e pagherai nella dashboard tramite Stripe.",
     "openSourceQuestion": "Vuoi solo il motore open source?",
@@ -570,7 +571,7 @@
       "coveragePartial": "Copertura parziale: il dettaglio include {attributed} richieste SHADOW su {total} ({coverage}); lo storico senza modello è escluso.",
       "coverageUnavailable": "La copertura non è disponibile perché il totale SHADOW giornaliero non è stato letto.",
       "note": "Stima ipotetica: baseline − costo SHADOW. Mai misurata, fatturata o aggiunta al risparmio accreditato.",
-      "action": "Controlla Account per attivare le leve disponibili o completa l'installazione SDK/gateway. Leva e superficie non sono disponibili: il wire attuale non le conserva; richiedono una modifica server-first.",
+      "action": "Per risparmiarlo davvero, aggiorna quelle macchine o disattiva la modalità sola osservazione: le leve non richiedono alcun piano. Questa tabella non può dire da quale leva o superficie viene ogni cifra: i record di utilizzo non le riportano.",
       "accountCta": "Controlla Account",
       "installCta": "Completa installazione",
       "exportCsv": "Esporta CSV",
@@ -734,7 +735,7 @@
     "installLicensePanel": {
       "eyebrow": "Inizia",
       "heading": "Tre passi. I tuoi prompt non toccano mai i nostri server.",
-      "step1": "<b>1 · Le tue chiavi (facoltative)</b> — l'SDK è open core: senza chiave gira in modalità Community (tutte le leve incluse e gratis, zero telemetria). Attive per impostazione predefinita: cache esatta, deduplicazione, resolver locali, posizionamento della cache del provider e taglio dei risultati degli strumenti superati; il resto si attiva. Una chiave impostata ma non valida resta fail-closed. Passata come <code>licenseKey</code>.",
+      "step1": "<b>1 · Le tue chiavi (facoltative)</b> — l'SDK è open core: senza chiave gira in modalità Community (tutte le leve incluse e gratis, zero telemetria). Attive per impostazione predefinita: cache esatta, deduplicazione, resolver locali, posizionamento della cache del provider, taglio dei risultati degli strumenti superati e serializzazione compatta dei dati strutturati che passi; il resto si attiva. Una chiave impostata ma non valida resta fail-closed. Passata come <code>licenseKey</code>.",
       "step2": "<b>2 · Crea e verifica una chiave dell'account di servizio</b> — una credenziale macchina (<code>bvk_…</code>) con due compiti: riporta l'utilizzo basato solo su conteggi (le tue postazioni e i tuoi risparmi) e permette all'SDK e al gateway di ritirare <b>da soli la tua licenza rinnovata</b> a ogni periodo di fatturazione. Separata dalla chiave di licenza; ne viene memorizzato solo l'hash. Creane una, poi premi <b>Prova la mia chiave</b> per confermare che è attiva.",
       "currentKey": "chiave dell'account di servizio attuale",
       "noneYet": "ancora nessuna — clicca sopra",
@@ -744,11 +745,11 @@
       "initNote": "Legge il tuo <code>package.json</code> (Next.js, Express, Vercel AI SDK, Mastra, LangChain.js, l'SDK di Anthropic o quello di OpenAI) e stampa ciò che serve al tuo stack: la riga di installazione per il tuo gestore di pacchetti, le chiavi che mancano ancora, il codice esatto del tuo adattatore e una verifica che non consuma token — a risponderle è il layer, sulla tua macchina, senza chiamare il modello. Non scrive nulla: <code>--write</code> crea solo file nuovi, dopo avertelo chiesto, e non sovrascrive mai un file esistente.",
       "manualInstall": "<b>Preferisci collegarlo a mano?</b> Installa il pacchetto — pubblico su npm, senza token, senza configurazione:",
       "manualWire": "…poi collega il tuo provider e leggi il SavingsReport:",
-      "gatewayNote": "<b>Agente di codice invece di un'app?</b> Lo stesso pacchetto include un gateway di misura locale: <code>bvsala claude</code> avvia Claude Code attraverso di esso e questo pannello mostra la spesa, token per token. Si avvia senza alcuna chiave (modalità Community); la chiave di servizio facoltativa del passo 2 aggiunge questo pannello e i diritti dell'org.",
+      "gatewayNote": "<b>Agente di codice invece di un'app?</b> Lo stesso pacchetto include un gateway di misura locale: <code>bvsala claude</code> avvia Claude Code attraverso di esso e questo pannello mostra la spesa, token per token. Si avvia senza alcuna chiave (modalità Community); la chiave di servizio facoltativa del passo 2 aggiunge questo pannello e i diritti dell'org. Con quella chiave il gateway ha bisogno di savings.bivelio.com per avviarsi; una volta avviato, continua a servire anche senza.",
       "doctorComment": "altri agenti e SDK: la configurazione esatta di ciascuno",
       "agentsNote": "Ogni wrapper prepara il suo agente solo per quella sessione — non cambia nulla della sua configurazione — e all'uscita ti dice quante richieste ha misurato, quali non ha potuto misurare e perché. <code>bvsala copilot</code> richiede la tua chiave Anthropic (BYOK): i modelli ospitati da GitHub non passano mai da un URL di base, quindi non c'è nulla da misurare. Per Crush, Droid, Cline, Continue o Copilot in VS Code, <code>bvsala doctor</code> stampa la configurazione esatta. <b>Cursor (BYOK)</b>: funziona tramite l'override dell'URL base OpenAI con la tua chiave; i suoi modelli non raggiungono mai un gateway sulla tua macchina. <b>Gemini CLI</b>: avviala con <code>bvsala gemini</code>.",
       "pythonNote": "<b>Python?</b> Il client <code>bvsala</code> per Python fa passare gli SDK ufficiali di OpenAI e di Anthropic da questo stesso gateway (<code>bvsala gateway</code>) e restituisce al tuo codice il report di ogni richiesta — le stesse cifre che riceve questo pannello. Richiede Python 3.10 o successivo. Si installa da PyPI con <code>pip install bivelio-savings-layer</code>; nel tuo codice, <code>import bvsala</code>.",
-      "finalNote": "Tutto qui. Una chiave impostata ma non valida → <code>generate()</code> si rifiuta. Se il tuo piano viene annullato, l'SDK si ferma entro ~15 min tramite <code>licenseServerUrl</code> — senza riavvii, e non blocca mai la tua produzione se non siamo raggiungibili. Rimuovi le chiavi e il layer torna a funzionare in modalità Community.",
+      "finalNote": "Tutto qui. Una chiave impostata ma non valida → <code>generate()</code> si rifiuta. Se il tuo piano viene annullato, l'SDK si ferma entro ~15 min tramite <code>licenseServerUrl</code>, senza riavvii. Se non riesce a raggiungerci continua a funzionare, ma dopo 72 ore senza risposta ogni chiamata fallisce con <code>LicenseError</code> finché non ne riceve una. Rimuovi le chiavi e il layer torna a funzionare in modalità Community.",
       "terminal": "Terminale",
       "sdkEyebrow": "Applicazione",
       "sdkTitle": "Integrare un'applicazione (SDK)",
@@ -757,7 +758,7 @@
       "gatewayTitle": "Collegare un agente (gateway)",
       "gatewayLede": "Avvia il tuo agente di codice attraverso il gateway locale, senza toccarne il codice.",
       "modeLocalTitle": "Modalità locale",
-      "modeLocalBody": "Il motore aperto funziona senza account né chiavi: tutte le leve incluse e gratis, zero telemetria. Attive per impostazione predefinita: cache esatta, deduplicazione, resolver locali, posizionamento della cache del provider e taglio dei risultati degli strumenti superati; il resto si attiva. Il report resta sulla tua macchina.",
+      "modeLocalBody": "Il motore aperto funziona senza account né chiavi: tutte le leve incluse e gratis, zero telemetria. Attive per impostazione predefinita: cache esatta, deduplicazione, resolver locali, posizionamento della cache del provider, taglio dei risultati degli strumenti superati e serializzazione compatta dei dati strutturati che passi; il resto si attiva. Il report resta sulla tua macchina.",
       "modeCloudTitle": "Connessione Cloud",
       "modeCloudBody": "Con licenza e chiave di servizio, questa dashboard riceve conteggi e costi — mai i tuoi prompt — e la tua organizzazione condivide misurazione e postazioni.",
       "modeCloudLink": "Vai alle credenziali",
@@ -980,7 +981,7 @@
     "sombraElision": {
       "title": "Elisione in ombra (ipotetico)",
       "detalle": "≈{usd} su {requests} richieste simulate",
-      "nota": "Quanto avrebbe risparmiato l'elisione del contesto sul tuo traffico reale, calcolato dal gateway senza toccare un solo byte. Non si somma mai al titolo e non conta mai come risparmio accreditato: la leva si accenderà solo quando questa cifra lo giustificherà.",
+      "nota": "Quanto avrebbe risparmiato l'elisione del contesto sul tuo traffico reale, calcolato dal gateway senza toccare un solo byte. Non si somma mai al titolo e non conta mai come risparmio accreditato: la leva resta spenta finché non la accendi con la sua variabile.",
       "notaNegativa": "Sul tuo traffico, l'elisione avrebbe fatto spendere di più: riscrivere blocchi invalida la cache di prefisso del provider. Questa corsia esiste esattamente per vederlo prima di accendere qualcosa — ed è per questo che resta spenta."
     },
     "elisionProveedor": {
@@ -1038,7 +1039,7 @@
       "colComision": "Commissione",
       "estimadoExcluido": "Risparmio stimato escluso dalla base (contesto, mai fatturabile): {usd}.",
       "sombraElision": "Corsia ombra: l'elisione avrebbe risparmiato {usd} su {requests} richieste simulate. Ipotetico — non entra mai nella base.",
-      "sombraElisionNegativa": "Corsia ombra: l'elisione avrebbe fatto spendere {usd} in più su {requests} richieste simulate. Per questo resta spenta: si accende solo ciò che fa risparmiare davvero.",
+      "sombraElisionNegativa": "Corsia ombra: l'elisione avrebbe fatto spendere {usd} in più su {requests} richieste simulate. Resta spenta finché non la accendi; con questo traffico, lasciala spenta.",
       "elisionProveedor": "Corsia della cancellazione del provider: {requests} richieste in cui i nostri parametri hanno fatto cancellare contesto al provider. Un conteggio, non un risparmio — non entra mai nella base.",
       "referencia": "Misurato per riferimento: {usd} su {requests, plural, one {# richiesta ripetuta servita} other {# richieste ripetute servite}} senza chiamare il tuo fornitore. Ciascuna è valutata con il contatore che il tuo fornitore ha restituito per la richiesta identica già eseguita — si trova nel report di quella richiesta e nell'utilizzo del tuo fornitore di quel giorno — alla tariffa dell'input in cache, la più bassa che il tuo fornitore applica per ripetere un prompt; l'output conta solo se il campionamento era deterministico e la richiesta eseguita non conteneva ragionamento nascosto (il tuo fornitore ha dichiarato zero token di ragionamento o, se non li dettaglia, la sua risposta non conteneva alcun blocco di ragionamento). Incluso nella base.",
       "referenciaExcluida": "Misurato per riferimento: {usd} su {requests, plural, one {# richiesta ripetuta} other {# richieste ripetute}}. Mostrato a titolo informativo — per ora resta fuori dalla base.",
@@ -1273,7 +1274,7 @@
         },
         {
           "title": "Open core: risparmia senza chiavi",
-          "body": "Installa il pacchetto e le leve sono attive: la modalità Community accende ogni leva locale con zero telemetria, e una chiave impostata ma non valida resta fail-closed. Il cloud è opzionale: dashboard di team, cache condivise e gestione licenze con un canone fisso per postazione — e nessuna commissione sul tuo risparmio."
+          "body": "Tutte le leve sono incluse e gratis, senza chiave. Attive di default: cache esatta, deduplicazione delle richieste simultanee, resolver locali, posizionamento della cache del prompt, taglio dei risultati degli strumenti già superati e serializzazione compatta dei dati strutturati che passi. Le altre si accendono con una riga ciascuna. Due macchine possono condividere una cache gratis con uno storage che gestisci tu (Redis, per esempio). Zero telemetria, e una chiave impostata ma non valida resta fail-closed. Il cloud è opzionale: dashboard di team, misurazione condivisa, postazioni e licenze — gratis con Measure, e con Pro e Team a canone fisso, che tu risparmi o no, senza commissioni sul tuo risparmio."
         }
       ],
       "nota": "Le animazioni illustrano l'idea. Le cifre vere — misurate contro fornitori reali — sono subito sotto."
@@ -1348,31 +1349,31 @@
       "title": "Claude Code con chiave API? Guarda la spesa reale, token per token.",
       "body": "Un solo comando mette un contatore locale davanti al tuo terminale, senza toccare il tuo codice e senza chiave: avvii il tuo agente tramite bvsala. Aggiungi una chiave di servizio solo se vuoi vedere la spesa nella tua dashboard di Savings Cloud. I tuoi prompt non passano dai server di BiVelio: vanno al provider che configuri, e alla tua dashboard arrivano solo conteggi e costo.",
       "note": "Il gateway misura, con il contatore del tuo fornitore, ogni richiesta di cui questo riporta l'utilizzo (per i modelli del nostro catalogo prezzi) e, come l'SDK, si avvia senza alcuna chiave (modalità Community): una chiave di servizio facoltativa aggiunge il pannello e i diritti dell'org. Sui modelli Anthropic applica anche una leva per impostazione predefinita, senza licenza né account: sposta le scritture della cache dal TTL di un'ora a quello di cinque minuti solo nei turni in cui una parte consistente del prompt è nuova — come il primo turno di una sessione o una compattazione — e lascia come sono i turni concatenati. Questo cambia il prezzo, mai il contenuto che il modello legge. Ha qualcosa da abbassare solo quando il tuo client paga a token e chiede la cache di un'ora: Claude Code con chiave API chiede quella di cinque minuti se non la cambi, e allora il gateway si limita a misurare. Le altre leve restano spente finché non le attivi. Lo skill savings-mode è disponibile per i tuoi limiti, con l'effetto ancora da misurare. Il gateway funziona anche con Codex CLI, Goose, Qwen Code, opencode, Kilo, Aider e, con la tua chiave Anthropic, GitHub Copilot CLI; per altri, come Cline o Continue, bvsala doctor stampa la configurazione esatta. Cursor funziona tramite l'override dell'URL base OpenAI con la tua chiave, e la Gemini CLI si avvia con bvsala gemini.",
-      "pythonNote": "Python o qualsiasi altro linguaggio? Punta l'SDK ufficiale di OpenAI o di Anthropic al gateway e ogni richiesta di cui il fornitore riporta l'utilizzo, per un modello con prezzo di listino, viene registrata in questo pannello a quel prezzo; il log del gateway avvisa quando una non viene misurata. bvsala doctor stampa l'URL di base di ogni SDK. In streaming con OpenAI, chiedi l'utilizzo nella richiesta (stream_options.include_usage).",
+      "pythonNote": "Python o qualsiasi altro linguaggio? Punta l'SDK ufficiale di OpenAI o di Anthropic al gateway e ogni richiesta di cui il fornitore riporta l'utilizzo, per un modello con prezzo di listino, viene misurata a quel prezzo sulla tua macchina, e anche nella tua dashboard di Savings Cloud se aggiungi una chiave di servizio; il log del gateway avvisa quando una non viene misurata. bvsala doctor stampa l'URL di base di ogni SDK. In streaming con OpenAI, chiedi l'utilizzo nella richiesta (stream_options.include_usage).",
       "cta": "Guarda come funziona →"
     },
     "integrate": {
       "eyebrow": "Cinque righe per iniziare",
       "title": "Eseguilo nella tua app. I tuoi prompt non toccano mai i nostri server.",
       "body": "Metti l'SDK davanti al tuo provider. Ogni risposta include un SavingsReport completo che puoi rappresentare in grafici — le stesse cifre che legge la dashboard.",
-      "initNote": "<b>O lascia che un comando lo adatti al tuo stack.</b> <code>init</code> legge il tuo <code>package.json</code> (Next.js, Express, il Vercel AI SDK, Mastra, LangChain.js, l'SDK di Anthropic o quello di OpenAI) e stampa la riga di installazione, il codice esatto per il tuo adattatore e una verifica che non spende token: senza alcuna chiave, il layer risponde sulla tua macchina, senza chiamare il modello. Non scrive nulla se non glielo chiedi."
+      "initNote": "<b>O lascia che un comando lo adatti al tuo stack.</b> <code>init</code> legge il tuo <code>package.json</code> (Next.js, Express, il Vercel AI SDK, Mastra, LangChain.js, l'SDK di Anthropic o quello di OpenAI) e stampa la riga di installazione, il codice esatto per il tuo adattatore e una verifica che non spende token: senza alcuna chiave BiVelio, il layer risponde sulla tua macchina, senza chiamare il modello. Non scrive nulla se non glielo chiedi."
     },
     "pricing": {
       "eyebrow": "Piani",
       "title": "Motore open source. Controllo cloud per il tuo team.",
-      "body": "Il pacchetto è open core Apache-2.0: nessuna chiave, tutte le leve locali attive, zero telemetria. Il cloud è opzionale — Measure è il piano gratuito, Pro e Team si fatturano per postazione, in {currency}, senza commissioni sul tuo risparmio.",
+      "body": "Il pacchetto è open core Apache-2.0: tutte le leve incluse e gratis, senza chiave, e zero telemetria. Il cloud è opzionale — Measure è il piano gratuito, Pro si fattura per postazione e Team con un canone fisso con postazioni incluse, in {currency}, che tu risparmi o no, senza commissioni sul tuo risparmio.",
       "amount": "{amount}",
       "per": "/ postazione / mese",
       "plans": {
         "medir": {
           "name": "Measure",
           "price": "Gratis",
-          "body": "Gratis, senza carta. Il piano CLOUD gratuito: modalità ombra per un'organizzazione, fino a {seats} postazioni e {requests} richieste al giorno — nulla di ciò che invii cambia, nulla è servito dalla cache, mai parte di alcuna commissione, e la dashboard mostra quanto avrebbe risparmiato. Le leve locali non ne hanno bisogno: l'open core funziona senza alcuna chiave. Serve @bivelio/savings-layer {version} o successivo.",
+          "body": "Gratis, senza carta. Il piano CLOUD gratuito, per team piccoli: un'organizzazione, fino a {seats} postazioni e {requests} richieste al giorno. Esattamente le stesse leve dell'open core senza chiave, più la dashboard con il tuo risparmio reale; mai soggetto a commissioni. Risparmia con @bivelio/savings-layer {saves} o successivo; le versioni dalla {version} fino a prima della {saves} osservano soltanto.",
           "cta": "Inizia gratis →"
         },
         "pro": {
           "name": "Pro",
-          "note": "Oppure <b>{yearly} / postazione / anno</b>. Tutte le ottimizzazioni, la ricevuta per richiesta e la dashboard. Nessuna commissione.",
+          "note": "Oppure <b>{yearly} / postazione / anno</b>. Dashboard di team, misurazione condivisa, postazioni e licenze. Nessuna commissione.",
           "cta": "Scegli Pro →"
         },
         "team": {
@@ -1390,7 +1391,7 @@
       "legacy": "Hai già la formula precedente, con commissione sul risparmio misurato? La mantieni senza modifiche; le sue condizioni sono nei <terms>termini di prezzo</terms>.",
       "seatNote": "Una postazione è una <b>macchina o identità di servizio</b>, non una persona. Paghi le postazioni coperte dal tuo abbonamento; la tua dashboard mostra quante sono state in uso questo mese (attive in almeno {dias} giorni; CI e runner effimeri non contano).",
       "features": [
-        "Ogni ottimizzazione BV‑SALA, senza limiti",
+        "Dashboard di team e misurazione condivisa per ogni postazione",
         "Una ricevuta per richiesta: SavingsReport con quattro registri, misurato e stimato separati",
         "Dashboard di risparmio e analitiche di team",
         "I tuoi prompt non passano dai server di BiVelio: vengono inviati al provider che configuri"
@@ -1421,7 +1422,7 @@
     },
     "footer": {
       "ctaTitle": "Misuralo sul tuo traffico",
-      "ctaSub": "Una volta installato, ogni chiamata restituisce il suo SavingsReport, con misurato e stimato separati. L'open core non ha bisogno di chiavi: le leve girano in locale con zero telemetria. Il cloud opzionale parte gratis con Measure e si fattura per postazione, senza commissioni sul tuo risparmio.",
+      "ctaSub": "Una volta installato, ogni chiamata restituisce il suo SavingsReport, con misurato e stimato separati. L'open core non ha bisogno di chiavi: le leve girano in locale con zero telemetria. Il cloud opzionale parte gratis con Measure; i suoi piani a pagamento sono a canone fisso, senza commissioni sul tuo risparmio.",
       "ctaStart": "Inizia",
       "tagline": "<b>BiVelio Savings Layer</b> è un ottimizzatore di costo LLM neutrale rispetto al fornitore — ogni cifra misurata lo è contro il contatore del fornitore; le stime e le simulazioni si mostrano a parte, dichiarate come tali, e non si fatturano mai.",
       "badge": "BV‑SALA · Savings Layer",
@@ -1486,7 +1487,7 @@
         },
         {
           "title": "Il tuo traffico resta diretto",
-          "body": "L'SDK incapsula la chiamata nel tuo processo. I tuoi prompt non passano da BiVelio: a noi arrivano solo conteggi e costo.",
+          "body": "L'SDK incapsula la chiamata nel tuo processo. I tuoi prompt non passano da BiVelio: senza chiave non ci arriva nulla; con una chiave cloud, solo conteggi e costo.",
           "mono": "app → provider api"
         },
         {
@@ -1639,7 +1640,7 @@
       "items": [
         {
           "q": "Che cosa si paga esattamente?",
-          "a": "Il motore open source è gratuito. Savings Cloud ha un piano gratuito, Measure, e due piani a canone fisso per postazione, Pro e Team. Il canone si paga che ci sia risparmio o no, non prevede commissioni sul risparmio e non include il consumo del tuo provider LLM: quello continui a pagarlo tu, alle sue condizioni."
+          "a": "Il motore open source è gratuito. Savings Cloud ha un piano gratuito, Measure, e due piani a canone fisso: Pro, per postazione, e Team, con postazioni incluse e postazioni extra a parte. Il canone si paga che ci sia risparmio o no, non prevede commissioni sul risparmio e non include il consumo del tuo provider LLM: quello continui a pagarlo tu, alle sue condizioni."
         },
         {
           "q": "Che cos’è una postazione?",
@@ -1647,7 +1648,7 @@
         },
         {
           "q": "Che differenza c’è tra Measure e Community?",
-          "a": "Community è il motore open source nella tua infrastruttura: senza account, senza chiave BiVelio e senza telemetria per impostazione predefinita. Measure è il piano gratuito di Savings Cloud: richiede un account e funziona in modalità ombra, quindi non modifica le tue richieste né serve risposte dalla cache; la tua dashboard mostra quanto si sarebbe risparmiato."
+          "a": "Community è il motore open source sulla tua infrastruttura: niente account, niente chiave BiVelio, nessuna telemetria di default e nessuna dipendenza dai server di BiVelio. Measure è il piano gratuito di Savings Cloud per team piccoli: richiede un account e una chiave, applica esattamente le stesse leve di Community e aggiunge la dashboard con il tuo risparmio reale; con quella chiave, un layer che resta tre giorni senza risposta da savings.bivelio.com rifiuta ogni chiamata finché non la riceve o finché non rimuovi la chiave. Con versioni vecchie del pacchetto osserva soltanto; la pagina dei prezzi dice da quale versione risparmia."
         },
         {
           "q": "Serve per un abbonamento come ChatGPT Plus?",
@@ -1663,7 +1664,7 @@
         },
         {
           "q": "Garantite un risparmio?",
-          "a": "No. Quanto risparmi dipende dal tuo traffico; per esempio, da quanto si ripete. Pubblichiamo ogni misurazione con il suo modello, il suo campione e il suo intervallo, e Measure ti fa vedere quanto si sarebbe risparmiato sul tuo traffico prima di pagare qualcosa."
+          "a": "No. Quanto risparmi dipende dal tuo traffico; per esempio, da quanto si ripete. Pubblichiamo ogni misurazione con il suo modello, il suo campione e il suo intervallo, e l'open core ti mostra sul tuo traffico, richiesta per richiesta, quanto risparmia prima che tu paghi qualcosa."
         }
       ]
     },
@@ -1671,7 +1672,7 @@
       "title": "Prima misura.",
       "titleAccent": "Poi decidi.",
       "titleMark": "decidi",
-      "sub": "Measure è gratuito e non chiede la carta: funziona in modalità ombra e ti mostra quanto si sarebbe risparmiato sul tuo traffico. Il motore è open source e il suo codice è sotto gli occhi di tutti.",
+      "sub": "Measure è gratuito e non chiede la carta: esattamente le stesse leve del motore open source, più la dashboard con ciò che risparmi davvero sul tuo traffico. Il motore è open source e il suo codice è sotto gli occhi di tutti.",
       "repo": "Vedi il repository"
     },
     "layer": {
@@ -1690,7 +1691,7 @@
       "srcAgent": "Il tuo agente",
       "srcAgentVia": "gateway locale",
       "memoryLabel": "Memoria delle richieste recenti",
-      "compactLabel": "Compattazione dei dati",
+      "compactLabel": "Formato compatto",
       "providersLabel": "Il provider che configuri",
       "nativeAdapter": "adattatore nativo",
       "compatName": "Qualsiasi endpoint compatibile con l'API di OpenAI",
@@ -1698,13 +1699,13 @@
       "step1Body": "Parte dalla tua app o dal tuo agente senza lasciare la tua infrastruttura.",
       "step2Title": "Ripetuta · servita senza chiamare il provider",
       "step2Body": "Lo strato la riconosce nella sua memoria e restituisce la risposta salvata.",
-      "step3Title": "Dati compattati · meno token",
-      "step3Body": "Una richiesta nuova viaggia più leggera verso il provider che configuri e la risposta torna attraverso lo strato.",
+      "step3Title": "Nuova · più leggera dove si può",
+      "step3Body": "Una nuova richiesta va al provider che configuri: dati strutturati in un formato compatto, risultati degli strumenti già superati tagliati. Compattare gli output degli strumenti è una leva che accendi tu. La risposta torna attraverso il layer.",
       "step4Title": "Solo conteggi e costi · mai prompt",
       "step4Body": "Savings Cloud è facoltativo: se lo colleghi, riceve cifre, non contenuti.",
       "legendRepeat": "Ripetute",
       "legendRepeatTo": "senza chiamare il provider",
-      "legendData": "Dati compattati",
+      "legendData": "Dati strutturati",
       "legendDataTo": "meno token",
       "legendCache": "Cache del provider",
       "legendCacheTo": "input meno costoso",
@@ -2143,7 +2144,7 @@
     "caseClaudeSub": "claude.ai, gratis o a pagamento",
     "caseClaudeBody": "Abbonamento fisso: nessuna fattura di token da misurare — ma con tetti (la finestra di cinque ore e quello settimanale). È esattamente per questo che esiste la skill savings-mode: gratuita, si carica su claude.ai in un minuto e attacca le due masse che bruciano il tetto. Il suo effetto sarà pubblicato quando sarà misurato — mai prima.",
     "caseCodeSub": "terminale, con chiave API",
-    "caseCodeBody": "Con l'abbonamento la quota è fissa — ma con tetti: la stessa skill si installa con un solo comando e allunga lo stesso tetto settimanale. Con la chiave API c'è una fattura di token reale — e il misuratore è già in moto: senza alcuna chiave di BiVelio, «bvsala claude» lancia Claude Code attraverso il gateway locale, senza toccare una riga di codice. Il gateway misura sulla tua macchina ciò che lo attraversa, con l'utilizzo dichiarato dal tuo fornitore, e all'uscita ti dice quante richieste ha misurato, quali no e perché. Sui modelli Anthropic sposta anche le scritture della cache dal TTL di un'ora a quello di cinque minuti solo nei turni in cui una parte consistente del prompt è nuova (il primo turno di una sessione, una compattazione): un risparmio calcolato sul conteggio dei token del tuo stesso fornitore, mai su una stima. Per questo Claude Code deve chiedere la cache di un'ora, e con la chiave API non lo fa se non lo imposti: per impostazione predefinita il gateway si limita a misurare. Con una chiave di Savings Cloud vedi la tua spesa anche nel pannello, token per token.",
+    "caseCodeBody": "Con l'abbonamento la quota è fissa, e con le impostazioni predefinite il gateway non cambia nulla del tuo traffico: misura sulla tua macchina, gratis, quanto spende ogni sessione a prezzo di listino. Per i tetti c'è la skill savings-mode, gratis, con un effetto non ancora misurato. Con la chiave API c'è una fattura di token reale — e il misuratore è già in moto: senza alcuna chiave di BiVelio, «bvsala claude» lancia Claude Code attraverso il gateway locale, senza toccare una riga di codice. Il gateway misura sulla tua macchina ciò che lo attraversa, con l'utilizzo dichiarato dal tuo fornitore, e all'uscita ti dice quanto ha speso a prezzo di listino, quanto ha risparmiato secondo la sua base (misurato o stimato), quante richieste ha misurato, quali no e perché. Sui modelli Anthropic sposta anche le scritture della cache dal TTL di un'ora a quello di cinque minuti solo nei turni in cui una parte consistente del prompt è nuova (il primo turno di una sessione, una compattazione): un risparmio calcolato sul conteggio dei token del tuo stesso fornitore, mai su una stima. Per questo Claude Code deve chiedere la cache di un'ora, e con la chiave API non lo fa se non lo imposti: per impostazione predefinita il gateway si limita a misurare. Con una chiave di Savings Cloud vedi la tua spesa anche nel pannello, token per token.",
     "caseAppName": "La tua applicazione",
     "caseAppSub": "il tuo codice + la tua chiave API",
     "caseAppBody": "Il caso per cui esiste Savings Layer. La tua app chiama l'API con la tua chiave, il provider fattura ogni token, e il layer si installa in due passi: il pacchetto e avvolgere la chiamata. Dalla prima richiesta restituisce un <b>SavingsReport</b> con il risparmio, diviso tra misurato e stimato.",
@@ -2157,7 +2158,7 @@
     "s3Sub": "Il prodotto ha due numeri diversi ed è meglio non mescolarli.",
     "mBeforeK": "Prima di installare",
     "mBeforeV": "Stima",
-    "mBeforeBody": "Il piano cloud gratuito fa girare il layer in modalità ombra sul tuo traffico e mostra quanto avrebbe risparmiato, richiesta per richiesta. Non cambia nulla e non applica nulla — per questo porta l'etichetta «stima». Nessun piano? Open core: le leve locali girano senza chiave e con zero telemetria.",
+    "mBeforeBody": "Prima di installare, ogni cifra è una stima: il banco pubblico mostra come si comporta ogni leva sul suo traffico, non sul tuo. Per iniziare non serve alcun piano: nell'open core ogni leva è gratis, senza chiave e con zero telemetria; il piano gratuito Measure aggiunge la dashboard.",
     "mAfterK": "Dopo l'installazione",
     "mAfterV": "Misurazione reale",
     "mAfterBody": "Ogni chiamata restituisce un SavingsReport: le chiamate che non hai mai pagato e il risparmio netto per richiesta. Verificabile, richiesta per richiesta, sulla tua infrastruttura.",
@@ -2173,7 +2174,7 @@
     "billWith": "Dipende",
     "billDepends": "da quanto si ripete il tuo traffico",
     "hero": {
-      "ctaInstall": "Installa l'open source",
+      "ctaInstall": "Installa gratis",
       "ctaResults": "Vedi i risultati riproducibili"
     },
     "beam": {
@@ -2262,7 +2263,7 @@
         "hint": "facoltativo",
         "what": "Centralizza la misurazione e la gestione del team: organizzazione, licenze e posti.",
         "where": "In Savings Cloud, ospitato da BiVelio. Riceve i dati definiti dalla pagina sulla privacy.",
-        "account": "Sì. Measure è il piano gratuito, in modalità ombra."
+        "account": "Sì. Measure è il piano gratuito, per team piccoli."
       },
       "evidence": {
         "name": "Evidenza",
@@ -2291,15 +2292,16 @@
     "lede": "Il motore è open source: nessuna chiave. Questa pagina dà un prezzo a Savings Cloud, il cloud opzionale — Measure gratis, poi Pro per postazione o un piano Team, senza commissioni sul tuo risparmio. Ogni cifra qui viene dallo stesso codice che ti fattura, e cambia quando cambia il prezzo.",
     "plans": {
       "title": "Piani",
-      "intro": "Quattro piani, dal più piccolo al più grande. Pro e Team si pagano per postazione e non prevedono commissioni.",
+      "intro": "Quattro piani, dal più piccolo al più grande. Pro si paga per postazione, Team con un canone fisso con postazioni incluse più ogni postazione extra, e nessuno dei due prevede commissioni.",
       "medir": {
         "name": "Measure",
-        "body": "<b>Gratis, senza carta.</b> Il piano CLOUD gratuito: il layer gira in modalità ombra per un'organizzazione, fino a <b>{seats} postazioni</b> e <b>{requests} richieste al giorno</b>: ogni richiesta raggiunge il tuo provider esattamente come l'hai scritta, nulla è servito dalla cache e nessuna leva è applicata. La dashboard mostra quanto avrebbe risparmiato — una stima che non porta mai commissioni. Serve <b>@bivelio/savings-layer {version} o successivo</b>. Le leve locali non hanno bisogno di alcun piano: l'open core gira senza chiave; le leve cloud richiedono Pro o Team."
+        "body": "<b>Gratis, senza carta.</b> Il piano CLOUD gratuito, per team piccoli: un'organizzazione, fino a <b>{seats} postazioni</b> e <b>{requests} richieste al giorno</b>. Applica esattamente le stesse leve dell'open core senza chiave, compreso il taglio dei risultati degli strumenti già superati, e aggiunge la dashboard con il tuo risparmio reale, con il misurato e lo stimato separati; non porta mai commissioni. Risparmia con <b>@bivelio/savings-layer {saves} o successivo</b>. Le versioni dalla {version} fino a prima della {saves} osservano soltanto con una chiave Measure: modalità ombra, nessuna leva applicata, e la dashboard mostra quanto si sarebbe risparmiato. Le leve in sé non richiedono alcun piano: l'open core gira senza chiave."
       },
       "pro": {
         "name": "Pro",
         "amount": "<b>{monthly}</b> per postazione al mese, oppure <b>{yearly}</b> per postazione all’anno, in {currency}.",
-        "body": "Tutte le ottimizzazioni del livello, la ricevuta per richiesta e la dashboard. <b>Nessuna commissione</b> sul risparmio: paghi le postazioni, che tu risparmi o no."
+        "body": "Tutto ciò che offre Measure, per più macchine e richieste: dashboard di team, misurazione condivisa, postazioni e licenze. Il motore e le sue leve restano gratis senza chiave. Nell'SDK, con una licenza a pagamento, il taglio dei risultati degli strumenti già superati agisce solo dentro un ciclo di strumenti su Anthropic. Nel gateway locale, ogni leva deve anche essere inclusa nella licenza della tua organizzazione, verificata in modo fail-closed: se la verifica non si può fare, le richieste passano intatte. <b>Nessuna commissione</b> sul risparmio: paghi le postazioni, che tu risparmi o no.",
+        "refund": "<b>Rimborso:</b> sul primo acquisto mensile puoi chiedere il rimborso entro {days} giorni <contact>scrivendoci</contact>."
       },
       "team": {
         "name": "Team",
@@ -2375,7 +2377,7 @@
       "cloud": {
         "tag": "Opzionale · con piani",
         "name": "Savings Cloud",
-        "body": "La dashboard, la misurazione condivisa, l’organizzazione e le licenze. Measure ne è il piano gratuito, in modalità ombra; Pro e Team si pagano con un canone fisso per postazione, senza commissioni sul risparmio."
+        "body": "La dashboard, la misurazione condivisa, l’organizzazione e le licenze. Measure ne è il piano gratuito, per team piccoli; Pro si paga con un canone fisso per postazione e Team con un canone fisso con postazioni incluse, senza commissioni sul risparmio. Una chiave, anche quella gratuita di Measure, lega il layer a savings.bivelio.com: con licenseServerUrl impostato, come lo configura la dashboard, un layer che resta {horas} ore senza risposta rifiuta ogni chiamata (LicenseError) finché non la riceve o finché non rimuovi la chiave. Community non ha questa dipendenza."
       }
     },
     "cards": {
@@ -2408,13 +2410,13 @@
       "terms": "Vedi le condizioni",
       "provider": "Il canone non include il consumo del tuo provider LLM: continui a pagarlo tu, alle sue condizioni. Importi IVA esclusa.",
       "medir": {
-        "unit": "Piano cloud gratuito, in modalità ombra.",
-        "summary": "Misura senza cambiare nulla: le tue richieste arrivano al provider così come le costruisci e la dashboard mostra quanto si sarebbe risparmiato.",
+        "unit": "Il piano cloud gratuito, per team piccoli.",
+        "summary": "La dashboard con ciò che risparmi davvero, e esattamente le stesse leve che senza chiave. Risparmia con @bivelio/savings-layer {saves} o successivo; le versioni precedenti osservano soltanto.",
         "cta": "Inizia con Measure",
         "version": "Funziona con l'ultima versione di @bivelio/savings-layer."
       },
       "pro": {
-        "summary": "Tutte le ottimizzazioni, la ricevuta per richiesta e la dashboard. Canone fisso: si paga che ci sia risparmio o no.",
+        "summary": "Il cloud di Measure, per più macchine e richieste: dashboard di team, misurazione condivisa, postazioni e licenze. Il motore e le sue leve restano gratis senza chiave. Canone fisso: si paga che ci sia risparmio o no.",
         "cta": "Scegli Pro"
       },
       "team": {

@@ -85,6 +85,11 @@ describe("el panel de instalación renderiza en los 12 idiomas", () => {
       // La nota de Python con el comando exacto del README de packages/python.
       expect(html).toContain("<code>pip install bivelio-savings-layer</code>");
       expect(html).toContain("<code>import bvsala</code>");
+      // La nota final dice lo que ata una clave, con las horas del paquete (1.2.4).
+      expect(html).toContain("<code>LicenseError</code>");
+      expect(html).toMatch(/savings\.bivelio\.com/);
+      expect(html).not.toContain("{horas}");
+      expect(html).toMatch(/\b72\b/);
       // Ninguna etiqueta rich sin sustituir.
       expect(html).not.toMatch(/&lt;\/?(b|code)&gt;/);
     });

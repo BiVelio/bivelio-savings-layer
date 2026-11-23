@@ -253,7 +253,9 @@ export async function HowItWorks({
               <span className="k">{t("mBeforeK")}</span>
               <div className="v est">{t("mBeforeV")}</div>
               <p>{t("mBeforeBody")}</p>
-              <EvidenceBadge tipo="sombra" label={tUi("evidence.sombra")} />
+              {/* Antes de instalar, la cifra sale del banco público. Ya no es el
+                  modo sombra: Measure ahorra desde VERSION_MEDIR_AHORRA. */}
+              <EvidenceBadge tipo="benchmark" label={tUi("evidence.benchmark")} />
             </div>
             <div className="hiw-mcard">
               <span className="k">{t("mAfterK")}</span>

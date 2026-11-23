@@ -151,8 +151,12 @@ describe("ShadowOpportunitiesCard", () => {
     expect(html).toContain("/api/org/shadow-opportunities?format=json&amp;range=30");
     expect(html).toContain('href="/dashboard/account"');
     expect(html).toContain('href="/dashboard/install"');
-    expect(html).toContain("Lever and surface are unavailable");
-    expect(html).toContain("server-first change");
+    // Sin atribuir palancas, y dicho sin jerga interna: la tabla no sabe de qué
+    // palanca ni de qué superficie sale cada cifra. Y las palancas no se activan
+    // en Cuenta: con la 1.2.5 la sombra solo viene de máquinas que observan.
+    expect(html).toContain("cannot say which lever or surface each figure comes from");
+    expect(html).toContain("update those machines or turn observe-only off: the levers need no plan.");
+    expect(html).not.toContain("Account to activate");
   });
 
   it("histórico, migración ausente, oculto y error no se disfrazan de vacío", async () => {

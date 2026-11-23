@@ -150,10 +150,11 @@
     "createAnAccount": "Tạo tài khoản",
     "backToVerifier": "← Quay lại trang chủ",
     "createYourAccount": "Tạo tài khoản Cloud của bạn",
-    "signupSubtitle": "Một tài khoản BiVelio cho toàn bộ suite. Tạo nó để dùng cloud: bảng điều khiển, cache dùng chung và quản lý giấy phép. Bản thân gói không cần tài khoản — open core chạy không khóa.",
+    "signupSubtitle": "Một tài khoản BiVelio cho toàn bộ suite. Tạo nó để dùng cloud: bảng điều khiển nhóm, đo lường dùng chung, chỗ và giấy phép. Bản thân gói không cần tài khoản — open core chạy không khóa.",
     "alreadyHaveAccount": "Đã có tài khoản BiVelio?",
     "signIn": "Đăng nhập",
     "workEmail": "Email công việc",
+    "emailPlaceholder": "ban@congty.com",
     "password": "Mật khẩu",
     "createAccountCta": "Tạo tài khoản →",
     "signupLegal": "Khi tạo tài khoản, bạn chấp nhận <terms>điều khoản của Savings Cloud</terms> và <privacy>chính sách quyền riêng tư</privacy>.",
@@ -194,7 +195,7 @@
       "network": "Không có kết nối. Kiểm tra mạng và thử lại.",
       "missingFields": "Nhập email và mật khẩu của bạn."
     },
-    "signupMedir": "Hoặc bắt đầu miễn phí với Measure: gói cloud miễn phí, không cần thẻ, chế độ bóng, tối đa {seats} chỗ và {requests} yêu cầu mỗi ngày. Hoạt động với phiên bản mới nhất của @bivelio/savings-layer.",
+    "signupMedir": "Hoặc bắt đầu miễn phí với Measure: gói cloud miễn phí cho nhóm nhỏ, không cần thẻ, tối đa {seats} chỗ và {requests} yêu cầu mỗi ngày, với các đòn bẩy y hệt như khi không có khóa và khoản tiết kiệm thực trong bảng điều khiển. Tiết kiệm từ @bivelio/savings-layer {saves} trở lên; các phiên bản cũ hơn chỉ quan sát.",
     "signupPlanPro": "Bạn đã chọn {plan} — {price} mỗi chỗ mỗi tháng. Tạo tài khoản, xác nhận email, rồi bạn sẽ thanh toán trong bảng điều khiển qua Stripe.",
     "signupPlanTeam": "Bạn đã chọn {plan} — {price} mỗi tháng, bao gồm {seats} chỗ. Tạo tài khoản, xác nhận email, rồi bạn sẽ thanh toán trong bảng điều khiển qua Stripe.",
     "openSourceQuestion": "Chỉ muốn dùng engine mã nguồn mở?",
@@ -570,7 +571,7 @@
       "coveragePartial": "Bao phủ một phần: chi tiết gồm {attributed} trên {total} yêu cầu SHADOW ({coverage}); lịch sử thiếu mô hình bị loại ra.",
       "coverageUnavailable": "Không có độ bao phủ vì không đọc được tổng SHADOW hằng ngày.",
       "note": "Ước tính giả định: nền − chi phí SHADOW. Không bao giờ đo, lập hóa đơn hoặc cộng vào tiết kiệm được ghi nhận.",
-      "action": "Xem Tài khoản để bật các đòn bẩy tiết kiệm hoặc hoàn tất cài đặt SDK/gateway. Đòn bẩy và bề mặt không khả dụng: wire hiện tại không lưu chúng; cần thay đổi server-first.",
+      "action": "Để tiết kiệm thật, hãy cập nhật các máy đó hoặc tắt chế độ chỉ quan sát: các đòn bẩy không cần gói nào. Bảng này không thể cho biết mỗi con số đến từ đòn bẩy hay bề mặt nào: bản ghi sử dụng không mang thông tin đó.",
       "accountCta": "Xem Tài khoản",
       "installCta": "Hoàn tất cài đặt",
       "exportCsv": "Xuất CSV",
@@ -734,7 +735,7 @@
     "installLicensePanel": {
       "eyebrow": "Bắt đầu",
       "heading": "Ba bước. Prompt của bạn không bao giờ chạm tới máy chủ của chúng tôi.",
-      "step1": "<b>1 · Khóa của bạn (tùy chọn)</b> — SDK là open core: không có khóa, nó chạy ở chế độ Community (mọi đòn bẩy đều có sẵn và miễn phí, không có telemetry). Bật theo mặc định: cache khớp chính xác, khử trùng lặp, bộ phân giải cục bộ, đặt điểm cache của nhà cung cấp và cắt bớt kết quả công cụ đã bị thay thế; phần còn lại do bạn bật. Khóa được đặt nhưng không hợp lệ vẫn fail-closed. Được truyền dưới dạng <code>licenseKey</code>.",
+      "step1": "<b>1 · Khóa của bạn (tùy chọn)</b> — SDK là open core: không có khóa, nó chạy ở chế độ Community (mọi đòn bẩy đều có sẵn và miễn phí, không có telemetry). Bật theo mặc định: cache khớp chính xác, khử trùng lặp, bộ phân giải cục bộ, đặt điểm cache của nhà cung cấp, cắt bớt kết quả công cụ đã bị thay thế và tuần tự hóa gọn dữ liệu có cấu trúc mà bạn truyền vào; phần còn lại do bạn bật. Khóa được đặt nhưng không hợp lệ vẫn fail-closed. Được truyền dưới dạng <code>licenseKey</code>.",
       "step2": "<b>2 · Tạo và xác minh khóa tài khoản dịch vụ</b> — một thông tin xác thực máy (<code>bvk_…</code>) làm hai việc: nó báo cáo mức sử dụng chỉ-đếm-số-lượng (số ghế và mức tiết kiệm của bạn), và nó cho phép SDK và gateway <b>tự lấy giấy phép đã gia hạn</b> của bạn mỗi kỳ thanh toán. Tách biệt với khóa cấp phép; chỉ hash của nó được lưu trữ. Tạo một khóa, rồi nhấn <b>Kiểm tra khóa của tôi</b> để xác nhận nó đang hoạt động.",
       "currentKey": "khóa tài khoản dịch vụ hiện tại",
       "noneYet": "chưa có — nhấp vào ở trên",
@@ -744,11 +745,11 @@
       "initNote": "Lệnh này đọc <code>package.json</code> của bạn (Next.js, Express, Vercel AI SDK, Mastra, LangChain.js, SDK của Anthropic hoặc của OpenAI) và in ra những gì stack của bạn cần: dòng cài đặt cho trình quản lý gói của bạn, các khóa còn thiếu, mã chính xác cho adapter của bạn và một bước kiểm tra không tốn token — lớp tự trả lời ngay trên máy của bạn, không gọi mô hình. Lệnh này không ghi gì cả: <code>--write</code> chỉ tạo tệp mới, sau khi hỏi bạn, và không bao giờ ghi đè tệp đã có.",
       "manualInstall": "<b>Muốn tự kết nối bằng tay?</b> Cài gói — công khai trên npm, không token, không cấu hình:",
       "manualWire": "…sau đó kết nối nhà cung cấp của bạn và đọc SavingsReport:",
-      "gatewayNote": "<b>Agent lập trình thay vì một ứng dụng?</b> Cùng gói này có sẵn một gateway đo cục bộ: <code>bvsala claude</code> chạy Claude Code qua nó và bảng điều khiển này hiển thị chi tiêu, từng token một. Nó khởi động mà không cần khóa nào (chế độ Community); khóa dịch vụ tùy chọn ở bước 2 thêm bảng điều khiển này và quyền của tổ chức.",
+      "gatewayNote": "<b>Agent lập trình thay vì một ứng dụng?</b> Cùng gói này có sẵn một gateway đo cục bộ: <code>bvsala claude</code> chạy Claude Code qua nó và bảng điều khiển này hiển thị chi tiêu, từng token một. Nó khởi động mà không cần khóa nào (chế độ Community); khóa dịch vụ tùy chọn ở bước 2 thêm bảng điều khiển này và quyền của tổ chức. Với khóa đó, gateway cần savings.bivelio.com để khởi động; khi đã chạy, nó vẫn tiếp tục phục vụ mà không cần đến.",
       "doctorComment": "agent và SDK khác: cấu hình chính xác cho từng loại",
       "agentsNote": "Mỗi wrapper chuẩn bị agent chỉ cho phiên đó — không có gì trong cấu hình thay đổi — và khi thoát sẽ cho biết đã đo bao nhiêu yêu cầu, yêu cầu nào không đo được và vì sao. <code>bvsala copilot</code> cần khóa Anthropic của riêng bạn (BYOK): các mô hình do GitHub lưu trữ không bao giờ đi qua URL cơ sở, nên không có gì để đo. Với Crush, Droid, Cline, Continue hoặc Copilot trong VS Code, <code>bvsala doctor</code> in cấu hình chính xác. <b>Cursor (BYOK)</b>: hoạt động qua ghi đè URL cơ sở OpenAI bằng khóa của riêng bạn; các mô hình của nó không bao giờ đến được gateway trên máy bạn. <b>Gemini CLI</b>: chạy nó bằng <code>bvsala gemini</code>.",
       "pythonNote": "<b>Python?</b> Client <code>bvsala</code> cho Python đưa các SDK chính thức của OpenAI và Anthropic đi qua chính gateway này (<code>bvsala gateway</code>) và trả về cho mã của bạn báo cáo của từng yêu cầu — cùng những con số mà bảng điều khiển này nhận được. Client cần Python 3.10 trở lên. Cài từ PyPI bằng <code>pip install bivelio-savings-layer</code>; trong mã của bạn, <code>import bvsala</code>.",
-      "finalNote": "Chỉ vậy thôi. Khóa được đặt nhưng không hợp lệ → <code>generate()</code> sẽ từ chối. Nếu gói của bạn bị hủy, SDK sẽ dừng trong khoảng 15 phút thông qua <code>licenseServerUrl</code> — không cần khởi động lại, và nó không bao giờ làm hỏng môi trường sản xuất của bạn nếu chúng tôi không thể kết nối được. Gỡ các khóa và lớp sẽ chạy lại ở chế độ Community.",
+      "finalNote": "Chỉ vậy thôi. Khóa được đặt nhưng không hợp lệ → <code>generate()</code> sẽ từ chối. Nếu gói của bạn bị hủy, SDK sẽ dừng trong khoảng 15 phút thông qua <code>licenseServerUrl</code>, không cần khởi động lại. Nếu không liên lạc được với chúng tôi, SDK vẫn tiếp tục chạy, nhưng sau 72 giờ không có phản hồi, mọi lệnh gọi đều thất bại với <code>LicenseError</code> cho đến khi nhận được phản hồi. Gỡ các khóa và lớp sẽ chạy lại ở chế độ Community.",
       "terminal": "Terminal",
       "sdkEyebrow": "Ứng dụng",
       "sdkTitle": "Tích hợp một ứng dụng (SDK)",
@@ -757,7 +758,7 @@
       "gatewayTitle": "Kết nối một agent (gateway)",
       "gatewayLede": "Chạy agent lập trình của bạn qua gateway cục bộ mà không cần sửa mã của nó.",
       "modeLocalTitle": "Chế độ cục bộ",
-      "modeLocalBody": "Engine mở chạy không cần tài khoản hay khóa: mọi đòn bẩy đều có sẵn và miễn phí, không có telemetry. Bật theo mặc định: cache khớp chính xác, khử trùng lặp, bộ phân giải cục bộ, đặt điểm cache của nhà cung cấp và cắt bớt kết quả công cụ đã bị thay thế; phần còn lại do bạn bật. Báo cáo nằm lại trên máy của bạn.",
+      "modeLocalBody": "Engine mở chạy không cần tài khoản hay khóa: mọi đòn bẩy đều có sẵn và miễn phí, không có telemetry. Bật theo mặc định: cache khớp chính xác, khử trùng lặp, bộ phân giải cục bộ, đặt điểm cache của nhà cung cấp, cắt bớt kết quả công cụ đã bị thay thế và tuần tự hóa gọn dữ liệu có cấu trúc mà bạn truyền vào; phần còn lại do bạn bật. Báo cáo nằm lại trên máy của bạn.",
       "modeCloudTitle": "Kết nối Cloud",
       "modeCloudBody": "Với giấy phép và khóa dịch vụ, bảng điều khiển này nhận số đếm và chi phí — không bao giờ nhận prompt của bạn — và tổ chức của bạn dùng chung phép đo và số chỗ.",
       "modeCloudLink": "Đến phần thông tin xác thực",
@@ -980,7 +981,7 @@
     "sombraElision": {
       "title": "Lược bỏ trong bóng (giả định)",
       "detalle": "≈{usd} trên {requests} yêu cầu mô phỏng",
-      "nota": "Số tiền mà việc lược bỏ ngữ cảnh lẽ ra đã tiết kiệm trên lưu lượng thực của bạn, do gateway tính toán mà không chạm vào một byte nào. Không bao giờ được cộng vào tiêu đề và không bao giờ được tính là khoản tiết kiệm được ghi nhận: đòn bẩy chỉ được bật khi con số này chứng minh điều đó.",
+      "nota": "Số tiền mà việc lược bỏ ngữ cảnh lẽ ra đã tiết kiệm trên lưu lượng thực của bạn, do gateway tính toán mà không chạm vào một byte nào. Không bao giờ được cộng vào tiêu đề và không bao giờ được tính là khoản tiết kiệm được ghi nhận: đòn bẩy vẫn tắt trừ khi bạn bật nó bằng biến riêng của nó.",
       "notaNegativa": "Trên lưu lượng của bạn, việc lược bỏ lẽ ra đã tốn tiền: viết lại các khối làm mất hiệu lực bộ nhớ đệm tiền tố của nhà cung cấp. Làn này tồn tại chính xác để thấy điều đó trước khi bật bất cứ thứ gì — vì vậy nó vẫn tắt."
     },
     "elisionProveedor": {
@@ -1038,7 +1039,7 @@
       "colComision": "Hoa hồng",
       "estimadoExcluido": "Tiết kiệm ước tính bị loại khỏi cơ sở (bối cảnh, không bao giờ tính phí): {usd}.",
       "sombraElision": "Làn bóng: việc lược bỏ lẽ ra đã tiết kiệm {usd} trên {requests} yêu cầu mô phỏng. Giả định — không bao giờ vào cơ sở.",
-      "sombraElisionNegativa": "Làn bóng: việc lược bỏ lẽ ra đã tốn thêm {usd} trên {requests} yêu cầu mô phỏng. Vì thế nó vẫn tắt: chỉ bật những gì thực sự tiết kiệm.",
+      "sombraElisionNegativa": "Làn bóng: việc lược bỏ lẽ ra đã tốn thêm {usd} trên {requests} yêu cầu mô phỏng. Nó vẫn tắt trừ khi bạn bật; với lưu lượng này, hãy để tắt.",
       "elisionProveedor": "Làn xóa bởi nhà cung cấp: {requests} yêu cầu mà cấu hình của chúng tôi khiến nhà cung cấp xóa ngữ cảnh. Một số đếm, không phải tiết kiệm — không bao giờ tính vào cơ sở.",
       "referencia": "Đo theo tham chiếu: {usd} trên {requests, number} lượt gọi lặp lại được phục vụ mà không gọi nhà cung cấp của bạn. Mỗi lượt được định giá bằng bộ đếm mà nhà cung cấp trả về cho lượt gọi giống hệt đã được thực hiện — có trong báo cáo của lượt gọi đó và trong mức sử dụng của nhà cung cấp ngày hôm đó — theo giá đầu vào đã lưu bộ nhớ đệm, mức thấp nhất nhà cung cấp tính cho việc lặp lại một prompt; đầu ra chỉ được tính khi lấy mẫu là tất định và lượt gọi đã chạy không có suy luận ẩn (nhà cung cấp báo cáo số token suy luận bằng không hoặc, nếu không tách riêng, câu trả lời không có khối suy luận). Được tính vào cơ sở.",
       "referenciaExcluida": "Đo theo tham chiếu: {usd} trên {requests, number} lượt gọi lặp lại. Hiển thị để tham khảo — hiện tại không được tính vào cơ sở.",
@@ -1273,7 +1274,7 @@
         },
         {
           "title": "Open core: tiết kiệm không cần khóa",
-          "body": "Cài gói là các đòn bẩy bật sẵn: chế độ Community chạy mọi đòn bẩy cục bộ với zero telemetry, và khóa được đặt nhưng không hợp lệ vẫn fail-closed. Cloud là tùy chọn: bảng điều khiển nhóm, cache dùng chung và quản lý giấy phép theo phí cố định mỗi chỗ — không hoa hồng trên khoản tiết kiệm của bạn."
+          "body": "Mọi đòn bẩy đều có sẵn và miễn phí, không cần khóa. Bật sẵn: cache chính xác, khử trùng lặp các yêu cầu đồng thời, bộ giải cục bộ, đặt điểm cache prompt, cắt các kết quả công cụ đã bị thay thế và tuần tự hóa gọn dữ liệu có cấu trúc mà bạn truyền vào. Phần còn lại bạn bật, mỗi cái một dòng. Hai máy có thể dùng chung cache miễn phí với kho lưu trữ do bạn vận hành (ví dụ Redis). Zero telemetry, và khóa được đặt nhưng không hợp lệ vẫn fail-closed. Cloud là tùy chọn: bảng điều khiển nhóm, đo lường dùng chung, chỗ và giấy phép — miễn phí với Measure, và với Pro và Team là phí cố định, dù bạn có tiết kiệm hay không, không hoa hồng trên khoản tiết kiệm của bạn."
         }
       ],
       "nota": "Các đoạn hoạt hình minh họa ý tưởng. Những con số thật — đo với nhà cung cấp thật — nằm ngay bên dưới."
@@ -1348,31 +1349,31 @@
       "title": "Dùng Claude Code với khóa API? Xem chi tiêu thật, từng token một.",
       "body": "Một lệnh duy nhất đặt một bộ đo cục bộ trước terminal của bạn, không cần sửa mã và không cần khóa: bạn khởi chạy agent qua bvsala. Chỉ thêm khóa dịch vụ nếu bạn muốn xem chi tiêu trong bảng điều khiển Savings Cloud của mình. Prompt của bạn không đi qua máy chủ của BiVelio: chúng được gửi tới nhà cung cấp mà bạn cấu hình, và bảng điều khiển của bạn chỉ nhận số đếm và chi phí.",
       "note": "Gateway đo, bằng chính bộ đếm của nhà cung cấp, mọi yêu cầu mà nhà cung cấp của bạn có báo cáo mức sử dụng (với các mô hình trong danh mục giá của chúng tôi) và, giống như SDK, khởi động mà không cần khóa nào (chế độ Community): khóa dịch vụ tùy chọn thêm bảng điều khiển và quyền của tổ chức. Trên các mô hình Anthropic, nó còn áp dụng mặc định một đòn bẩy, không cần giấy phép hay tài khoản: chuyển các lần ghi bộ nhớ đệm từ TTL một giờ sang TTL năm phút, chỉ ở những lượt mà một phần lớn prompt là mới — như lượt đầu tiên của một phiên hoặc sau khi nén ngữ cảnh — và giữ nguyên các lượt nối tiếp. Điều này thay đổi giá, không bao giờ thay đổi nội dung mà mô hình đọc. Nó chỉ có thứ để giảm khi client của bạn trả theo token và yêu cầu bộ nhớ đệm một giờ: Claude Code dùng API key sẽ yêu cầu bộ nhớ đệm năm phút nếu bạn không thay đổi, và khi đó gateway chỉ đo. Các đòn bẩy khác vẫn tắt cho đến khi bạn bật chúng. Skill savings-mode đã sẵn sàng cho các giới hạn của bạn, hiệu quả còn chờ đo. Gateway cũng hoạt động với Codex CLI, Goose, Qwen Code, opencode, Kilo, Aider và, với khóa Anthropic của riêng bạn, GitHub Copilot CLI; với các công cụ khác như Cline hoặc Continue, bvsala doctor in ra cấu hình chính xác. Cursor hoạt động thông qua tùy chọn ghi đè URL gốc OpenAI với khóa của riêng bạn, còn Gemini CLI được bọc bằng bvsala gemini.",
-      "pythonNote": "Python hay bất kỳ ngôn ngữ nào khác? Trỏ SDK chính thức của OpenAI hoặc Anthropic tới gateway và mọi yêu cầu mà nhà cung cấp báo cáo mức sử dụng, với mô hình có giá niêm yết, đều được ghi vào bảng điều khiển này theo giá đó; log của gateway sẽ báo khi có yêu cầu không được đo. bvsala doctor in ra base URL cho từng SDK. Với streaming của OpenAI, hãy yêu cầu mức sử dụng ngay trong yêu cầu (stream_options.include_usage).",
+      "pythonNote": "Python hay bất kỳ ngôn ngữ nào khác? Trỏ SDK chính thức của OpenAI hoặc Anthropic tới gateway và mọi yêu cầu mà nhà cung cấp báo cáo mức sử dụng, với mô hình có giá niêm yết, đều được đo theo giá đó ngay trên máy bạn, và cả trong bảng điều khiển Savings Cloud của bạn nếu bạn thêm khóa dịch vụ; log của gateway sẽ báo khi có yêu cầu không được đo. bvsala doctor in ra base URL cho từng SDK. Với streaming của OpenAI, hãy yêu cầu mức sử dụng ngay trong yêu cầu (stream_options.include_usage).",
       "cta": "Xem cách hoạt động →"
     },
     "integrate": {
       "eyebrow": "Năm dòng để bắt đầu",
       "title": "Chạy nó trong ứng dụng của riêng bạn. Prompt của bạn không bao giờ chạm tới máy chủ của chúng tôi.",
       "body": "Đặt SDK trước nhà cung cấp của bạn. Mỗi phản hồi đều mang theo một SavingsReport đầy đủ mà bạn có thể vẽ biểu đồ — cùng những con số mà bảng điều khiển đọc.",
-      "initNote": "<b>Hoặc để một lệnh điều chỉnh cho stack của bạn.</b> <code>init</code> đọc <code>package.json</code> của bạn (Next.js, Express, Vercel AI SDK, Mastra, LangChain.js, SDK Anthropic hoặc OpenAI) và in ra dòng cài đặt, mã chính xác cho adapter của bạn và một kiểm tra không tốn token: không cần khóa nào, tầng trả lời ngay trên máy bạn, không gọi mô hình. Nó không ghi gì trừ khi bạn yêu cầu."
+      "initNote": "<b>Hoặc để một lệnh điều chỉnh cho stack của bạn.</b> <code>init</code> đọc <code>package.json</code> của bạn (Next.js, Express, Vercel AI SDK, Mastra, LangChain.js, SDK Anthropic hoặc OpenAI) và in ra dòng cài đặt, mã chính xác cho adapter của bạn và một kiểm tra không tốn token: không cần khóa BiVelio nào, tầng trả lời ngay trên máy bạn, không gọi mô hình. Nó không ghi gì trừ khi bạn yêu cầu."
     },
     "pricing": {
       "eyebrow": "Các gói",
       "title": "Engine mã nguồn mở. Kiểm soát trên cloud cho nhóm của bạn.",
-      "body": "Gói là open core Apache-2.0: không cần khóa, mọi đòn bẩy cục bộ bật, zero telemetry. Cloud là tùy chọn — Measure là gói miễn phí, Pro và Team tính phí theo chỗ, bằng {currency}, không hoa hồng trên khoản tiết kiệm của bạn.",
+      "body": "Gói là open core Apache-2.0: mọi đòn bẩy đều có sẵn và miễn phí, không cần khóa, và zero telemetry. Cloud là tùy chọn — Measure là gói miễn phí, Pro tính phí theo chỗ và Team là phí cố định đã gồm sẵn một số chỗ, bằng {currency}, dù có tiết kiệm hay không, không hoa hồng trên khoản tiết kiệm của bạn.",
       "amount": "{amount}",
       "per": "/ ghế / tháng",
       "plans": {
         "medir": {
           "name": "Measure",
           "price": "Miễn phí",
-          "body": "Miễn phí, không cần thẻ. Gói CLOUD miễn phí: chế độ bóng cho một tổ chức, tối đa {seats} chỗ và {requests} yêu cầu mỗi ngày — không gì bạn gửi thay đổi, không gì được phục vụ từ cache, không bao giờ nằm trong bất kỳ hoa hồng nào, và bảng điều khiển cho thấy mức lẽ ra tiết kiệm được. Các đòn bẩy cục bộ không cần nó: open core chạy không cần khóa nào. Cần @bivelio/savings-layer {version} trở lên.",
+          "body": "Miễn phí, không cần thẻ. Gói CLOUD miễn phí cho nhóm nhỏ: một tổ chức, tối đa {seats} chỗ và {requests} yêu cầu mỗi ngày. Các đòn bẩy y hệt như open core không khóa, cộng bảng điều khiển với khoản tiết kiệm thực của bạn; không bao giờ chịu hoa hồng. Tiết kiệm với @bivelio/savings-layer {saves} trở lên; các phiên bản từ {version} đến trước {saves} chỉ quan sát.",
           "cta": "Bắt đầu miễn phí →"
         },
         "pro": {
           "name": "Pro",
-          "note": "Hoặc <b>{yearly} / ghế / năm</b>. Mọi tối ưu hóa, biên lai cho từng yêu cầu và bảng điều khiển. Không hoa hồng.",
+          "note": "Hoặc <b>{yearly} / chỗ / năm</b>. Bảng điều khiển nhóm, đo lường dùng chung, chỗ và giấy phép. Không hoa hồng.",
           "cta": "Chọn Pro →"
         },
         "team": {
@@ -1390,7 +1391,7 @@
       "legacy": "Bạn đã dùng mô hình trước đây, có hoa hồng trên khoản tiết kiệm đo được? Bạn giữ nguyên nó; điều khoản nằm trong <terms>điều khoản giá</terms>.",
       "seatNote": "Một ghế là một <b>máy hoặc danh tính dịch vụ</b>, không phải một người. Bạn trả tiền cho số ghế mà gói đăng ký bao gồm; bảng điều khiển cho biết có bao nhiêu ghế được dùng trong tháng này (hoạt động ít nhất {dias} ngày; CI và các trình chạy tạm thời không được tính).",
       "features": [
-        "Mọi tối ưu hóa của BV‑SALA, không giới hạn",
+        "Bảng điều khiển nhóm và đo lường dùng chung cho mọi chỗ",
         "Biên lai cho mỗi yêu cầu: SavingsReport với bốn sổ cái, đo được và ước tính tách riêng",
         "Bảng điều khiển tiết kiệm & phân tích cho nhóm",
         "Prompt của bạn không đi qua máy chủ của BiVelio: chúng được gửi tới nhà cung cấp mà bạn cấu hình"
@@ -1421,7 +1422,7 @@
     },
     "footer": {
       "ctaTitle": "Đo trên chính lưu lượng của bạn",
-      "ctaSub": "Sau khi cài, mỗi lời gọi trả về SavingsReport, tách riêng phần đo được và ước tính. Open core không cần khóa: các đòn bẩy chạy cục bộ với zero telemetry. Cloud tùy chọn bắt đầu miễn phí với Measure và tính phí theo chỗ, không hoa hồng trên khoản tiết kiệm của bạn.",
+      "ctaSub": "Sau khi cài, mỗi lời gọi trả về SavingsReport, tách riêng phần đo được và ước tính. Open core không cần khóa: các đòn bẩy chạy cục bộ với zero telemetry. Cloud tùy chọn bắt đầu miễn phí với Measure; các gói trả phí là phí cố định, không hoa hồng trên khoản tiết kiệm của bạn.",
       "ctaStart": "Bắt đầu",
       "tagline": "<b>BiVelio Savings Layer</b> là bộ tối ưu chi phí LLM trung lập với nhà cung cấp — mọi con số đo được đều đo theo bộ đếm của chính nhà cung cấp; ước tính và mô phỏng được hiển thị riêng, nói rõ là như vậy, và không bao giờ tính phí.",
       "badge": "BV‑SALA · Savings Layer",
@@ -1486,7 +1487,7 @@
         },
         {
           "title": "Lưu lượng của bạn vẫn đi thẳng",
-          "body": "SDK bọc lời gọi ngay trong tiến trình của bạn. Prompt của bạn không đi qua BiVelio: chúng tôi chỉ nhận số đếm và chi phí.",
+          "body": "SDK bọc lời gọi ngay trong tiến trình của bạn. Prompt của bạn không đi qua BiVelio: không có khóa thì không có gì đến chúng tôi; với khóa cloud, chỉ số đếm và chi phí.",
           "mono": "app → provider api"
         },
         {
@@ -1639,7 +1640,7 @@
       "items": [
         {
           "q": "Chính xác thì trả tiền cho cái gì?",
-          "a": "Engine mã nguồn mở là miễn phí. Savings Cloud có một gói miễn phí là Measure và hai gói phí cố định theo ghế là Pro và Team. Phí được tính dù có tiết kiệm hay không, không có hoa hồng trên khoản tiết kiệm và không bao gồm chi phí sử dụng tại nhà cung cấp LLM của bạn: bạn vẫn tự trả khoản đó theo điều khoản của họ."
+          "a": "Engine mã nguồn mở là miễn phí. Savings Cloud có một gói miễn phí là Measure và hai gói phí cố định: Pro, tính theo chỗ, và Team, đã gồm sẵn một số chỗ, chỗ thêm tính riêng. Phí được tính dù có tiết kiệm hay không, không có hoa hồng trên khoản tiết kiệm và không bao gồm chi phí sử dụng tại nhà cung cấp LLM của bạn: bạn vẫn tự trả khoản đó theo điều khoản của họ."
         },
         {
           "q": "Ghế là gì?",
@@ -1647,7 +1648,7 @@
         },
         {
           "q": "Measure và Community khác nhau thế nào?",
-          "a": "Community là engine mã nguồn mở trên hạ tầng của bạn: không tài khoản, không khóa BiVelio và mặc định không có dữ liệu đo từ xa. Measure là gói miễn phí của Savings Cloud: cần tài khoản và chạy ở chế độ bóng, nên không thay đổi yêu cầu của bạn và không trả lời từ bộ nhớ đệm; bảng điều khiển cho thấy lẽ ra đã tiết kiệm được bao nhiêu."
+          "a": "Community là engine mã nguồn mở trên hạ tầng của bạn: không tài khoản, không khóa BiVelio, mặc định không telemetry và không phụ thuộc vào máy chủ của BiVelio. Measure là gói Savings Cloud miễn phí cho nhóm nhỏ: cần tài khoản và khóa, áp dụng các đòn bẩy y hệt như Community và thêm bảng điều khiển với khoản tiết kiệm thực của bạn; với khóa đó, một lớp không nhận được phản hồi từ savings.bivelio.com trong ba ngày sẽ từ chối mọi lệnh gọi cho đến khi nhận được phản hồi hoặc bạn gỡ khóa. Với các phiên bản cũ của gói, nó chỉ quan sát; trang bảng giá ghi rõ nó tiết kiệm từ phiên bản nào."
         },
         {
           "q": "Có dùng được cho gói thuê bao như ChatGPT Plus không?",
@@ -1663,7 +1664,7 @@
         },
         {
           "q": "Các bạn có cam kết mức tiết kiệm không?",
-          "a": "Không. Mức tiết kiệm phụ thuộc vào lưu lượng của bạn; chẳng hạn, vào việc có bao nhiêu phần lặp lại. Chúng tôi công bố từng phép đo kèm mô hình, mẫu và khoảng tin cậy, và Measure cho bạn thấy lẽ ra đã tiết kiệm được bao nhiêu trên chính lưu lượng của bạn trước khi trả bất kỳ khoản nào."
+          "a": "Không. Mức tiết kiệm phụ thuộc vào lưu lượng của bạn; ví dụ, bao nhiêu phần trong đó lặp lại. Chúng tôi công bố mọi phép đo kèm mô hình, mẫu và khoảng tin cậy, và open core cho bạn thấy trên chính lưu lượng của bạn, từng yêu cầu một, nó tiết kiệm được gì trước khi bạn trả bất cứ thứ gì."
         }
       ]
     },
@@ -1671,7 +1672,7 @@
       "title": "Đo trước.",
       "titleAccent": "Quyết định sau.",
       "titleMark": "sau",
-      "sub": "Measure miễn phí và không yêu cầu thẻ: nó chạy ở chế độ bóng và cho bạn thấy lẽ ra đã tiết kiệm được bao nhiêu trên chính lưu lượng của bạn. Engine là mã nguồn mở và mã của nó công khai.",
+      "sub": "Measure miễn phí và không yêu cầu thẻ: các đòn bẩy y hệt như engine mã nguồn mở, cộng bảng điều khiển với khoản bạn thực sự tiết kiệm trên chính lưu lượng của bạn. Engine là mã nguồn mở và mã của nó công khai.",
       "repo": "Xem kho mã"
     },
     "layer": {
@@ -1690,7 +1691,7 @@
       "srcAgent": "Agent của bạn",
       "srcAgentVia": "gateway cục bộ",
       "memoryLabel": "Bộ nhớ các yêu cầu gần đây",
-      "compactLabel": "Thu gọn dữ liệu",
+      "compactLabel": "Định dạng gọn",
       "providersLabel": "Nhà cung cấp bạn cấu hình",
       "nativeAdapter": "bộ chuyển đổi gốc",
       "compatName": "Bất kỳ endpoint nào tương thích với API của OpenAI",
@@ -1698,13 +1699,13 @@
       "step1Body": "Lệnh gọi xuất phát từ ứng dụng hoặc agent của bạn mà không rời khỏi hạ tầng của bạn.",
       "step2Title": "Lặp lại · trả lời mà không gọi nhà cung cấp",
       "step2Body": "Lớp nhận ra yêu cầu trong bộ nhớ và trả về phản hồi đã lưu.",
-      "step3Title": "Dữ liệu được thu gọn · ít token hơn",
-      "step3Body": "Yêu cầu mới đi nhẹ hơn tới nhà cung cấp bạn cấu hình, và phản hồi quay về qua lớp.",
+      "step3Title": "Mới · nhẹ hơn khi có thể",
+      "step3Body": "Yêu cầu mới đi đến nhà cung cấp bạn cấu hình: dữ liệu có cấu trúc ở định dạng gọn, các kết quả công cụ đã bị thay thế được cắt bớt. Nén đầu ra công cụ là đòn bẩy bạn tự bật. Phản hồi quay lại qua lớp.",
       "step4Title": "Chỉ số đếm và chi phí · không bao giờ có prompt",
       "step4Body": "Savings Cloud là tùy chọn: nếu kết nối, nó nhận con số, không nhận nội dung.",
       "legendRepeat": "Lặp lại",
       "legendRepeatTo": "không gọi nhà cung cấp",
-      "legendData": "Dữ liệu thu gọn",
+      "legendData": "Dữ liệu có cấu trúc",
       "legendDataTo": "ít token hơn",
       "legendCache": "Cache của nhà cung cấp",
       "legendCacheTo": "đầu vào rẻ hơn",
@@ -2143,7 +2144,7 @@
     "caseClaudeSub": "claude.ai, miễn phí hoặc trả phí",
     "caseClaudeBody": "Thuê bao cố định: không có hóa đơn token để đo — nhưng có giới hạn (cửa sổ năm giờ và giới hạn tuần). Skill savings-mode sinh ra đúng cho việc đó: miễn phí, tải lên claude.ai trong một phút, tấn công hai khối đốt giới hạn. Hiệu quả của nó sẽ được công bố khi đo xong — không bao giờ trước đó.",
     "caseCodeSub": "terminal, với khóa API",
-    "caseCodeBody": "Với thuê bao, phí cố định — nhưng có giới hạn: cùng skill đó cài bằng một lệnh duy nhất và kéo giãn chính giới hạn tuần ấy. Với API key có hóa đơn token thật — và bộ đo đã chạy: không cần khóa BiVelio nào, «bvsala claude» khởi chạy Claude Code qua gateway cục bộ, không đụng một dòng mã. Gateway đo ngay trên máy của bạn những gì đi qua nó, bằng mức sử dụng do nhà cung cấp của bạn báo cáo, và khi thoát sẽ cho bạn biết đã đo được bao nhiêu yêu cầu, yêu cầu nào không đo được và vì sao. Trên các mô hình Anthropic, nó còn chuyển các lần ghi bộ nhớ đệm từ TTL một giờ sang TTL năm phút, chỉ ở những lượt mà một phần lớn prompt là mới (lượt đầu tiên của một phiên, sau khi nén ngữ cảnh): khoản tiết kiệm được tính trên chính số token do nhà cung cấp của bạn đếm, không bao giờ dựa trên ước tính. Muốn vậy, Claude Code phải yêu cầu bộ nhớ đệm một giờ, và với API key nó không làm vậy nếu bạn không cấu hình: mặc định gateway chỉ đo. Với khóa Savings Cloud, bạn cũng thấy chi tiêu của mình trong bảng điều khiển, từng token một.",
+    "caseCodeBody": "Với thuê bao, phí cố định, và với cấu hình mặc định, gateway không thay đổi gì trong lưu lượng của bạn: nó đo ngay trên máy bạn, miễn phí, chi tiêu của mỗi phiên theo giá niêm yết. Với các giới hạn có skill savings-mode, miễn phí, hiệu quả chưa được đo. Với API key có hóa đơn token thật — và bộ đo đã chạy: không cần khóa BiVelio nào, «bvsala claude» khởi chạy Claude Code qua gateway cục bộ, không đụng một dòng mã. Gateway đo ngay trên máy của bạn những gì đi qua nó, bằng mức sử dụng do nhà cung cấp của bạn báo cáo, và khi thoát sẽ cho bạn biết đã chi bao nhiêu theo giá niêm yết, đã tiết kiệm bao nhiêu kèm cơ sở (đo được hay ước tính), đã đo được bao nhiêu yêu cầu, yêu cầu nào không đo được và vì sao. Trên các mô hình Anthropic, nó còn chuyển các lần ghi bộ nhớ đệm từ TTL một giờ sang TTL năm phút, chỉ ở những lượt mà một phần lớn prompt là mới (lượt đầu tiên của một phiên, sau khi nén ngữ cảnh): khoản tiết kiệm được tính trên chính số token do nhà cung cấp của bạn đếm, không bao giờ dựa trên ước tính. Muốn vậy, Claude Code phải yêu cầu bộ nhớ đệm một giờ, và với API key nó không làm vậy nếu bạn không cấu hình: mặc định gateway chỉ đo. Với khóa Savings Cloud, bạn cũng thấy chi tiêu của mình trong bảng điều khiển, từng token một.",
     "caseAppName": "Ứng dụng của bạn",
     "caseAppSub": "mã của bạn + khóa API của bạn",
     "caseAppBody": "Trường hợp Savings Layer tồn tại. Ứng dụng của bạn gọi API bằng khóa của bạn, nhà cung cấp tính phí từng token, và tầng cài đặt trong hai bước: gói và bọc lời gọi. Từ yêu cầu đầu tiên nó trả về <b>SavingsReport</b> với khoản tiết kiệm, tách giữa đo được và ước tính.",
@@ -2157,7 +2158,7 @@
     "s3Sub": "Sản phẩm có hai con số khác nhau và không nên trộn lẫn chúng.",
     "mBeforeK": "Trước khi cài",
     "mBeforeV": "Ước tính",
-    "mBeforeBody": "Gói cloud miễn phí chạy tầng ở chế độ bóng trên chính lưu lượng của bạn và cho thấy mức lẽ ra tiết kiệm được, từng yêu cầu một. Nó không thay đổi gì và không áp dụng gì — vì thế mang nhãn «ước tính». Không dùng gói nào cả? Open core: các đòn bẩy cục bộ chạy không khóa và zero telemetry.",
+    "mBeforeBody": "Trước khi cài, mọi con số đều là ước tính: bộ đo công khai cho thấy mỗi đòn bẩy hoạt động thế nào trên lưu lượng của nó, không phải của bạn. Không cần gói nào để bắt đầu: trong open core mọi đòn bẩy đều miễn phí, không cần khóa và zero telemetry; gói miễn phí Measure thêm bảng điều khiển.",
     "mAfterK": "Sau khi cài",
     "mAfterV": "Đo lường thực",
     "mAfterBody": "Mỗi lệnh gọi trả về một SavingsReport: những lệnh gọi bạn không bao giờ phải trả và khoản tiết kiệm ròng trên mỗi yêu cầu. Kiểm toán được, từng yêu cầu một, trên hạ tầng của chính bạn.",
@@ -2173,7 +2174,7 @@
     "billWith": "Tùy",
     "billDepends": "vào mức độ lặp lại của lưu lượng",
     "hero": {
-      "ctaInstall": "Cài đặt mã nguồn mở",
+      "ctaInstall": "Cài miễn phí",
       "ctaResults": "Xem kết quả có thể tái lập"
     },
     "beam": {
@@ -2262,7 +2263,7 @@
         "hint": "tùy chọn",
         "what": "Tập trung việc đo lường và quản lý nhóm: tổ chức, giấy phép và chỗ.",
         "where": "Trong Savings Cloud, do BiVelio lưu trữ. Nhận những dữ liệu mà trang quyền riêng tư quy định.",
-        "account": "Có. Measure là gói miễn phí, ở chế độ bóng."
+        "account": "Có. Measure là gói miễn phí cho nhóm nhỏ."
       },
       "evidence": {
         "name": "Bằng chứng",
@@ -2291,15 +2292,16 @@
     "lede": "Engine là mã nguồn mở: không cần khóa. Trang này định giá Savings Cloud, phần cloud tùy chọn — Measure miễn phí, rồi Pro theo chỗ hoặc gói Team, không hoa hồng trên khoản tiết kiệm của bạn. Mọi con số ở đây đọc từ chính mã tính phí bạn, nên nó đổi khi giá đổi.",
     "plans": {
       "title": "Các gói",
-      "intro": "Bốn gói, từ nhỏ đến lớn. Pro và Team trả theo chỗ và không có hoa hồng.",
+      "intro": "Bốn gói, từ nhỏ đến lớn. Pro trả theo chỗ, Team trả phí cố định đã gồm sẵn một số chỗ cộng thêm mỗi chỗ thêm, và cả hai đều không có hoa hồng.",
       "medir": {
         "name": "Measure",
-        "body": "<b>Miễn phí, không cần thẻ.</b> Gói CLOUD miễn phí: tầng chạy ở chế độ bóng cho một tổ chức, tối đa <b>{seats} chỗ</b> và <b>{requests} yêu cầu mỗi ngày</b>: mỗi yêu cầu đến nhà cung cấp đúng như bạn viết, không gì được phục vụ từ cache và không đòn bẩy nào được áp dụng. Bảng điều khiển cho thấy mức lẽ ra tiết kiệm được — một ước tính không bao giờ mang hoa hồng. Cần <b>@bivelio/savings-layer {version} trở lên</b>. Các đòn bẩy cục bộ không cần gói nào: open core chạy không khóa; đòn bẩy cloud cần Pro hoặc Team."
+        "body": "<b>Miễn phí, không cần thẻ.</b> Gói CLOUD miễn phí cho nhóm nhỏ: một tổ chức, tối đa <b>{seats} chỗ</b> và <b>{requests} yêu cầu mỗi ngày</b>. Gói áp dụng các đòn bẩy y hệt như open core không khóa, kể cả việc cắt các kết quả công cụ đã bị thay thế, và thêm bảng điều khiển với khoản tiết kiệm thực của bạn, tách riêng phần đo được và phần ước tính; không bao giờ mang hoa hồng. Tiết kiệm với <b>@bivelio/savings-layer {saves} trở lên</b>. Các phiên bản từ {version} đến trước {saves} chỉ quan sát khi có khóa Measure: chế độ bóng, không đòn bẩy nào được áp dụng, và bảng điều khiển cho thấy mức lẽ ra tiết kiệm được. Bản thân các đòn bẩy không cần gói nào: open core chạy không khóa."
       },
       "pro": {
         "name": "Pro",
         "amount": "<b>{monthly}</b> mỗi chỗ mỗi tháng, hoặc <b>{yearly}</b> mỗi chỗ mỗi năm, bằng {currency}.",
-        "body": "Mọi tối ưu của lớp, biên nhận cho từng yêu cầu và bảng điều khiển. <b>Không hoa hồng</b> trên khoản tiết kiệm: bạn trả cho các chỗ, dù có tiết kiệm hay không."
+        "body": "Mọi thứ của Measure, cho nhiều máy và yêu cầu hơn: bảng điều khiển nhóm, đo lường dùng chung, chỗ và giấy phép. Engine và các đòn bẩy của nó vẫn miễn phí khi không có khóa. Trong SDK, với giấy phép trả phí, việc cắt các kết quả công cụ đã bị thay thế chỉ hoạt động bên trong một vòng lặp công cụ trên Anthropic. Trong gateway cục bộ, mỗi đòn bẩy còn phải nằm trong giấy phép của tổ chức bạn, được kiểm tra theo kiểu fail-closed: nếu không thể kiểm tra, các yêu cầu được chuyển đi nguyên vẹn. <b>Không hoa hồng</b> trên khoản tiết kiệm: bạn trả cho các chỗ, dù có tiết kiệm hay không.",
+        "refund": "<b>Hoàn tiền:</b> với lần mua theo tháng đầu tiên, bạn có thể yêu cầu hoàn tiền trong vòng {days} ngày bằng cách <contact>viết cho chúng tôi</contact>."
       },
       "team": {
         "name": "Team",
@@ -2375,7 +2377,7 @@
       "cloud": {
         "tag": "Tùy chọn · có các gói",
         "name": "Savings Cloud",
-        "body": "Bảng điều khiển, đo lường dùng chung, tổ chức và giấy phép. Measure là gói miễn phí, chạy ở chế độ bóng; Pro và Team trả phí cố định theo ghế, không tính hoa hồng trên khoản tiết kiệm."
+        "body": "Bảng điều khiển, đo lường dùng chung, tổ chức và giấy phép. Measure là gói miễn phí, cho nhóm nhỏ; Pro trả phí cố định theo chỗ và Team trả phí cố định đã gồm sẵn một số chỗ, không tính hoa hồng trên khoản tiết kiệm. Một khóa, kể cả khóa Measure miễn phí, gắn lớp với savings.bivelio.com: khi đã đặt licenseServerUrl như bảng điều khiển thiết lập, một lớp không nhận được phản hồi trong {horas} giờ sẽ từ chối mọi lệnh gọi (LicenseError) cho đến khi nhận được phản hồi hoặc bạn gỡ khóa. Community không có sự phụ thuộc đó."
       }
     },
     "cards": {
@@ -2408,13 +2410,13 @@
       "terms": "Xem điều khoản",
       "provider": "Phí không bao gồm chi phí sử dụng tại nhà cung cấp LLM của bạn: bạn vẫn tự trả khoản đó theo điều khoản của họ. Số tiền chưa gồm VAT.",
       "medir": {
-        "unit": "Gói cloud miễn phí, chạy ở chế độ bóng.",
-        "summary": "Đo mà không thay đổi gì: yêu cầu của bạn tới nhà cung cấp đúng như bạn tạo ra, và bảng điều khiển cho thấy lẽ ra đã tiết kiệm được bao nhiêu.",
+        "unit": "Gói cloud miễn phí cho nhóm nhỏ.",
+        "summary": "Bảng điều khiển với khoản bạn thực sự tiết kiệm, và các đòn bẩy y hệt như khi không có khóa. Tiết kiệm từ @bivelio/savings-layer {saves} trở lên; các phiên bản cũ hơn chỉ quan sát.",
         "cta": "Bắt đầu với Measure",
         "version": "Hoạt động với phiên bản mới nhất của @bivelio/savings-layer."
       },
       "pro": {
-        "summary": "Mọi tối ưu, biên lai cho từng yêu cầu và bảng điều khiển. Phí cố định: trả dù có tiết kiệm hay không.",
+        "summary": "Cloud của Measure, cho nhiều máy và yêu cầu hơn: bảng điều khiển nhóm, đo lường dùng chung, chỗ và giấy phép. Engine và các đòn bẩy của nó vẫn miễn phí khi không có khóa. Phí cố định: trả dù có tiết kiệm hay không.",
         "cta": "Chọn Pro"
       },
       "team": {
