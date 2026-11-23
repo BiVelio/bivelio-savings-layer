@@ -2521,8 +2521,8 @@
       "title": "Measurement on this website",
       "body": "This website, not the Software, measures its own visits with <b>Vercel Web Analytics</b>. It counts pages viewed and three actions: copying an install command, following a link to GitHub, npm or PyPI, and going to sign-up. The measurement is aggregated and cookieless, with no personal data and no tracking across sites.",
       "limits": "Each page view or action carries only the page and section, the site you came from as your browser reports it, and the package manager, destination or plan; never what you type or copy. Vercel works out the country, browser and device type from the request itself. Page addresses are sent without query strings or tokens.",
-      "ads": "The website also loads the <b>Google Ads</b> tag, to measure which ads lead to sign-ups and for remarketing. Unlike Vercel Web Analytics, it sets advertising cookies (such as _gcl_au, and _gcl_aw if you arrive from a Google ad). It does not load on invitation, password-reset or not-found pages, nor for the rest of a visit that passes through one of them first.",
-      "adsData": "Google receives the address of each page you open here: without query string, fragment or tokens when the page loads, and with its query string when you move between pages without reloading (on this website that only holds the next page, the plan, the period or a status). It also receives the previous page (only the website's address), when a form is started or submitted (not what you type in it), the click identifier Google added to the ad's link and, when a new account is confirmed, an internal account identifier so the sign-up is not counted twice."
+      "ads": "The website also loads the <b>Google Ads</b> tag, to measure which ads lead to sign-ups and for remarketing. It sets advertising cookies (such as _gcl_au, and _gcl_aw if you arrive from a Google ad). It only runs on the public pages (home, how it works, pricing, benchmarks, paper, migration guide and this page) and on the page that confirms a new account. It never runs on the sign-up, login, password, invitation or not-found pages, nor in the dashboard: a link from a page with the tag to one of them opens it with a fresh page load, without the tag. After a page whose address carries a token or code (an invitation or a password reset), or a not-found page, it does not run again for the rest of the visit in that browser tab.",
+      "adsData": "Before the tag loads, every query parameter the website does not use is removed from the address; only the destination after sign-up, the chosen plan and Google's own ad-click identifier stay. Google then receives the address of each page you open here, the page you came from as your browser reports it (from this website, only its address), the click identifier Google added to the ad's link and, when a new account is confirmed, an internal account identifier so the sign-up is not counted twice. On the pages where it runs, the tag also looks at what you type: if you type an e-mail address, for example in the home page's form to book a call, it can send it to Google in hashed form ({hash})."
     },
     "contact": "Questions and requests about this data: <mail>{email}</mail>.",
     "overview": {
@@ -2562,7 +2562,7 @@
         "retention": "Aggregated counts only: no cookies, no personal data"
       },
       "ads": {
-        "data": "Google Ads tag: advertising cookies and the address of each page",
+        "data": "Google Ads tag, on public pages only: advertising cookies, the address of each page and any e-mail address typed there, hashed",
         "destination": "Google",
         "purpose": "Measuring which ads lead to sign-ups, and remarketing",
         "retention": "Kept by Google; BiVelio sees conversion totals in Google Ads"
