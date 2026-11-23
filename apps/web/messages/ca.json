@@ -2518,9 +2518,11 @@
       "body": "El teu correu d'accés, la teva organització i les teves dades de facturació (els pagaments els processa Stripe) es regeixen per la <policy>política de privadesa de BiVelio</policy>."
     },
     "website": {
-      "title": "Visites a aquest web",
+      "title": "Mesura en aquest web",
       "body": "Aquest web, no el Software, mesura les seves pròpies visites amb <b>Vercel Web Analytics</b>. Compta les pàgines vistes i tres accions: copiar una ordre d'instal·lació, seguir un enllaç a GitHub, npm o PyPI i anar a l'alta. La mesura és agregada i sense cookies, sense dades personals i sense seguiment entre llocs.",
-      "limits": "Cada vista o acció porta només la pàgina i la secció, el lloc d'on véns tal com l'indica el teu navegador, i el gestor de paquets, la destinació o el pla; mai el que escrius o copies. Vercel dedueix el país, el navegador i el tipus de dispositiu de la mateixa petició. Les adreces de les pàgines s'envien sense paràmetres de consulta ni tokens."
+      "limits": "Cada vista o acció porta només la pàgina i la secció, el lloc d'on véns tal com l'indica el teu navegador, i el gestor de paquets, la destinació o el pla; mai el que escrius o copies. Vercel dedueix el país, el navegador i el tipus de dispositiu de la mateixa petició. Les adreces de les pàgines s'envien sense paràmetres de consulta ni tokens.",
+      "ads": "El web també carrega l'etiqueta de <b>Google Ads</b>, per mesurar quins anuncis porten altes i per a remàrqueting. A diferència de Vercel Web Analytics, posa cookies de publicitat (com _gcl_au, i _gcl_aw si arribes des d'un anunci de Google). No es carrega a les pàgines d'invitació, de contrasenya nova ni de pàgina no trobada, ni a la resta d'una visita que passi abans per una d'elles.",
+      "adsData": "Google rep l'adreça de cada pàgina que obres aquí: sense paràmetres de consulta, fragment ni tokens quan la pàgina es carrega, i amb els seus paràmetres quan passes d'una pàgina a una altra sense recarregar (en aquest web només porten la pàgina següent, el pla, el període o un estat). També rep la pàgina anterior (només l'adreça del web), quan es comença o s'envia un formulari (no el que hi escrius), l'identificador de clic que Google va afegir a l'enllaç de l'anunci i, quan es confirma un compte nou, un identificador intern del compte per no comptar l'alta dues vegades."
     },
     "contact": "Preguntes i sol·licituds sobre aquestes dades: <mail>{email}</mail>.",
     "overview": {
@@ -2558,6 +2560,12 @@
         "destination": "Vercel Web Analytics",
         "purpose": "Comptar visites i còpies de l'ordre d'instal·lació",
         "retention": "Només recomptes agregats: sense cookies ni dades personals"
+      },
+      "ads": {
+        "data": "Etiqueta de Google Ads: cookies de publicitat i l'adreça de cada pàgina",
+        "destination": "Google",
+        "purpose": "Mesurar quins anuncis porten altes, i remàrqueting",
+        "retention": "Ho desa Google; BiVelio veu els totals de conversions a Google Ads"
       }
     },
     "fields": {

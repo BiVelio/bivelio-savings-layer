@@ -2518,9 +2518,11 @@
       "body": "Email đăng nhập, tổ chức và thông tin thanh toán của bạn (thanh toán do Stripe xử lý) thuộc phạm vi <policy>chính sách quyền riêng tư của BiVelio</policy>."
     },
     "website": {
-      "title": "Lượt truy cập trang web này",
+      "title": "Đo lường trên trang web này",
       "body": "Trang web này, không phải Phần mềm, tự đo lượt truy cập của mình bằng <b>Vercel Web Analytics</b>. Nó đếm các trang được xem và ba thao tác: sao chép lệnh cài đặt, mở liên kết tới GitHub, npm hoặc PyPI, và chuyển tới trang đăng ký. Việc đo lường là tổng hợp và không dùng cookie, không có dữ liệu cá nhân và không theo dõi giữa các trang web.",
-      "limits": "Mỗi lượt xem trang hoặc thao tác chỉ mang theo trang và mục, trang web bạn đến từ đó theo những gì trình duyệt của bạn báo, cùng trình quản lý gói, đích đến hoặc gói dịch vụ đã chọn; không bao giờ là những gì bạn nhập hoặc sao chép. Vercel suy ra quốc gia, trình duyệt và loại thiết bị từ chính yêu cầu. Địa chỉ trang được gửi đi không kèm tham số truy vấn hay token."
+      "limits": "Mỗi lượt xem trang hoặc thao tác chỉ mang theo trang và mục, trang web bạn đến từ đó theo những gì trình duyệt của bạn báo, cùng trình quản lý gói, đích đến hoặc gói dịch vụ đã chọn; không bao giờ là những gì bạn nhập hoặc sao chép. Vercel suy ra quốc gia, trình duyệt và loại thiết bị từ chính yêu cầu. Địa chỉ trang được gửi đi không kèm tham số truy vấn hay token.",
+      "ads": "Trang web cũng tải thẻ <b>Google Ads</b> để đo quảng cáo nào mang lại lượt đăng ký và để tiếp thị lại. Khác với Vercel Web Analytics, thẻ này đặt cookie quảng cáo (như _gcl_au, và _gcl_aw nếu bạn đến từ một quảng cáo Google). Thẻ không được tải trên trang lời mời, trang đặt mật khẩu mới hay trang không tìm thấy, và cũng không trong phần còn lại của một lượt truy cập đã đi qua một trong các trang đó trước.",
+      "adsData": "Google nhận địa chỉ của mỗi trang bạn mở ở đây: không kèm tham số truy vấn, phân đoạn hay token khi trang được tải, và kèm tham số khi bạn chuyển trang mà không tải lại (trên trang web này chúng chỉ chứa trang tiếp theo, gói dịch vụ, khoảng thời gian hoặc một trạng thái). Google cũng nhận trang trước đó (chỉ địa chỉ của trang web), thời điểm một biểu mẫu được bắt đầu hoặc gửi đi (không phải nội dung bạn nhập), mã nhấp chuột mà Google thêm vào liên kết quảng cáo và, khi một tài khoản mới được xác nhận, một mã nội bộ của tài khoản để lượt đăng ký không bị tính hai lần."
     },
     "contact": "Câu hỏi và yêu cầu về dữ liệu này: <mail>{email}</mail>.",
     "overview": {
@@ -2558,6 +2560,12 @@
         "destination": "Vercel Web Analytics",
         "purpose": "Đếm lượt truy cập và số lần sao chép lệnh cài đặt",
         "retention": "Chỉ số liệu tổng hợp: không cookie, không dữ liệu cá nhân"
+      },
+      "ads": {
+        "data": "Thẻ Google Ads: cookie quảng cáo và địa chỉ của mỗi trang",
+        "destination": "Google",
+        "purpose": "Đo quảng cáo nào mang lại lượt đăng ký, và tiếp thị lại",
+        "retention": "Google lưu giữ; BiVelio xem tổng số chuyển đổi trong Google Ads"
       }
     },
     "fields": {
