@@ -4,7 +4,7 @@
     {
       "name": "Fisa, Joan-Marc",
       "affiliation": "BiVelio Inc",
-      "orcid": ""
+      "orcid": "0009-0005-0867-942X"
     }
   ],
   "description": "Technical report, v2.3-r1 (15 November 2026), revised after an external pre-publication review. BV-SALA is an open-core SDK and gateway integrating established optimization mechanisms with usage accounting. The paper specifies provider usage as disjoint billable categories, distinguishes observed costs from reference-valued and estimated counterfactuals, and separates mechanism diagnostics from experimental attribution. Recomputed public September 2026 artifacts yield a pooled list-price cost reduction of 31.50% (percentile family bootstrap interval 25.74-36.75%) on gpt-4o-mini and 75.08% (69.31-79.60%) on claude-sonnet-5; the corresponding equal-family means are 22.88% and 70.71%. November runs (cacheable-prefix reorder, 0% to 95% hit-rate and -82.76% per request; dedup x cache_control factorial, -85.94%; cascade cost pilot, -67.91%) are presented as exploratory and do not establish quality non-inferiority. Review snapshot: commit 239c84b99fe8320f7efaa9da9e63def08d62aed6.",
