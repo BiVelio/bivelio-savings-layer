@@ -7,6 +7,7 @@ import { MensajeDeAcceso } from "@/app/components/acceso/AccesoEstado";
 import { AccesoShell } from "@/app/components/acceso/AccesoShell";
 import { EnlaceConDestino } from "@/app/components/acceso/EnlaceConDestino";
 import { PanelDeMarca } from "@/app/components/acceso/PanelDeMarca";
+import { cuentaCompartidaConLaSuite } from "@/lib/auth/cuenta-compartida";
 
 // Las dos hojas de las páginas de acceso (el marco, la tarjeta, los campos y
 // sus piezas de affectUI): la portada no las carga. Ver la cabecera de
@@ -49,7 +50,9 @@ export default async function LoginPage({
     >
       <div className="acc-intro">
         <h1>{t("welcomeBack")}</h1>
-        <p className="sub">{t("loginSubtitle")}</p>
+        {/* «La misma cuenta que usas en toda la suite» solo mientras lo sea
+            (BVSALA_CUENTA_PROPIA, lib/auth/cuenta-compartida.ts). */}
+        <p className="sub">{cuentaCompartidaConLaSuite() ? t("loginSubtitle") : t("loginSubtitleSinSuite")}</p>
       </div>
       {/* `enlace_usado`: un enlace de registro que ya se canjeó (a menudo lo abre
           el filtro de seguridad del correo antes que la persona) o caducó. Ahí no

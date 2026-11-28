@@ -1,7 +1,7 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
-import { SUPABASE_ANON_KEY, SUPABASE_URL, authConfigured } from "./env";
+import { SUPABASE_ANON_KEY, SUPABASE_URL, authConfigured, opcionesDeCookie } from "./env";
 
 /**
  * Refreshes the Supabase auth session on every app-route request and keeps the
@@ -13,6 +13,7 @@ export async function updateSession(request: NextRequest) {
   if (!authConfigured) return response;
 
   const supabase = createServerClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+    ...opcionesDeCookie(),
     cookies: {
       getAll() {
         return request.cookies.getAll();

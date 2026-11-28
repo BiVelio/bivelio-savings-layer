@@ -10,6 +10,7 @@ import { PanelDeMarca } from "@/app/components/acceso/PanelDeMarca";
 import { PlanElegidoEnAlta, SoloSinPlanElegido } from "@/app/components/acceso/PlanElegidoEnAlta";
 import { terminosDeLosPlanes } from "@/lib/legal/precios-publicados";
 import { LIMITES_MEDIR, VERSION_MEDIR_AHORRA } from "@/lib/license/medir-publico";
+import { cuentaCompartidaConLaSuite } from "@/lib/auth/cuenta-compartida";
 import { tarifasDeLosPlanes } from "@/lib/stripe/pricing";
 
 // Las dos hojas de las páginas de acceso (el marco, la tarjeta, los campos y
@@ -53,7 +54,9 @@ export default async function SignupPage({ params }: { params: Promise<{ locale:
     >
       <div className="acc-intro">
         <h1>{t("createYourAccount")}</h1>
-        <p className="sub">{t("signupSubtitle")}</p>
+        {/* «Una cuenta BiVelio para toda la suite» solo mientras lo sea
+            (BVSALA_CUENTA_PROPIA): sin ella, el resto de la entradilla. */}
+        <p className="sub">{cuentaCompartidaConLaSuite() ? t("signupSubtitle") : t("signupSubtitleSinSuite")}</p>
       </div>
       <PlanElegidoEnAlta textos={planElegido} />
       <AuthForm mode="signup" />
@@ -76,9 +79,11 @@ export default async function SignupPage({ params }: { params: Promise<{ locale:
             })}
           </p>
         </SoloSinPlanElegido>
-        {/* La identidad es COMPARTIDA con el resto de la suite (Shield, Privacy,
-            la app de BiVelio): quien ya tenga cuenta allí no debe crear otra. */}
-        <p className="acc-nota">{t("signupSsoNote")}</p>
+        {/* Mientras la identidad sea COMPARTIDA con el resto de la suite (Shield,
+            Privacy, la app de BiVelio), quien ya tenga cuenta allí no debe crear
+            otra. El día que se separen las cuentas (BVSALA_CUENTA_PROPIA=1,
+            lib/auth/cuenta-compartida.ts) la nota sería falsa y no se pinta. */}
+        {cuentaCompartidaConLaSuite() ? <p className="acc-nota">{t("signupSsoNote")}</p> : null}
       </div>
       {/* El motor es open source y no pide cuenta: la salida tiene que verse
           desde aquí, no descubrirse después de registrarse. */}

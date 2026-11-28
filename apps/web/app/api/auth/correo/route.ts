@@ -6,16 +6,20 @@ import {
   elegirMarca,
   idiomaDe,
   construirEnlace,
+  sirveProducto,
+  VAR_SIN_PRIVACY,
   type CargaHook,
 } from "@/lib/correo/auth-hook";
 import { componerCorreoAuth } from "@/lib/correo/auth-plantillas";
+import { remitente, responderA } from "@/lib/correo/remitente";
 import { alertar } from "@/lib/observabilidad/alerta";
 
 /**
  * EL DESTINO DEL «SEND EMAIL HOOK» DE SUPABASE. Cuando el hook está activado en
  * el proyecto compartido, TODOS los correos de auth de la plataforma (altas,
  * recuperaciones, magic links… de GPOS, privacy y savings) pasan por aquí:
- * Supabase ya no manda nada por su cuenta.
+ * Supabase ya no manda nada por su cuenta. Los de privacy se pueden cortar con
+ * `BVSALA_CORREO_SIN_PRIVACY=1` (lib/correo/auth-hook.ts), apagado por defecto.
  *
  * FAIL-CLOSED, y es deliberado: si esta ruta no puede mandar el correo,
  * devuelve error y GoTrue le enseña un error a quien se estaba registrando —
@@ -40,16 +44,19 @@ export async function POST(req: Request): Promise<NextResponse> {
   }
 
   const cuerpo = await req.text();
-  const veredicto = verificarFirma(
-    cuerpo,
-    {
-      id: req.headers.get("webhook-id"),
-      timestamp: req.headers.get("webhook-timestamp"),
-      signature: req.headers.get("webhook-signature"),
-    },
-    secreto,
-  );
-  if (!veredicto.ok) {
+  const cabeceras = {
+    id: req.headers.get("webhook-id"),
+    timestamp: req.headers.get("webhook-timestamp"),
+    signature: req.headers.get("webhook-signature"),
+  };
+  // VARIOS SECRETOS separados por espacios: para cambiar el secreto del hook
+  // con el viejo y el nuevo puestos a la vez un rato (o, si algún día hiciera
+  // falta, para que dos proyectos de Supabase llamen a esta ruta a la vez).
+  // Con UNO (hoy) se usa tal cual, exactamente como antes. Ver
+  // docs/RUNBOOK-INDEPENDENCIA-DE-PRIVACY.md.
+  const partes = secreto.split(/\s+/).filter(Boolean);
+  const secretos = partes.length > 1 ? partes : [secreto];
+  if (!secretos.some((s) => verificarFirma(cuerpo, cabeceras, s).ok)) {
     return NextResponse.json({ error: "Invalid signature." }, { status: 401 });
   }
 
@@ -68,6 +75,19 @@ export async function POST(req: Request): Promise<NextResponse> {
   }
 
   const producto = elegirProducto(datos.redirect_to || datos.site_url);
+  if (!sirveProducto(producto)) {
+    // Con el interruptor encendido, Privacy ya debería mandar sus propios
+    // correos. Si llega uno aquí, alguien de Privacy se queda sin su correo: se
+    // dice alto, y GoTrue le enseña un error a esa persona (que puede
+    // reintentar) en vez de un silencio. Sin destinatario ni token en el log.
+    console.error(`[auth/correo] correo de ${producto} con ${VAR_SIN_PRIVACY}=1: no se envía (${accion})`);
+    await alertar({
+      nivel: "critico",
+      asunto: `auth/correo: llegó un correo de Privacy con ${VAR_SIN_PRIVACY}=1 — Privacy sigue usando este hook`,
+      detalle: { accion, producto },
+    });
+    return NextResponse.json({ error: "This hook no longer sends email for this product." }, { status: 422 });
+  }
   // Privacy o BiVelio Shield: el nombre del dominio al que lleva el enlace.
   const marca = elegirMarca(producto, datos.redirect_to);
   const idioma = idiomaDe(datos.redirect_to);
@@ -100,8 +120,8 @@ export async function POST(req: Request): Promise<NextResponse> {
       method: "POST",
       headers: { authorization: `Bearer ${clave}`, "content-type": "application/json" },
       body: JSON.stringify({
-        from: "BiVelio <no-reply@bivelio.com>",
-        reply_to: "support@bivelio.com",
+        from: remitente(),
+        reply_to: responderA(),
         to: [destinatario],
         subject: asunto,
         html,

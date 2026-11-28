@@ -8,6 +8,7 @@ import { avisoDeAsientos, DIAS_ACTIVOS_PARA_CONTAR_ASIENTO } from "@/lib/billing
 import type { AjusteDeAsientosVisible } from "@/lib/billing/asientos-usados";
 import { formatearPrecio } from "@/lib/format/precio";
 import { puede } from "@/lib/org/permisos";
+import { cuentaCompartidaConLaSuite } from "@/lib/auth/cuenta-compartida";
 import { Notice } from "@/app/components/ui";
 import { Link } from "@/i18n/navigation";
 import { Avatar } from "@/vendor/affectui/avatar";
@@ -269,7 +270,13 @@ export async function AccountPlanStrip({
             </div>
           ) : null}
         </dl>
-        {ctx.org ? null : <p className="acct-side-note">{t("accountPlanStrip.personalNote")}</p>}
+        {/* «Una sola cuenta de BiVelio, compartida en toda la suite» solo mientras
+            lo sea (BVSALA_CUENTA_PROPIA, lib/auth/cuenta-compartida.ts). */}
+        {ctx.org ? null : (
+          <p className="acct-side-note">
+            {cuentaCompartidaConLaSuite() ? t("accountPlanStrip.personalNote") : t("accountPlanStrip.personalNoteSinSuite")}
+          </p>
+        )}
         {/* MIEMBROS ≠ ASIENTOS: las personas se gestionan en Equipo, aparte de lo
             que se paga. El enlace solo para quien puede abrir esa página. */}
         <p className="acct-side-note">

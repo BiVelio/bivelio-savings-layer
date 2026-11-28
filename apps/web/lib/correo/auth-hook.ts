@@ -145,6 +145,28 @@ export type Entorno = Readonly<Record<string, string | undefined>>;
  */
 export const VAR_CALLBACK_PRIVACY = "BVSALA_CORREO_CALLBACK_PRIVACY";
 
+/**
+ * EL INTERRUPTOR DE LA INDEPENDENCIA: dejar de mandar los correos de Privacy.
+ *
+ * Hoy esta ruta es el Send Email Hook de TODO el proyecto de Supabase
+ * compartido, así que también manda las altas, recuperaciones y magic links de
+ * Privacy y de BiVelio Shield. Eso ata Privacy a Savings: si cae esta web o su
+ * Resend, en Privacy nadie puede darse de alta ni recuperar la contraseña.
+ *
+ * Con `BVSALA_CORREO_SIN_PRIVACY=1` un correo de Privacy/Shield NO sale de aquí:
+ * la ruta responde con error y avisa en crítico, porque si llega uno es que
+ * Privacy sigue usando este hook. Solo se enciende cuando Privacy ya manda sus
+ * propios correos de auth (proyecto propio o hook propio); encenderlo antes deja
+ * a Privacy sin correos. Vacía o con cualquier otro valor (hoy) = como siempre.
+ * Deshacer = borrarla y redesplegar.
+ */
+export const VAR_SIN_PRIVACY = "BVSALA_CORREO_SIN_PRIVACY";
+
+/** ¿Manda esta ruta los correos de este producto? Hoy, todos. */
+export function sirveProducto(producto: Producto, env: Entorno = process.env): boolean {
+  return !(producto === "privacy" && env[VAR_SIN_PRIVACY]?.trim() === "1");
+}
+
 /** Los únicos dominios donde vive el producto privacy (el nombre viejo y el nuevo). */
 const HOSTS_PRIVACY: ReadonlySet<string> = new Set(["privacy.bivelio.com", "shield.bivelio.com"]);
 

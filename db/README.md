@@ -17,6 +17,10 @@ collision with `public`, sharing only `auth.users`. Consequences:
 - `bvsala` must be in the project's **Exposed schemas** (Data API / PostgREST),
   otherwise `.from()`/`.rpc()` return a "schema not exposed" error.
 - Functions (`is_org_member`, `ingest_usage_batch`, `billable_seats`) are `bvsala.*`.
+- `org_members.user_id` y `medir_altas.user_id` borran **en cascada** si se borra la
+  cuenta en `auth.users`, que comparten varios productos. Antes de limpiar cuentas
+  del proyecto, ver
+  `docs/RUNBOOK-INDEPENDENCIA-DE-PRIVACY.md` y `scripts/produccion/clasificar-usuarios.sh`.
 
 ## Tables
 
