@@ -6,6 +6,13 @@ Control-plane services. Customers self-host the **SDK** (data plane); their LLM
 traffic never passes through here. These services carry licensing and
 billing-telemetry only — **counts and metadata, never prompts or completions**.
 
+> **No está desplegado (2026-11-28).** En producción, licencias, revocaciones y
+> medición son rutas de `apps/web` en Vercel (`/api/license/*`,
+> `/licenses/revocations`, `/api/metering/*`) sobre el esquema `bvsala` de
+> Supabase. En este repo no hay nada que despliegue estos servicios (`deploy/`
+> solo tiene ejemplos), y no tienen nada que ver con el servicio de licencias de
+> Privacy. Ver `docs/RUNBOOK-INDEPENDENCIA-DE-PRIVACY.md`.
+
 Each service is split into a transport-agnostic core (`src/service.ts`, unit
 tested) and a thin HTTP adapter (`src/server.ts`). Persistence is in-memory in
 this CP-0 skeleton; production swaps in Postgres (system of record), Qdrant

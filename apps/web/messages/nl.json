@@ -775,6 +775,7 @@
       "noActivePlan": "Geen actief abonnement",
       "signedInAs": "ingelogd als",
       "personalNote": "Persoonlijk — nog geen organisatie gekoppeld. Eén BiVelio-account, gedeeld over de hele suite.",
+      "personalNoteSinSuite": "Persoonlijk — nog geen organisatie gekoppeld.",
       "plan": "abonnement",
       "planBody": "BV-SALA is open core — zonder sleutel draait het in de Community-modus; een ingestelde maar ongeldige sleutel blijft fail-closed. De cloud voegt het teamdashboard, gedeelde meting, seats en licenties toe. Pro: {monthly} per seat per maand of {yearly} per seat per jaar. Team: {teamMonthly} per maand met {included} seats inbegrepen. Geen commissie op je besparing. Een seat is een actieve machine of service-identiteit, geen persoon.",
       "managePlan": "Abonnement beheren →",

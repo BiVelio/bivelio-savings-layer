@@ -775,6 +775,7 @@
       "noActivePlan": "Brak aktywnego planu",
       "signedInAs": "zalogowano jako",
       "personalNote": "Osobiste — brak powiązanej organizacji. Jedno konto BiVelio, współdzielone w całym pakiecie.",
+      "personalNoteSinSuite": "Osobiste — brak powiązanej organizacji.",
       "plan": "plan",
       "planBody": "BV-SALA to open core — bez klucza działa w trybie Community; ustawiony, ale nieprawidłowy klucz nadal działa fail-closed. Chmura dodaje panel zespołu, wspólne pomiary, stanowiska i licencje. Pro: {monthly} za stanowisko miesięcznie lub {yearly} za stanowisko rocznie. Team: {teamMonthly} miesięcznie z {included} stanowiskami w cenie. Bez prowizji od Twoich oszczędności. Stanowisko to aktywna maszyna lub tożsamość usługi, nie osoba.",
       "managePlan": "Zarządzaj planem →",

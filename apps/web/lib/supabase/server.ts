@@ -1,7 +1,7 @@
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 
-import { SUPABASE_ANON_KEY, SUPABASE_URL } from "./env";
+import { SUPABASE_ANON_KEY, SUPABASE_URL, opcionesDeCookie } from "./env";
 
 /**
  * Cliente de Supabase para RUTAS (Route Handlers y Server Actions), donde SÍ se
@@ -15,6 +15,8 @@ import { SUPABASE_ANON_KEY, SUPABASE_URL } from "./env";
 export async function createClient() {
   const cookieStore = await cookies();
   return createServerClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+    // Vacío salvo que NEXT_PUBLIC_BVSALA_COOKIE_SESION esté puesta (ver env.ts).
+    ...opcionesDeCookie(),
     cookies: {
       getAll() {
         return cookieStore.getAll();
@@ -63,6 +65,8 @@ export async function createClient() {
 export async function createReadOnlyClient() {
   const cookieStore = await cookies();
   return createServerClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+    // El mismo nombre de cookie que el cliente de rutas: si no, este leería otra.
+    ...opcionesDeCookie(),
     auth: { autoRefreshToken: false, persistSession: false },
     cookies: {
       getAll() {

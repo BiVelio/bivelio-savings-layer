@@ -775,6 +775,7 @@
       "noActivePlan": "No active plan",
       "signedInAs": "signed in as",
       "personalNote": "Personal — no organization linked yet. One BiVelio account, shared across the suite.",
+      "personalNoteSinSuite": "Personal — no organization linked yet.",
       "plan": "plan",
       "planBody": "BV-SALA is open core — with no key it runs in COMMUNITY mode; a key that is set but invalid fails closed. The cloud adds the team dashboard, shared measurement, seats and licences. Pro: {monthly} per seat per month or {yearly} per seat per year. Team: {teamMonthly} per month with {included} seats included. No commission on your savings. A seat is one active machine or service identity, not a person.",
       "managePlan": "Manage plan →",

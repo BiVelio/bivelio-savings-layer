@@ -775,6 +775,7 @@
       "noActivePlan": "Không có gói đang hoạt động",
       "signedInAs": "đã đăng nhập với tư cách",
       "personalNote": "Cá nhân — chưa có tổ chức nào được liên kết. Một tài khoản BiVelio, dùng chung cho cả bộ sản phẩm.",
+      "personalNoteSinSuite": "Cá nhân — chưa có tổ chức nào được liên kết.",
       "plan": "gói",
       "planBody": "BV-SALA là open core — không khóa nó chạy ở chế độ Community; khóa được đặt nhưng không hợp lệ vẫn fail-closed. Cloud thêm bảng điều khiển nhóm, đo lường dùng chung, chỗ và giấy phép. Pro: {monthly} mỗi chỗ mỗi tháng hoặc {yearly} mỗi chỗ mỗi năm. Team: {teamMonthly} mỗi tháng với {included} chỗ kèm theo. Không hoa hồng trên khoản tiết kiệm của bạn. Một chỗ là một máy hoặc danh tính dịch vụ đang hoạt động, không phải một người.",
       "managePlan": "Quản lý gói →",

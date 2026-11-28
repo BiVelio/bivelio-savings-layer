@@ -2,6 +2,23 @@
 
 > PROPRIETARY AND CONFIDENTIAL — © 2026 BiVelio Inc. All Rights Reserved.
 
+> **⚠️ Lo que hay de verdad hoy (2026-11-28).** Este documento es el plan de
+> julio y se queda como historia. Partes de él nunca se construyeron:
+>
+> - **No hay Keycloak ni `id.`**: el acceso es Supabase Auth, en el proyecto
+>   compartido con Privacy (`apps/web/lib/supabase/env.ts`). El «inicio de sesión
+>   único» de hoy no es un SSO: es que Privacy escribe su cookie en `.bivelio.com`
+>   con el mismo nombre que la de Savings.
+> - **No hay `api.savings.bivelio.com` ni nada en Hetzner**: licencias,
+>   revocaciones y medición son rutas de esta web en Vercel (`/api/license/*`,
+>   `/licenses/revocations`, `/api/metering/*`) sobre el esquema `bvsala`.
+>   `services/*` es un esqueleto en memoria y `deploy/` solo tiene ejemplos.
+> - Savings no usa el servidor ni el servicio de licencias de Privacy, y su par
+>   de claves de firma es suyo.
+>
+> Qué comparte todavía con Privacy, y cómo separarlo paso a paso:
+> [RUNBOOK-INDEPENDENCIA-DE-PRIVACY.md](./RUNBOOK-INDEPENDENCIA-DE-PRIVACY.md).
+
 ## Launch decision (2026-07-18): Vercel-first
 
 Launch on **Vercel** (same place the corporate site lives) for least maintenance;

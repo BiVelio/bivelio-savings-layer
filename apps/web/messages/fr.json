@@ -775,6 +775,7 @@
       "noActivePlan": "Aucun forfait actif",
       "signedInAs": "connecté en tant que",
       "personalNote": "Personnel — aucune organisation liée pour l'instant. Un seul compte BiVelio, partagé dans toute la suite.",
+      "personalNoteSinSuite": "Personnel — aucune organisation liée pour l'instant.",
       "plan": "forfait",
       "planBody": "BV-SALA est open core — sans clé, il tourne en mode Community ; une clé définie mais invalide reste fail-closed. Le cloud ajoute le tableau de bord d'équipe, la mesure partagée, les sièges et les licences. Pro : {monthly} par siège et par mois ou {yearly} par siège et par an. Team : {teamMonthly} par mois avec {included} sièges inclus. Aucune commission sur vos économies. Un siège est une machine active ou une identité de service, pas une personne.",
       "managePlan": "Gérer le forfait →",

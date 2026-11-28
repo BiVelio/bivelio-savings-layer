@@ -775,6 +775,7 @@
       "noActivePlan": "Sem plano ativo",
       "signedInAs": "sessão iniciada como",
       "personalNote": "Pessoal — ainda não há nenhuma organização associada. Uma só conta BiVelio, partilhada em toda a suite.",
+      "personalNoteSinSuite": "Pessoal — ainda não há nenhuma organização associada.",
       "plan": "plano",
       "planBody": "A BV-SALA é open core — sem chave corre em modo Community; uma chave definida mas inválida continua fail-closed. A nuvem acrescenta o painel de equipa, a medição partilhada, os lugares e as licenças. Pro: {monthly} por lugar por mês ou {yearly} por lugar por ano. Team: {teamMonthly} por mês com {included} lugares incluídos. Sem comissão sobre a tua poupança. Um lugar é uma máquina ou identidade de serviço ativa, não uma pessoa.",
       "managePlan": "Gerir plano →",

@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 
+import { remitente } from "@/lib/correo/remitente";
 import { RateLimiter, ipDe } from "@/lib/rate-limit";
 
 /**
@@ -17,7 +18,7 @@ import { RateLimiter, ipDe } from "@/lib/rate-limit";
  * con el camino alternativo, que es escribir directamente.
  */
 const DESTINO = "support@bivelio.com";
-const REMITENTE = "BiVelio <no-reply@bivelio.com>";
+// El remitente sale de `remitente()` (lib/correo/remitente.ts); por defecto, el de siempre.
 const MAX = 200;
 
 /** Un salto de línea en una cabecera de correo permite inyectar cabeceras. */
@@ -66,7 +67,7 @@ export async function POST(req: Request): Promise<NextResponse> {
       method: "POST",
       headers: { authorization: `Bearer ${clave}`, "content-type": "application/json" },
       body: JSON.stringify({
-        from: REMITENTE,
+        from: remitente(),
         reply_to: email,
         to: [DESTINO],
         subject: `Llamada de 15 min — ${email}`,

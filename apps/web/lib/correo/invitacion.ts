@@ -17,6 +17,7 @@
  */
 
 import { botonTinta, escapar, tarjetaClara } from "./carcasa";
+import { remitente, responderA } from "./remitente";
 
 export type Idioma =
   | "es" | "en" | "ca" | "de" | "fr" | "id" | "it" | "nl" | "pl" | "pt" | "tr" | "vi";
@@ -253,10 +254,9 @@ export function componerInvitacion(d: DatosInvitacion): CorreoCompuesto {
   return { asunto, html, texto };
 }
 
-/** El remitente. `no-reply@` porque nadie lee las respuestas a este buzón, y
- *  `reply_to` apunta al soporte real para que quien conteste llegue a alguien. */
-const REMITENTE = "BiVelio <no-reply@bivelio.com>";
-const RESPUESTAS = "support@bivelio.com";
+/* El remitente (`remitente()`, por defecto `no-reply@`, porque nadie lee las
+   respuestas a ese buzón) y `reply_to` (`responderA()`, por defecto el soporte
+   real, para que quien conteste llegue a alguien): lib/correo/remitente.ts. */
 
 export type ResultadoEnvio = { ok: true } | { ok: false; motivo: string };
 
@@ -278,8 +278,8 @@ export async function enviarInvitacion(
       method: "POST",
       headers: { authorization: `Bearer ${clave}`, "content-type": "application/json" },
       body: JSON.stringify({
-        from: REMITENTE,
-        reply_to: RESPUESTAS,
+        from: remitente(),
+        reply_to: responderA(),
         to: [destinatario],
         subject: asunto,
         html,

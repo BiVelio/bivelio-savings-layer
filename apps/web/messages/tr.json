@@ -775,6 +775,7 @@
       "noActivePlan": "Etkin plan yok",
       "signedInAs": "giriş yapan",
       "personalNote": "Kişisel — henüz bağlı bir kuruluş yok. Tek bir BiVelio hesabı, tüm paket boyunca paylaşılır.",
+      "personalNoteSinSuite": "Kişisel — henüz bağlı bir kuruluş yok.",
       "plan": "plan",
       "planBody": "BV-SALA açık çekirdektir — anahtar olmadan Community modunda çalışır; ayarlanmış ama geçersiz bir anahtar yine de fail-closed kalır. Bulut; ekip panelini, ortak ölçümü, koltukları ve lisansları ekler. Pro: ayda koltuk başına {monthly} veya yılda koltuk başına {yearly}. Team: ayda {teamMonthly}, {included} koltuk dahil. Tasarrufunuz üzerinden komisyon yok. Koltuk; kişi değil, aktif bir makine veya hizmet kimliğidir.",
       "managePlan": "Planı yönet →",

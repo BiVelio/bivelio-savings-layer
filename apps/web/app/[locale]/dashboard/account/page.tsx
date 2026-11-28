@@ -2,6 +2,7 @@ import { getTranslations } from "next-intl/server";
 
 import { AccountTabs } from "@/app/components/app/AccountTabs";
 import { CabeceraDePagina } from "@/app/components/app/CabeceraDePagina";
+import { cuentaCompartidaConLaSuite } from "@/lib/auth/cuenta-compartida";
 import { loadDashboard } from "../load";
 import { AccountPlanStrip } from "../components/AccountPlanStrip";
 import { BillingStateBanner } from "../components/BillingStateBanner";
@@ -34,7 +35,12 @@ export default async function AccountPage({
   return (
     <>
       <AccountTabs role={ctx.role} />
-      <CabeceraDePagina rotulo={t("account.eyebrow")} titulo={t("account.title")} entradilla={t("account.intro")} />
+      {/* «Una sola cuenta para toda la suite» solo mientras lo sea (BVSALA_CUENTA_PROPIA). */}
+      <CabeceraDePagina
+        rotulo={t("account.eyebrow")}
+        titulo={t("account.title")}
+        entradilla={cuentaCompartidaConLaSuite() ? t("account.intro") : undefined}
+      />
       {resultado ? <CheckoutBanner resultado={resultado} activo={activo} /> : null}
       {/* El estado real del cobro, ANTES de la tarjeta del plan: si la tarjeta
           no pasa, eso es lo primero que hay que leer, no el precio. */}

@@ -16,6 +16,8 @@
  * que esto funcione HOY con lo que ya hay.
  */
 
+import { remitenteDeAlertas } from "../correo/remitente";
+
 export type NivelDeAlerta = "critico" | "aviso";
 
 export interface Alerta {
@@ -31,8 +33,9 @@ export const MARCA = "[bv-sala:ALERTA]";
 
 /** Buzón por defecto. Decisión del dueño (2026-08-12). Ajustable por entorno. */
 const DESTINO_POR_DEFECTO = "support@bivelio.com";
-/** Remitente. Cualquier dirección del dominio verificado en Resend sirve. */
-const REMITENTE = "BiVelio Savings <alertas@bivelio.com>";
+/* Remitente: `remitenteDeAlertas()` (lib/correo/remitente.ts). Por defecto el de
+   siempre, «BiVelio Savings <alertas@bivelio.com>»; cualquier dirección del
+   dominio verificado en la cuenta de Resend sirve. */
 /** El procedimiento, versionado junto al código que dispara la alerta. */
 const MANUAL = "https://github.com/BiVelio/bivelio-savings-layer/blob/main/docs/RUNBOOK-ALERTAS.md";
 
@@ -78,7 +81,7 @@ async function porCorreo(nivel: NivelDeAlerta, asunto: string, detalle?: Record<
     method: "POST",
     headers: { authorization: `Bearer ${clave}`, "content-type": "application/json" },
     body: JSON.stringify({
-      from: REMITENTE,
+      from: remitenteDeAlertas(),
       to: destino,
       subject: `🔴 BV-SALA: ${asunto}`,
       html: cuerpo,

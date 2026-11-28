@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 
 import { alCrearseElCliente } from "@/lib/supabase/aviso-del-cliente";
-import { authConfigured } from "@/lib/supabase/env";
+import { COOKIE_DE_SESION, authConfigured } from "@/lib/supabase/env";
 
 /**
  * ¿HAY SESIÓN? — decidido en el navegador, para que la portada pueda ser
@@ -86,8 +86,17 @@ export type AuthDelNavegador = {
  */
 const RASTRO_DE_AUTH = /(?:^|;\s*)sb-[^=;\s]+-auth-token/;
 
-export function hayRastroDeAuth(cookies: string): boolean {
-  return RASTRO_DE_AUTH.test(cookies);
+/**
+ * Con nombre propio de cookie (`NEXT_PUBLIC_BVSALA_COOKIE_SESION`, ver
+ * `lib/supabase/env.ts`) solo cuenta ESA: `<nombre>`, sus trozos y su
+ * `-code-verifier`. La cookie de Privacy (`sb-…-auth-token` en `.bivelio.com`)
+ * ya no es una sesión de esta app y no debe cargar supabase-js. Sin nombre
+ * propio, la regla de siempre.
+ */
+export function hayRastroDeAuth(cookies: string, nombre: string | undefined = COOKIE_DE_SESION): boolean {
+  if (!nombre) return RASTRO_DE_AUTH.test(cookies);
+  const literal = nombre.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  return new RegExp(`(?:^|;\\s*)${literal}(?:\\.\\d+|-code-verifier)?=`).test(cookies);
 }
 
 export type EntornoDeSesion = {

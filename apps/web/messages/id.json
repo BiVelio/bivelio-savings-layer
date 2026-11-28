@@ -775,6 +775,7 @@
       "noActivePlan": "Tidak ada paket aktif",
       "signedInAs": "masuk sebagai",
       "personalNote": "Pribadi — belum ada organisasi yang tertaut. Satu akun BiVelio, dibagikan di seluruh suite.",
+      "personalNoteSinSuite": "Pribadi — belum ada organisasi yang tertaut.",
       "plan": "paket",
       "planBody": "BV-SALA adalah open core — tanpa kunci ia berjalan dalam mode Community; kunci yang diatur tetapi tidak valid tetap fail-closed. Cloud menambahkan dasbor tim, pengukuran bersama, kursi, dan lisensi. Pro: {monthly} per kursi per bulan atau {yearly} per kursi per tahun. Team: {teamMonthly} per bulan dengan {included} kursi termasuk. Tanpa komisi atas penghematan Anda. Satu kursi adalah satu mesin atau identitas layanan yang aktif, bukan orang.",
       "managePlan": "Kelola paket →",
