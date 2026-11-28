@@ -49,10 +49,11 @@ export async function POST(req: Request): Promise<NextResponse> {
     timestamp: req.headers.get("webhook-timestamp"),
     signature: req.headers.get("webhook-signature"),
   };
-  // VARIOS SECRETOS separados por espacios: para que DOS proyectos de Supabase
-  // (el compartido y uno propio de Savings, mientras dura una mudanza) o una
-  // rotación puedan llamar a esta ruta a la vez. Con UNO (hoy) se usa tal cual,
-  // exactamente como antes. Ver docs/RUNBOOK-INDEPENDENCIA-DE-PRIVACY.md.
+  // VARIOS SECRETOS separados por espacios: para cambiar el secreto del hook
+  // con el viejo y el nuevo puestos a la vez un rato (o, si algún día hiciera
+  // falta, para que dos proyectos de Supabase llamen a esta ruta a la vez).
+  // Con UNO (hoy) se usa tal cual, exactamente como antes. Ver
+  // docs/RUNBOOK-INDEPENDENCIA-DE-PRIVACY.md.
   const partes = secreto.split(/\s+/).filter(Boolean);
   const secretos = partes.length > 1 ? partes : [secreto];
   if (!secretos.some((s) => verificarFirma(cuerpo, cabeceras, s).ok)) {

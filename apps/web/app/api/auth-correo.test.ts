@@ -247,7 +247,7 @@ describe("POST /api/auth/correo — independencia de Privacy", () => {
   });
 });
 
-describe("POST /api/auth/correo — varios secretos (dos proyectos durante una mudanza)", () => {
+describe("POST /api/auth/correo — varios secretos (el viejo y el nuevo mientras se cambia el secreto)", () => {
   const OTRO = Buffer.from("secreto-del-proyecto-propio").toString("base64");
 
   it("con UN secreto (hoy) una firma con otro secreto sigue siendo 401", async () => {

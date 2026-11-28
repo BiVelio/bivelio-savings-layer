@@ -2,11 +2,12 @@
  * DE QUIÉN SALEN LOS CORREOS DE SAVINGS — configurable, con los valores de siempre por defecto.
  *
  * POR QUÉ EXISTE. Todos los correos de esta app (auth, invitaciones, la petición
- * de llamada y las alertas) salen por la cuenta de Resend que comparten Savings,
- * Privacy y GPOS, desde el dominio verificado `bivelio.com`. Para que Savings
- * tenga su propia cuenta de Resend hace falta un dominio (o subdominio) de envío
- * verificado EN ESA cuenta, y entonces el remitente cambia. Hasta hoy estaba
- * escrito en cuatro sitios; ahora sale de aquí.
+ * de llamada y las alertas) salen por la cuenta de Resend de la organización
+ * BiVelio, desde el dominio verificado `bivelio.com`. La cuenta es y seguirá
+ * siendo la misma para todos los productos (decisión del fundador, 2026-11-28);
+ * lo que Savings tiene solo suyo es la CLAVE, limitada a un subdominio de envío
+ * propio verificado en esa misma cuenta, y entonces el remitente cambia. Hasta
+ * hoy estaba escrito en cuatro sitios; ahora sale de aquí.
  *
  *   BVSALA_CORREO_REMITENTE           remitente de auth, invitaciones y contacto
  *   BVSALA_CORREO_RESPONDER_A         a dónde van las respuestas (reply_to)
@@ -16,8 +17,8 @@
  * Vacías (hoy) = exactamente lo de antes. Un valor que no parezca una dirección
  * (o «Nombre <dirección>») se IGNORA con un aviso: una errata no puede dejar sin
  * correo a nadie de una forma nueva; como mucho deja el remitente de siempre.
- * La clave de Resend sigue siendo `RESEND_API_KEY`: cambiar de cuenta es cambiar
- * su VALOR en Vercel, sin tocar código.
+ * La clave de Resend sigue siendo `RESEND_API_KEY`: pasar a la clave de Savings
+ * es cambiar su VALOR en Vercel, sin tocar código.
  */
 
 /** Lo que leemos del entorno; `process.env` en producción, un objeto en los tests. */
@@ -58,10 +59,10 @@ export function responderA(env: Entorno = process.env): string {
 }
 
 /**
- * Las alertas, con su propia variable y, si no, el remitente general: al mudar
- * Savings a su propia cuenta de Resend basta con poner BVSALA_CORREO_REMITENTE
- * para que las alertas críticas no se queden saliendo de un dominio que esa
- * cuenta no tiene verificado (y no llegando).
+ * Las alertas, con su propia variable y, si no, el remitente general: al pasar
+ * Savings a su propia clave de Resend, limitada a su subdominio, basta con poner
+ * BVSALA_CORREO_REMITENTE para que las alertas críticas no se queden saliendo de
+ * un dominio que esa clave no puede usar (y no llegando).
  */
 export function remitenteDeAlertas(env: Entorno = process.env): string {
   return leer(env, VAR_REMITENTE_ALERTAS) ?? leer(env, VAR_REMITENTE) ?? REMITENTE_ALERTAS_POR_DEFECTO;

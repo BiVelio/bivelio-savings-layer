@@ -3,6 +3,9 @@
 # de otro producto (GPOS…) o de ninguno. SOLO LECTURA y SOLO NÚMEROS: de aquí no sale ni un correo,
 # ni un id, ni un hash. Es el paso 0 de docs/RUNBOOK-INDEPENDENCIA-DE-PRIVACY.md: antes de separar
 # Savings y Privacy hay que saber cuántas cuentas son de cada uno y que ninguna se quede sin dueño.
+# Savings se queda en este proyecto y es Privacy quien se va a uno propio de la misma organización
+# (decisión del fundador del 2026-11-28): aquí no se copia ninguna cuenta, solo se cuentan y, al final,
+# se dice cuáles se podrían borrar.
 #
 # Uso (producción, lo corre una PERSONA):
 #   TOKEN_FICHERO=<fichero con SOLO el token sbp_…> bash scripts/produccion/clasificar-usuarios.sh
@@ -10,12 +13,6 @@
 #   PSQL_URL=postgres://… bash scripts/produccion/clasificar-usuarios.sh
 #
 # QUE=cuentas (por defecto)  imprime los recuentos.
-# QUE=sql-savings            imprime (sin ejecutarla) la consulta con los ids que hay que copiar si
-#                            SAVINGS se va a un proyecto propio (camino B): TODAS las cuentas (ver «LO
-#                            QUE ESTE SCRIPT NO VE»).
-# QUE=sql-savings-estricto   la de la primera versión: Savings + los que no son de nadie. Deja fuera a
-#                            las altas de Savings sin actividad que tengan filas de Privacy u otros.
-#                            Solo con el OK del fundador por escrito.
 # QUE=sql-borrables          imprime (sin ejecutarla) la consulta con los ids que solo son de Privacy y
 #                            que no han entrado en este proyecto desde PRIVACY_FUERA_DESDE=AAAA-MM-DD
 #                            (obligatoria): los ÚNICOS candidatos a borrar cuando Privacy ya esté fuera.
@@ -37,9 +34,8 @@
 # skill o ser invitada. Darse de alta y entrar en el panel no escribe nada en bvsala. Quien se dio de
 # alta en Savings y no hizo nada más, y además tiene filas en bvprga, sale como «solo de Privacy»; si
 # las tiene en otro esquema, como «otros». Es justo quien leyó en la web «la misma cuenta te sirve
-# aquí». No pierde licencias ni datos de Savings (no tiene), pero si su cuenta se borra o no se copia,
-# pierde el acceso y tiene que darse de alta otra vez. Por eso:
-#   · QUE=sql-savings copia TODAS las cuentas;
+# aquí». No pierde licencias ni datos de Savings (no tiene), pero si su cuenta se borra, pierde el
+# acceso y tiene que darse de alta otra vez. Por eso:
 #   · QUE=sql-borrables deja fuera a toda cuenta que haya entrado en este proyecto desde
 #     PRIVACY_FUERA_DESDE (auth.users.last_sign_in_at, o una sesión de auth.sessions creada o
 #     actualizada desde ese día). Con Privacy ya fuera, quien entra aquí entra en Savings (o en otro
@@ -53,8 +49,8 @@ QUE=${QUE:-cuentas}
 FUERA=${PRIVACY_FUERA_DESDE:-}
 
 case "$QUE" in
-  cuentas | sql-savings | sql-savings-estricto | sql-borrables) ;;
-  *) echo "QUE no válido: $QUE (cuentas | sql-savings | sql-savings-estricto | sql-borrables)"; exit 1 ;;
+  cuentas | sql-borrables) ;;
+  *) echo "QUE no válido: $QUE (cuentas | sql-borrables)"; exit 1 ;;
 esac
 # La fecha va dentro del SQL: solo AAAA-MM-DD, nada más.
 if [ -n "$FUERA" ] && ! [[ $FUERA =~ ^[0-9]{4}-[0-9]{2}-[0-9]{2}$ ]]; then
@@ -63,13 +59,6 @@ fi
 if [ "$QUE" = sql-borrables ] && [ -z "$FUERA" ]; then
   echo "QUE=sql-borrables necesita PRIVACY_FUERA_DESDE=AAAA-MM-DD: el día desde el que Privacy ya no usa este proyecto (runbook, A5)"
   exit 1
-fi
-
-if [ "$QUE" = sql-savings ]; then
-  # No depende de ninguna clasificación: ni siquiera hace falta conectar.
-  echo "-- Camino B: TODAS las cuentas. Una alta de Savings sin actividad no se distingue de una de Privacy (cabecera de scripts/produccion/clasificar-usuarios.sh)."
-  echo "select id from auth.users"
-  exit 0
 fi
 
 if [ -n "${PSQL_URL:-}" ]; then
@@ -184,11 +173,6 @@ MARCAS="with s as (
 )"
 
 case "$QUE" in
-  sql-savings-estricto)
-    echo "-- Camino B ESTRICTO (solo con el OK del fundador por escrito): Savings + los de nadie; deja fuera a las altas de Savings sin actividad con filas de Privacy u otros."
-    echo "$MARCAS"
-    echo "select id from marcas where de_savings or not (de_privacy or de_otros)"
-    exit 0 ;;
   sql-borrables)
     echo "-- Candidatos a borrar con Privacy ya fuera: solo Privacy, nada de Savings ni de otros, y sin entrar aquí desde $FUERA. Pueden ser altas de Savings sin actividad: lo decide el fundador (runbook, A5)."
     echo "$MARCAS"
@@ -208,8 +192,6 @@ consulta <<SQL | jq -r --arg fuera "$FUERA" '
   def suma(f): map(select(f) | .cuentas) | add // 0;
   (.[] | "  \(m(.de_savings; "S")) \(m(.de_privacy; "P")) \(m(.de_otros; "O"))\(if $fuera != "" then " " + m(.entro_despues; "E") else "" end)   \(.cuentas) cuentas (\(.confirmadas) con el correo confirmado)"),
   "  total: \(suma(true))",
-  "  a copiar si Savings se va (camino B, QUE=sql-savings: todas): \(suma(true))",
-  "  a copiar con QUE=sql-savings-estricto (S, o sin nadie): \(suma(.de_savings or ((.de_privacy or .de_otros) | not)))",
   "  sin rastro de Savings pero con filas de Privacy u otros (pueden ser altas de Savings sin actividad; el script NO las distingue): \(suma((.de_savings | not) and (.de_privacy or .de_otros)))",
   "  solo P (sin Savings ni otros): \(suma(.de_privacy and (.de_savings | not) and (.de_otros | not)))",
   (if $fuera != "" then
