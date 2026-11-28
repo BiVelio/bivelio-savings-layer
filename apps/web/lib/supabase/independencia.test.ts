@@ -2,6 +2,7 @@ import { readFileSync, readdirSync } from "node:fs";
 import { join, relative } from "node:path";
 import { fileURLToPath } from "node:url";
 import { createServerClient } from "@supabase/ssr";
+import type { WebSocketLikeConstructor } from "@supabase/supabase-js";
 import { describe, it, expect, vi, afterEach } from "vitest";
 
 import { hayRastroDeAuth } from "@/app/components/useHaySesion";
@@ -41,10 +42,25 @@ function cookieDeSesion(): string {
   return "base64-" + Buffer.from(JSON.stringify(sesion)).toString("base64url");
 }
 
+/**
+ * Un WebSocket de pega para el cliente de realtime. supabase-js 2.110.7 lo pide
+ * AL CREAR el cliente, aunque nadie abra un canal, y Node 20 (el de la CI,
+ * `ci.yml`) no tiene WebSocket global: sin esto `createServerClient` lanza
+ * «Node.js detected but native WebSocket not found». Aquí no se abre ningún
+ * canal; si alguien lo intentara, que falle a la vista en vez de ir a la red.
+ */
+class WebSocketDePega {
+  constructor() {
+    throw new Error("independencia.test.ts no abre canales de realtime");
+  }
+}
+const SIN_REALTIME = { transport: WebSocketDePega as unknown as WebSocketLikeConstructor };
+
 /** Un cliente de servidor con las cookies que manda el navegador y las opciones que se le den. */
 function clienteCon(cookies: { name: string; value: string }[], opciones: { cookieOptions?: { name: string } }) {
   return createServerClient(`https://${REF}.supabase.co`, "anon-de-prueba", {
     ...opciones,
+    realtime: SIN_REALTIME,
     cookies: { getAll: () => cookies, setAll: () => {} },
   });
 }

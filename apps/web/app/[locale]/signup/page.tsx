@@ -54,7 +54,9 @@ export default async function SignupPage({ params }: { params: Promise<{ locale:
     >
       <div className="acc-intro">
         <h1>{t("createYourAccount")}</h1>
-        <p className="sub">{t("signupSubtitle")}</p>
+        {/* «Una cuenta BiVelio para toda la suite» solo mientras lo sea
+            (BVSALA_CUENTA_PROPIA): sin ella, el resto de la entradilla. */}
+        <p className="sub">{cuentaCompartidaConLaSuite() ? t("signupSubtitle") : t("signupSubtitleSinSuite")}</p>
       </div>
       <PlanElegidoEnAlta textos={planElegido} />
       <AuthForm mode="signup" />

@@ -28,7 +28,7 @@ tenerlo: secretos, paneles de Supabase, Vercel o Stripe).
 | Llave de servicio (`service_role`) | **Sí** (inferido) | La usa `apps/web/lib/supabase/admin.ts`. Que Privacy tenga la misma lo dice el inventario previo; no lo he comprobado. | `BVSALA_SUPABASE_SECRET_KEY` |
 | Cookie de sesión | **Sí**, por el nombre | Verificado: sin nombre propio, `@supabase/ssr` 0.12.3 la llama `sb-<ref>-auth-token` (el test `lib/supabase/independencia.test.ts` lo demuestra con la librería real). Verificado en el código de Privacy: escribe esa cookie en el dominio de `NEXT_PUBLIC_COOKIE_DOMAIN`. Que en producción ese valor sea `.bivelio.com`: lo dice el inventario previo, no lo he comprobado. Consecuencia: Savings lee la sesión que escribe Privacy. | `NEXT_PUBLIC_BVSALA_COOKIE_SESION` |
 | Correos de auth (Send Email Hook) | **Sí**: Savings manda los de Privacy | Verificado en el código: `app/api/auth/correo/route.ts` y `lib/correo/auth-hook.ts` reconocen privacy.bivelio.com y shield.bivelio.com. Que el hook esté encendido en Supabase apuntando aquí: **no verificable** (la configuración de Auth lleva secretos). | `BVSALA_CORREO_SIN_PRIVACY` (cuando Privacy tenga los suyos) |
-| Textos que prometen la cuenta compartida | **Sí** | Verificado: `auth.signupSsoNote`, `dashboard.account.intro` y `dashboard.accountPlanStrip.personalNote`. | `BVSALA_CUENTA_PROPIA` |
+| Textos que prometen la cuenta compartida | **Sí** | Verificado: son cinco, `auth.loginSubtitle`, `auth.signupSubtitle`, `auth.signupSsoNote`, `dashboard.account.intro` y `dashboard.accountPlanStrip.personalNote` (la primera versión de este runbook decía tres; la revisión encontró las dos entradillas de acceso). Un test busca la suite y Shield en todos los mensajes para que no se escape otra. | `BVSALA_CUENTA_PROPIA` |
 | Resend (cuenta, clave y remitente) | **Sí** (inferido) | El comentario de `apps/web/.env.local.example` dice que es la misma cuenta que el resto de la plataforma; el remitente `no-reply@bivelio.com` estaba escrito en 4 sitios. | `RESEND_API_KEY` (valor) + `BVSALA_CORREO_REMITENTE*` |
 | Stripe | **Sí** (cuenta), separado por una verja | Verificado en el código: `lib/stripe/atribucion.ts` (atribución por precio y producto). Todas las claves y precios salen ya del entorno. | Opcional (paso A7) |
 | Equipo de Vercel, zona DNS `bivelio.com`, organización de Supabase | **Sí** (inferido) | Lo dice el inventario previo; no lo he comprobado (no entro en Vercel, DNS ni Supabase). | Opcional (paso A7) |
@@ -41,7 +41,7 @@ tenerlo: secretos, paneles de Supabase, Vercel o Stripe).
 | `RESEND_API_KEY` (cambiar el valor) + `BVSALA_CORREO_REMITENTE`, `BVSALA_CORREO_RESPONDER_A`, `BVSALA_CORREO_REMITENTE_ALERTAS` | Los correos salen de la cuenta y del remitente de Savings. Sin `…_ALERTAS`, las alertas usan `BVSALA_CORREO_REMITENTE` | A la vez, en el mismo despliegue (A2) | Devolver el valor viejo de la clave y borrar las tres | Ninguno, si el dominio está verificado |
 | `NEXT_PUBLIC_BVSALA_COOKIE_SESION` (p. ej. `bvsala-auth-token`) | Los cuatro clientes de Supabase de la web leen y escriben SOLO esa cookie: la de Privacy deja de abrir sesión en Savings | Cuando el fundador acepte que se acaba el inicio de sesión único (A3) | Borrarla y redesplegar | Todo el mundo vuelve a entrar en Savings una vez |
 | `BVSALA_CORREO_SIN_PRIVACY=1` | El hook responde 422 a un correo de Privacy/Shield, no lo manda y avisa en crítico | SOLO cuando Privacy ya mande sus propios correos de auth (A4) | Borrarla y redesplegar | Si se enciende antes: en Privacy nadie recibe altas ni recuperaciones |
-| `BVSALA_CUENTA_PROPIA=1` | Quita las tres frases de «la misma cuenta que en Shield/Privacy» | El MISMO día que se separan las cuentas (A4 o B6) | Borrarla y redesplegar | Ninguno |
+| `BVSALA_CUENTA_PROPIA=1` | Quita las cinco frases de «la misma cuenta que en Shield/Privacy» y «una cuenta para toda la suite»: las entradillas de la entrada y del alta pasan a su versión sin la suite, y la nota del alta y la entradilla de Cuenta no se pintan | El MISMO día que se separan las cuentas (A4 o B6) | Borrarla y redesplegar | Ninguno |
 | `SUPABASE_SEND_EMAIL_HOOK_SECRET` con **dos** secretos separados por un espacio | La ruta acepta la firma de cualquiera de los dos | Solo en el camino B, mientras los dos proyectos llamen al hook (B3) | Dejar uno solo | Ninguno |
 
 Notas que importan:
@@ -84,14 +84,31 @@ Imprime **solo números**: cuántas cuentas son solo de Savings, de Savings y
 Privacy, solo de Privacy, de otros esquemas (el `public` de GPOS…) y de ninguno.
 «De Savings» es toda columna con clave ajena a `auth.users` en `bvsala` más
 `bvsala.skill_downloads.user_id`, las invitaciones pendientes y el
-`billing_email` (por correo). «De Privacy», toda clave ajena desde `bvprga`.
+`billing_email` (por correo) y la marca `invitado_por_org` que el alta por
+invitación pone en los metadatos de la cuenta. «De Privacy», toda clave ajena
+desde `bvprga`.
 
 - Verificado: lo ensayé contra un Postgres 17 local con las 37 migraciones de
-  `db/` aplicadas, un `bvprga` y un `public` de juguete y 11 cuentas, una por
-  caso; los recuentos salen exactos.
+  `db/` aplicadas, un `bvprga` y un `public` de juguete y 13 cuentas, una por
+  caso; los recuentos salen exactos y cada consulta da los ids esperados.
 - **No ejecutado contra producción** (no tengo ni debo tener el token).
 - Una columna de Privacy u otros **sin** clave ajena no se ve: por eso las
   cuentas «sin nadie» **nunca** se borran.
+
+**Lo que el recuento NO ve (revisión de #632): las altas de Savings que no han
+hecho nada más.** Una cuenta de Savings solo deja filas en `bvsala` cuando hace
+algo: crear su organización (`lib/org/resolver.ts` la crea al empezar un pago,
+al pedir Medir o la prueba y al crear una cuenta de servicio), descargar el
+skill o ser invitada. Darse de alta y entrar en el panel no escribe nada en
+`bvsala` (verificado en el código: el alta solo llama a Supabase Auth,
+`auth/callback` no toca la base y `dashboard/load.ts` solo lee). Si esa cuenta
+tiene además filas en `bvprga`, sale como «solo de Privacy»; si las tiene en
+otro esquema, como «otros». Es justo quien leyó en la web «la misma cuenta te
+sirve aquí». No pierde licencias ni datos de Savings
+(no tiene), pero si su cuenta se borra (A5) o no se copia (B4), **pierde el
+acceso y tiene que darse de alta otra vez**. El recuento las enseña en una
+línea propia («sin rastro de Savings pero con filas de Privacy u otros»); el
+script no puede decir cuántas de ellas son de Savings.
 
 ### A1 · Llave de servicio propia de Savings **[OK del fundador]**
 
@@ -147,20 +164,52 @@ Requisito: Privacy en su propio proyecto (o con su propio hook), comprobado por
 Privacy. Entonces, en el mismo despliegue de Savings:
 
 1. `BVSALA_CORREO_SIN_PRIVACY=1` y `BVSALA_CUENTA_PROPIA=1`.
-2. Comprobar: un alta en Savings recibe su correo; el alta, Cuenta y la nota
-   «Personal» ya no hablan de la cuenta compartida.
+2. Comprobar: un alta en Savings recibe su correo; la entrada, el alta, Cuenta
+   y la nota «Personal» ya no hablan de la cuenta compartida ni de la suite.
 3. Vigilar la alerta crítica «llegó un correo de Privacy con
    BVSALA_CORREO_SIN_PRIVACY=1»: si suena, Privacy sigue usando este hook →
    vuelta atrás inmediata (borrar `BVSALA_CORREO_SIN_PRIVACY` y redesplegar).
 
 ### A5 · Limpiar `rsxeb` de lo que era solo de Privacy **[OK del fundador · NO reversible]**
 
-Solo cuando Privacy lleve un tiempo estable fuera (el fundador decide cuánto).
+Solo cuando Privacy lleve un tiempo estable fuera (el fundador decide cuánto),
+y solo después de que el fundador elija **por escrito** qué hacer con las altas
+de Savings sin actividad que también tienen filas de Privacy (ver A0, «Lo que el
+recuento NO ve»). **[Decisión del fundador]** Las salidas:
+
+- **(a) Esperar y borrar solo a quien no ha vuelto.** `QUE=sql-borrables`
+  exige `PRIVACY_FUERA_DESDE=AAAA-MM-DD` (el día desde el que Privacy ya no usa
+  `rsxeb`) y deja fuera a toda cuenta que haya entrado en `rsxeb` desde ese día
+  (`auth.users.last_sign_in_at`, o una sesión de `auth.sessions` creada o
+  actualizada desde entonces). Con Privacy fuera, quien entra en `rsxeb` entra
+  en Savings, o en otro producto que siga ahí, y en los dos casos se queda.
+  Cuanto más se espere, menos altas de Savings quedan en la lista; las que no
+  hayan vuelto a entrar se pierden, y eso hay que aceptarlo por escrito.
+  Verificado en local (datos de juguete): de tres cuentas «solo de Privacy», la
+  que tiene `last_sign_in_at` después de la fecha y la que tiene una sesión
+  actualizada después se quedan; la otra sale. Si falta `last_sign_in_at`, el
+  script se niega en vez de dar una lista más larga.
+  **Inferido**: que una entrada en Privacy ya no toca `rsxeb` cuando Privacy
+  está fuera (lo tiene que confirmar Privacy). **No verificado**: si Supabase
+  actualiza `last_sign_in_at` o `auth.sessions.updated_at` al renovar una sesión
+  sin contraseña; si no lo hace, alguien con una sesión abierta y sin entradas
+  nuevas saldría en la lista.
+- **(b) Una señal propia desde ahora.** Que Savings apunte, cada vez que alguien
+  entra, que esa cuenta es suya (una tabla de `bvsala` con clave ajena a
+  `auth.users`, que el script descubre solo). Necesita una migración y código
+  nuevo detrás de un interruptor; **no está en este cambio**. Cuanto antes se
+  encienda, menos cuentas quedan sin distinguir.
+- **(c) No borrar.** Las cuentas «solo de Privacy» se quedan en `rsxeb`. No se
+  pierde nadie, pero quedan en el proyecto de Savings datos de gente de Privacy
+  (correo y hash de la contraseña) que Savings no necesita.
+
+Con la decisión tomada:
 
 1. Respaldo completo de `rsxeb` antes (PITR o `pg_dump`), y anotar la hora.
-2. `QUE=sql-borrables bash scripts/produccion/clasificar-usuarios.sh` imprime
-   (sin ejecutarla) la consulta de los ids **solo de Privacy**: ni Savings, ni
-   otros esquemas, ni «sin nadie». Esos son los únicos candidatos.
+2. `QUE=sql-borrables PRIVACY_FUERA_DESDE=AAAA-MM-DD bash scripts/produccion/clasificar-usuarios.sh`
+   imprime (sin ejecutarla) la consulta de los ids **solo de Privacy** que no han
+   entrado desde esa fecha: ni Savings, ni otros esquemas, ni «sin nadie». Esos
+   son los únicos candidatos. Sin la fecha, el script se niega.
 3. Por qué importa: `bvsala.org_members` y `bvsala.medir_altas` tienen
    `on delete cascade` contra `auth.users`. Borrar de más una cuenta de Savings
    borra en cascada su pertenencia a la organización y su alta de Medir, sin
@@ -213,8 +262,15 @@ nuevo). Verificado con tests: con dos, vale la firma de cualquiera; con uno, com
 QUE=sql-savings bash scripts/produccion/clasificar-usuarios.sh > conjunto.sql   # sin la primera línea de comentario
 ```
 
-Es «de Savings» **más las cuentas sin nadie** (pueden ser altas de Savings que
-aún no han hecho nada; copiarlas de más no hace daño, perderlas sí). Con ella:
+Son **todas las cuentas** de `rsxeb`. La primera versión copiaba solo «de
+Savings» más «sin nadie», y así se quedaban fuera las altas de Savings sin
+actividad que tienen filas de Privacy u otros (ver A0, «Lo que el recuento NO
+ve»). Copiar de más no deja a nadie de Savings fuera; lo que cuesta es que en el
+proyecto nuevo de Savings quedan también cuentas de gente de Privacy (correo y
+hash de la contraseña) que Savings no necesita. Si el fundador prefiere eso a
+perder cuentas, `QUE=sql-savings-estricto` da la consulta de antes (Savings +
+sin nadie), **solo con su OK por escrito** a que esas cuentas se pierden.
+**[Decisión del fundador]** Con la consulta:
 
 ```sql
 -- en rsxeb, solo lectura
@@ -233,8 +289,10 @@ copy auth.identities from stdin with (format csv, header);
 - **No verificado**: que el rol que da Supabase pueda escribir en `auth.users`
   del proyecto nuevo con `copy`; confirmarlo en la documentación vigente de
   Supabase antes de la ventana.
-- Verificado en local (Postgres 17, datos de juguete): se copian 7 de 11
-  cuentas, las 7 esperadas, y `bvsala` restaura sin violar ninguna clave ajena.
+- Verificado en local (Postgres 17, datos de juguete): se copian las 13 de 13
+  cuentas con su hash, y `bvsala` restaura sin violar ninguna clave ajena y con
+  los mismos recuentos por tabla. Con `QUE=sql-savings-estricto` salen las 8
+  esperadas de 13.
 
 **B5 · Copia de `bvsala`.** `pg_dump --data-only --schema=bvsala --no-owner --no-privileges`
 desde `rsxeb` y restaurar en el nuevo. Después, recuento por tabla en los dos
@@ -274,6 +332,9 @@ corte se trae de vuelta con el mismo procedimiento al revés.
   ni recuperaciones de contraseña. Por eso responde con error y alerta, no en silencio.
 - Las claves ajenas de `bvsala` con `on delete cascade` contra `auth.users`
   hacen que un borrado de cuentas desde cualquier producto llegue a Savings.
+- Una alta de Savings que no ha hecho nada más no deja rastro en `bvsala`: si
+  tiene filas de Privacy, el script la ve como de Privacy. Por eso B4 copia todas
+  las cuentas y A5 espera a la decisión del fundador (A0, «Lo que el recuento NO ve»).
 - La URL de respaldo de `apps/web/lib/supabase/env.ts` sigue siendo `rsxeb`
   (para no cambiar nada hoy). En el camino B, si un día faltara
   `NEXT_PUBLIC_SUPABASE_URL`, la web hablaría con `rsxeb` usando las llaves del
